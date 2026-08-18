@@ -24,6 +24,8 @@ npm run test:images
 npm run types:supabase    # DB 스키마 변경 후 database.generated.ts 재생성 (supabase CLI 필요)
 ```
 
+DB migration은 리포 루트에서 `supabase db push` (사전에 `supabase link --project-ref <ref>` 필요).
+
 각 테스트는 대응하는 소스 옆의 `*.test.mjs` 파일을 직접 실행하는 방식이라 개별 테스트 필터링 플래그는 없다 — 파일 자체가 하나의 테스트 단위다.
 
 ## Architecture
