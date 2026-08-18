@@ -33,3 +33,7 @@ yarn-error.log*
 
 # Testing
 coverage/
+
+# Obsidian
+vault/.obsidian/
+vault/.trash/
