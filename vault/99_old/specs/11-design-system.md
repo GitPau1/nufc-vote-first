@@ -4,7 +4,7 @@ LDSG(LINE Design System for Global Family Service) 기반으로,
 Newcastle United 브랜드 색상을 적용한 커스텀 디자인 시스템.
 
 > 레퍼런스: `design.md` (LDSG 원본 연구 자료)
-> 와이어프레임: `vault/prototypes/prototype.html`
+> 와이어프레임: `vault/99_old/prototypes/prototype.html`
 
 ---
 

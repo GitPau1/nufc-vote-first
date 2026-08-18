@@ -7,7 +7,7 @@
 ## 작업 전 반드시 확인할 문서
 
 1. `AGENTS.md`
-2. `vault/SUPABASE_DATA_CONNECTIONS.md`
+2. `vault/99_old/SUPABASE_DATA_CONNECTIONS.md`
 3. `frontend/src/types/database.ts`
 4. 관련 기능의 query/action 파일
 5. 관련 Supabase migration 파일
@@ -41,7 +41,7 @@ DB나 Supabase 연동을 건드릴 때:
    - `npm run lint`
    - `npm run build`
 8. 가능하면 실제 Supabase mode에서 해당 화면을 smoke test합니다.
-9. 변경 내용이 데이터 연결 구조에 영향을 주면 `vault/SUPABASE_DATA_CONNECTIONS.md`와 이 문서를 업데이트합니다.
+9. 변경 내용이 데이터 연결 구조에 영향을 주면 `vault/99_old/SUPABASE_DATA_CONNECTIONS.md`와 이 문서를 업데이트합니다.
 
 ## 현재 특히 조심할 부분
 
@@ -106,7 +106,7 @@ DB나 Supabase 연동을 건드릴 때:
 
 ## 문서 업데이트 규칙
 
-- 새 테이블/컬럼/버킷을 추가하면 `vault/SUPABASE_DATA_CONNECTIONS.md`에 먼저 반영합니다.
+- 새 테이블/컬럼/버킷을 추가하면 `vault/99_old/SUPABASE_DATA_CONNECTIONS.md`에 먼저 반영합니다.
 - 반복되는 작업 절차나 주의점이 생기면 이 문서에 추가합니다.
 - 특정 기능의 연결 구조가 바뀌면 “기능별 주요 파일” 목록도 함께 갱신합니다.
 - 임시 우회나 fallback을 추가하면 이유와 제거 조건을 문서에 남깁니다.

@@ -35,14 +35,14 @@ npm run types:supabase    # DB 스키마 변경 후 database.generated.ts 재생
 
 ## Before touching DB/Supabase-related code
 
-먼저 **`vault/AGENT_MAINTENANCE_GUIDE.md`**를 읽어라 — Supabase 작업 체크리스트, 현재 조심할 부분(스키마 drift, fallback query, storage bucket 등), 기능별 주요 파일 목록이 정리되어 있다. 데이터 연결 구조 자체를 알아야 하면 **`vault/SUPABASE_DATA_CONNECTIONS.md`**를 함께 본다. 이 두 문서는 이 리포에서 가장 최신 상태로 유지되는 지도이므로, 코드를 직접 재탐색하기 전에 먼저 참고할 것.
+먼저 **`vault/99_old/AGENT_MAINTENANCE_GUIDE.md`**를 읽어라 — Supabase 작업 체크리스트, 현재 조심할 부분(스키마 drift, fallback query, storage bucket 등), 기능별 주요 파일 목록이 정리되어 있다. 데이터 연결 구조 자체를 알아야 하면 **`vault/99_old/SUPABASE_DATA_CONNECTIONS.md`**를 함께 본다. 이 두 문서는 이 리포에서 가장 최신 상태로 유지되는 지도이므로, 코드를 직접 재탐색하기 전에 먼저 참고할 것.
 
 ## Specs
 
-기능 스펙은 `vault/specs/`에 번호별로 나뉘어 있고, `vault/SPEC_INDEX.md`가 어떤 작업에 어떤 파일을 읽어야 하는지 매핑해준다. 작업 시작 전 `SPEC_INDEX.md`를 먼저 보고 필요한 spec만 골라 읽는다.
+기능 스펙은 `vault/99_old/specs/`에 번호별로 나뉘어 있고, `vault/99_old/SPEC_INDEX.md`가 어떤 작업에 어떤 파일을 읽어야 하는지 매핑해준다. 작업 시작 전 `SPEC_INDEX.md`를 먼저 보고 필요한 spec만 골라 읽는다.
 
 ## Repo conventions
 
 - 관리자 대시보드처럼 큰 파일(`frontend/src/app/admin/AdminDashboard.tsx` 등)은 전체를 읽지 말고 필요한 섹션 컴포넌트만 확인한다.
-- `vault/decisions.md`는 사용자 열람 전용 로그이며 에이전트가 읽거나 쓰는 파일이 아니다.
-- 데이터 연결 구조나 기능별 주요 파일이 바뀌면 `vault/SUPABASE_DATA_CONNECTIONS.md` / `vault/AGENT_MAINTENANCE_GUIDE.md`를 함께 업데이트한다.
+- `vault/99_old/decisions.md`는 사용자 열람 전용 로그이며 에이전트가 읽거나 쓰는 파일이 아니다.
+- 데이터 연결 구조나 기능별 주요 파일이 바뀌면 `vault/99_old/SUPABASE_DATA_CONNECTIONS.md` / `vault/99_old/AGENT_MAINTENANCE_GUIDE.md`를 함께 업데이트한다.
