@@ -6,18 +6,18 @@
 
 ## 전체 연결 구조
 
-앱은 `app/` 아래의 Next.js App Router 프로젝트입니다. Supabase는 Auth, PostgreSQL, RLS 기반 데이터 접근, Storage에 사용됩니다.
+앱은 `frontend/` 아래의 Next.js App Router 프로젝트입니다. Supabase는 Auth, PostgreSQL, RLS 기반 데이터 접근, Storage에 사용됩니다.
 
-실행 모드는 `app/src/lib/config.ts`에서 결정됩니다.
+실행 모드는 `frontend/src/lib/config.ts`에서 결정됩니다.
 
 - `NEXT_PUBLIC_SUPABASE_URL`이 비어 있거나 `http`로 시작하지 않으면 `IS_MOCK = true`가 되어 mock 데이터/쿠키를 사용합니다.
 - 실제 Supabase URL이 있으면 서버/브라우저 클라이언트가 Supabase 프로젝트에 연결됩니다.
 
 Supabase 클라이언트 생성 위치:
 
-- `app/src/lib/supabase/server.ts`: 서버 컴포넌트/서버 액션용 SSR 클라이언트. Next cookies와 anon key를 사용합니다.
-- `app/src/lib/supabase/client.ts`: 브라우저 클라이언트. 로그인/로그아웃 등 클라이언트 Auth 동작에 사용합니다.
-- `app/src/lib/actions/admin.ts`, `app/src/lib/actions/farewells.ts`: 관리자 쓰기 작업에서 현재 로그인 사용자가 `ADMIN_EMAILS`에 포함되는지 확인한 뒤 `SUPABASE_SERVICE_ROLE_KEY`로 service-role 클라이언트를 만듭니다.
+- `frontend/src/lib/supabase/server.ts`: 서버 컴포넌트/서버 액션용 SSR 클라이언트. Next cookies와 anon key를 사용합니다.
+- `frontend/src/lib/supabase/client.ts`: 브라우저 클라이언트. 로그인/로그아웃 등 클라이언트 Auth 동작에 사용합니다.
+- `frontend/src/lib/actions/admin.ts`, `frontend/src/lib/actions/farewells.ts`: 관리자 쓰기 작업에서 현재 로그인 사용자가 `ADMIN_EMAILS`에 포함되는지 확인한 뒤 `SUPABASE_SERVICE_ROLE_KEY`로 service-role 클라이언트를 만듭니다.
 
 필수 환경변수:
 
@@ -30,18 +30,18 @@ Supabase 클라이언트 생성 위치:
 
 Google OAuth 시작:
 
-- `app/src/app/login/LoginPageClient.tsx`
-- `app/src/components/polls/LoginModal.tsx`
+- `frontend/src/app/login/LoginPageClient.tsx`
+- `frontend/src/components/polls/LoginModal.tsx`
 
 OAuth 콜백:
 
-- `app/src/app/auth/callback/route.ts`에서 auth code를 session으로 교환합니다.
+- `frontend/src/app/auth/callback/route.ts`에서 auth code를 session으로 교환합니다.
 - 로그인 후 `public.users.display_name`을 조회합니다.
 - `display_name`이 없으면 `/onboarding`으로 보냅니다.
 
 세션 갱신/라우트 보호:
 
-- `app/src/middleware.ts`가 대부분의 라우트에서 Supabase SSR 클라이언트를 만들고 세션 쿠키를 갱신합니다.
+- `frontend/src/middleware.ts`가 대부분의 라우트에서 Supabase SSR 클라이언트를 만들고 세션 쿠키를 갱신합니다.
 - `/my`, `/onboarding`은 로그인 필요.
 - `/admin`은 로그인 + `ADMIN_EMAILS`에 포함된 이메일 필요.
 
@@ -49,7 +49,7 @@ OAuth 콜백:
 
 - `supabase/migrations/20260527155049_initial_schema.sql`에서 `auth.users` INSERT 시 `public.users`를 생성하는 트리거를 만듭니다.
 - `supabase/migrations/20260528_fix_user_trigger.sql`에서 신규 사용자의 `display_name`을 자동 생성하지 않고 `NULL`로 두도록 바꿉니다.
-- `app/src/lib/actions/onboarding.ts`가 온보딩/마이페이지 닉네임 저장 시 `public.users`를 upsert합니다.
+- `frontend/src/lib/actions/onboarding.ts`가 온보딩/마이페이지 닉네임 저장 시 `public.users`를 upsert합니다.
 
 ## 스키마 기준 파일
 
@@ -64,7 +64,7 @@ OAuth 콜백:
 - `supabase/migrations/20260529_player_status_poll_thumbnail.sql`
 - `supabase/migrations/20260529_public_profiles_storage_vote_guards.sql`
 
-TypeScript DB 타입은 `app/src/types/database.ts`에 수동으로 관리됩니다. Supabase에서 자동 생성되는 타입이 아니므로, 마이그레이션을 바꾸면 이 파일도 반드시 같이 수정해야 합니다.
+TypeScript DB 타입은 `frontend/src/types/database.ts`에 수동으로 관리됩니다. Supabase에서 자동 생성되는 타입이 아니므로, 마이그레이션을 바꾸면 이 파일도 반드시 같이 수정해야 합니다.
 
 ## 테이블별 연결
 
@@ -78,10 +78,10 @@ TypeScript DB 타입은 `app/src/types/database.ts`에 수동으로 관리됩니
 
 사용 위치:
 
-- OAuth 후 온보딩 여부 확인: `app/src/app/auth/callback/route.ts`
-- 헤더/마이페이지 프로필 표시: `app/src/components/layout/AppHeader.tsx`, `app/src/app/my/page.tsx`
-- 닉네임 저장: `app/src/lib/actions/onboarding.ts`
-- 댓글 작성자 join: `app/src/lib/queries/comments.ts`, `app/src/lib/queries/club.ts`, `app/src/lib/queries/farewells.ts`
+- OAuth 후 온보딩 여부 확인: `frontend/src/app/auth/callback/route.ts`
+- 헤더/마이페이지 프로필 표시: `frontend/src/components/layout/AppHeader.tsx`, `frontend/src/app/my/page.tsx`
+- 닉네임 저장: `frontend/src/lib/actions/onboarding.ts`
+- 댓글 작성자 join: `frontend/src/lib/queries/comments.ts`, `frontend/src/lib/queries/club.ts`, `frontend/src/lib/queries/farewells.ts`
 
 RLS:
 
@@ -98,10 +98,10 @@ RLS:
 
 사용 위치:
 
-- 투표 댓글 작성자 join: `app/src/lib/queries/comments.ts`
-- 선수 댓글 작성자 join: `app/src/lib/queries/club.ts`
-- 작별 댓글 작성자 join: `app/src/lib/queries/farewells.ts`
-- 댓글 작성 직후 반환 join: `app/src/lib/actions/farewells.ts`, `app/src/lib/actions/player-comments.ts`
+- 투표 댓글 작성자 join: `frontend/src/lib/queries/comments.ts`
+- 선수 댓글 작성자 join: `frontend/src/lib/queries/club.ts`
+- 작별 댓글 작성자 join: `frontend/src/lib/queries/farewells.ts`
+- 댓글 작성 직후 반환 join: `frontend/src/lib/actions/farewells.ts`, `frontend/src/lib/actions/player-comments.ts`
 
 동기화:
 
@@ -121,11 +121,11 @@ RLS:
 
 사용 위치:
 
-- 구단/스쿼드/선수 상세 조회: `app/src/lib/queries/club.ts`
-- 투표 목록/상세 join: `app/src/lib/queries/polls.ts`
-- 작별/이적 글 join: `app/src/lib/queries/farewells.ts`
-- 관리자 선수 생성/수정/활성화/비활성화: `app/src/lib/actions/admin.ts`
-- 작별 글 생성 시 `is_active` 또는 `squad_status` 변경: `app/src/lib/actions/farewells.ts`
+- 구단/스쿼드/선수 상세 조회: `frontend/src/lib/queries/club.ts`
+- 투표 목록/상세 join: `frontend/src/lib/queries/polls.ts`
+- 작별/이적 글 join: `frontend/src/lib/queries/farewells.ts`
+- 관리자 선수 생성/수정/활성화/비활성화: `frontend/src/lib/actions/admin.ts`
+- 작별 글 생성 시 `is_active` 또는 `squad_status` 변경: `frontend/src/lib/actions/farewells.ts`
 
 RLS:
 
@@ -147,9 +147,9 @@ RLS:
 
 사용 위치:
 
-- 구단 현황 조회: `app/src/lib/queries/club.ts`
-- 관리자 구단 현황 수정: `app/src/lib/actions/admin.ts`
-- 관리자 초기 데이터 조회: `app/src/app/admin/page.tsx`
+- 구단 현황 조회: `frontend/src/lib/queries/club.ts`
+- 관리자 구단 현황 수정: `frontend/src/lib/actions/admin.ts`
+- 관리자 초기 데이터 조회: `frontend/src/app/admin/page.tsx`
 
 주의:
 
@@ -165,9 +165,9 @@ RLS:
 
 사용 위치:
 
-- 투표 목록/상세 조회: `app/src/lib/queries/polls.ts`
-- 마이페이지 참여 투표 join: `app/src/app/my/page.tsx`
-- 관리자 투표 생성/상태 변경: `app/src/lib/actions/admin.ts`
+- 투표 목록/상세 조회: `frontend/src/lib/queries/polls.ts`
+- 마이페이지 참여 투표 join: `frontend/src/app/my/page.tsx`
+- 관리자 투표 생성/상태 변경: `frontend/src/lib/actions/admin.ts`
 
 관계:
 
@@ -189,10 +189,10 @@ RLS:
 
 사용 위치:
 
-- 투표 목록/상세 join: `app/src/lib/queries/polls.ts`
-- 댓글 작성자가 선택한 옵션 라벨 조회: `app/src/lib/queries/comments.ts`
-- 마이페이지 선택 옵션 join: `app/src/app/my/page.tsx`
-- 관리자 투표 생성 시 옵션 INSERT: `app/src/lib/actions/admin.ts`
+- 투표 목록/상세 join: `frontend/src/lib/queries/polls.ts`
+- 댓글 작성자가 선택한 옵션 라벨 조회: `frontend/src/lib/queries/comments.ts`
+- 마이페이지 선택 옵션 join: `frontend/src/app/my/page.tsx`
+- 관리자 투표 생성 시 옵션 INSERT: `frontend/src/lib/actions/admin.ts`
 
 RLS:
 
@@ -213,10 +213,10 @@ DB 제약:
 
 사용 위치:
 
-- 투표 제출: `app/src/lib/actions/vote.ts`
-- 투표 수/내 투표 조회: `app/src/lib/queries/polls.ts`
-- 댓글 작성자의 선택 옵션 라벨 조회: `app/src/lib/queries/comments.ts`
-- 마이페이지 참여 투표 조회: `app/src/app/my/page.tsx`
+- 투표 제출: `frontend/src/lib/actions/vote.ts`
+- 투표 수/내 투표 조회: `frontend/src/lib/queries/polls.ts`
+- 댓글 작성자의 선택 옵션 라벨 조회: `frontend/src/lib/queries/comments.ts`
+- 마이페이지 참여 투표 조회: `frontend/src/app/my/page.tsx`
 
 RLS:
 
@@ -240,8 +240,8 @@ RLS:
 
 사용 위치:
 
-- 댓글 조회: `app/src/lib/queries/comments.ts`
-- 댓글 작성: `app/src/lib/actions/comments.ts`
+- 댓글 조회: `frontend/src/lib/queries/comments.ts`
+- 댓글 작성: `frontend/src/lib/actions/comments.ts`
 
 RLS:
 
@@ -262,8 +262,8 @@ DB 제약:
 
 사용 위치:
 
-- 좋아요 수/내 좋아요 여부 조회: `app/src/lib/queries/comments.ts`
-- 좋아요 토글: `app/src/lib/actions/comments.ts`
+- 좋아요 수/내 좋아요 여부 조회: `frontend/src/lib/queries/comments.ts`
+- 좋아요 토글: `frontend/src/lib/actions/comments.ts`
 
 RLS:
 
@@ -283,9 +283,9 @@ RLS:
 
 사용 위치:
 
-- 최신/상세 조회: `app/src/lib/queries/farewells.ts`
-- 관리자 전체 조회: `app/src/app/admin/page.tsx`
-- 관리자 생성/공개 토글: `app/src/lib/actions/farewells.ts`
+- 최신/상세 조회: `frontend/src/lib/queries/farewells.ts`
+- 관리자 전체 조회: `frontend/src/app/admin/page.tsx`
+- 관리자 생성/공개 토글: `frontend/src/lib/actions/farewells.ts`
 
 RLS:
 
@@ -308,8 +308,8 @@ RLS:
 
 사용 위치:
 
-- 댓글 조회: `app/src/lib/queries/farewells.ts`
-- 댓글 작성: `app/src/lib/actions/farewells.ts`
+- 댓글 조회: `frontend/src/lib/queries/farewells.ts`
+- 댓글 작성: `frontend/src/lib/actions/farewells.ts`
 
 RLS:
 
@@ -326,8 +326,8 @@ RLS:
 
 사용 위치:
 
-- 댓글 조회: `app/src/lib/queries/club.ts`
-- 댓글 작성: `app/src/lib/actions/player-comments.ts`
+- 댓글 조회: `frontend/src/lib/queries/club.ts`
+- 댓글 작성: `frontend/src/lib/actions/player-comments.ts`
 
 RLS:
 
@@ -338,9 +338,9 @@ RLS:
 
 Update note 2026-05-30:
 
-- Admin season-stat writes run through `app/src/lib/actions/admin.ts` with the service-role client.
-- Admin season-stat reads in `app/src/app/admin/page.tsx` also use the service-role client so saved rows are visible to the admin dashboard even when public/RLS reads drift.
-- `app/src/app/admin/AdminDashboard.tsx` calls `router.refresh()` after a successful player edit so the client receives refreshed server props before the next edit.
+- Admin season-stat writes run through `frontend/src/lib/actions/admin.ts` with the service-role client.
+- Admin season-stat reads in `frontend/src/app/admin/page.tsx` also use the service-role client so saved rows are visible to the admin dashboard even when public/RLS reads drift.
+- `frontend/src/app/admin/AdminDashboard.tsx` calls `router.refresh()` after a successful player edit so the client receives refreshed server props before the next edit.
 - If `player_season_stats` is missing, `updatePlayerSeasonStats()` must return an error, not a success toast. Otherwise the UI can say "saved" while no row was written.
 
 역할: 선수별 시즌 기록입니다.
@@ -356,9 +356,9 @@ DB 제약:
 
 사용 위치:
 
-- 선수 상세 기록: `app/src/lib/queries/club.ts`
-- 작별 글 통산 기록 계산/상세 기록: `app/src/lib/queries/farewells.ts`, `app/src/lib/actions/farewells.ts`
-- 관리자 시즌 기록 수정: `app/src/lib/actions/admin.ts`
+- 선수 상세 기록: `frontend/src/lib/queries/club.ts`
+- 작별 글 통산 기록 계산/상세 기록: `frontend/src/lib/queries/farewells.ts`, `frontend/src/lib/actions/farewells.ts`
+- 관리자 시즌 기록 수정: `frontend/src/lib/actions/admin.ts`
 
 주의:
 
@@ -373,8 +373,8 @@ DB 제약:
 
 사용 위치:
 
-- 업로드: `app/src/lib/actions/admin.ts`
-- public URL 생성: `app/src/lib/actions/admin.ts`
+- 업로드: `frontend/src/lib/actions/admin.ts`
+- public URL 생성: `frontend/src/lib/actions/admin.ts`
 - 생성된 URL은 `players.photo_url` 또는 `polls.thumbnail_url`에 저장됩니다.
 
 주의:
@@ -387,9 +387,9 @@ DB 제약:
 
 진입점:
 
-- `app/src/app/page.tsx`
-- `app/src/lib/queries/polls.ts`
-- `app/src/lib/queries/farewells.ts`
+- `frontend/src/app/page.tsx`
+- `frontend/src/lib/queries/polls.ts`
+- `frontend/src/lib/queries/farewells.ts`
 
 사용 데이터:
 
@@ -402,11 +402,11 @@ DB 제약:
 
 진입점:
 
-- `app/src/app/polls/[id]/page.tsx`
-- `app/src/lib/queries/polls.ts`
-- `app/src/lib/queries/comments.ts`
-- `app/src/lib/actions/vote.ts`
-- `app/src/lib/actions/comments.ts`
+- `frontend/src/app/polls/[id]/page.tsx`
+- `frontend/src/lib/queries/polls.ts`
+- `frontend/src/lib/queries/comments.ts`
+- `frontend/src/lib/actions/vote.ts`
+- `frontend/src/lib/actions/comments.ts`
 
 사용 데이터:
 
@@ -422,10 +422,10 @@ DB 제약:
 
 진입점:
 
-- `app/src/app/login/LoginPageClient.tsx`
-- `app/src/app/auth/callback/route.ts`
-- `app/src/app/onboarding/page.tsx`
-- `app/src/lib/actions/onboarding.ts`
+- `frontend/src/app/login/LoginPageClient.tsx`
+- `frontend/src/app/auth/callback/route.ts`
+- `frontend/src/app/onboarding/page.tsx`
+- `frontend/src/lib/actions/onboarding.ts`
 
 사용 데이터:
 
@@ -441,8 +441,8 @@ DB 제약:
 
 진입점:
 
-- `app/src/app/my/page.tsx`
-- `app/src/components/my/MyPageClient.tsx`
+- `frontend/src/app/my/page.tsx`
+- `frontend/src/components/my/MyPageClient.tsx`
 
 사용 데이터:
 
@@ -450,15 +450,15 @@ DB 제약:
 
 쓰기:
 
-- 닉네임 수정은 `app/src/lib/actions/onboarding.ts`를 통해 `users` upsert.
+- 닉네임 수정은 `frontend/src/lib/actions/onboarding.ts`를 통해 `users` upsert.
 - 로그아웃은 브라우저 Supabase auth client 사용.
 
 ### 구단 페이지
 
 진입점:
 
-- `app/src/app/club/page.tsx`
-- `app/src/lib/queries/club.ts`
+- `frontend/src/app/club/page.tsx`
+- `frontend/src/lib/queries/club.ts`
 
 사용 데이터:
 
@@ -468,9 +468,9 @@ DB 제약:
 
 진입점:
 
-- `app/src/app/players/[id]/page.tsx`
-- `app/src/lib/queries/club.ts`
-- `app/src/lib/actions/player-comments.ts`
+- `frontend/src/app/players/[id]/page.tsx`
+- `frontend/src/lib/queries/club.ts`
+- `frontend/src/lib/actions/player-comments.ts`
 
 사용 데이터:
 
@@ -484,10 +484,10 @@ DB 제약:
 
 진입점:
 
-- `app/src/app/transfers/page.tsx`
-- `app/src/app/farewells/[id]/page.tsx`
-- `app/src/lib/queries/farewells.ts`
-- `app/src/lib/actions/farewells.ts`
+- `frontend/src/app/transfers/page.tsx`
+- `frontend/src/app/farewells/[id]/page.tsx`
+- `frontend/src/lib/queries/farewells.ts`
+- `frontend/src/lib/actions/farewells.ts`
 
 사용 데이터:
 
@@ -502,16 +502,16 @@ DB 제약:
 
 Update note 2026-05-30:
 
-- Admin transfer rows are edited through `updateFarewell()` in `app/src/lib/actions/farewells.ts`.
+- Admin transfer rows are edited through `updateFarewell()` in `frontend/src/lib/actions/farewells.ts`.
 - Admin transfer restore uses `restorePlayerFromFarewell()`: it sets `players.is_active = true`, `players.squad_status = 'first_team'`, and hides the related `farewells` row with `is_published = false` while keeping the history row.
 - The admin transfer tab no longer exposes the `is_published` toggle directly.
 
 진입점:
 
-- `app/src/app/admin/page.tsx`
-- `app/src/app/admin/AdminDashboard.tsx`
-- `app/src/lib/actions/admin.ts`
-- `app/src/lib/actions/farewells.ts`
+- `frontend/src/app/admin/page.tsx`
+- `frontend/src/app/admin/AdminDashboard.tsx`
+- `frontend/src/lib/actions/admin.ts`
+- `frontend/src/lib/actions/farewells.ts`
 
 사용 데이터:
 
@@ -528,11 +528,11 @@ Update note 2026-05-30:
 Supabase 스키마를 바꿀 때는 아래를 함께 처리하세요.
 
 1. `supabase/migrations/`에 새 마이그레이션을 추가하거나 기존 기준을 명확히 수정합니다.
-2. `app/src/types/database.ts`를 수동 업데이트합니다.
+2. `frontend/src/types/database.ts`를 수동 업데이트합니다.
    - 실제 Supabase 프로젝트와 연결된 환경에서는 `cd app && npm run types:supabase`로 generated type도 생성할 수 있습니다.
 3. 영향받는 테이블/컬럼을 코드에서 검색합니다.
-   - `rg -n "from\\('table_name'\\)|column_name" app/src`
-4. `app/src/lib/queries/*`, server actions, route 파일의 `select(...)` 문자열을 업데이트합니다.
+   - `rg -n "from\\('table_name'\\)|column_name" frontend/src`
+4. `frontend/src/lib/queries/*`, server actions, route 파일의 `select(...)` 문자열을 업데이트합니다.
 5. 호환용 fallback query가 있는 경우 fallback도 같이 수정합니다.
 6. RLS 정책을 기능별로 확인합니다.
    - 공개 읽기
@@ -548,7 +548,7 @@ Supabase 스키마를 바꿀 때는 아래를 함께 처리하세요.
 
 ## 현재 연동 오류 위험 지점
 
-- `app/src/types/database.ts`가 수동 관리라서 실제 DB와 쉽게 어긋날 수 있습니다.
+- `frontend/src/types/database.ts`가 수동 관리라서 실제 DB와 쉽게 어긋날 수 있습니다.
 - `players.squad_status`, `polls.thumbnail_url`처럼 일부 쿼리는 누락 컬럼 fallback을 가지고 있습니다. 부분 마이그레이션 상태를 견디게 해주지만, 스키마 drift를 숨길 수도 있습니다.
 - `player-photos` Storage 버킷은 `20260529_public_profiles_storage_vote_guards.sql`에서 public bucket으로 생성/보정합니다.
 - `club_status`, `player_season_stats`의 DB write policy가 넓게 열려 있습니다. 앱에서는 service role로 관리자 쓰기를 하지만 DB 정책 자체는 재검토가 필요합니다.

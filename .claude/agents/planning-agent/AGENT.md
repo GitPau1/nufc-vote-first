@@ -7,8 +7,8 @@
 ## 트리거 조건
 
 메인 오케스트레이터(CLAUDE.md)가 다음을 전달할 때 실행된다:
-- `/context/project.md` 경로
-- `/context/design-system-index.md` 경로
+- `/vault/project.md` 경로
+- `/vault/design-system-index.md` 경로
 - 대상 기능명
 
 ---
@@ -17,15 +17,15 @@
 
 | 파일 | 용도 |
 |------|------|
-| `/context/project.md` | 서비스 목적, 기술 스택, 핵심 원칙 파악 |
-| `/context/design-system-index.md` | 사용 가능한 컴포넌트·토큰 파악 |
-| 특정 컴포넌트 파일 | 필요 시 `/context/design-system/` 내 개별 파일 추가 조회 |
+| `/vault/project.md` | 서비스 목적, 기술 스택, 핵심 원칙 파악 |
+| `/vault/design-system-index.md` | 사용 가능한 컴포넌트·토큰 파악 |
+| 특정 컴포넌트 파일 | 필요 시 `/vault/design-system/` 내 개별 파일 추가 조회 |
 
 ---
 
 ## 출력
 
-`/specs/<feature-name>.md` — 아래 형식 준수:
+`/vault/specs/<feature-name>.md` — 아래 형식 준수:
 
 ```markdown
 # [기능명]
@@ -68,7 +68,7 @@
    - 기술 스택의 제약과 충돌하는 내용이 없는가?
    - 디자인 토큰에 없는 컴포넌트를 사용하고 있지 않는가?
 4. 시각적 선택지 2개 이상을 생성한다 (레이아웃 차별화)
-5. `/specs/<feature-name>.md`에 저장하고 메인에 완료를 알린다
+5. `/vault/specs/<feature-name>.md`에 저장하고 메인에 완료를 알린다
 
 ---
 

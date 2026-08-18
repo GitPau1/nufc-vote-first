@@ -20,7 +20,7 @@ PRD와 디자인 시스템 폴더를 읽어 프로젝트 SSOT 파일 두 개를 
 
 ## 출력
 
-### `/context/project.md`
+### `/vault/project.md`
 
 ```markdown
 # 서비스 개요
@@ -33,14 +33,14 @@ PRD와 디자인 시스템 폴더를 읽어 프로젝트 SSOT 파일 두 개를 
 ## DB / 인프라
 
 # 디자인 시스템
-## 원본 경로: /context/design-system/
-## 인덱스: /context/design-system-index.md
+## 원본 경로: /vault/design-system/
+## 인덱스: /vault/design-system-index.md
 
 # 기능 목록
 ## [ ] 기능명 — 미착수
 ```
 
-### `/context/design-system-index.md`
+### `/vault/design-system-index.md`
 
 디자인 시스템 폴더를 스캔하여 생성:
 - 사용 가능한 컴포넌트 목록 및 간략 설명

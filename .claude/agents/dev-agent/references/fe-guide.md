@@ -44,5 +44,5 @@
 
 ## 디자인 시스템 사용 규칙
 
-- 디자인 토큰은 `/context/design-system-index.md` 참조
+- 디자인 토큰은 `/vault/design-system-index.md` 참조
 - 커스텀 값 직접 입력 금지 — 토큰 변수 사용

@@ -8,15 +8,15 @@
 
 | 시점 | 검증 대상 |
 |------|----------|
-| 기획 에이전트가 명세 초안 완성 후 | `/specs/<feature>.md` |
-| 프로젝트 초기화 완료 후 | `/context/project.md` |
-| 개발 에이전트 완료 확인 시 | `/output/<feature>/` 파일 목록 |
+| 기획 에이전트가 명세 초안 완성 후 | `/vault/specs/<feature>.md` |
+| 프로젝트 초기화 완료 후 | `/vault/project.md` |
+| 개발 에이전트 완료 확인 시 | `/vault/output/<feature>/` 파일 목록 |
 
 ---
 
 ## 검증 규칙
 
-### 기능 명세서 (`/specs/<feature>.md`)
+### 기능 명세서 (`/vault/specs/<feature>.md`)
 필수 섹션:
 - `## 화면 목적`
 - `## 컴포넌트 목록`
@@ -25,7 +25,7 @@
 - `## API 엔드포인트`
 - `## 시각적 선택지`
 
-### 프로젝트 중심 파일 (`/context/project.md`)
+### 프로젝트 중심 파일 (`/vault/project.md`)
 필수 섹션:
 - `# 서비스 개요`
 - `# 기술 스택`

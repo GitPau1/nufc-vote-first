@@ -1,6 +1,6 @@
 # 스킬: decision-logger
 
-기획 사이클이 완료될 때마다 진행 내용을 `/context/decisions.md`에 사이클 단위로 추가 기록한다.
+기획 사이클이 완료될 때마다 진행 내용을 `/vault/decisions.md`에 사이클 단위로 추가 기록한다.
 
 ---
 
@@ -21,7 +21,7 @@
 
 ## 출력
 
-`/context/decisions.md`에 아래 형식으로 추가 기록:
+`/vault/decisions.md`에 아래 형식으로 추가 기록:
 
 ```markdown
 ---

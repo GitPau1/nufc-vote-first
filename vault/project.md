@@ -36,9 +36,9 @@
 # 디자인 시스템
 
 ## 원본 경로
-- 토큰·컴포넌트 패턴: `docs/specs/11-design-system.md`
+- 토큰·컴포넌트 패턴: `vault/specs/11-design-system.md`
 - LDSG 연구 자료: `design.md`
-- 인덱스: `context/design-system-index.md`
+- 인덱스: `vault/design-system-index.md`
 
 ## 브랜딩 요약
 - Primary: `#41b6e6` (Newcastle 하늘색)

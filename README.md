@@ -21,7 +21,7 @@ Newcastle United 팬들을 위한 실시간 투표 플랫폼.
 
 ```bash
 # 의존성 설치
-cd app
+cd frontend
 npm install
 
 # 환경 변수 설정
@@ -45,7 +45,7 @@ supabase db push
 
 ## 환경 변수
 
-`app/.env.example` 참고:
+`frontend/.env.example` 참고:
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=
@@ -57,13 +57,13 @@ NEXT_PUBLIC_MIXPANEL_TOKEN=
 ## 프로젝트 구조
 
 ```
-├── app/          # Next.js 앱 (Vercel root directory)
+├── frontend/     # Next.js 앱 (Vercel root directory)
 │   └── src/
 │       ├── app/          # App Router 페이지
 │       ├── components/   # React 컴포넌트
 │       ├── lib/          # Supabase 클라이언트, 쿼리, Server Actions
 │       └── types/        # TypeScript 타입
-├── docs/         # 기획/설계 문서 (PRD, 스펙)
-└── supabase/     # DB 마이그레이션
+├── vault/        # Obsidian 볼트 — 기획/설계 문서, 노트, 프로토타입
+└── supabase/     # DB 마이그레이션 (신규 backend로 이전 예정)
     └── migrations/
 ```

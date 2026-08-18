@@ -1,8 +1,8 @@
 # 디자인 시스템 인덱스
 
-> 전체 상세: `docs/specs/11-design-system.md`
+> 전체 상세: `vault/specs/11-design-system.md`
 > LDSG 원본 연구: `design.md`
-> 와이어프레임 레퍼런스: `wireframes/prototype.html`
+> 와이어프레임 레퍼런스: `vault/prototypes/prototype.html`
 
 ---
 
