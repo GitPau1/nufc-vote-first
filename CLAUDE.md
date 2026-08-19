@@ -19,7 +19,7 @@ npm run test:query-cache
 npm run test:middleware-auth
 npm run test:header-auth
 npm run test:prefetch-policy
-npm run test:images
+npm run test:images   # 유일하게 --experimental-strip-types로 실행 (.ts 파일 직접 실행)
 
 npm run types:supabase    # DB 스키마 변경 후 database.generated.ts 재생성 (supabase CLI 필요)
 ```
