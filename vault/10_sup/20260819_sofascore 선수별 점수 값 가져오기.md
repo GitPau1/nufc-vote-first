@@ -1,0 +1,185 @@
+
+## 특정 구단 선수들의 sofascore 점수 가져오기
+
+### 1. 구단 team ID
+/football/team/newcastle-united/39
+뉴캐슬 team ID = 39
+
+### 2. 구단 경기 목록 조회
+/api/v1/team/39/events/last/0
+(제일 끝은 페이지넘버인듯)
+한 페이지에 30경기 씩 불러옴
+
+### 3. 각 경기 eventid
+`events` 배열에서 `id`만 뽑기
+
+### 4. lineups 확인
+/api/v1/event/{EVENT_ID}/lineups
+경기에 해당하는 ID 넣기
+
+### 5. 해당 구단 선수 ratings 추출
+home / away 홈경기인지 원정경기인지 판단 반드시 필요!!
+players 배열 내 
+player 항목 하위에 이름
+statistics 항목 하위에 rating
+
+```typescript
+Deno.serve(async () => {
+  try {
+    const TEAM_ID = 39; // Newcastle United
+    const MATCH_LIMIT = 23;
+
+    // 1) 최근 경기 목록
+    const eventsRes = await fetch(
+      `https://api.sofascore.com/api/v1/team/${TEAM_ID}/events/last/0`,
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
+    if (!eventsRes.ok) {
+      throw new Error(
+        `Failed to fetch events: ${eventsRes.status}`
+      );
+    }
+
+    const eventsData = await eventsRes.json();
+
+    // 2) 종료된 경기 중 최근 23경기
+    const events = (eventsData.events ?? [])
+      .filter((event: any) => event.status?.type === "finished")
+      .slice(0, MATCH_LIMIT);
+
+    const allRatings: any[] = [];
+
+    // 3) 경기별 lineup 조회
+    for (const event of events) {
+      const lineupRes = await fetch(
+        `https://api.sofascore.com/api/v1/event/${event.id}/lineups`,
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
+      // lineup이 없는 경기라면 건너뜀
+      if (!lineupRes.ok) {
+        console.warn(
+          `Skipping event ${event.id}: ${lineupRes.status}`
+        );
+        continue;
+      }
+
+      const lineupData = await lineupRes.json();
+
+      // home / away 선수 합치기
+      const players = [
+        ...(lineupData.home?.players ?? []),
+        ...(lineupData.away?.players ?? []),
+      ];
+
+      // 해당 팀 선수 + rating 있는 선수만
+      const teamPlayers = players
+        .filter((p: any) => p.teamId === TEAM_ID)
+        .filter((p: any) => p.statistics?.rating != null);
+
+      const isHome = event.homeTeam?.id === TEAM_ID;
+
+      for (const p of teamPlayers) {
+        allRatings.push({
+          event_id: event.id,
+
+          tournament:
+            event.tournament?.name ?? null,
+
+          opponent: isHome
+            ? event.awayTeam?.name
+            : event.homeTeam?.name,
+
+          home_team:
+            event.homeTeam?.name ?? null,
+
+          away_team:
+            event.awayTeam?.name ?? null,
+
+          is_home: isHome,
+
+          start_timestamp:
+            event.startTimestamp ?? null,
+
+          player_id:
+            p.player?.id ?? null,
+
+          player_name:
+            p.player?.name ?? null,
+
+          short_name:
+            p.player?.shortName ?? null,
+
+          position:
+            p.position ??
+            p.player?.position ??
+            null,
+
+          shirt_number:
+            p.shirtNumber ?? null,
+
+          substitute:
+            p.substitute ?? false,
+
+          minutes_played:
+            p.statistics?.minutesPlayed ?? null,
+
+          rating:
+            p.statistics?.rating ?? null,
+
+          goals:
+            p.statistics?.goals ?? 0,
+
+          assists:
+            p.statistics?.goalAssist ?? 0,
+        });
+      }
+    }
+
+    return new Response(
+      JSON.stringify(
+        {
+          team_id: TEAM_ID,
+          requested_matches: MATCH_LIMIT,
+          fetched_matches: events.length,
+          player_rating_rows: allRatings.length,
+          data: allRatings,
+        },
+        null,
+        2
+      ),
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  } catch (error) {
+    console.error(error);
+
+    return new Response(
+      JSON.stringify({
+        error:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
+});
+```
