@@ -1,12 +1,12 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { ChevronLeft, Users } from 'lucide-react'
+import { Users } from 'lucide-react'
 import type { PollDetail, VoteCountMap } from '@/lib/queries/polls'
 import type { CommentItem } from '@/lib/queries/comments'
 import { trackEvent } from '@/lib/analytics/mixpanel'
 import { CommentsSection } from './CommentsSection'
+import { PollPageHeader } from './PollPageHeader'
 import { IS_MOCK } from '@/lib/config'
 import { cn } from '@/lib/utils'
 import type { PlayerRow, PollOptionRow } from '@/types/database'
@@ -54,7 +54,6 @@ function getOptionThumb(option: PollOptionRow, optionPlayers?: Record<string, Pl
 }
 
 export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultViewProps) {
-  const router = useRouter()
   const options  = poll.poll_options
   const counts   = options.map(o => voteCounts[o.id] ?? 0)
   const total    = counts.reduce((a, b) => a + b, 0)
@@ -85,21 +84,9 @@ export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultVie
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <PollPageHeader />
       <div className="flex-1 overflow-y-auto hide-scrollbar animate-enter">
-        <div className="bg-white">
-          <header className="mx-auto flex h-[62px] w-full max-w-[480px] items-center px-4">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="flex items-center gap-1.5 text-label-1-normal font-semibold text-muted-foreground transition-opacity active:opacity-50"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              돌아가기
-            </button>
-          </header>
-        </div>
-
-        <main className="mx-auto flex w-full max-w-[480px] flex-col gap-3 px-4 pb-8 pt-4">
+        <main className="mx-auto flex w-full max-w-detail flex-col gap-3 px-4 pb-8 pt-4">
           <section className="overflow-hidden rounded-lg border border-border bg-surface">
             <img
               src={coverUrl}

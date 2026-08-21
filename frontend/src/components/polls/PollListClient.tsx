@@ -128,16 +128,25 @@ export function PollListClient({ initialPolls, headerRight }: PollListClientProp
   }
 
   return (
-    <div className="px-5 pt-4 pb-10 animate-enter">
+    <div className="mx-auto max-w-content px-5 pt-4 pb-10 animate-enter">
       {featuredPoll && <PollHeroCard poll={featuredPoll} />}
 
       {listPolls.length > 0 ? (
-        <div className="mt-3 overflow-hidden rounded-lg border border-border bg-surface p-px">
-          <div className="px-3 pt-4">
+        <div className="mt-3 overflow-hidden rounded-lg border border-border bg-surface p-px sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0">
+          <div className="px-3 pt-4 sm:px-0 sm:pt-0">
             <PollTabs activeTab={activeTab} ongoingCount={ongoing.length} closedCount={closed.length} onChange={setActiveTab} />
           </div>
-          <div className="divide-y divide-border">
+          {/* 모바일: 기존 한 줄 리스트(divide-y) 그대로 */}
+          <div className="divide-y divide-border sm:hidden">
             {listPolls.map(p => <PollCard key={p.id} poll={p} />)}
+          </div>
+          {/* 데스크탑(≥640px): 카드 그리드 — 컬럼 수는 Tailwind 기본 breakpoint 재사용(임시 원칙) */}
+          <div className="hidden sm:grid sm:grid-cols-2 sm:gap-4 sm:pt-4 lg:grid-cols-3">
+            {listPolls.map(p => (
+              <div key={p.id} className="overflow-hidden rounded-lg border border-border bg-surface">
+                <PollCard poll={p} />
+              </div>
+            ))}
           </div>
         </div>
       ) : (
@@ -222,7 +231,7 @@ function PollTabs({
             key={tab.id}
             type="button"
             onClick={() => onChange(tab.id)}
-            className={`h-8 flex-1 border-b px-2.5 pb-3 text-center text-label-2 font-bold transition-colors ${selected ? 'border-primary text-primary' : 'border-border text-gray-3 hover:text-gray-2'}`}
+            className={`h-8 flex-1 border-b px-2.5 pb-3 text-center text-label-2 font-bold transition-colors ${selected ? 'border-primary text-primary' : 'border-border text-gray-3 hover:text-muted-foreground'}`}
           >
             {tab.label}
           </button>

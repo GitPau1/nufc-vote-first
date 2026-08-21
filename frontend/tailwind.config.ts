@@ -65,6 +65,11 @@ const config = {
         lg:   "var(--r-lg)",
         pill: "var(--r-pill)",
       },
+      maxWidth: {
+        shell:   "var(--shell-w)",
+        content: "var(--content-w)",
+        detail:  "var(--detail-w)",
+      },
       boxShadow: {
         w100: "var(--sh-w100)",
         w200: "var(--sh-w200)",

@@ -10,6 +10,7 @@ import { Loader2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { StickyActionBar } from '@/components/layout/StickyActionBar'
 import { ConfirmModal } from './ConfirmModal'
 import { LoginModal } from './LoginModal'
 import { PollPageHeader } from './PollPageHeader'
@@ -77,7 +78,7 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
       <PollPageHeader />
 
       {/* 스크롤 영역 */}
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-[88px] animate-enter">
+      <div className="mx-auto flex-1 w-full max-w-detail overflow-y-auto hide-scrollbar pb-[88px] animate-enter sm:flex-none sm:overflow-visible sm:pb-0">
 
         {/* 커버 이미지 — 칩 → 제목 순서로 오버레이 */}
         <div className="relative h-[160px] overflow-hidden">
@@ -189,7 +190,7 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
       </div>
 
       {/* 하단 고정 제출 버튼 */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] p-4 bg-white/95 backdrop-blur border-t z-30">
+      <StickyActionBar>
         <Button
           className="w-full h-12 text-label-1-normal font-bold"
           disabled={!selectedId || isPending}
@@ -200,7 +201,7 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
             : '투표하기'
           }
         </Button>
-      </div>
+      </StickyActionBar>
 
       {/* 모달 */}
       {selectedOption && (

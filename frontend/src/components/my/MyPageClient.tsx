@@ -76,7 +76,7 @@ export function MyPageClient({
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="px-4 pt-6 pb-10 flex flex-col gap-5">
+      <div className="mx-auto max-w-shell px-4 pt-6 pb-10 flex flex-col gap-5">
 
         <div>
           <p className="text-caption-1 font-semibold text-muted-foreground uppercase mb-3">

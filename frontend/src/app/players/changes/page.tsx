@@ -28,7 +28,7 @@ export default async function PlayerRatingChangesPage() {
         changedPlayerCount={week?.changes.length ?? 0}
       />
       <AppHeader showAuth={false} />
-      <main className="min-h-[calc(100vh-62px)] bg-background px-4 pb-24 pt-4">
+      <main className="mx-auto min-h-[calc(100vh-62px)] max-w-shell bg-background px-4 pb-24 pt-4">
         <div className="mb-3">
           <Link href="/players" className="inline-flex items-center gap-1.5 text-label-1-normal font-semibold text-muted-foreground">
             <ChevronLeft className="h-4 w-4" />
@@ -68,7 +68,7 @@ export default async function PlayerRatingChangesPage() {
                         {change.position} · {change.wins}승 {change.losses}패
                       </p>
                     </div>
-                    <span className="text-center text-label-1-normal font-semibold text-gray-2">
+                    <span className="text-center text-label-1-normal font-semibold text-muted-foreground">
                       {change.previousOverall}
                     </span>
                     <span className="text-center text-label-1-normal font-semibold text-foreground">

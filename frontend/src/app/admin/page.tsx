@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { BarChart3, PlusCircle } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { Button } from '@/components/ui/button'
+import { RequireAuthModal } from '@/components/auth/RequireAuthModal'
 import { getHeaderAuth } from '@/lib/actions/auth'
 
 export const dynamic = 'force-dynamic'
@@ -10,13 +11,20 @@ export const dynamic = 'force-dynamic'
 export default async function AdminPage() {
   const auth = await getHeaderAuth()
 
-  if (!auth) redirect('/login')
+  if (!auth) {
+    return (
+      <>
+        <AppHeader />
+        <RequireAuthModal />
+      </>
+    )
+  }
   if (!auth.isAdmin) redirect('/')
 
   return (
     <>
       <AppHeader auth={auth} />
-      <main className="min-h-[calc(100vh-62px)] bg-background px-4 pt-6 pb-24">
+      <main className="mx-auto min-h-[calc(100vh-62px)] max-w-shell bg-background px-4 pt-6 pb-24">
         <div className="mb-5">
           <p className="text-heading-2 font-black text-foreground">관리자 페이지</p>
           <p className="mt-1 text-label-2 text-muted-foreground">

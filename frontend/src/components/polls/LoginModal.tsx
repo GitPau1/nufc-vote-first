@@ -8,12 +8,11 @@ import { IS_MOCK } from '@/lib/config'
 import { mockLogin } from '@/lib/actions/auth'
 import { getSourcePage, trackEvent } from '@/lib/analytics/mixpanel'
 import {
-  Sheet,
-  SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet'
+import { ActionSheet } from '@/components/ui/action-sheet'
 import { Button } from '@/components/ui/button'
 
 interface LoginModalProps {
@@ -100,59 +99,45 @@ export function LoginModal({ open, onClose, intent = 'prompt', triggerAction = '
   }
 
   return (
-    <Sheet open={open} onOpenChange={o => { if (!o) onClose() }}>
-      <SheetContent
-        side="bottom"
-        className="left-1/2 right-auto w-full max-w-[480px] -translate-x-1/2 rounded-t-lg border-t-0 pb-10 [&>button]:hidden"
-      >
-        {/* 드래그 핸들 */}
-        <div className="mx-auto w-10 h-1.5 rounded-full bg-muted mb-6" />
-
-        <div className={`text-center ${isDirect ? 'mb-4' : 'mb-6'}`}>
-          {!isDirect && (
-            <div className="w-14 h-14 rounded-full bg-primary-dim flex items-center justify-center mx-auto mb-4">
-              <Lock className="h-6 w-6 text-primary" />
-            </div>
-          )}
-          <SheetHeader>
-            <SheetTitle className="text-body-1-normal">
-              {isDirect ? 'NUFCVOTE 로그인' : '로그인이 필요해요'}
-            </SheetTitle>
-            <SheetDescription className={isDirect ? 'sr-only' : undefined}>
-              {isDirect
-                ? 'Google 계정으로 로그인합니다'
-                : IS_MOCK ? '데모 로그인으로 바로 참여할 수 있어요' : '투표에 참여하려면 로그인이 필요합니다'}
-            </SheetDescription>
-          </SheetHeader>
+    <ActionSheet open={open} onOpenChange={o => { if (!o) onClose() }}>
+      <div className="text-center mb-6">
+        <div className="w-14 h-14 rounded-full bg-primary-dim flex items-center justify-center mx-auto mb-4">
+          <Lock className="h-6 w-6 text-primary" />
         </div>
+        <SheetHeader>
+          <SheetTitle className="text-body-1-normal">로그인이 필요해요</SheetTitle>
+          <SheetDescription>
+            {IS_MOCK ? '데모 로그인으로 바로 참여할 수 있어요' : '투표에 참여하려면 로그인이 필요합니다'}
+          </SheetDescription>
+        </SheetHeader>
+      </div>
 
-        <Button
-          variant="outline"
-          className="w-full h-12 font-semibold gap-2 mb-2"
-          onClick={handleLogin}
-        >
-          {IS_MOCK ? (
-            <>
-              <span className="text-headline-1">⚡</span>
-              데모로 바로 로그인
-            </>
-          ) : (
-            <>
-              <GoogleIcon />
-              Google로 로그인
-            </>
-          )}
-        </Button>
+      <Button
+        variant="outline"
+        className="w-full h-12 font-semibold gap-2 mb-2"
+        onClick={handleLogin}
+      >
+        {IS_MOCK ? (
+          <>
+            <span className="text-headline-1">⚡</span>
+            데모로 바로 로그인
+          </>
+        ) : (
+          <>
+            <GoogleIcon />
+            Google로 로그인
+          </>
+        )}
+      </Button>
 
-        <Button
-          variant="ghost"
-          className="w-full text-muted-foreground"
-          onClick={onClose}
-        >
-          닫기
-        </Button>
-      </SheetContent>
-    </Sheet>
+      <Button
+        variant="ghost"
+        className="w-full text-muted-foreground"
+        onClick={onClose}
+      >
+        닫기
+      </Button>
+    </ActionSheet>
   )
 }
 

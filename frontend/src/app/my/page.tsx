@@ -1,8 +1,9 @@
-import { redirect } from 'next/navigation'
 import { IS_MOCK } from '@/lib/config'
 import { MOCK_PARTICIPATED } from '@/lib/mock/data'
 import { getEffectivePollStatus } from '@/lib/polls/status'
+import { AppHeader } from '@/components/layout/AppHeader'
 import { MyPageClient } from '@/components/my/MyPageClient'
+import { RequireAuthModal } from '@/components/auth/RequireAuthModal'
 
 type PollStatusForMy = 'scheduled' | 'active' | 'closed'
 
@@ -10,13 +11,16 @@ export default async function MyPage() {
   // ── 목 모드: 데모 프로필 ─────────────────────────────────────
   if (IS_MOCK) {
     return (
-      <MyPageClient
-        displayName="뉴캐슬 팬"
-        email="fan@nufcvote.com"
-        avatarUrl={null}
-        participatedPolls={MOCK_PARTICIPATED}
-        isMockMode={true}
-      />
+      <>
+        <AppHeader mobileBack />
+        <MyPageClient
+          displayName="뉴캐슬 팬"
+          email="fan@nufcvote.com"
+          avatarUrl={null}
+          participatedPolls={MOCK_PARTICIPATED}
+          isMockMode={true}
+        />
+      </>
     )
   }
 
@@ -25,7 +29,14 @@ export default async function MyPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/')
+  if (!user) {
+    return (
+      <>
+        <AppHeader mobileBack />
+        <RequireAuthModal />
+      </>
+    )
+  }
 
   // public.users.display_name 우선, 없으면 Google 이름 폴백
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -81,12 +92,15 @@ export default async function MyPage() {
     .sort((a, b) => new Date(b.votedAt).getTime() - new Date(a.votedAt).getTime())
 
   return (
-    <MyPageClient
-      displayName={displayName}
-      email={email}
-      avatarUrl={avatarUrl}
-      participatedPolls={participatedPolls}
-      isMockMode={false}
-    />
+    <>
+      <AppHeader mobileBack />
+      <MyPageClient
+        displayName={displayName}
+        email={email}
+        avatarUrl={avatarUrl}
+        participatedPolls={participatedPolls}
+        isMockMode={false}
+      />
+    </>
   )
 }

@@ -16,6 +16,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { Button } from '@/components/ui/button'
 
 type FreeOption = { label: string; description: string; imageUrl: string }
 type CreatePollType = Extract<PollType, 'subject_options' | 'question_targets' | 'free_choice' | 'overall_rating'>
@@ -359,9 +360,9 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
         )}
 
         {message && <p className="rounded-sm bg-negative-dim px-3 py-2 text-caption-1 font-semibold text-negative">{message}</p>}
-        <button type="submit" disabled={isPending} className="btn-primary">
+        <Button type="submit" disabled={isPending} className="w-full h-12">
           {isPending ? '생성 중...' : '투표 생성'}
-        </button>
+        </Button>
       </form>
 
       <PlayerPickerSheet
@@ -447,8 +448,7 @@ function PlayerPickerSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        style={{ left: 'max(0px, calc(50% - 240px))' }}
-        className="right-auto flex h-[82vh] max-h-[82vh] w-full max-w-[480px] flex-col overflow-hidden rounded-t-lg p-0"
+        className="flex h-[82vh] max-h-[82vh] flex-col overflow-hidden p-0"
       >
         <SheetHeader className="sr-only">
           <SheetTitle className="text-body-1-normal font-black">선수 선택</SheetTitle>
@@ -524,9 +524,9 @@ function PlayerPickerSheet({
         </div>
         {mode === 'multiple' && (
           <div className="border-t border-border bg-surface px-4 py-3">
-            <button type="button" onClick={onDone} className="btn-primary">
+            <Button type="button" onClick={onDone} className="w-full h-12">
               {selectedIds.length}명 선택 완료
-            </button>
+            </Button>
           </div>
         )}
       </SheetContent>

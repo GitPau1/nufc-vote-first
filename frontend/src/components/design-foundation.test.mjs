@@ -51,10 +51,12 @@ test('app and poll headers use color and typography foundations', () => {
   assert.match(appHeader, /border-b border-border/)
   assert.match(appHeader, /text-title-3/)
   assert.match(appHeader, /text-foreground/)
+  assert.match(appHeader, /text-label-1-normal/) // 모바일 돌아가기 버튼
   assert.doesNotMatch(appHeader, /border-\[#e1e7ef\]|text-\[#2b2b2b\]|text-\[24px\]|leading-\[22\.5px\]/)
 
-  assert.match(pollHeader, /border-b border-border/)
-  assert.match(pollHeader, /text-label-1-normal/)
+  // PollPageHeader는 이제 AppHeader(mobileBack 모드)의 얇은 래퍼다 — 색상/타이포는
+  // AppHeader 쪽에서 이미 검증되므로, 여기서는 제대로 위임하는지만 확인한다.
+  assert.match(pollHeader, /<AppHeader mobileBack/)
   assert.doesNotMatch(pollHeader, /border-\[#e1e7ef\]/)
 })
 
@@ -128,11 +130,11 @@ test('primary tab surfaces do not use arbitrary typography classes', () => {
 test('application source does not use arbitrary typography or hardcoded visual colors', () => {
   const files = [
     'app/admin/page.tsx',
-    'app/login/LoginPageClient.tsx',
     'app/my/feedback/page.tsx',
-    'app/onboarding/page.tsx',
+    'app/onboarding/OnboardingForm.tsx',
     'app/players/changes/page.tsx',
     'app/polls/create/page.tsx',
+    'components/auth/RequireAuthModal.tsx',
     'components/images/BannerImageInput.tsx',
     'components/layout/UserMenu.tsx',
     'components/layout/LoginButton.tsx',

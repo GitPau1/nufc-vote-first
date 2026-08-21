@@ -79,12 +79,12 @@ function PollFeedCard({ poll }: { poll: PollListItem }) {
               </span>
               <div className="pt-1.5">
                 <p className="truncate text-body-2-normal font-bold text-foreground">{poll.title}</p>
-                <p className="mt-0.5 line-clamp-1 text-caption-1 text-gray-2">
+                <p className="mt-0.5 line-clamp-1 text-caption-1 text-muted-foreground">
                   {poll.description || getOptionPreview(poll)}
                 </p>
               </div>
             </div>
-            <span className="inline-flex items-center gap-1 text-caption-2 text-gray-2">
+            <span className="inline-flex items-center gap-1 text-caption-2 text-muted-foreground">
               <Users className="h-3.5 w-3.5" />
               {poll.vote_count.toLocaleString()}명
             </span>
