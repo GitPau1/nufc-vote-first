@@ -13,7 +13,7 @@ test('admin route exists and links to remaining poll admin workflows', () => {
   const file = source('app/admin/page.tsx')
 
   assert.match(file, /getHeaderAuth/)
-  assert.match(file, /redirect\('\/login'\)/)
+  assert.match(file, /RequireAuthModal/)
   assert.match(file, /redirect\('\/'\)/)
   assert.match(file, /href="\/polls\/create"/)
   assert.match(file, /href="\/polls"/)

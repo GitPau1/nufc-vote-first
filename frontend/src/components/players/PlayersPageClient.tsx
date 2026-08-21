@@ -26,7 +26,7 @@ const positionTone: Record<string, string> = {
   DEF: 'bg-positive-dim text-positive',
   MID: 'bg-primary-dim text-primary-dark',
   FWD: 'bg-negative-dim text-negative',
-  MGR: 'bg-disabled text-gray-2',
+  MGR: 'bg-disabled text-muted-foreground',
 }
 
 export function PlayersPageClient({ players }: PlayersPageClientProps) {
@@ -41,7 +41,7 @@ export function PlayersPageClient({ players }: PlayersPageClientProps) {
   }, [normalizedQuery, players])
 
   return (
-    <div className="px-5 pt-4 pb-10 animate-enter">
+    <div className="mx-auto max-w-shell px-5 pt-4 pb-10 animate-enter">
       {players.length >= 2 && <PickOneSection players={players} />}
 
       <div className="mb-3 flex h-10 items-center gap-2 rounded-md border border-border bg-surface px-3">
@@ -276,7 +276,7 @@ function PickOneSection({ players }: { players: PlayerListItem[] }) {
           여러분의 선택은?
         </p>
       </div>
-      <div className="flex items-center justify-center px-4 pt-3 text-caption-1 font-semibold text-gray-2">
+      <div className="flex items-center justify-center px-4 pt-3 text-caption-1 font-semibold text-muted-foreground">
         {getRemainingChoiceLabel(choiceStatusLoaded, remainingChoices)}
       </div>
 
@@ -309,7 +309,7 @@ function PickOneSection({ players }: { players: PlayerListItem[] }) {
         />
       </div>
 
-      <p className="px-4 pb-4 pt-2 text-center text-caption-1 text-gray-2">
+      <p className="px-4 pb-4 pt-2 text-center text-caption-1 text-muted-foreground">
         {feedback ||
           (phase === 'centered'
           ? '한 번 더 누르면 다음 선택으로 넘어갑니다.'
@@ -435,12 +435,12 @@ function PickOneCard({
 }
 
 function PlayerRow({ player }: { player: PlayerListItem }) {
-  const tone = positionTone[player.position] ?? 'bg-disabled text-gray-2'
+  const tone = positionTone[player.position] ?? 'bg-disabled text-muted-foreground'
 
   return (
     <div className="flex h-[68px] items-center gap-2.5 px-3.5 py-2.5">
       <div className="relative h-6 w-6 flex-shrink-0">
-        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-label-2 font-semibold text-gray-2">
+        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-label-2 font-semibold text-muted-foreground">
           {player.rank}
         </span>
       </div>
@@ -457,7 +457,7 @@ function PlayerRow({ player }: { player: PlayerListItem }) {
         <p className="truncate text-label-1-reading font-semibold text-foreground">
           {player.name}
         </p>
-        <div className="flex items-center gap-3 text-caption-2 text-gray-2">
+        <div className="flex items-center gap-3 text-caption-2 text-muted-foreground">
           <span>{player.position}</span>
           {player.seasons && <span className="truncate">{player.seasons}</span>}
         </div>

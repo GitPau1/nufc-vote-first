@@ -48,15 +48,16 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // 로그인 필수 경로 → 미로그인 시 /login으로 리다이렉트
+  // 로그인 필수 경로 → /login 페이지가 없어졌으므로 리다이렉트하지 않는다.
+  // 미로그인 상태로 통과시키고, 각 페이지가 서버에서 auth를 확인해 로그인 모달을 직접 띄운다.
   if (!user && requiresAuth) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return supabaseResponse
   }
 
-  // /admin → 관리자만 허용
+  // /admin → 관리자만 허용. 미로그인은 페이지의 로그인 모달에 맡기고,
+  // 로그인은 했지만 관리자가 아닌 경우만 홈으로 돌려보낸다(로그인 모달로 해결되지 않는 권한 문제).
   if (requiresAdmin) {
-    if (!user) return NextResponse.redirect(new URL('/login', request.url))
-    if (!isAdmin(user.email)) return NextResponse.redirect(new URL('/', request.url))
+    if (user && !isAdmin(user.email)) return NextResponse.redirect(new URL('/', request.url))
   }
 
   return supabaseResponse

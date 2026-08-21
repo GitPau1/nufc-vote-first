@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 import { IS_MOCK } from '@/lib/config'
 import { PollPageHeader } from '@/components/polls/PollPageHeader'
 import { MyFeedbackForm } from '@/components/my/MyFeedbackForm'
+import { RequireAuthModal } from '@/components/auth/RequireAuthModal'
 
 export default async function MyFeedbackPage() {
   let isLoggedIn = false
@@ -17,12 +17,19 @@ export default async function MyFeedbackPage() {
     isLoggedIn = Boolean(user)
   }
 
-  if (!isLoggedIn) redirect('/login?next=/my/feedback')
+  if (!isLoggedIn) {
+    return (
+      <>
+        <PollPageHeader />
+        <RequireAuthModal />
+      </>
+    )
+  }
 
   return (
     <>
       <PollPageHeader />
-      <main className="min-h-[calc(100vh-62px)] bg-background px-4 pt-6 pb-24">
+      <main className="mx-auto min-h-[calc(100vh-62px)] max-w-detail bg-background px-4 pt-6 pb-24">
         <div className="mb-5">
           <h1 className="text-heading-2 font-black text-foreground">피드백 남기기</h1>
           <p className="mt-1 text-label-2 text-muted-foreground">

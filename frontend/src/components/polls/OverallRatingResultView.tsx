@@ -41,7 +41,7 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
     <div className="flex min-h-screen flex-col">
       <PollPageHeader />
 
-      <div className="flex-1 overflow-y-auto pb-8 animate-enter">
+      <div className="mx-auto flex-1 w-full max-w-detail overflow-y-auto pb-8 animate-enter">
         <div className="relative h-[160px] overflow-hidden">
           <img src={coverUrl} alt={poll.title} className="h-full w-full object-cover" />
           <div className="banner-text-overlay absolute inset-0" />
@@ -88,7 +88,7 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
                           <img
                             src={result.player.photo_url ?? `https://placehold.co/52x52/0c2340/41b6e6?text=${result.player.squad_number ?? result.player.name.slice(0, 1)}`}
                             alt={result.player.name}
-                            className="h-[52px] w-[52px] rounded-xl object-cover"
+                            className="h-[52px] w-[52px] rounded-md object-cover"
                           />
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-label-1-normal font-black text-foreground">{result.player.name}</p>

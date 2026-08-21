@@ -11,7 +11,7 @@ interface UserMenuProps {
   isAdmin?: boolean
 }
 
-export function UserMenu({ avatarUrl, displayName }: UserMenuProps) {
+export function UserMenu({ avatarUrl, displayName, isAdmin }: UserMenuProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -72,6 +72,24 @@ export function UserMenu({ avatarUrl, displayName }: UserMenuProps) {
           >
             마이페이지
           </Link>
+
+          <Link
+            href="/my/feedback"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2.5 text-label-2 font-medium text-foreground border-b border-border hover:bg-secondary"
+          >
+            피드백 남기기
+          </Link>
+
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2.5 text-label-2 font-medium text-foreground border-b border-border hover:bg-secondary"
+            >
+              관리자 페이지
+            </Link>
+          )}
 
           <button
             onClick={handleLogout}

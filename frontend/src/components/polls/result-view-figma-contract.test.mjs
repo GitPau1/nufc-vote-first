@@ -10,8 +10,10 @@ test('result page keeps the Figma-sized cover image', () => {
   assert.doesNotMatch(resultView, /h-\[188px\]/)
 })
 
-test('result page uses a Figma-specific header instead of the shared poll header', () => {
-  assert.doesNotMatch(resultView, /PollPageHeader/)
+test('result page uses the shared poll header for cross-screen GNB consistency', () => {
+  // 예전엔 Figma 스펙대로 결과 화면 전용 "돌아가기" 헤더를 직접 그렸지만,
+  // 데스크탑에서 모든 화면이 동일한 GNB를 보여줘야 한다는 요구로 PollPageHeader(AppHeader 래퍼)로 통일했다.
+  assert.match(resultView, /PollPageHeader/)
 })
 
 test('result page omits sections that are not in the Figma result frame', () => {

@@ -34,7 +34,8 @@ test('poll list applies the mobile layout foundation', () => {
 
   assert.match(page, /bg-background/)
   assert.doesNotMatch(page, /bg-\[#f4f4f5\]/)
-  assert.match(file, /className="px-5 pt-4 pb-10 animate-enter"/)
+  // 데스크탑 1140px 그리드 도입으로 mx-auto max-w-content가 앞에 붙었다(모바일 여백 자체는 그대로).
+  assert.match(file, /className="mx-auto max-w-content px-5 pt-4 pb-10 animate-enter"/)
   assert.match(file, /className="px-5 pt-4 animate-enter"/)
   assert.match(file, /mt-3 overflow-hidden rounded-lg border border-border bg-surface/)
   assert.match(file, /relative block h-\[252px\] overflow-hidden rounded-lg/)

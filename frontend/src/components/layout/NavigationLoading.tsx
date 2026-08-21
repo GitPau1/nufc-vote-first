@@ -102,7 +102,7 @@ function LoadingShell({ loadingVariant }: { loadingVariant: LoadingVariant }) {
     <div
       role="status"
       aria-label="페이지를 불러오는 중"
-      className="pointer-events-none fixed inset-x-0 bottom-[64px] top-0 z-[100] mx-auto flex w-full max-w-[480px] flex-col bg-background/95 backdrop-blur-sm"
+      className="pointer-events-none fixed inset-x-0 bottom-[64px] top-0 z-[100] mx-auto flex w-full max-w-shell flex-col bg-background/95 backdrop-blur-sm"
     >
       {renderLoadingBody(loadingVariant)}
       <span className="sr-only">페이지를 불러오는 중</span>
@@ -240,7 +240,7 @@ function TopBarOnly() {
     <div
       role="status"
       aria-label="페이지를 불러오는 중"
-      className="pointer-events-none fixed inset-x-0 top-0 z-[100] mx-auto h-1 w-full max-w-[480px] overflow-hidden bg-disabled"
+      className="pointer-events-none fixed inset-x-0 top-0 z-[100] mx-auto h-1 w-full max-w-shell overflow-hidden bg-disabled"
     >
       <div className="h-full w-1/2 animate-[loading-bar_1s_ease-in-out_infinite] rounded-r-pill bg-primary" />
     </div>
