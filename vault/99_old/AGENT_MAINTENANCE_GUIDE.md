@@ -70,6 +70,15 @@ DB나 Supabase 연동을 건드릴 때:
 - 댓글/좋아요: `frontend/src/lib/queries/comments.ts`, `frontend/src/lib/actions/comments.ts`
 - 화면: `frontend/src/app/page.tsx`, `frontend/src/app/polls/[id]/page.tsx`
 
+승부예측:
+
+- 조회: `frontend/src/lib/queries/fixtures.ts`
+- 주차 그룹핑/주 세션 상태 파생/`toPredictWeeks` 어댑터: `frontend/src/lib/predictions/week.ts` (+ `week.test.mjs`)
+- 선수 후보 더미: `frontend/src/lib/predictions/candidates.ts`
+- 화면: `frontend/src/app/predictions/page.tsx`, `frontend/src/app/predictions/week/[weekKey]/page.tsx`, `frontend/src/components/predict/*`
+- 예측/제출 단위는 경기가 아니라 **주(week)**다. 상태(`open`/`result`/`upcoming`)도 주 레벨에만 있고, 더블 매치위크는 경기 2개가 한 세션이다.
+- 아직 없는 것: 예측 제출 action, 완료/결과 화면, 랭킹 데이터(`RankingCard`는 빈 배열로 렌더), predictions 테이블
+
 인증/온보딩/마이페이지:
 
 - 로그인: `frontend/src/app/login/LoginPageClient.tsx`

@@ -133,6 +133,29 @@ RLS:
 - 일반 사용자는 쓰기 정책 없음.
 - 관리자 쓰기는 service-role 클라이언트 사용.
 
+### `fixtures`
+
+역할: FotMob 팀 API에서 동기화한 경기 일정/결과입니다. 뉴캐슬 관점 데이터라 `result`/스코어는 중립적이지 않습니다.
+
+코드에서 쓰는 주요 컬럼:
+
+- `fixture_id`, `competition_name`, `kickoff_at`, `home_id`, `home_name`, `home_score`, `away_id`, `away_name`, `away_score`, `started`, `finished`, `cancelled`
+
+사용 위치:
+
+- 승부예측 경기 목록 조회: `frontend/src/lib/queries/fixtures.ts`
+- 주차 그룹핑/주 세션 상태 파생(순수 함수): `frontend/src/lib/predictions/week.ts`
+
+RLS:
+
+- 공개 SELECT(`fixtures_public_read`). 쓰기 정책 없음 — 동기화는 외부에서 수행합니다.
+
+주의:
+
+- 뉴캐슬 team id는 `10261`(`week.ts`의 `NUFC_TEAM_ID`)입니다. 팀명은 영문(`Newcastle`, `Liverpool` …)으로 저장되어 화면에도 영문 그대로 노출됩니다.
+- 엠블럼은 team id로 FotMob CDN(`images.fotmob.com/.../teamlogo/{id}.png`)을 직접 로드합니다(URL은 `week.ts`의 `teamLogoUrl`, 렌더는 `components/predict/shared.tsx`의 `TeamBadge`). 실패 시 이니셜 원형으로 폴백합니다.
+- 라운드(매치위크) 컬럼이 없어 목록은 `kickoff_at` 기준 ISO 주차로 묶습니다.
+
 ### `club_status`
 
 역할: 구단 현황 singleton 테이블입니다. 앱은 `id = 1`인 row 하나를 기대합니다.
@@ -522,6 +545,20 @@ Update note 2026-05-30:
 
 - 관리자 여부는 앱 코드에서 `ADMIN_EMAILS`로 확인합니다.
 - 실제 DB 쓰기는 service role로 실행되어 RLS를 우회합니다.
+
+### 승부예측
+
+진입점:
+
+- `frontend/src/app/predictions/page.tsx` (주차별 경기 목록 + 랭킹 사이드바)
+- `frontend/src/app/predictions/week/[weekKey]/page.tsx` (스코어 → 선수 픽 → 확인). `weekKey`는 `2026-35` 형태의 ISO 연도-주차이고, `status === 'open'`인 주만 진입 가능합니다.
+- `frontend/src/lib/queries/fixtures.ts`
+
+사용 데이터:
+
+- `fixtures` 전체 조회 후 `lib/predictions/week.ts`에서 주차 그룹핑 → 주 단위 예측 세션(더블 매치위크는 경기 2개가 한 세션)
+- 선수 후보/배당은 아직 DB가 아니라 `frontend/src/lib/predictions/candidates.ts`의 고정 더미
+- 예측 제출/채점/랭킹 테이블은 아직 없음(다음 단계)
 
 ## DB 수정 체크리스트
 
