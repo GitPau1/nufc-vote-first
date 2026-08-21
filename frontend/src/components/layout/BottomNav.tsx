@@ -2,22 +2,23 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, Trophy, Vote } from 'lucide-react'
+import { Menu, Target, Trophy, Vote } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const ITEMS = [
   { href: '/',         label: '투표',      Icon: Vote },
+  { href: '/predictions', label: '예측',   Icon: Target },
   { href: '/players',  label: '역대 선수', Icon: Trophy },
   { href: '/menu',     label: '메뉴',      Icon: Menu },
 ] as const
 
 // 데스크탑 헤더 GNB(AppHeader wide)로 대체된 화면만 데스크탑에서 숨긴다.
-const REPLACED_BY_HEADER_GNB = ['/', '/polls', '/players', '/menu']
+const REPLACED_BY_HEADER_GNB = ['/', '/polls', '/predictions', '/players', '/menu']
 
 export function BottomNav() {
   const pathname = usePathname()
 
-  if (pathname !== '/' && pathname !== '/polls' && pathname !== '/players' && pathname !== '/menu') return null
+  if (pathname !== '/' && pathname !== '/polls' && pathname !== '/predictions' && pathname !== '/players' && pathname !== '/menu') return null
 
   const hiddenOnDesktop = REPLACED_BY_HEADER_GNB.includes(pathname)
 

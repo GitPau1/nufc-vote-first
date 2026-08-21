@@ -202,6 +202,32 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['user_feedback']['Row'], 'id' | 'created_at'>
         Update: never
       }
+      // FotMob 팀 API 동기화 결과. 뉴캐슬 관점 데이터(result/score는 중립이 아님).
+      fixtures: {
+        Row: {
+          fixture_id: number
+          competition_id: number | null
+          competition_name: string | null
+          stage: string | null
+          kickoff_at: string | null
+          home_id: number
+          home_name: string
+          home_score: number | null
+          away_id: number
+          away_name: string
+          away_score: number | null
+          score_str: string | null
+          result: 'WIN' | 'DRAW' | 'LOSS' | null
+          started: boolean
+          finished: boolean
+          cancelled: boolean
+          status_code: string | null
+          status_description: string | null
+          synced_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['fixtures']['Row'], 'synced_at'> & { synced_at?: string }
+        Update: Partial<Database['public']['Tables']['fixtures']['Insert']>
+      }
     }
     Views: {
       [_ in never]: never
@@ -231,6 +257,7 @@ export type PlayerPickOneRatingRow = Database['public']['Tables']['player_pick_o
 export type PlayerPickOneWeeklyRunRow = Database['public']['Tables']['player_pick_one_weekly_runs']['Row']
 export type PlayerPickOneRatingChangeRow = Database['public']['Tables']['player_pick_one_rating_changes']['Row']
 export type UserFeedbackRow = Database['public']['Tables']['user_feedback']['Row']
+export type FixtureDbRow = Database['public']['Tables']['fixtures']['Row']
 
 export type PollWithOptions = PollRow & {
   poll_options: PollOptionRow[]

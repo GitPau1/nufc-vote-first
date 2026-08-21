@@ -1,6 +1,7 @@
 'use client'
 
 import * as DialogPrimitive from '@radix-ui/react-dialog'
+import { PlayerPhoto } from './shared'
 import { cn } from '@/lib/utils'
 
 // 프로토타입 .badge / .badge-default 그대로 (선수 배당 표시용)
@@ -11,7 +12,8 @@ export interface PlayerPickCandidate {
   id: string
   name: string
   squadNumber: number
-  photoUrl: string
+  /** 없으면 실루엣 원형으로 대체된다 */
+  photoUrl: string | null
   nationality: string
   age: number
   /** 선택 시 점수 배당(예: ×1.7) */
@@ -127,11 +129,7 @@ function PlayerPickRow({
         <span className="w-5 shrink-0 text-center text-label-2 font-extrabold text-gray-3">
           {player.squadNumber}
         </span>
-        <img
-          src={player.photoUrl}
-          alt=""
-          className="h-16 w-16 shrink-0 rounded-full bg-disabled object-cover"
-        />
+        <PlayerPhoto url={player.photoUrl} />
         <span className="min-w-0">
           <p className="m-0 truncate text-body-2-normal font-bold text-black">{player.name}</p>
           <p className="m-0 mt-px text-caption-1 text-gray-3">

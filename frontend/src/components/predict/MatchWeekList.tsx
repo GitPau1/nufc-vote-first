@@ -1,6 +1,7 @@
 'use client'
 
 import { ChevronLeft, ChevronRight, Lock } from 'lucide-react'
+import { TeamBadge } from './shared'
 import { cn } from '@/lib/utils'
 
 /**
@@ -56,8 +57,6 @@ interface MatchWeekListProps {
   onNextMonth?: () => void
   className?: string
 }
-
-const DEFAULT_TEAM_LOGO = 'https://placehold.co/48x48/e1e7ef/a8a8a8?text=%20'
 
 // 프로토타입 .badge / .badge-default / .badge-positive / .badge-outline 그대로
 const BADGE_BASE = 'inline-flex items-center rounded-pill px-[9px] py-[3px] text-caption-2 font-bold'
@@ -262,7 +261,7 @@ function MatchInfoRow({
 function TeamSide({ name, logoUrl }: { name: string; logoUrl?: string }) {
   return (
     <div className="flex w-[84px] shrink-0 flex-col items-center gap-1.5">
-      <img src={logoUrl ?? DEFAULT_TEAM_LOGO} alt="" className="w-12 shrink-0 object-contain" />
+      <TeamBadge logoUrl={logoUrl} name={name} />
       <span className="text-center text-label-2 font-bold leading-tight text-black">{name}</span>
     </div>
   )

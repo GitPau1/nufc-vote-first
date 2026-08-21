@@ -1,5 +1,6 @@
 import type { PlayerRow, PollOptionRow } from '@/types/database'
 import type { PollDetail, PollListItem, VoteCountMap } from '@/lib/queries/polls'
+import type { FixtureRow } from '@/lib/predictions/week'
 
 // ── 선수 ────────────────────────────────────────────────────
 const isak: PlayerRow = {
@@ -292,4 +293,51 @@ export const MOCK_PARTICIPATED: ParticipatedPoll[] = [
     votedAt: new Date(Date.now() - 18 * 86400_000).toISOString(),
     pollStatus: 'closed',
   },
+]
+
+// ── 승부예측: fixtures (mock 모드용) ─────────────────────────
+// 실 스키마와 같은 모양의 행. 날짜는 오늘 기준 상대값이라 목록의 종료/진행중/예정이 항상 다 나온다.
+const daysFromNow = (days: number, hour = 20) => {
+  const d = new Date(Date.now() + days * 86400_000)
+  d.setHours(hour, 0, 0, 0)
+  return d.toISOString()
+}
+
+const NUFC = { id: 10261, name: 'Newcastle' }
+
+function mockFixture(
+  fixtureId: number,
+  opponent: { id: number; name: string },
+  { days, isHome, competition, score }: { days: number; isHome: boolean; competition: string; score?: [number, number] },
+): FixtureRow {
+  const finished = score !== undefined
+  const home = isHome ? NUFC : opponent
+  const away = isHome ? opponent : NUFC
+  const [ourScore, theirScore] = score ?? [null, null]
+
+  return {
+    fixture_id: fixtureId,
+    competition_name: competition,
+    kickoff_at: daysFromNow(days),
+    home_id: home.id,
+    home_name: home.name,
+    home_score: isHome ? ourScore : theirScore,
+    away_id: away.id,
+    away_name: away.name,
+    away_score: isHome ? theirScore : ourScore,
+    started: finished,
+    finished,
+    cancelled: false,
+  }
+}
+
+export const MOCK_FIXTURES: FixtureRow[] = [
+  mockFixture(9001, { id: 8602, name: 'Wolves' },     { days: -19, isHome: true,  competition: 'Premier League', score: [1, 1] }),
+  mockFixture(9002, { id: 8456, name: 'Man City' },   { days: -12, isHome: false, competition: 'Premier League', score: [0, 2] }),
+  mockFixture(9003, { id: 8650, name: 'Liverpool' },  { days: -5,  isHome: true,  competition: 'Premier League', score: [2, 0] }),
+  mockFixture(9004, { id: 9825, name: 'Arsenal' },    { days: 2,   isHome: false, competition: 'Premier League' }),
+  mockFixture(9005, { id: 8455, name: 'Chelsea' },    { days: 9,   isHome: true,  competition: 'Premier League' }),
+  // 9005와 같은 주 — 더블 매치위크(경기 2개 = 한 예측 세션) 확인용
+  mockFixture(9006, { id: 9937, name: 'Brentford' },  { days: 8,   isHome: false, competition: 'EFL Cup' }),
+  mockFixture(9007, { id: 8668, name: 'Everton' },    { days: 30,  isHome: true,  competition: 'Premier League' }),
 ]
