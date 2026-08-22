@@ -267,7 +267,7 @@ export interface Database {
         Insert: Database['public']['Tables']['season_squads']['Row']
         Update: Partial<Database['public']['Tables']['season_squads']['Row']>
       }
-      // 승부예측 제출. 주 세션 하나가 경기당 1행으로 저장된다(제출 후 수정 불가).
+      // 승부예측 제출. 경기 하나가 1행이다(제출 후 수정 불가 — UNIQUE + UPDATE 정책 없음).
       predictions: {
         Row: {
           id: string
@@ -297,8 +297,76 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['fixture_player_ratings']['Insert']>
       }
     }
+    // 승부예측 결과/랭킹 view (20260821120000_create_predictions.sql).
+    // 전부 읽기 전용이라 Row만 둔다. 점수 산식은 DB 함수(prediction_match_points /
+    // prediction_pick_points)에 있고 view가 그 결과를 컬럼으로 내려준다.
     Views: {
-      [_ in never]: never
+      // 예측 1건 + 계산된 점수. 종료된 경기만 들어온다(view 정의에 where f.finished).
+      prediction_results: {
+        Row: {
+          id: string
+          user_id: string
+          fixture_id: number
+          kickoff_at: string | null
+          competition_name: string | null
+          pred_home: number
+          pred_away: number
+          // 경기가 끝났어도 스코어가 아직 안 들어왔으면 null
+          actual_home: number | null
+          actual_away: number | null
+          def_player_id: number
+          mid_player_id: number
+          fwd_player_id: number
+          // fixture_player_ratings에 행이 없으면 null (= 미출전/미집계)
+          def_rating: number | null
+          mid_rating: number | null
+          fwd_rating: number | null
+          // 점수는 coalesce가 걸려 있어 null이 아니다 — 평점이 없으면 0
+          match_points: number
+          def_points: number
+          mid_points: number
+          fwd_points: number
+          pick_points: number
+          total_points: number
+        }
+        // 읽기 전용 view (GenericNonUpdatableView 형태). 다만 Tables 쪽에 Relationships가 없어
+        // 스키마 전체가 supabase-js 추론에서 빠진다 — 조회 결과는 PredictionResultRow 등으로 직접 단언해 쓴다.
+        Relationships: []
+      }
+      // 경기별 랭킹 — 결과 화면 "전체 결과" 탭
+      fixture_leaderboard: {
+        Row: {
+          fixture_id: number
+          user_id: string
+          display_name: string | null
+          avatar_url: string | null
+          match_points: number
+          pick_points: number
+          total_points: number
+          /** 동점이면 user_id 순 — rank()라서 건너뛰는 순위가 생긴다 */
+          rank: number
+          /** 그 경기의 전체 참여자 수 ("N위 / M명"의 M) */
+          total_entries: number
+        }
+        // 읽기 전용 view (GenericNonUpdatableView 형태). 다만 Tables 쪽에 Relationships가 없어
+        // 스키마 전체가 supabase-js 추론에서 빠진다 — 조회 결과는 PredictionResultRow 등으로 직접 단언해 쓴다.
+        Relationships: []
+      }
+      // 시즌 누적 랭킹 — 목록 화면 우측 랭킹 카드
+      season_leaderboard: {
+        Row: {
+          user_id: string
+          display_name: string | null
+          avatar_url: string | null
+          total_points: number
+          /** 채점된 예측 건수 */
+          played: number
+          rank: number
+        }
+        // 읽기 전용 view (GenericNonUpdatableView 형태). 다만 Tables 쪽에 Relationships가 없어
+        // 스키마 전체가 supabase-js 추론에서 빠진다 — 조회 결과는 PredictionResultRow 등으로 직접 단언해 쓴다.
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
@@ -331,6 +399,9 @@ export type SeasonSquadRow = Database['public']['Tables']['season_squads']['Row'
 export type PredictionRow = Database['public']['Tables']['predictions']['Row']
 export type PredictionInsert = Database['public']['Tables']['predictions']['Insert']
 export type FixturePlayerRatingRow = Database['public']['Tables']['fixture_player_ratings']['Row']
+export type PredictionResultRow = Database['public']['Views']['prediction_results']['Row']
+export type FixtureLeaderboardRow = Database['public']['Views']['fixture_leaderboard']['Row']
+export type SeasonLeaderboardRow = Database['public']['Views']['season_leaderboard']['Row']
 
 export type PollWithOptions = PollRow & {
   poll_options: PollOptionRow[]
