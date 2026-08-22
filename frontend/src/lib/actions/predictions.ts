@@ -52,17 +52,13 @@ export async function submitPrediction(
     if (jar.get('mock-auth')?.value !== 'true') return { error: 'unauthenticated' }
     if (jar.get(`mock-prediction-${fixtureId}`)) return { error: 'already_submitted' }
 
-    // 목록/플로우가 읽는 형식(fixture_id → [홈, 원정])으로 저장해 둔다.
-    jar.set(
-      `mock-prediction-${fixtureId}`,
-      JSON.stringify({ [fixtureId]: [built.row.home_score, built.row.away_score] }),
-      {
-        path: '/',
-        httpOnly: true,
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 30,
-      },
-    )
+    // insert 행 그대로 저장한다 — queries/predictions.ts가 DB 행과 같은 형식으로 읽는다.
+    jar.set(`mock-prediction-${fixtureId}`, JSON.stringify(built.row), {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 30,
+    })
     revalidatePath('/predictions')
     return { success: true }
   }

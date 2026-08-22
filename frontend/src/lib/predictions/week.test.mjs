@@ -154,7 +154,17 @@ test('toPredictWeeks: 내 제출 스코어는 경기별 myResult로 붙는다', 
   )
 
   // 같은 주라도 제출은 경기별로 따로 — 하나만 제출한 상태가 정상 상태다.
-  const [week] = toPredictWeeks(weeks, { 1: [2, 1] })
+  const submitted = {
+    1: {
+      score: [2, 1],
+      picks: {
+        DEF: { playerId: 4, multiplier: 1 },
+        MID: { playerId: 39, multiplier: 1 },
+        FWD: { playerId: 14, multiplier: 1 },
+      },
+    },
+  }
+  const [week] = toPredictWeeks(weeks, submitted)
   assert.deepEqual(week.matches[0].myResult, { predicted: [2, 1] })
   assert.equal(week.matches[1].myResult, undefined)
 })

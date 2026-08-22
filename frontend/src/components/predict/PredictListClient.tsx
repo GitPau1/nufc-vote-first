@@ -11,14 +11,15 @@ import {
   toPredictWeeks,
   type WeekGroup,
 } from '@/lib/predictions/week'
+import type { MyPredictionMap } from '@/lib/queries/predictions'
 
 export function PredictListClient({
   weeks,
   myPredictions = {},
 }: {
   weeks: WeekGroup[]
-  /** fixture_id → 제출 스코어([홈, 원정]) */
-  myPredictions?: Record<string, [number, number]>
+  /** fixture_id → 내 제출 내역 */
+  myPredictions?: MyPredictionMap
 }) {
   const router = useRouter()
 

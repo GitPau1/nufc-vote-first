@@ -4,6 +4,7 @@
  */
 
 import type { PredictWeek } from '@/components/predict/MatchWeekList'
+import type { MyPredictionMap } from '@/lib/queries/predictions'
 
 export type FixtureRow = {
   fixture_id: number
@@ -46,6 +47,8 @@ export type MatchView = {
   kickoff: string
   /** '오후 8:00' */
   kickoffTime: string
+  /** 킥오프 원본 시각(ISO). 완료 화면 카운트다운의 목표 시각. 없으면 null. */
+  kickoffAt: string | null
   status: MatchStatus
   /** 종료된 경기의 [우리, 상대] 스코어. 스코어가 없으면 null. */
   actual: [number, number] | null
@@ -112,6 +115,7 @@ export function toMatchView(fixture: FixtureRow, now: number): MatchView {
     isHome,
     kickoff: kst ? `${kst.getUTCMonth() + 1}/${kst.getUTCDate()}` : '',
     kickoffTime: kst ? formatKickoffTime(kst) : '',
+    kickoffAt: fixture.kickoff_at,
     status: fixtureStatus(fixture, now),
     actual:
       fixture.finished && ourScore !== null && theirScore !== null
@@ -199,12 +203,12 @@ export function findMatchSession(weeks: WeekGroup[], fixtureId: string): MatchSe
 
 /**
  * WeekGroup[] → MatchWeekList가 받는 PredictWeek[].
- * myPredictions는 fixture_id → 제출 스코어([홈, 원정], lib/queries/predictions.ts).
+ * myPredictions는 fixture_id → 내 제출 내역(lib/queries/predictions.ts).
  * ponytail: totalPoints는 prediction_results view(채점)를 붙일 때 함께 주입한다.
  */
 export function toPredictWeeks(
   weeks: WeekGroup[],
-  myPredictions: Record<string, [number, number]> = {},
+  myPredictions: MyPredictionMap = {},
 ): PredictWeek[] {
   return weeks.map(week => ({
     weekNo: week.weekNo,
@@ -217,7 +221,7 @@ export function toPredictWeeks(
       kickoff: match.kickoff,
       kickoffTime: match.kickoffTime,
       status: match.status,
-      myResult: myPredictions[match.id] ? { predicted: myPredictions[match.id] } : undefined,
+      myResult: myPredictions[match.id] ? { predicted: myPredictions[match.id].score } : undefined,
       // MatchView.actual은 [우리, 상대]인데 PredictWeekMatch.actual은 [홈, 원정]이라 원정 경기는 뒤집는다.
       actual: match.actual
         ? match.isHome

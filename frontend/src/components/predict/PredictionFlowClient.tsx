@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { LoginModal } from '@/components/polls/LoginModal'
 import { PlayerPickModal } from './PlayerPickModal'
+import { PredictionDone } from './PredictionDone'
 import { PlayerPhoto, Silhouette, TeamBadge } from './shared'
 import { StepHero, StepTrack, StepTrackVertical, type StepKey } from './steps'
 import { POSITIONS, POSITION_LABEL, type Candidate, type Position } from '@/lib/predictions/candidates'
 import { submitPrediction, type SubmitPredictionResult } from '@/lib/actions/predictions'
 import { NUFC_LABEL, NUFC_TEAM_ID, teamLogoUrl, type MatchSession } from '@/lib/predictions/week'
+import type { MyPrediction } from '@/lib/queries/predictions'
 import type { PickCandidates } from '@/lib/queries/squads'
 import { cn } from '@/lib/utils'
 
@@ -40,8 +42,8 @@ export function PredictionFlowClient({
 }: {
   match: MatchSession
   candidates: PickCandidates
-  /** 이미 제출한 경기면 [홈, 원정] 스코어 */
-  submitted?: [number, number]
+  /** 이미 제출한 경기면 내 제출 내역(스코어 + 픽) */
+  submitted?: MyPrediction
 }) {
   const router = useRouter()
   const [step, setStep] = useState<StepKey>('score')
@@ -91,7 +93,7 @@ export function PredictionFlowClient({
   }
 
   if (submitted) {
-    return <PredictionDoneView match={match} submitted={submitted} onBackToList={goBackToList} />
+    return <PredictionDone match={match} prediction={submitted} candidates={candidates} />
   }
 
   return (
@@ -197,48 +199,6 @@ export function PredictionFlowClient({
         onClose={() => setLoginOpen(false)}
         triggerAction="vote"
       />
-    </div>
-  )
-}
-
-/** 제출 완료 화면. 수정이 불가하므로 되돌아갈 버튼만 둔다. */
-function PredictionDoneView({
-  match,
-  submitted,
-  onBackToList,
-}: {
-  match: MatchSession
-  submitted: [number, number]
-  onBackToList: () => void
-}) {
-  const [home, away] = submitted
-  const [ourScore, theirScore] = match.isHome ? [home, away] : [away, home]
-
-  return (
-    <div className="mx-auto max-w-[560px] px-4 pb-16 pt-6 sm:max-w-[560px] sm:px-10">
-      <div className="rounded-lg border border-border bg-surface px-4 py-7 text-center">
-        <p className="text-headline-1 font-extrabold text-primary">제출 완료</p>
-        <p className="mt-1 text-label-2 text-gray-2">
-          {match.weekNo}주차 예측이 접수됐어요. 결과는 경기가 끝난 뒤 공개돼요.
-        </p>
-
-        <div className="mt-6 flex items-center justify-center gap-2 sm:gap-6">
-          <ConfirmTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
-          <span className="text-title-2 font-black">
-            {ourScore} – {theirScore}
-          </span>
-          <ConfirmTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
-        </div>
-
-        {/* ponytail: 픽한 선수와 획득 점수는 prediction_results view(채점)를 붙일 때 여기에 더한다. */}
-        <p className="mt-6 text-caption-1 text-gray-3">제출한 예측은 수정할 수 없어요</p>
-      </div>
-
-      <div className="mt-7 flex justify-center">
-        <Button size="lg" variant="outline" className="w-full sm:w-[200px]" onClick={onBackToList}>
-          목록으로
-        </Button>
-      </div>
     </div>
   )
 }
