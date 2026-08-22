@@ -9,13 +9,15 @@ const BADGE_DEFAULT_CLASS =
   'inline-flex shrink-0 items-center rounded-pill bg-primary-dim px-[9px] py-[3px] text-caption-2 font-bold text-primary-dark'
 
 export interface PlayerPickCandidate {
-  id: string
+  /** season_squads.fotmob_player_id */
+  id: number
   name: string
-  squadNumber: number
+  /** 등번호 미정이면 null */
+  squadNumber: number | null
   /** 없으면 실루엣 원형으로 대체된다 */
   photoUrl: string | null
-  nationality: string
-  age: number
+  nationality: string | null
+  age: number | null
   /** 선택 시 점수 배당(예: ×1.7) */
   multiplier: number
 }
@@ -27,7 +29,7 @@ interface PlayerPickModalProps {
   positionLabel: string
   players: PlayerPickCandidate[]
   /** 이미 이 포지션에 픽한 선수가 있으면(재오픈 케이스) 하이라이트 */
-  selectedPlayerId?: string | null
+  selectedPlayerId?: number | null
   /**
    * 선수를 선택했을 때 호출된다. 프로토타입은 선택과 동시에 모달을 닫으므로,
    * 호출부에서 상태 반영 후 onOpenChange(false)까지 함께 호출해줘야 한다.
@@ -127,13 +129,15 @@ function PlayerPickRow({
     >
       <span className="flex min-w-0 items-center gap-2.5">
         <span className="w-5 shrink-0 text-center text-label-2 font-extrabold text-gray-3">
-          {player.squadNumber}
+          {player.squadNumber ?? '–'}
         </span>
         <PlayerPhoto url={player.photoUrl} />
         <span className="min-w-0">
           <p className="m-0 truncate text-body-2-normal font-bold text-black">{player.name}</p>
           <p className="m-0 mt-px text-caption-1 text-gray-3">
-            {player.nationality} · {player.age}세
+            {[player.nationality, player.age === null ? null : `${player.age}세`]
+              .filter(Boolean)
+              .join(' · ')}
           </p>
         </span>
       </span>

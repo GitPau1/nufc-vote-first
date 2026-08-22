@@ -2,6 +2,8 @@
 
 export type PollType = 'evaluation' | 'selection' | 'subject_options' | 'question_targets' | 'free_choice' | 'overall_rating'
 export type PollStatus = 'scheduled' | 'active' | 'closed'
+/** season_squads.position — GK는 승부예측 픽 후보가 아니다(DEF/MID/FWD만 픽 대상). */
+export type SquadPosition = 'GK' | 'DEF' | 'MID' | 'FWD'
 export type Position = 'GK' | 'DEF' | 'MID' | 'FWD' | 'MGR'
 export type PlayerStatus = 'first_team' | 'loan' | 'u21'
 
@@ -228,6 +230,72 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['fixtures']['Row'], 'synced_at'> & { synced_at?: string }
         Update: Partial<Database['public']['Tables']['fixtures']['Insert']>
       }
+      seasons: {
+        Row: {
+          id: string
+          name: string
+          starts_at: string | null
+          ends_at: string | null
+          is_current: boolean
+          display_order: number
+          created_at: string
+          updated_at: string
+        }
+        // 동기화/관리자(service-role) 전용 테이블이지만, Insert를 never로 두면
+        // supabase-js가 select 결과 타입까지 never로 좁혀버린다.
+        Insert: Database['public']['Tables']['seasons']['Row']
+        Update: Partial<Database['public']['Tables']['seasons']['Row']>
+      }
+      // 시즌 스쿼드(외부 API 동기화). 승부예측 선수 픽 후보이자 배당 소스.
+      season_squads: {
+        Row: {
+          season_id: string
+          fotmob_player_id: number
+          player_id: string | null
+          name: string
+          name_ko: string | null
+          shirt_number: number | null
+          position: SquadPosition
+          position_ids_desc: string | null
+          nationality_code: string | null
+          nationality_name: string | null
+          date_of_birth: string | null
+          transfer_value: number | null
+          prediction_multiplier: number
+          synced_at: string
+        }
+        Insert: Database['public']['Tables']['season_squads']['Row']
+        Update: Partial<Database['public']['Tables']['season_squads']['Row']>
+      }
+      // 승부예측 제출. 주 세션 하나가 경기당 1행으로 저장된다(제출 후 수정 불가).
+      predictions: {
+        Row: {
+          id: string
+          user_id: string
+          fixture_id: number
+          home_score: number
+          away_score: number
+          def_player_id: number
+          mid_player_id: number
+          fwd_player_id: number
+          def_multiplier: number
+          mid_multiplier: number
+          fwd_multiplier: number
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['predictions']['Row'], 'id' | 'created_at'>
+        Update: never
+      }
+      fixture_player_ratings: {
+        Row: {
+          fixture_id: number
+          player_id: number
+          rating: number
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['fixture_player_ratings']['Row'], 'created_at'>
+        Update: Partial<Database['public']['Tables']['fixture_player_ratings']['Insert']>
+      }
     }
     Views: {
       [_ in never]: never
@@ -258,6 +326,11 @@ export type PlayerPickOneWeeklyRunRow = Database['public']['Tables']['player_pic
 export type PlayerPickOneRatingChangeRow = Database['public']['Tables']['player_pick_one_rating_changes']['Row']
 export type UserFeedbackRow = Database['public']['Tables']['user_feedback']['Row']
 export type FixtureDbRow = Database['public']['Tables']['fixtures']['Row']
+export type SeasonRow = Database['public']['Tables']['seasons']['Row']
+export type SeasonSquadRow = Database['public']['Tables']['season_squads']['Row']
+export type PredictionRow = Database['public']['Tables']['predictions']['Row']
+export type PredictionInsert = Database['public']['Tables']['predictions']['Insert']
+export type FixturePlayerRatingRow = Database['public']['Tables']['fixture_player_ratings']['Row']
 
 export type PollWithOptions = PollRow & {
   poll_options: PollOptionRow[]

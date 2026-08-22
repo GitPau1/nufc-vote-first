@@ -12,12 +12,20 @@ import {
   type WeekGroup,
 } from '@/lib/predictions/week'
 
-export function PredictListClient({ weeks }: { weeks: WeekGroup[] }) {
+export function PredictListClient({
+  weeks,
+  myPredictions = {},
+}: {
+  weeks: WeekGroup[]
+  /** fixture_id → 제출 스코어([홈, 원정]) */
+  myPredictions?: Record<string, [number, number]>
+}) {
   const router = useRouter()
 
   const months = useMemo(() => Array.from(new Set(weeks.map(w => w.monthKey))).sort(), [weeks])
-  // 진행 중인 주가 있는 달을 기본으로 — 없으면 첫 달.
-  const defaultMonth = weeks.find(w => w.status === 'open')?.monthKey ?? months[0] ?? ''
+  // 예측 가능한 경기가 있는 달을 기본으로 — 없으면 첫 달.
+  const defaultMonth =
+    weeks.find(w => w.matches.some(m => m.status === 'open'))?.monthKey ?? months[0] ?? ''
   const [monthKey, setMonthKey] = useState(defaultMonth)
 
   const monthIndex = months.indexOf(monthKey)
@@ -34,15 +42,12 @@ export function PredictListClient({ weeks }: { weeks: WeekGroup[] }) {
       <div className="sm:grid sm:grid-cols-[2fr_1fr] sm:items-start sm:gap-x-10">
         <MatchWeekList
           monthLabel={monthKey ? `${Number(monthKey.slice(5))}월` : ''}
-          weeks={toPredictWeeks(visibleWeeks)}
+          weeks={toPredictWeeks(visibleWeeks, myPredictions)}
           homeTeamName={NUFC_LABEL}
           homeTeamLogoUrl={teamLogoUrl(NUFC_TEAM_ID)}
           onPrevMonth={() => moveMonth(-1)}
           onNextMonth={() => moveMonth(1)}
-          onSelectWeek={week => {
-            const target = visibleWeeks.find(w => w.weekNo === week.weekNo)
-            if (target) router.push(`/predictions/week/${target.weekKey}`)
-          }}
+          onSelectMatch={match => router.push(`/predictions/${match.id}`)}
         />
 
         {/* ponytail: 랭킹 쿼리(predictions 테이블)가 생기면 entries만 실제 데이터로 바꾼다. */}

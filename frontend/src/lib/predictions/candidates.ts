@@ -1,8 +1,6 @@
 /**
- * 선수 픽 후보 — 이번 단계에서는 고정 더미다.
- * players 테이블은 "역대 선수" 403명(사진·등번호 없음)이라 현재 스쿼드 후보로 그대로 쓸 수 없고,
- * 배당(multiplier) 산식도 아직 정해지지 않았다.
- * ponytail: 현재 스쿼드 소스와 배당 산식이 정해지면 lib/queries/ 로 옮긴다.
+ * 선수 픽의 포지션 정의와 표시용 헬퍼.
+ * 후보 목록/배당은 DB(season_squads)에서 오고 조회는 lib/queries/squads.ts가 담당한다.
  */
 
 export const POSITIONS = ['DEF', 'MID', 'FWD'] as const
@@ -15,31 +13,32 @@ export const POSITION_LABEL: Record<Position, string> = {
 }
 
 export type Candidate = {
-  id: string
+  /** season_squads.fotmob_player_id — predictions.{def,mid,fwd}_player_id에 그대로 들어간다 */
+  id: number
   name: string
   position: Position
+  /** 제출 시 서버가 DB 값을 다시 읽어 스냅샷한다 — 화면 표시용으로만 믿는다 */
   multiplier: number
-  squadNumber: number
-  nationality: string
-  age: number
+  squadNumber: number | null
+  nationality: string | null
+  age: number | null
   photoUrl: string | null
 }
 
-export const CANDIDATES: Record<Position, Candidate[]> = {
-  DEF: [
-    { id: 'def-botman',     name: '보터',      position: 'DEF', multiplier: 2.1, squadNumber: 4,  nationality: '네덜란드', age: 26, photoUrl: null },
-    { id: 'def-trippier',   name: '트리피어',  position: 'DEF', multiplier: 1.4, squadNumber: 2,  nationality: '잉글랜드', age: 35, photoUrl: null },
-    { id: 'def-schar',      name: '스카르',    position: 'DEF', multiplier: 1.9, squadNumber: 5,  nationality: '스위스',   age: 34, photoUrl: null },
-    { id: 'def-livramento', name: '리브라멘투', position: 'DEF', multiplier: 2.6, squadNumber: 14, nationality: '잉글랜드', age: 23, photoUrl: null },
-  ],
-  MID: [
-    { id: 'mid-guimaraes', name: '기마랑이스', position: 'MID', multiplier: 1.7, squadNumber: 39, nationality: '브라질',   age: 28, photoUrl: null },
-    { id: 'mid-bruno',     name: '브루노',    position: 'MID', multiplier: 1.3, squadNumber: 7,  nationality: '포르투갈', age: 24, photoUrl: null },
-    { id: 'mid-willock',   name: '윌록',      position: 'MID', multiplier: 1.5, squadNumber: 28, nationality: '잉글랜드', age: 26, photoUrl: null },
-  ],
-  FWD: [
-    { id: 'fwd-isak',   name: '이삭',  position: 'FWD', multiplier: 2.6, squadNumber: 9,  nationality: '스웨덴',   age: 26, photoUrl: null },
-    { id: 'fwd-gordon', name: '고든',  position: 'FWD', multiplier: 1.9, squadNumber: 10, nationality: '잉글랜드', age: 25, photoUrl: null },
-    { id: 'fwd-barnes', name: '반스',  position: 'FWD', multiplier: 2.2, squadNumber: 11, nationality: '잉글랜드', age: 26, photoUrl: null },
-  ],
+/** fixtures 엠블럼과 같은 FotMob CDN. 없는 선수는 404라 <img> onError 폴백에 맡긴다. */
+export function playerPhotoUrl(fotmobPlayerId: number): string {
+  return `https://images.fotmob.com/image_resources/playerimages/${fotmobPlayerId}.png`
+}
+
+export function isPickPosition(position: string): position is Position {
+  return (POSITIONS as readonly string[]).includes(position)
+}
+
+/** date_of_birth → 만 나이. 없으면 null. */
+export function ageFrom(dateOfBirth: string | null, now: number): number | null {
+  if (!dateOfBirth) return null
+  const birth = new Date(dateOfBirth)
+  if (Number.isNaN(birth.getTime())) return null
+  const years = (now - birth.getTime()) / (365.2425 * 86_400_000)
+  return years < 0 ? null : Math.floor(years)
 }
