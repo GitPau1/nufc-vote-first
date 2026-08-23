@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useLoadingRouter } from '@/components/layout/NavigationLoading'
 import { MatchWeekList } from './MatchWeekList'
 import { RankingCard } from './RankingCard'
 import {
@@ -21,7 +21,7 @@ export function PredictListClient({
   /** fixture_id → 내 제출 내역 */
   myPredictions?: MyPredictionMap
 }) {
-  const router = useRouter()
+  const router = useLoadingRouter()
 
   const months = useMemo(() => Array.from(new Set(weeks.map(w => w.monthKey))).sort(), [weeks])
   // 예측 가능한 경기가 있는 달을 기본으로 — 없으면 첫 달.

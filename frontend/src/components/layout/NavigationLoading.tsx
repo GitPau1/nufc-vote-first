@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { usePathname } from 'next/navigation'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 
 const MIN_VISIBLE_MS = 350
 const SHOW_DELAY_MS = 120
 const ROUTE_SETTLE_MS = 450
 const FALLBACK_HIDE_MS = 4000
+const NAVIGATION_START_EVENT = 'nufc:navigation-start'
 type LoadingVariant = 'polls' | 'players' | 'menu' | 'top'
 
 function isModifiedClick(event: MouseEvent) {
@@ -20,6 +21,26 @@ function getLoadingVariant(pathname: string): LoadingVariant {
   return 'top'
 }
 
+/** router.push()처럼 링크 클릭이 아닌 이동에도 로딩을 띄운다 */
+export function startNavigationLoading(href: string) {
+  window.dispatchEvent(new CustomEvent(NAVIGATION_START_EVENT, { detail: href }))
+}
+
+/** useRouter() 대신 쓰면 push()가 로딩까지 같이 띄운다 (back()은 popstate로 자동 처리) */
+export function useLoadingRouter() {
+  const router = useRouter()
+  return useMemo(
+    () => ({
+      ...router,
+      push: (href: string) => {
+        startNavigationLoading(href)
+        router.push(href)
+      },
+    }),
+    [router]
+  )
+}
+
 export function NavigationLoading() {
   const pathname = usePathname()
   const [isLoading, setIsLoading] = useState(false)
@@ -27,11 +48,29 @@ export function NavigationLoading() {
   const visibleAtRef = useRef(0)
   const targetPathRef = useRef<string | null>(null)
   const showTimerRef = useRef<number | null>(null)
+  const pathnameRef = useRef(pathname)
+
+  useEffect(() => {
+    pathnameRef.current = pathname
+  }, [pathname])
 
   function clearShowTimer() {
     if (!showTimerRef.current) return
     window.clearTimeout(showTimerRef.current)
     showTimerRef.current = null
+  }
+
+  function beginLoading(nextPath: string) {
+    setLoadingVariant(getLoadingVariant(nextPath))
+    targetPathRef.current = nextPath
+    clearShowTimer()
+    showTimerRef.current = window.setTimeout(() => {
+      showTimerRef.current = null
+      // 캐시된 뒤로가기처럼 이미 도착했으면 굳이 띄우지 않는다
+      if (pathnameRef.current === nextPath) return
+      visibleAtRef.current = Date.now()
+      setIsLoading(true)
+    }, SHOW_DELAY_MS)
   }
 
   useEffect(() => {
@@ -51,20 +90,26 @@ export function NavigationLoading() {
       if (next === current) return
       if (nextUrl.hash && nextUrl.pathname === window.location.pathname && nextUrl.search === window.location.search) return
 
-      setLoadingVariant(getLoadingVariant(nextUrl.pathname))
-      targetPathRef.current = nextUrl.pathname
-      clearShowTimer()
-      showTimerRef.current = window.setTimeout(() => {
-        visibleAtRef.current = Date.now()
-        setIsLoading(true)
-        showTimerRef.current = null
-      }, SHOW_DELAY_MS)
+      beginLoading(nextUrl.pathname)
+    }
+
+    function handlePopState() {
+      beginLoading(window.location.pathname)
+    }
+
+    function handleProgrammatic(event: Event) {
+      const href = (event as CustomEvent<string>).detail
+      beginLoading(new URL(href, window.location.origin).pathname)
     }
 
     document.addEventListener('click', handleClick, true)
+    window.addEventListener('popstate', handlePopState)
+    window.addEventListener(NAVIGATION_START_EVENT, handleProgrammatic)
     return () => {
       clearShowTimer()
       document.removeEventListener('click', handleClick, true)
+      window.removeEventListener('popstate', handlePopState)
+      window.removeEventListener(NAVIGATION_START_EVENT, handleProgrammatic)
     }
   }, [])
 

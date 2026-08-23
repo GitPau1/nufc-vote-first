@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useLoadingRouter } from '@/components/layout/NavigationLoading'
 import { Check, Plus, Search, Users, X } from 'lucide-react'
 import { createUserPoll } from '@/lib/actions/polls'
 import { uploadPollImage } from '@/lib/actions/images'
@@ -58,7 +58,7 @@ function getPlayerMeta(player: PollFormPlayer): string {
 }
 
 export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
-  const router = useRouter()
+  const router = useLoadingRouter()
   const [pollType, setPollType] = useState<CreatePollType>(POLL_TYPES[0].type)
   const [textOptions, setTextOptions] = useState(['', ''])
   const [freeOptions, setFreeOptions] = useState<FreeOption[]>([

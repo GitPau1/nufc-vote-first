@@ -1,12 +1,12 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useLoadingRouter } from '@/components/layout/NavigationLoading'
 import { LogOut } from 'lucide-react'
 import { IS_MOCK } from '@/lib/config'
 import { Button } from '@/components/ui/button'
 
 export function MenuLogoutButton() {
-  const router = useRouter()
+  const router = useLoadingRouter()
 
   async function handleLogout() {
     if (IS_MOCK) {

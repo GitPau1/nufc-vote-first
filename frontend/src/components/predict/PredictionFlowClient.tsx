@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useLoadingRouter } from '@/components/layout/NavigationLoading'
 import { Button } from '@/components/ui/button'
 import { LoginModal } from '@/components/polls/LoginModal'
 import { PlayerPickModal } from './PlayerPickModal'
@@ -45,7 +45,7 @@ export function PredictionFlowClient({
   /** 이미 제출한 경기면 내 제출 내역(스코어 + 픽) */
   submitted?: MyPrediction
 }) {
-  const router = useRouter()
+  const router = useLoadingRouter()
   const [step, setStep] = useState<StepKey>('score')
   // [우리, 상대] 예측 스코어.
   const [score, setScore] = useState<[number, number]>([0, 0])
