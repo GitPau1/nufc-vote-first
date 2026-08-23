@@ -70,6 +70,8 @@ export function PredictionFlowClient({
   const [submitting, startTransition] = useTransition()
 
   const allPicked = POSITIONS.every(position => picks[position])
+  // 더블 매치위크 = 이번에 제출할 경기가 2개 이상 — 스코어 입력이 경기별로 쌓이므로 안내 문구가 갈린다.
+  const isMulti = pending.length > 1
   const goBackToList = () => router.push('/predictions')
 
   function changeScore(fixtureId: string, side: 0 | 1, delta: number) {
@@ -124,20 +126,22 @@ export function PredictionFlowClient({
         <div className="mb-7 sm:mb-0">
           <div className="sm:hidden">
             <StepTrack current={step} />
-            <StepHero current={step} />
+            <StepHero current={step} multi={isMulti} />
           </div>
           <div className="hidden sm:block">
-            <StepTrackVertical current={step} />
+            <StepTrackVertical current={step} multi={isMulti} />
           </div>
         </div>
 
         <div>
+          {step !== 'confirm' && (
           <div className="rounded-lg border border-border bg-surface px-4 py-5">
             {step === 'score' && (
               // 더블 매치위크는 경기별 입력 블록이 세로로 쌓인다 — 픽은 주 단위라 다음 스텝에서 한 번만.
               <div className="flex flex-col gap-7">
-                {pending.map(match => (
+                {pending.map((match, i) => (
                   <div key={match.id}>
+                    {isMulti && <MatchLabel index={i} opponent={match.opponent} />}
                     <MatchMeta weekNo={week.weekNo} match={match} />
                     <div className="mt-5 flex items-center justify-center gap-5">
                       <TeamColumn logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
@@ -157,31 +161,38 @@ export function PredictionFlowClient({
             )}
 
             {step === 'pick' && <PositionRow picks={picks} onOpen={setPickPosition} />}
-
-            {step === 'confirm' && (
-              <>
-                <SectionHead title="경기 예측" onEdit={() => setStep('score')} />
-                <div className="flex flex-col gap-4">
-                  {pending.map(match => (
-                    <div key={match.id} className="flex items-center justify-center gap-2 sm:gap-6">
-                      <ConfirmTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
-                      <span className="text-title-2 font-black">
-                        {scores[match.id]?.[0] ?? 0} – {scores[match.id]?.[1] ?? 0}
-                      </span>
-                      <ConfirmTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-6">
-                  <SectionHead title="선수 픽" onEdit={() => setStep('pick')} />
-                </div>
-                <PositionRow picks={picks} onOpen={setPickPosition} />
-                <p className="mt-4 text-center text-caption-1 text-gray-3">
-                  제출한 예측은 수정할 수 없어요
-                </p>
-              </>
-            )}
           </div>
+          )}
+
+          {step === 'confirm' && (
+              <>
+                {/* 더블 매치위크는 경기마다 별도 카드로 나눈다(퍼블리싱 확인 — 한 컨테이너에 합치지 않음).
+                    선수 픽은 주 단위 1세트라 마지막 카드 아래에 한 번만 붙는다. */}
+                {pending.map((match, i) => (
+                  <div key={match.id} className={cn(i > 0 && 'mt-5')}>
+                    {isMulti && <MatchLabel index={i} opponent={match.opponent} />}
+                    <div className="rounded-lg border border-border bg-surface px-4 py-5">
+                      <SectionHead title="경기 예측" onEdit={() => setStep('score')} />
+                      <div className="flex items-center justify-center gap-2 sm:gap-6">
+                        <ConfirmTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
+                        <span className="text-title-2 font-black">
+                          {scores[match.id]?.[0] ?? 0} – {scores[match.id]?.[1] ?? 0}
+                        </span>
+                        <ConfirmTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <div className="mt-5 rounded-lg border border-border bg-surface px-4 py-5">
+                  <SectionHead title="선수 픽" onEdit={() => setStep('pick')} />
+                  <PositionRow picks={picks} onOpen={setPickPosition} />
+                  <p className="mt-4 text-center text-caption-1 text-gray-3">
+                    제출한 예측은 수정할 수 없어요
+                  </p>
+                </div>
+              </>
+          )}
 
           {error && (
             <p role="alert" className="mt-3 text-center text-label-2 font-bold text-negative">
@@ -229,6 +240,15 @@ export function PredictionFlowClient({
         triggerAction="vote"
       />
     </div>
+  )
+}
+
+/** 더블 매치위크에서 이 블록이 어느 경기인지 — 예측/확인/완료/결과 화면이 같은 모양을 쓴다. */
+function MatchLabel({ index, opponent }: { index: number; opponent: string }) {
+  return (
+    <p className="mb-2 text-label-2 font-extrabold text-gray-2">
+      경기 {index + 1} · {NUFC_LABEL} vs {opponent}
+    </p>
   )
 }
 

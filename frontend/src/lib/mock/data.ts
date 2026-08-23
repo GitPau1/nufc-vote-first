@@ -393,7 +393,7 @@ export const MOCK_RANKING = [
   { userId: 'mock-1', rank: 1, name: '김민준', avatarUrl: null, matchPoints: 3, pickPoints: 12, totalPoints: 15, isMe: false },
   { userId: 'mock-2', rank: 2, name: '이서연', avatarUrl: null, matchPoints: 2, pickPoints: 11, totalPoints: 13, isMe: false },
   { userId: 'mock-3', rank: 3, name: '정하윤', avatarUrl: null, matchPoints: 3, pickPoints: 9, totalPoints: 12, isMe: false },
-  { userId: 'mock-me', rank: 4, name: '나', avatarUrl: null, matchPoints: 2, pickPoints: 7, totalPoints: 9, isMe: true },
+  { userId: 'mock-me', rank: 4, name: '나', avatarUrl: null, matchPoints: 3, pickPoints: 5, totalPoints: 8, isMe: true },
   { userId: 'mock-5', rank: 5, name: '박지훈', avatarUrl: null, matchPoints: 0, pickPoints: 8, totalPoints: 8, isMe: false },
   { userId: 'mock-6', rank: 6, name: '최유진', avatarUrl: null, matchPoints: 2, pickPoints: 3, totalPoints: 5, isMe: false },
   { userId: 'mock-7', rank: 7, name: '강태양', avatarUrl: null, matchPoints: 0, pickPoints: 2, totalPoints: 2, isMe: false },

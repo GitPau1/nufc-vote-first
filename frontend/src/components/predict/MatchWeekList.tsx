@@ -76,14 +76,21 @@ const BADGE_VARIANT = {
   outline: 'bg-disabled text-gray-2',
 } as const
 
-function statusMeta(week: PredictWeek): { label: string; variant: keyof typeof BADGE_VARIANT } {
-  if (week.status === 'open') return { label: '진행중', variant: 'default' }
-  if (week.status === 'result') {
-    return week.submitted
-      ? { label: '참여', variant: 'positive' }
-      : { label: '미참여', variant: 'outline' }
-  }
-  return { label: '예정', variant: 'outline' }
+/**
+ * 배지는 경기 단위다 — 더블 매치위크는 한 경기가 이미 끝났는데 다른 경기는 아직 진행중일 수 있어서
+ * 두 상태를 각각 병기해야 한다(2026-08-23 확정).
+ * "참여"는 이미 제출했다는 뜻이라 경기가 안 끝났어도 "진행중"이 아니라 "참여"로 보여준다.
+ */
+function matchStatusMeta(
+  week: PredictWeek,
+  match: PredictWeekMatch,
+): { label: string; variant: keyof typeof BADGE_VARIANT } {
+  if (week.status === 'upcoming') return { label: '예정', variant: 'outline' }
+  const submitted = !!match.myResult
+  if (submitted) return { label: '참여', variant: 'positive' }
+  return match.finished
+    ? { label: '미참여', variant: 'outline' }
+    : { label: '진행중', variant: 'default' }
 }
 
 export function MatchWeekList({
@@ -167,10 +174,10 @@ function WeekSessionCard({
   delayMs: number
   onSelect?: (week: PredictWeek) => void
 }) {
-  const meta = statusMeta(week)
   // 종료된 주차는 결과 화면으로, 열려 있는 주차는 예측/완료 화면으로 들어간다.
   // 미참여 주차도 결과 화면이 "참여하지 않았다"는 안내와 랭킹을 보여주므로 클릭 대상이다.
   const clickable = week.status === 'open' || week.status === 'result'
+  const isMulti = week.matches.length > 1
 
   return (
     <button
@@ -185,11 +192,19 @@ function WeekSessionCard({
           : 'cursor-not-allowed bg-[var(--c-bg)]'
       )}
     >
+      {isMulti && (
+        <p className="px-3.5 pt-3.5 text-caption-1 font-extrabold text-primary-dark">
+          더블 매치위크 · 경기 {week.matches.length}개
+        </p>
+      )}
+
       {week.matches.map((match, i) => (
         <MatchInfoRow
           key={match.id}
           weekNo={week.weekNo}
           match={match}
+          // 더블 매치위크는 경기마다 상태가 달라질 수 있어 배지를 행 안에 각각 붙인다.
+          badge={isMulti ? matchStatusMeta(week, match) : undefined}
           homeTeamName={homeTeamName}
           homeTeamLogoUrl={homeTeamLogoUrl}
           withDivider={i < week.matches.length - 1}
@@ -197,35 +212,50 @@ function WeekSessionCard({
       ))}
 
       <div className="flex items-center justify-between gap-2 border-t border-gray-4 p-3.5 pt-3">
-        <span className={cn(BADGE_BASE, BADGE_VARIANT[meta.variant])}>{meta.label}</span>
-
-        {week.status === 'open' && week.hasPending ? (
-          // 부분 제출 상태(첫 경기만 제출)에서도 남은 경기를 예측하러 다시 들어와야 한다.
-          <span className="flex items-center gap-0.5 text-label-2 font-bold text-primary">
-            {week.submitted ? '남은 경기 예측하기 ›' : '예측하기 ›'}
-          </span>
-        ) : week.status === 'result' ? (
-          <span className="flex items-center gap-0.5 text-label-2 font-bold text-primary">결과보기 ›</span>
-        ) : week.submitted ? (
-          <span className="text-label-2 font-extrabold text-black">제출 완료</span>
-        ) : week.status === 'upcoming' ? (
-          <Lock className="h-4 w-4 text-gray-3" aria-label="예측 오픈 전" />
-        ) : null}
+        {/* 단일 경기 주차는 배지가 하단에 하나만 온다 — 더블 매치위크는 위 행들에 이미 붙어 있다. */}
+        {isMulti ? <span /> : <StatusBadge meta={matchStatusMeta(week, week.matches[0])} />}
+        <WeekAction week={week} />
       </div>
     </button>
   )
+}
+
+function StatusBadge({ meta }: { meta: ReturnType<typeof matchStatusMeta> }) {
+  return <span className={cn(BADGE_BASE, BADGE_VARIANT[meta.variant])}>{meta.label}</span>
+}
+
+/**
+ * 카드 우측 액션 — 이 주차를 누르면 어디로 가는지 그대로 적는다.
+ * 아직 제출할 경기가 남았으면 예측 플로우, 다 제출했지만 아직 안 끝났으면 제출완료 화면,
+ * 전부 끝났으면 결과 화면(2026-08-23 확정).
+ */
+function WeekAction({ week }: { week: PredictWeek }) {
+  const linkClass = 'flex items-center gap-0.5 text-label-2 font-bold text-primary'
+
+  if (week.status === 'open') {
+    // 부분 제출 상태(첫 경기만 제출)에서도 남은 경기를 예측하러 다시 들어와야 한다.
+    if (week.hasPending) {
+      return <span className={linkClass}>{week.submitted ? '남은 경기 예측하기 ›' : '예측하기 ›'}</span>
+    }
+    return <span className={linkClass}>제출완료 ›</span>
+  }
+  if (week.status === 'result') return <span className={linkClass}>결과보기 ›</span>
+  return <Lock className="h-4 w-4 text-gray-3" aria-label="예측 오픈 전" />
 }
 
 /** 경기 하나의 팀/스코어/킥오프 + 내 예측 표시 — 순수 정보 행(클릭 대상이 아니다). */
 function MatchInfoRow({
   weekNo,
   match,
+  badge,
   homeTeamName,
   homeTeamLogoUrl,
   withDivider,
 }: {
   weekNo: number
   match: PredictWeekMatch
+  /** 있으면 라운드 표기 대신 이 경기의 상태 배지를 붙인다(더블 매치위크) */
+  badge?: ReturnType<typeof matchStatusMeta>
   homeTeamName: string
   homeTeamLogoUrl?: string
   withDivider: boolean
@@ -240,7 +270,11 @@ function MatchInfoRow({
     <div className={cn('p-3.5', withDivider && 'border-b border-gray-4')}>
       <div className="mb-4 flex items-center justify-between">
         <span className="text-caption-1 font-bold text-gray-3">{match.competition ?? '프리미어리그'}</span>
-        <span className="text-caption-1 font-bold text-gray-3">{weekNo}라운드</span>
+        {badge ? (
+          <StatusBadge meta={badge} />
+        ) : (
+          <span className="text-caption-1 font-bold text-gray-3">{weekNo}라운드</span>
+        )}
       </div>
 
       <div className="flex items-center justify-center gap-4 py-1.5">

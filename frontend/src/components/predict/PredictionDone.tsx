@@ -51,6 +51,12 @@ export function PredictionDone({
   candidates: PickCandidates
 }) {
   const picks = resolvePicks(prediction, candidates)
+  const submittedMatches = week.matches.filter(match => prediction.scores[match.id])
+  // 마감돼서 제출하지 못한 경기 — 결과가 아직 안 나왔어도 "참여하지 못했다"는 사실은 지금 알려줘야 한다.
+  const missedMatches = week.matches.filter(match => !prediction.scores[match.id])
+  const isMulti = week.matches.length > 1
+  // 카운트다운은 아직 킥오프 전인 경기가 여러 개일 때만 "늦은 경기 기준"임을 밝힌다.
+  const pendingCount = week.matches.filter(match => !match.finished).length
 
   const intro = (align: 'center' | 'left') => (
     <div className={align === 'center' ? 'text-center' : 'text-left'}>
@@ -69,16 +75,31 @@ export function PredictionDone({
         </div>
 
         <div>
-          <Countdown targetIso={week.deadlineAt} />
+          <Countdown targetIso={week.deadlineAt} pendingCount={pendingCount} />
+
+          {/* 제출하지 못한 경기(킥오프이 지나 마감)도 같은 화면에 함께 보여준다 — 참여 마감은 경기
+              단위라 더블 매치위크에서 한 경기만 놓치는 상황이 정상이다(2026-08-23 확정). */}
+          {missedMatches.map(match => (
+            <div key={match.id} className="mb-4">
+              {isMulti && (
+                <p className="mb-2 text-label-2 font-extrabold text-gray-2">
+                  {NUFC_LABEL} vs {match.opponent}
+                </p>
+              )}
+              <div className="rounded-lg border border-gray-4 bg-surface px-4 py-5">
+                <p className="mb-2.5 text-body-2-normal font-bold">경기 예측</p>
+                <p className="px-4 pb-4 pt-5 text-center text-label-1-normal text-gray-2">
+                  이 경기는 예측 마감 시간이 지나 참여하지 못했어요
+                </p>
+              </div>
+            </div>
+          ))}
 
           <div className="rounded-lg border border-gray-4 bg-surface px-4 py-5">
             <p className="mb-2.5 text-body-2-normal font-bold">경기 예측</p>
             <div className="flex flex-col gap-4">
-              {/* 내가 제출한 경기만 — 킥오프이 지나 예측하지 못한 경기는 여기 없다. */}
-              {week.matches.map(match => {
-                const submittedScore = prediction.scores[match.id]
-                if (!submittedScore) return null
-                const [ourScore, theirScore] = submittedScore
+              {submittedMatches.map(match => {
+                const [ourScore, theirScore] = prediction.scores[match.id]!
                 return (
                   <div key={match.id} className="flex items-center justify-center gap-2 sm:gap-6">
                     <MatchupTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
@@ -119,7 +140,7 @@ export function PredictionDone({
  * 킥오프까지 남은 시간. 1초마다 텍스트만 갱신한다(퍼블리싱 `updateCountdownDisplay`와 같은 방식).
  * 첫 렌더는 서버와 같은 자리표시자(`-`/`--`)를 그려 하이드레이션 불일치를 피한다.
  */
-function Countdown({ targetIso }: { targetIso: string | null }) {
+function Countdown({ targetIso, pendingCount }: { targetIso: string | null; pendingCount: number }) {
   const target = targetIso ? new Date(targetIso).getTime() : null
   const [remaining, setRemaining] = useState<number | null>(null)
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -153,7 +174,9 @@ function Countdown({ targetIso }: { targetIso: string | null }) {
 
   return (
     <div className="mb-4 rounded-lg bg-[#0c2340] px-4 pb-[18px] pt-5 text-center">
-      <p className="mb-2.5 text-caption-1 font-bold text-white/65">결과 반영까지</p>
+      <p className="mb-2.5 text-caption-1 font-bold text-white/65">
+        결과 반영까지{pendingCount > 1 && ' (늦은 경기 종료 기준)'}
+      </p>
       <div className="flex items-start justify-center gap-2.5">
         {segments.map((segment, i) => (
           <div key={segment.unit} className="flex items-start gap-2.5">
