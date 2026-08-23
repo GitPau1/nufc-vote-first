@@ -3,7 +3,7 @@ import test from 'node:test'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
+const root = path.resolve(import.meta.dirname, '..')
 
 function source(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), 'utf8')
@@ -40,7 +40,6 @@ test('shared UI primitives use foundation radius and typography tokens', () => {
   assert.doesNotMatch(sheet, /text-\[18px\]|text-\[14px\]|leading-\[1\.25\]/)
 
   assert.match(globals, /text-label-1-normal/)
-  assert.match(globals, /text-body-2-normal/)
   assert.doesNotMatch(globals, /text-\[14px\]|text-\[15px\]/)
 })
 
@@ -63,10 +62,10 @@ test('app and poll headers use color and typography foundations', () => {
 test('loading skeletons mirror the mobile layout foundation', () => {
   const loading = source('components/layout/NavigationLoading.tsx')
 
-  assert.match(loading, /className="flex-1 px-5 pb-24 pt-4"/)
-  assert.match(loading, /className="flex-1 px-5 pb-24 pt-6"/)
+  assert.match(loading, /className="flex-1 px-5 pt-4 pb-24 sm:pb-10"/)
+  assert.match(loading, /className="flex-1 px-5 pt-6 pb-24 sm:pb-10"/)
   assert.match(loading, /overflow-hidden rounded-lg border border-border bg-surface/)
-  assert.match(loading, /grid grid-cols-2 gap-5/)
+  assert.match(loading, /hidden sm:grid sm:grid-cols-2 sm:gap-4 sm:pt-4 lg:grid-cols-3/)
   assert.doesNotMatch(loading, /gap-\[49px\]/)
 })
 

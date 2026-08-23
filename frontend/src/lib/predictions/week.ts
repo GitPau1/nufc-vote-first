@@ -5,6 +5,7 @@
 
 import type { PredictWeek } from '@/components/predict/MatchWeekList'
 import type { MyPredictionMap } from '@/lib/queries/predictions'
+import type { Position } from '@/lib/predictions/candidates'
 
 export type FixtureRow = {
   fixture_id: number
@@ -25,16 +26,16 @@ export type FixtureRow = {
 export const NUFC_TEAM_ID = 10261
 export const NUFC_LABEL = '뉴캐슬'
 
-/** 예측 오픈 시점: 킥오프 7일 전. */
+/** 예측 오픈 시점: 그 주 첫 경기 킥오프 7일 전. 마감은 경기별 킥오프이라 여기 없다. */
 export const PREDICT_OPEN_BEFORE_MS = 7 * 86_400_000
 
 const KST_OFFSET_MS = 9 * 3_600_000
 
 /**
- * 'open'=예측 가능, 'result'=끝나서 결과 표시, 'upcoming'=잠김(아직 안 열렸거나 이미 닫힘).
- * 예측/제출의 단위는 경기(fixture) 하나다 — 같은 주의 경기들도 각각 독립된 세션이다.
+ * 'open'=예측 가능, 'result'=그 주 경기가 다 끝나 결과 표시, 'upcoming'=잠김(아직 안 열렸거나 이미 닫힘).
+ * 예측/제출의 단위는 주(week) 하나다 — 더블 매치위크의 두 경기도 한 세션에서 함께 제출된다.
  */
-export type MatchStatus = 'open' | 'upcoming' | 'result'
+export type WeekStatus = 'open' | 'upcoming' | 'result'
 
 export type MatchView = {
   id: string
@@ -47,24 +48,30 @@ export type MatchView = {
   kickoff: string
   /** '오후 8:00' */
   kickoffTime: string
-  /** 킥오프 원본 시각(ISO). 완료 화면 카운트다운의 목표 시각. 없으면 null. */
+  /** 킥오프 원본 시각(ISO). 없으면 null. */
   kickoffAt: string | null
-  status: MatchStatus
+  /** 이 경기는 예측 마감(킥오프 지남/이미 시작/일정 미정) — 주차가 열려 있어도 제출 대상에서 빠진다. */
+  locked: boolean
+  /** 종료된 경기는 주차 상태와 무관하게 스코어를 그대로 보여준다. */
+  finished: boolean
   /** 종료된 경기의 [우리, 상대] 스코어. 스코어가 없으면 null. */
   actual: [number, number] | null
 }
 
 export type WeekGroup = {
   weekNo: number
-  /** '2026-34' — 목록 그룹 키. 연도가 넘어가도 안 겹친다. */
+  /** '2026-34' — 목록 그룹 키이자 예측 세션 URL 파라미터. 연도가 넘어가도 안 겹친다. */
   weekKey: string
   /** '2026-08' — 목록 화면 월 필터용 */
   monthKey: string
+  /** 그 주 마지막 경기 킥오프(ISO) = 세션 마감 시각. 경기 없는 주는 null. */
+  deadlineAt: string | null
+  status: WeekStatus
   matches: MatchView[]
 }
 
-/** 예측 플로우/결과 화면이 다루는 세션 하나 = 경기 하나 + 표시용 주차 번호(라운드). */
-export type MatchSession = MatchView & { weekNo: number }
+/** 예측 플로우/완료 화면이 다루는 세션 하나 = 주차 하나. */
+export type WeekSession = WeekGroup
 
 /** fixtures가 FotMob 동기화 데이터라 엠블럼도 같은 CDN을 쓴다. */
 export function teamLogoUrl(teamId: number): string {
@@ -92,13 +99,35 @@ export function weekKey(kst: Date): string {
   return `${thursday.getUTCFullYear()}-${String(isoWeek(kst)).padStart(2, '0')}`
 }
 
-export function fixtureStatus(fixture: FixtureRow, now: number): MatchStatus {
-  if (fixture.finished) return 'result'
-  const kickoff = fixture.kickoff_at ? new Date(fixture.kickoff_at).getTime() : null
-  if (kickoff === null) return 'upcoming'
-  // 진행 중(started && !finished)인 경기도 upcoming — 예측만 막으면 되고, 라이브 상태는 아직 화면에 없다.
-  if (fixture.started || now >= kickoff) return 'upcoming'
-  return now >= kickoff - PREDICT_OPEN_BEFORE_MS ? 'open' : 'upcoming'
+/**
+ * 경기 단위 마감 판정. 킥오프가 지났거나 이미 시작했거나 일정이 미정이면 그 경기는 예측 불가다.
+ * 주차 세션의 마감(= 그 주 **마지막** 경기 킥오프)은 여기서 파생된다 —
+ * 마지막 경기 킥오프이 지나면 잠기지 않은 경기가 하나도 남지 않기 때문이다.
+ */
+export function isMatchLocked(fixture: FixtureRow, now: number): boolean {
+  if (!fixture.kickoff_at) return true
+  return fixture.started || now >= new Date(fixture.kickoff_at).getTime()
+}
+
+/**
+ * 주차 하나의 예측 세션 상태.
+ * - 오픈 시작: 그 주 첫 경기 킥오프 7일 전
+ * - 마감: 그 주 마지막 경기 킥오프 — 아직 시작 안 한 경기가 하나라도 남아 있으면 계속 열려 있다.
+ *   그래서 첫 경기가 끝난 뒤 들어온 사용자도 남은 경기만 예측할 수 있다(2026-08-23 확정).
+ * DB RLS(20260823130000_predictions_weekly_window.sql)도 같은 기준을 쓴다.
+ */
+export function weekStatus(fixtures: FixtureRow[], now: number): WeekStatus {
+  const first = fixtures
+    .map(f => (f.kickoff_at ? new Date(f.kickoff_at).getTime() : null))
+    .filter((t): t is number => t !== null)
+    .sort((a, b) => a - b)[0]
+  if (first === undefined) return 'upcoming'
+
+  // 제출할 경기가 하나도 안 남았으면 닫힌다. 다 끝났으면 결과 표시.
+  if (fixtures.every(f => isMatchLocked(f, now))) {
+    return fixtures.every(f => f.finished) ? 'result' : 'upcoming'
+  }
+  return now >= first - PREDICT_OPEN_BEFORE_MS ? 'open' : 'upcoming'
 }
 
 export function toMatchView(fixture: FixtureRow, now: number): MatchView {
@@ -116,7 +145,8 @@ export function toMatchView(fixture: FixtureRow, now: number): MatchView {
     kickoff: kst ? `${kst.getUTCMonth() + 1}/${kst.getUTCDate()}` : '',
     kickoffTime: kst ? formatKickoffTime(kst) : '',
     kickoffAt: fixture.kickoff_at,
-    status: fixtureStatus(fixture, now),
+    locked: isMatchLocked(fixture, now),
+    finished: fixture.finished,
     actual:
       fixture.finished && ourScore !== null && theirScore !== null
         ? [ourScore, theirScore]
@@ -133,7 +163,7 @@ function formatKickoffTime(kst: Date): string {
 }
 
 /**
- * 킥오프 기준 ISO 주차로 묶는다. 그룹은 목록의 표시 단위일 뿐이고 예측 세션은 경기 하나다.
+ * 킥오프 기준 ISO 주차로 묶는다. 그룹 하나가 예측 세션 하나다.
  * 경기가 없는 중간 주차도 빈 그룹으로 채워 "이번 주는 예정된 경기가 없어요"가 그대로 나오게 한다.
  */
 export function groupFixturesByWeek(fixtures: FixtureRow[], now: number): WeekGroup[] {
@@ -143,6 +173,7 @@ export function groupFixturesByWeek(fixtures: FixtureRow[], now: number): WeekGr
 
   const groups: WeekGroup[] = []
   const byKey = new Map<string, WeekGroup>()
+  const rowsByKey = new Map<string, FixtureRow[]>()
 
   for (const fixture of dated) {
     const kst = toKst(fixture.kickoff_at!)
@@ -153,9 +184,19 @@ export function groupFixturesByWeek(fixtures: FixtureRow[], now: number): WeekGr
       fillGapWeeks(groups, byKey, kst)
       group = emptyWeek(kst, key)
       byKey.set(key, group)
+      rowsByKey.set(key, [])
       groups.push(group)
     }
+    rowsByKey.get(key)!.push(fixture)
     group.matches.push(toMatchView(fixture, now))
+  }
+
+  // 상태와 마감 시각은 주차 단위 판정이라 그룹이 다 모인 뒤에 계산한다.
+  for (const group of groups) {
+    const rows = rowsByKey.get(group.weekKey) ?? []
+    // dated가 킥오프 오름차순이라 마지막 원소가 그 주 마지막 경기 = 세션 마감이다.
+    group.deadlineAt = rows[rows.length - 1]?.kickoff_at ?? null
+    group.status = weekStatus(rows, now)
   }
 
   return groups
@@ -166,6 +207,8 @@ function emptyWeek(kst: Date, key: string): WeekGroup {
     weekNo: isoWeek(kst),
     weekKey: key,
     monthKey: `${kst.getUTCFullYear()}-${String(kst.getUTCMonth() + 1).padStart(2, '0')}`,
+    deadlineAt: null,
+    status: 'upcoming',
     matches: [],
   }
 }
@@ -192,13 +235,50 @@ function fillGapWeeks(groups: WeekGroup[], byKey: Map<string, WeekGroup>, kst: D
   groups.push(...gaps)
 }
 
-/** fixture_id로 예측 세션(경기 + 주차 번호)을 찾는다. 없으면 null. */
-export function findMatchSession(weeks: WeekGroup[], fixtureId: string): MatchSession | null {
-  for (const week of weeks) {
-    const match = week.matches.find(m => m.id === fixtureId)
-    if (match) return { ...match, weekNo: week.weekNo }
+/**
+ * 그 주에서 아직 제출 가능한 경기. 이미 시작·종료된 경기는 빠지므로,
+ * 첫 경기가 끝난 뒤 처음 들어온 사용자는 남은 경기만 예측한다.
+ */
+export function submittableMatches(week: WeekGroup): MatchView[] {
+  return week.matches.filter(match => !match.locked)
+}
+
+/** weekKey('2026-35')로 예측 세션(주차)을 찾는다. 없으면 null. */
+export function findWeekSession(weeks: WeekGroup[], key: string): WeekSession | null {
+  return weeks.find(week => week.weekKey === key) ?? null
+}
+
+/** 내가 그 주에 제출한 내역 — 스코어도 픽도 경기별이다(2026-08-23 확정). */
+export type WeekPrediction = {
+  /** fixture_id → [우리, 상대] 예측 스코어 */
+  scores: Record<string, [number, number]>
+  /** fixture_id → 그 경기의 포지션별 픽 */
+  picks: Record<string, Record<Position, { playerId: number; multiplier: number }>>
+}
+
+/**
+ * 제출은 주 단위 1회(그 주 경기 전부를 한 번에 insert)라 행이 하나라도 있으면 제출한 것이다.
+ * 픽은 경기별로 다를 수 있어 경기마다 따로 담는다 — 더블 매치위크에서 두 경기의 픽이 서로 다르다.
+ */
+export function findWeekPrediction(
+  week: WeekGroup,
+  myPredictions: MyPredictionMap,
+): WeekPrediction | undefined {
+  const scores: Record<string, [number, number]> = {}
+  const picks: WeekPrediction['picks'] = {}
+  let found = false
+
+  for (const match of week.matches) {
+    const mine = myPredictions[match.id]
+    if (!mine) continue
+    const [home, away] = mine.score
+    // MyPrediction.score는 [홈, 원정] — 화면은 항상 [우리, 상대]로 다룬다.
+    scores[match.id] = match.isHome ? [home, away] : [away, home]
+    picks[match.id] = mine.picks
+    found = true
   }
-  return null
+
+  return found ? { scores, picks } : undefined
 }
 
 /**
@@ -212,6 +292,11 @@ export function toPredictWeeks(
 ): PredictWeek[] {
   return weeks.map(week => ({
     weekNo: week.weekNo,
+    weekKey: week.weekKey,
+    status: week.status,
+    submitted: week.matches.some(match => myPredictions[match.id]),
+    // 부분 제출이 가능하다 — 첫 경기 제출 후에도 남은 경기가 있으면 다시 들어와야 한다.
+    hasPending: submittableMatches(week).some(match => !myPredictions[match.id]),
     matches: week.matches.map(match => ({
       id: match.id,
       competition: match.competition || undefined,
@@ -220,7 +305,8 @@ export function toPredictWeeks(
       isHome: match.isHome,
       kickoff: match.kickoff,
       kickoffTime: match.kickoffTime,
-      status: match.status,
+      locked: match.locked,
+      finished: match.finished,
       myResult: myPredictions[match.id] ? { predicted: myPredictions[match.id].score } : undefined,
       // MatchView.actual은 [우리, 상대]인데 PredictWeekMatch.actual은 [홈, 원정]이라 원정 경기는 뒤집는다.
       actual: match.actual

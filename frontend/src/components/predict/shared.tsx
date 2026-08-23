@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 /** 팀 엠블럼(FotMob CDN URL은 lib/predictions/week.ts의 teamLogoUrl이 만든다). 실패하면 이니셜 원형으로 폴백. */
@@ -55,5 +56,26 @@ export function PlayerPhoto({ url, size = 64 }: { url: string | null; size?: num
     >
       <Silhouette />
     </span>
+  )
+}
+
+/** 공유하기 = 현재 주소 링크 복사(2026-08-22 결정). 퍼블리싱은 라벨만 있고 동작이 없었다. */
+export function ShareButton() {
+  const [copied, setCopied] = useState(false)
+
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // 클립보드 권한이 없거나 보안 컨텍스트가 아니면 조용히 넘긴다 — 주소창에서 직접 복사할 수 있다.
+    }
+  }
+
+  return (
+    <Button className="w-40" onClick={copyLink}>
+      {copied ? '링크 복사 완료' : '↗ 공유하기'}
+    </Button>
   )
 }

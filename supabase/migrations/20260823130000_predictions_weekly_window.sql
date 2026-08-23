@@ -1,0 +1,61 @@
+-- 승부예측 제출 단위를 경기 → 주(week)로 변경 (FR-017: 픽은 주 단위 집계).
+--
+-- 테이블 구조는 그대로다. predictions는 여전히 경기당 1행이고, 주 단위 제출은
+-- 그 주에서 아직 킥오프이 안 지난 경기 전부를 한 번의 insert로 넣는다(lib/actions/predictions.ts).
+-- 다중 행 insert는 단일 statement라 부분 제출이 생기지 않으므로 별도 테이블/트랜잭션이 필요없다.
+--
+-- 바뀌는 건 "언제 넣을 수 있는가" 하나:
+--   오픈 시작 = 그 주 첫 경기 킥오프 7일 전  (기존: 그 경기 자신의 킥오프 7일 전)
+--   마감      = 각 경기 킥오프              (기존과 동일)
+-- 즉 세션은 그 주 마지막 경기 킥오프까지 열려 있고, 이미 시작된 경기만 개별로 닫힌다.
+-- 첫 경기가 끝난 뒤 처음 들어온 사용자도 남은 경기는 예측할 수 있다(2026-08-23 확정).
+--
+-- ponytail: "같은 주의 행들은 픽이 같다"는 DB 제약이 아니라 서버 액션의 불변식이다.
+-- predictions에 쓰는 경로가 그 액션뿐이라 지금은 충분하다. 관리자 직접 입력 같은 다른 쓰기
+-- 경로가 생기면 (user_id, week_start) 부모 테이블로 승격할 것.
+
+-- 주차 경계는 한국시간 월요일 시작 = lib/predictions/week.ts의 ISO 주차와 같은 기준.
+create or replace function public.prediction_week_start(target_fixture bigint)
+returns timestamp
+language sql
+stable
+as $$
+  select date_trunc('week', f.kickoff_at at time zone 'Asia/Seoul')
+  from public.fixtures f
+  where f.fixture_id = target_fixture;
+$$;
+
+-- 그 경기가 속한 주의 첫 킥오프 = 세션이 열리는 기준점. 취소 경기와 일정 미정(kickoff_at is null)은
+-- 세지 않는다 — 목록 화면도 같은 기준으로 걸러낸다(groupFixturesByWeek).
+create or replace function public.prediction_week_first_kickoff(target_fixture bigint)
+returns timestamptz
+language sql
+stable
+as $$
+  select min(f.kickoff_at)
+  from public.fixtures f
+  where f.cancelled = false
+    and f.kickoff_at is not null
+    and date_trunc('week', f.kickoff_at at time zone 'Asia/Seoul')
+      = public.prediction_week_start(target_fixture);
+$$;
+
+-- 마감 판정을 클라이언트에 맡기지 않는다. week.ts의 isMatchLocked/weekStatus와 같은 기준:
+--   그 경기가 아직 시작 안 했고 킥오프이 미래여야 하고(경기별 마감),
+--   그 주 첫 경기 킥오프이 7일 이내여야 한다(세션 오픈).
+drop policy if exists "predictions: insert own while open" on public.predictions;
+
+create policy "predictions: insert own while week open"
+  on public.predictions for insert
+  to authenticated
+  with check (
+    auth.uid() = user_id
+    and exists (
+      select 1 from public.fixtures f
+      where f.fixture_id = predictions.fixture_id
+        and f.cancelled  = false
+        and f.started    = false
+        and f.kickoff_at > now()
+    )
+    and public.prediction_week_first_kickoff(predictions.fixture_id) < now() + interval '7 days'
+  );
