@@ -1,5 +1,6 @@
-import type { PlayerRow, PollOptionRow } from '@/types/database'
+import type { PlayerRow, PollOptionRow, SeasonSquadRow } from '@/types/database'
 import type { PollDetail, PollListItem, VoteCountMap } from '@/lib/queries/polls'
+import type { FixtureRow } from '@/lib/predictions/week'
 
 // ── 선수 ────────────────────────────────────────────────────
 const isak: PlayerRow = {
@@ -292,4 +293,94 @@ export const MOCK_PARTICIPATED: ParticipatedPoll[] = [
     votedAt: new Date(Date.now() - 18 * 86400_000).toISOString(),
     pollStatus: 'closed',
   },
+]
+
+// ── 승부예측: fixtures (mock 모드용) ─────────────────────────
+// 실 스키마와 같은 모양의 행. 날짜는 오늘 기준 상대값이라 목록의 종료/진행중/예정이 항상 다 나온다.
+const daysFromNow = (days: number, hour = 20) => {
+  const d = new Date(Date.now() + days * 86400_000)
+  d.setHours(hour, 0, 0, 0)
+  return d.toISOString()
+}
+
+const NUFC = { id: 10261, name: 'Newcastle' }
+
+function mockFixture(
+  fixtureId: number,
+  opponent: { id: number; name: string },
+  { days, isHome, competition, score }: { days: number; isHome: boolean; competition: string; score?: [number, number] },
+): FixtureRow {
+  const finished = score !== undefined
+  const home = isHome ? NUFC : opponent
+  const away = isHome ? opponent : NUFC
+  const [ourScore, theirScore] = score ?? [null, null]
+
+  return {
+    fixture_id: fixtureId,
+    competition_name: competition,
+    kickoff_at: daysFromNow(days),
+    home_id: home.id,
+    home_name: home.name,
+    home_score: isHome ? ourScore : theirScore,
+    away_id: away.id,
+    away_name: away.name,
+    away_score: isHome ? theirScore : ourScore,
+    started: finished,
+    finished,
+    cancelled: false,
+  }
+}
+
+export const MOCK_FIXTURES: FixtureRow[] = [
+  mockFixture(9001, { id: 8602, name: 'Wolves' },     { days: -19, isHome: true,  competition: 'Premier League', score: [1, 1] }),
+  mockFixture(9002, { id: 8456, name: 'Man City' },   { days: -12, isHome: false, competition: 'Premier League', score: [0, 2] }),
+  mockFixture(9003, { id: 8650, name: 'Liverpool' },  { days: -5,  isHome: true,  competition: 'Premier League', score: [2, 0] }),
+  mockFixture(9004, { id: 9825, name: 'Arsenal' },    { days: 2,   isHome: false, competition: 'Premier League' }),
+  mockFixture(9005, { id: 8455, name: 'Chelsea' },    { days: 9,   isHome: true,  competition: 'Premier League' }),
+  // 9005와 같은 주 — 더블 매치위크(경기 2개 = 한 예측 세션) 확인용
+  mockFixture(9006, { id: 9937, name: 'Brentford' },  { days: 8,   isHome: false, competition: 'EFL Cup' }),
+  mockFixture(9007, { id: 8668, name: 'Everton' },    { days: 30,  isHome: true,  competition: 'Premier League' }),
+]
+
+// ── 승부예측 선수 픽 후보 (season_squads 행과 같은 모양) ─────────────────────
+// FotMob player id는 실제 값 — 목 모드에서도 선수 사진이 CDN에서 그대로 뜬다.
+const squadMember = (
+  fotmobPlayerId: number,
+  name: string,
+  nameKo: string,
+  position: SeasonSquadRow['position'],
+  shirtNumber: number,
+  nationality: string,
+  dateOfBirth: string,
+  multiplier: number,
+): SeasonSquadRow => ({
+  season_id: 'mock-season',
+  fotmob_player_id: fotmobPlayerId,
+  player_id: null,
+  name,
+  name_ko: nameKo,
+  shirt_number: shirtNumber,
+  position,
+  position_ids_desc: null,
+  nationality_code: null,
+  nationality_name: nationality,
+  date_of_birth: dateOfBirth,
+  transfer_value: null,
+  prediction_multiplier: multiplier,
+  synced_at: new Date().toISOString(),
+})
+
+export const MOCK_SQUAD: SeasonSquadRow[] = [
+  squadMember(577175, 'Sven Botman',        '보트만',     'DEF', 4,  '네덜란드', '2000-01-12', 2.1),
+  squadMember(180254, 'Kieran Trippier',    '트리피어',   'DEF', 2,  '잉글랜드', '1990-09-19', 1.4),
+  squadMember(184644, 'Fabian Schär',       '스카르',     'DEF', 5,  '스위스',   '1991-12-20', 1.9),
+  squadMember(1140067, 'Tino Livramento',   '리브라멘투', 'DEF', 21, '잉글랜드', '2002-11-12', 2.6),
+  squadMember(869678, 'Bruno Guimarães',    '기마랑이스', 'MID', 39, '브라질',   '1997-11-16', 1.7),
+  squadMember(1088651, 'Sandro Tonali',     '토날리',     'MID', 8,  '이탈리아', '2000-05-08', 1.5),
+  squadMember(586826, 'Joe Willock',        '윌록',       'MID', 28, '잉글랜드', '1999-08-20', 1.9),
+  squadMember(725364, 'Alexander Isak',     '이사크',     'FWD', 14, '스웨덴',   '1999-09-21', 1.3),
+  squadMember(1146398, 'Anthony Gordon',    '고든',       'FWD', 10, '잉글랜드', '2001-02-24', 1.6),
+  squadMember(487126, 'Harvey Barnes',      '반스',       'FWD', 15, '잉글랜드', '1997-12-09', 2.0),
+  // GK는 픽 후보에서 걸러지는지 확인용
+  squadMember(233450, 'Nick Pope',          '포프',       'GK',  22, '잉글랜드', '1992-04-19', 1.1),
 ]
