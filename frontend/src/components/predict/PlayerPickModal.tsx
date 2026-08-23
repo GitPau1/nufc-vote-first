@@ -70,7 +70,7 @@ export function PlayerPickModal({
         >
           <DialogPrimitive.Content
             className={cn(
-              'relative w-full max-w-shell max-h-[78vh] overflow-y-auto rounded-t-lg bg-surface px-4 py-5',
+              'relative w-full max-w-shell max-h-[78vh] overflow-y-auto hide-scrollbar rounded-t-lg bg-surface px-4 py-5',
               'sm:max-w-[420px] sm:max-h-[80vh] sm:rounded-lg',
               // 가벼운 페이드 + 살짝 위로(8px) 올라오는 모션 하나로 모바일/데스크탑 공통 처리.
               'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-2 data-[state=open]:duration-200 data-[state=open]:ease-out',

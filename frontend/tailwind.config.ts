@@ -16,7 +16,7 @@ const config = {
         ring:       "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        black:      "var(--c-black)",
+        black:      "rgb(var(--c-black) / <alpha-value>)",
         "gray-1":   "var(--c-gray-1)",
         "gray-2":   "var(--c-gray-2)",
         "gray-3":   "var(--c-gray-3)",

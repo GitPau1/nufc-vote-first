@@ -12,7 +12,7 @@
     --c-primary-dark: #1a9fd4;
     --c-primary-on: #ffffff;
 
-    --c-black: #111111;
+    --c-black: 17 17 17; /* rgb 채널값 — bg-black/45 같은 알파 수정자 지원 */
     --c-gray-1: #333333;
     --c-gray-2: #666666;
     --c-gray-3: #a8a8a8;
