@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "node --test \"src/**/*.test.mjs\"",
     "test:header-auth": "node --test src/components/layout/header-auth-status.test.mjs",
     "test:prefetch-policy": "node --test src/components/prefetch-policy.test.mjs",
     "test:middleware-auth": "node --test src/middleware-auth.test.mjs",

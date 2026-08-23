@@ -3,7 +3,7 @@ import test from 'node:test'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname)
+const __dirname = import.meta.dirname
 const file = fs.readFileSync(path.join(__dirname, 'MyPageClient.tsx'), 'utf8')
 
 test('my page is ordered as account info, participated polls, account deletion', () => {

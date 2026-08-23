@@ -4,7 +4,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import ts from 'typescript'
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname)
+const __dirname = import.meta.dirname
 const sourcePath = path.join(__dirname, 'rating.ts')
 
 function loadRatingModule() {
