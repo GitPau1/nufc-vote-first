@@ -385,3 +385,46 @@ export const MOCK_SQUAD: SeasonSquadRow[] = [
   // GK는 픽 후보에서 걸러지는지 확인용
   squadMember(233450, 'Nick Pope',          '포프',       'GK',  22, '잉글랜드', '1992-04-19', 1.1),
 ]
+
+// ── 승부예측 랭킹 (week_leaderboard / season_leaderboard 결과와 같은 모양) ─────
+// 목 모드는 로그인 사용자가 고정이라 isMe도 고정이다. 실제 view는 순위 변동을 내려주지 않으므로
+// 여기에도 delta는 없다.
+export const MOCK_RANKING = [
+  { userId: 'mock-1', rank: 1, name: '김민준', avatarUrl: null, matchPoints: 3, pickPoints: 12, totalPoints: 15, isMe: false },
+  { userId: 'mock-2', rank: 2, name: '이서연', avatarUrl: null, matchPoints: 2, pickPoints: 11, totalPoints: 13, isMe: false },
+  { userId: 'mock-3', rank: 3, name: '정하윤', avatarUrl: null, matchPoints: 3, pickPoints: 9, totalPoints: 12, isMe: false },
+  { userId: 'mock-me', rank: 4, name: '나', avatarUrl: null, matchPoints: 2, pickPoints: 7, totalPoints: 9, isMe: true },
+  { userId: 'mock-5', rank: 5, name: '박지훈', avatarUrl: null, matchPoints: 0, pickPoints: 8, totalPoints: 8, isMe: false },
+  { userId: 'mock-6', rank: 6, name: '최유진', avatarUrl: null, matchPoints: 2, pickPoints: 3, totalPoints: 5, isMe: false },
+  { userId: 'mock-7', rank: 7, name: '강태양', avatarUrl: null, matchPoints: 0, pickPoints: 2, totalPoints: 2, isMe: false },
+  { userId: 'mock-8', rank: 8, name: '윤소율', avatarUrl: null, matchPoints: 0, pickPoints: 0, totalPoints: 0, isMe: false },
+]
+
+// ── 승부예측 채점 결과 (prediction_results view 행과 같은 모양) ─────────────
+// 목 모드에서 결과 화면의 "참여" 경로를 눌러볼 수 있게 종료된 경기 두 건에만 결과를 심는다.
+// 9002(맨시티 원정)는 일부러 비워서 "마감돼서 참여하지 못한 경기" 경로도 같이 확인된다.
+// 배당(×2.1 등)은 제출 스냅샷에서 오므로 여기 없다 — 목 모드에선 제출 쿠키가 없으면 배당 줄이 빠진다.
+export const MOCK_RESULTS = {
+  '9001': {
+    predicted: [1, 1] as [number, number],
+    matchPoints: 3,
+    pickPoints: 5,
+    totalPoints: 8,
+    picks: {
+      DEF: { playerId: 577175, rating: 7.8, points: 5 },
+      MID: { playerId: 869678, rating: 6.3, points: 0 },
+      FWD: { playerId: 725364, rating: 5.4, points: 0 },
+    },
+  },
+  '9003': {
+    predicted: [2, 1] as [number, number],
+    matchPoints: 2,
+    pickPoints: 8,
+    totalPoints: 10,
+    picks: {
+      DEF: { playerId: 184644, rating: 6.2, points: 0 },
+      MID: { playerId: 869678, rating: 7.4, points: 4 },
+      FWD: { playerId: 725364, rating: 8.1, points: 4 },
+    },
+  },
+}

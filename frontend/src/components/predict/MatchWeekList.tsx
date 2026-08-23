@@ -168,10 +168,9 @@ function WeekSessionCard({
   onSelect?: (week: PredictWeek) => void
 }) {
   const meta = statusMeta(week)
-  // ponytail: 퍼블리싱은 종료 주차(미참여 포함)도 결과 화면으로 열리지만 그 화면이 아직 없다.
-  // 결과 화면이 생기면 여기에 `|| week.status === 'result'`를 되돌린다.
-  // 제출을 마친 주차도 열려 있는 동안은 완료 화면(카운트다운·내 픽)을 볼 수 있게 클릭을 남긴다.
-  const clickable = week.status === 'open'
+  // 종료된 주차는 결과 화면으로, 열려 있는 주차는 예측/완료 화면으로 들어간다.
+  // 미참여 주차도 결과 화면이 "참여하지 않았다"는 안내와 랭킹을 보여주므로 클릭 대상이다.
+  const clickable = week.status === 'open' || week.status === 'result'
 
   return (
     <button
@@ -205,6 +204,8 @@ function WeekSessionCard({
           <span className="flex items-center gap-0.5 text-label-2 font-bold text-primary">
             {week.submitted ? '남은 경기 예측하기 ›' : '예측하기 ›'}
           </span>
+        ) : week.status === 'result' ? (
+          <span className="flex items-center gap-0.5 text-label-2 font-bold text-primary">결과보기 ›</span>
         ) : week.submitted ? (
           <span className="text-label-2 font-extrabold text-black">제출 완료</span>
         ) : week.status === 'upcoming' ? (

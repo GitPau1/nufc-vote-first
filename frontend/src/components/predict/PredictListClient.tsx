@@ -11,15 +11,18 @@ import {
   toPredictWeeks,
   type WeekGroup,
 } from '@/lib/predictions/week'
-import type { MyPredictionMap } from '@/lib/queries/predictions'
+import type { MyPredictionMap, RankingRow } from '@/lib/queries/predictions'
 
 export function PredictListClient({
   weeks,
   myPredictions = {},
+  ranking = [],
 }: {
   weeks: WeekGroup[]
   /** fixture_id → 내 제출 내역 */
   myPredictions?: MyPredictionMap
+  /** 시즌 누적 랭킹 상위 + 내 행 — TOP3 카드와 내 순위 카드가 같은 배열을 쓴다 */
+  ranking?: RankingRow[]
 }) {
   const router = useLoadingRouter()
 
@@ -50,10 +53,9 @@ export function PredictListClient({
           onSelectWeek={week => router.push(`/predictions/${week.weekKey}`)}
         />
 
-        {/* ponytail: 랭킹 쿼리(predictions 테이블)가 생기면 entries만 실제 데이터로 바꾼다. */}
         <div className="hidden flex-col gap-4 sm:flex">
-          <RankingCard variant="top3" entries={[]} />
-          <RankingCard variant="mine" entries={[]} />
+          <RankingCard variant="top3" entries={ranking} />
+          <RankingCard variant="mine" entries={ranking} />
         </div>
       </div>
     </div>

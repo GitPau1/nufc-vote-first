@@ -29,6 +29,8 @@ const config = {
         "positive-dim": "var(--c-positive-dim)",
         negative:       "var(--c-negative)",
         "negative-dim": "var(--c-negative-dim)",
+        warning:        "var(--c-warning)",
+        "warning-dim":  "var(--c-warning-dim)",
         primary: {
           DEFAULT:    "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",

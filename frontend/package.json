@@ -18,6 +18,7 @@
     "test:images": "node --no-warnings --experimental-strip-types --test src/lib/images/optimize.test.mjs",
     "test:prediction-week": "node --test src/lib/predictions/week.test.mjs",
     "test:prediction-submit": "node --test src/lib/predictions/submit.test.mjs",
+    "test:prediction-result": "node --test src/lib/predictions/result.test.mjs",
     "test:rating": "node --test src/lib/polls/rating.test.mjs",
     "test:vote-eligibility": "node --test src/lib/polls/vote-eligibility.test.mjs",
     "types:supabase": "supabase gen types typescript --linked --schema public > src/types/database.generated.ts"

@@ -26,6 +26,9 @@
     --c-positive-dim: #e6f4ea;
     --c-negative: #d93025;
     --c-negative-dim: #fce8e6;
+    /* 디자인 시스템에 없던 색 — 결과 화면 평점 "보통"(6.0~6.9) 배지용으로 추가(사용자 확인, 2026-08-20) */
+    --c-warning: #c8801f;
+    --c-warning-dim: #fbf1e4;
 
     --r-xs: 8px;
     --r-sm: 10px;

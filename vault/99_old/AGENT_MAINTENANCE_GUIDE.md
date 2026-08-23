@@ -17,6 +17,7 @@
 - 기능을 바꾸기 전에 실제 데이터 흐름을 먼저 확인합니다.
 - DB 스키마를 바꾸면 migration, `frontend/src/types/database.ts`, query `select(...)`, server action payload, RLS 정책을 함께 확인합니다.
 - mock mode에서만 확인하지 않습니다. Supabase 연동 기능은 실제 Supabase mode에서 깨질 수 있습니다.
+- `getFixtureWeeks`처럼 `unstable_cache`로 감싼 query는 IS_MOCK 분기까지 캐시 안에 들어갑니다. `.next/cache`는 실행 간에 공유되므로, 실 모드로 띄운 적이 있는 프로젝트를 mock 모드로 다시 띄우면 **실 데이터가 그대로 나옵니다**(반대도 마찬가지). mock 모드로 확인하려면 `rm -rf .next/cache/fetch-cache` 후에 띄우고, 끝나면 다시 지웁니다.
 - 기존 fallback query가 있으면 본 query와 fallback query를 함께 수정합니다.
 - 관리자 기능은 앱 코드의 `ADMIN_EMAILS` 확인과 service-role DB 쓰기가 같이 작동한다는 점을 전제로 봅니다.
 - 기존 변경사항이 많은 저장소이므로, 요청과 직접 관련 없는 파일은 건드리지 않습니다.
@@ -76,13 +77,15 @@ DB나 Supabase 연동을 건드릴 때:
 - 주차 그룹핑/주 세션 상태 파생/`toPredictWeeks` 어댑터: `frontend/src/lib/predictions/week.ts` (+ `week.test.mjs`)
 - 제출 검증/insert 행 생성: `frontend/src/lib/predictions/submit.ts` (+ `submit.test.mjs`), action은 `frontend/src/lib/actions/predictions.ts`
 - 포지션 정의/표시 헬퍼: `frontend/src/lib/predictions/candidates.ts`
-- 화면: `frontend/src/app/predictions/page.tsx`, `frontend/src/app/predictions/[weekKey]/page.tsx`, `frontend/src/components/predict/*`
+- 화면: `frontend/src/app/predictions/page.tsx`, `frontend/src/app/predictions/[weekKey]/page.tsx`(오픈 주차=예측 플로우 / 종료 주차=결과 화면 분기), `frontend/src/components/predict/*`
+- 결과 화면은 `PredictionResult.tsx` + 주차 랭킹 `WeekRankCard.tsx`, 순수 계산은 `lib/predictions/result.ts`(+ `result.test.mjs`). 채점 결과 조회는 `getMyResults()`(`prediction_results` view, 종료 경기만).
 - 예측/제출 단위는 경기가 아니라 **주(week)**다. 상태(`open`/`result`/`upcoming`)도 주 레벨에만 있고, 더블 매치위크는 경기 2개가 한 세션이다.
 - 세션은 **그 주 첫 경기 킥오프 7일 전**에 열리고 **그 주 마지막 경기 킥오프**에 닫힌다. 마감 판정은 실제로는 경기별(`isMatchLocked`)이고, 잠기지 않은 경기가 하나도 없으면 주차가 닫히는 구조다.
 - 그래서 **부분 제출이 정상 상태**다: 첫 경기가 끝난 뒤 처음 들어온 사용자는 남은 경기만 예측한다(`submittableMatches`). 페이지가 미제출·미잠김 경기를 `pending`으로 넘기고, 비어 있으면 완료 화면을 띄운다.
 - 프론트는 `week.ts`의 `isMatchLocked`/`weekStatus`, DB는 `20260823130000_predictions_weekly_window.sql`의 insert 정책(`kickoff_at > now()` + `prediction_week_first_kickoff < now() + 7 days`) — 둘이 같은 기준이라 한쪽만 고치면 안 된다.
 - `predictions` 테이블은 **경기당 1행**이지만 제출은 주 단위 1회다: 그 주 경기 전부를 한 번의 insert로 넣고, 선수 픽은 모든 행에 같은 값이 복사된다(FR-017 = 픽 점수 주 단위 합산). "같은 주의 픽은 같다"는 DB 제약이 아니라 server action의 불변식이니 predictions에 쓰는 다른 경로를 만들면 안 된다.
-- 아직 없는 것: 결과(채점) 화면, 주간 랭킹 view, 랭킹 데이터 주입(`RankingCard`는 빈 배열로 렌더), `fixture_player_ratings` 입력 UI
+- 랭킹 조회는 `lib/queries/predictions.ts`의 `getWeekRanking(weekKey)`(주차, `week_leaderboard` view) / `getSeasonRanking(limit)`(시즌 누적, `season_leaderboard` view). `week_leaderboard.week_key`는 `week.ts`의 `weekKey()`와 같은 ISO 주차 문자열이라 둘을 같이 고쳐야 한다.
+- 아직 없는 것: `fixture_player_ratings` 입력 UI(평점이 없으면 픽 점수가 0으로 계산된다), 순위 변동(▲/▼) 표시용 지난 주차 순위 보관
 
 인증/온보딩/마이페이지:
 

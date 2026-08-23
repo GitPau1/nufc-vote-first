@@ -333,10 +333,12 @@ export interface Database {
         // 스키마 전체가 supabase-js 추론에서 빠진다 — 조회 결과는 PredictionResultRow 등으로 직접 단언해 쓴다.
         Relationships: []
       }
-      // 경기별 랭킹 — 결과 화면 "전체 결과" 탭
-      fixture_leaderboard: {
+      // 주차별 랭킹 — 결과 화면 "전체 결과" 탭 (20260823140000_week_leaderboard.sql).
+      // 랭킹 단위가 주차라 경기 단위 fixture_leaderboard는 같은 migration에서 삭제했다.
+      week_leaderboard: {
         Row: {
-          fixture_id: number
+          /** lib/predictions/week.ts의 weekKey()와 같은 ISO 주차 문자열('2026-35') */
+          week_key: string
           user_id: string
           display_name: string | null
           avatar_url: string | null
@@ -345,7 +347,7 @@ export interface Database {
           total_points: number
           /** 동점이면 user_id 순 — rank()라서 건너뛰는 순위가 생긴다 */
           rank: number
-          /** 그 경기의 전체 참여자 수 ("N위 / M명"의 M) */
+          /** 그 주차의 전체 참여자 수 ("N위 / M명"의 M) */
           total_entries: number
         }
         // 읽기 전용 view (GenericNonUpdatableView 형태). 다만 Tables 쪽에 Relationships가 없어
@@ -400,7 +402,7 @@ export type PredictionRow = Database['public']['Tables']['predictions']['Row']
 export type PredictionInsert = Database['public']['Tables']['predictions']['Insert']
 export type FixturePlayerRatingRow = Database['public']['Tables']['fixture_player_ratings']['Row']
 export type PredictionResultRow = Database['public']['Views']['prediction_results']['Row']
-export type FixtureLeaderboardRow = Database['public']['Views']['fixture_leaderboard']['Row']
+export type WeekLeaderboardRow = Database['public']['Views']['week_leaderboard']['Row']
 export type SeasonLeaderboardRow = Database['public']['Views']['season_leaderboard']['Row']
 
 export type PollWithOptions = PollRow & {

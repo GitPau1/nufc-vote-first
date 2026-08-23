@@ -551,7 +551,7 @@ Update note 2026-05-30:
 진입점:
 
 - `frontend/src/app/predictions/page.tsx` (주차별 경기 목록 + 랭킹 사이드바)
-- `frontend/src/app/predictions/[weekKey]/page.tsx` (스코어 → 선수 픽 → 확인). `weekKey`는 `2026-35` 형태의 ISO 연도-주차이고, `status === 'open'`인 주만 진입 가능합니다.
+- `frontend/src/app/predictions/[weekKey]/page.tsx`. `weekKey`는 `2026-35` 형태의 ISO 연도-주차입니다. `status === 'open'`이면 예측 플로우(스코어 → 선수 픽 → 확인), `'result'`면 결과 화면(`PredictionResult`), `'upcoming'`이면 404입니다.
 - `frontend/src/lib/queries/fixtures.ts`, `frontend/src/lib/queries/predictions.ts`, `frontend/src/lib/queries/squads.ts`
 - 제출: `frontend/src/lib/actions/predictions.ts`의 `submitWeekPrediction(weekKey, input)`
 
@@ -559,7 +559,10 @@ Update note 2026-05-30:
 
 - `fixtures` 전체 조회 후 `lib/predictions/week.ts`에서 주차 그룹핑 → 주 단위 예측 세션(더블 매치위크는 경기 2개가 한 세션)
 - 선수 후보/배당은 `season_squads`(`prediction_multiplier`)에서 옵니다 — `lib/queries/squads.ts`
-- 제출은 `predictions`, 채점은 `prediction_results` view. `fixture_leaderboard`/`season_leaderboard`는 있지만 화면에 아직 연결되지 않았습니다(`RankingCard`는 빈 배열).
+- 제출은 `predictions`, 채점은 `prediction_results` view(종료 경기만) — 조회는 `getMyResults()`. 배당은 view에 없어서 결과 화면이 `getMyPredictions()`의 제출 스냅샷과 함께 읽습니다.
+- 랭킹은 주차 단위 `week_leaderboard`(`20260823140000_week_leaderboard.sql`)와 시즌 누적 `season_leaderboard`를 씁니다 — `lib/queries/predictions.ts`의 `getWeekRanking(weekKey)` / `getSeasonRanking(limit)`. 목록 화면 사이드바(TOP3 + 내 순위)는 연결됐고, 주차 랭킹은 결과 화면이 붙을 때 연결됩니다.
+- 경기 단위 `fixture_leaderboard`는 랭킹 단위가 주차로 정리되면서 삭제했습니다(화면에서 참조한 적 없음).
+- `week_leaderboard.week_key`는 `to_char(week_start, 'IYYY-IW')`로 만든 값이라 `week.ts`의 `weekKey()`와 같은 문자열입니다 — 한쪽 기준만 바꾸면 화면이 랭킹을 못 찾습니다.
 
 주 단위 제출이 테이블에 앉는 방식:
 

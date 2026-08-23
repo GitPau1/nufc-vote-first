@@ -1,4 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}</style></head><body>
+<!-- 채택하지 않은 부분(2026-08-23 사용자 확인): 이 프로토타입의 선수 픽 단계는 더블 매치위크에서
+     경기별로 3장씩 따로 고르고 "그대로 적용"으로 복사하게 되어 있지만, 픽 단위는 **주 1세트**가 맞다
+     (명세서 v0.7 FR-017). 구현은 주 단위를 유지하며, 이 화면의 경기별 픽 UI는 이식하지 않는다. -->
 <title>승부예측 프로토타입</title>
 <style>
   /* ============ 실제 디자인 시스템 토큰 (vault/99_old/specs/11-design-system.md 그대로) ============
@@ -539,14 +542,71 @@ const WEEKS = [
   { weekNo: 39, matches: [
     { id:'w39', competition:'프리미어리그', opponent:'아스날', isHome:false, kickoff:'8/23', kickoffTime:'오후 8:00', status:'open' },
   ]},
-  // 더블 매치위크 — 같은 주에 경기가 2개(리그+컵처럼) 잡히는 경우. 둘 다 유지하고 divider로만 구분한다.
+  // 더블 매치위크 데모 1 — 같은 주에 경기가 2개(리그+컵) 잡히고 둘 다 예측 가능한 케이스.
+  // 목록에서는 주차 카드 하나로 묶여 선택되고, 예측 진행은 두 경기를 한 플로우 안에서 동시에 진행한다
+  // (사용자 확인, 2026-08-23). 일정이 빠른 경기(8/30)가 항상 위, 늦은 경기(9/2)가 아래.
   { weekNo: 40, matches: [
-    { id:'w40a', competition:'프리미어리그', opponent:'첼시', isHome:true, kickoff:'8/30', kickoffTime:'오후 9:00', status:'upcoming' },
-    { id:'w40b', competition:'카라바오컵', opponent:'브렌트포드', isHome:false, kickoff:'9/2', kickoffTime:'오후 8:00', status:'upcoming' },
+    { id:'w40a', competition:'프리미어리그', opponent:'첼시', isHome:true, kickoff:'8/30', kickoffTime:'오후 9:00', status:'open' },
+    { id:'w40b', competition:'카라바오컵', opponent:'브렌트포드', isHome:false, kickoff:'9/2', kickoffTime:'오후 8:00', status:'open' },
   ]},
-  { weekNo: 41, matches: [] },
+  // 더블 매치위크 데모 2 — 두 경기 다 끝났고 둘 다 참여했지만 결과(적중 여부·점수)는 다른 케이스.
+  // 두 경기가 같이 열려있었다면 한 번에 같이 제출하는 구조라 "하나만 참여"는 나올 수 없는 상태라서
+  // (사용자 확인, 2026-08-23) 참여 여부는 항상 같게 두고, 결과 화면이 경기별로 별도 카드에 각자
+  // 다른 점수를 보여주는지만 확인하는 용도로 바꿨다. 상태가 서로 다른 배지 병기는 43주차가 보여준다.
+  { weekNo: 41, matches: [
+    { id:'w41a', competition:'프리미어리그', opponent:'토트넘', isHome:true, kickoff:'9/6', kickoffTime:'오후 5:30', status:'result', actual:[3,1],
+      myResult: { predicted:[2,1], actual:[3,1], matchPoints:2, totalPoints:9, rank:5, total:42,
+        picks: [CANDIDATES.DEF[0], CANDIDATES.MID[1], CANDIDATES.FWD[0]] } },
+    { id:'w41b', competition:'카라바오컵', opponent:'풀럼', isHome:false, kickoff:'9/13', kickoffTime:'오후 8:00', status:'result', actual:[0,0],
+      myResult: { predicted:[1,1], actual:[0,0], matchPoints:2, totalPoints:6, rank:5, total:42,
+        picks: [CANDIDATES.DEF[1], CANDIDATES.MID[0], CANDIDATES.FWD[2]] } },
+  ]},
+  // 더블 매치위크 데모 3 — 참여 마감은 "주차" 단위가 아니라 "경기" 단위(사용자 확인, 2026-08-23).
+  // 두 경기가 같이 열려있는 동안은 묶어서 한 번에 제출하는 구조라, "첫 경기만 참여"는 나올 수 없고
+  // "첫 경기 미참여(놓침) + 둘째 경기 아직 진행중"만 가능하다(사용자 확인, 2026-08-23). 첫 경기(9/20)는
+  // 이미 킥오프가 지나 마감됐지만 예측하지 않았고, 두 번째 경기(9/23)는 아직 킥오프 전이라 혼자서도
+  // 계속 예측 가능하다. 목록 카드를 누르면 예측 화면에는 아직 열린 두 번째 경기만 들어가고,
+  // 제출완료/결과 화면에는 이미 마감된 첫 경기도 함께(참여 안 함 안내로) 보여준다.
+  { weekNo: 43, matches: [
+    { id:'w43a', competition:'프리미어리그', opponent:'맨체스터유나이티드', isHome:true, kickoff:'9/20', kickoffTime:'오후 4:30', status:'result', actual:[1,0] },
+    { id:'w43b', competition:'카라바오컵', opponent:'입스위치', isHome:false, kickoff:'9/23', kickoffTime:'오후 8:00', status:'open' },
+  ]},
+  // 더블 매치위크 데모 4 — "참여 + 진행중"처럼 보이는 조합이 실제로는 유효한 유일한 경우(사용자 확인,
+  // 2026-08-23): 두 경기가 같이 열려있을 때 묶어서 제출을 이미 마쳤고(myPrediction), 첫 경기(9/27)는
+  // 그새 끝나서 결과가 확정(myResult)됐지만, 둘째 경기(9/30)는 아직 킥오프 전이라 안 끝났을 뿐이다.
+  // 이 경우 둘째 경기 배지는 "진행중"이 아니라 "참여"로 보여야 한다 — 이미 제출을 마쳤으니까.
+  // 목록 카드를 누르면 예측할 게 남아있지 않으므로(둘 다 이미 제출함) 곧바로 제출완료 화면으로 간다.
+  { weekNo: 45, matches: [
+    { id:'w45a', competition:'프리미어리그', opponent:'에버턴', isHome:true, kickoff:'9/27', kickoffTime:'오후 8:00', status:'result', actual:[2,1],
+      myResult: { predicted:[2,1], actual:[2,1], matchPoints:3, totalPoints:12, rank:3, total:42,
+        picks: [CANDIDATES.DEF[0], CANDIDATES.MID[1], CANDIDATES.FWD[0]] } },
+    { id:'w45b', competition:'카라바오컵', opponent:'노팅엄포레스트', isHome:false, kickoff:'9/30', kickoffTime:'오후 8:00', status:'open',
+      myPrediction: { predicted:[1,0], picks: [CANDIDATES.DEF[3], CANDIDATES.MID[2], CANDIDATES.FWD[1]] } },
+  ]},
+  { weekNo: 46, matches: [] },
 ];
 
+
+// 이 경기에 "이미 확정되어 데이터에 박혀있는 예측"이 있는지 — 이번 세션에 편집 중인 state.scores/picks는
+// 포함하지 않는다(그건 아직 제출 전이라 언제든 바뀔 수 있는 값이라서). 예측/픽/확인 단계에서 "아직 편집
+// 가능한(actionable) 경기"를 걸러낼 때는 반드시 이 함수를 써야 한다 — myPredictionFor를 쓰면 지금
+// 편집 중인 경기까지 "이미 제출함"으로 착각해서 편집 화면에서 빠져버리는 버그가 난다.
+function hasCommittedPrediction(m) {
+  return !!m.myPrediction || !!m.myResult;
+}
+
+// 한 경기에 대해 "내가 이미 제출한 예측"을 화면에 보여줄 때 어디서 값을 가져와야 하는지 한 곳에서
+// 정리한다(표시 전용 — actionable 판정에는 hasCommittedPrediction을 쓸 것).
+// 우선순위: 이번 세션에 방금 입력 중인 것(state.scores/picks) → 이미 제출했지만 아직 안 끝난 경기(m.myPrediction)
+// → 끝나서 결과까지 나온 경기(m.myResult) → 아무것도 없으면 null(=마감됐고 참여도 안 함, 혹은 아직 미제출).
+// "참여" 배지는 m.myPrediction과 m.myResult 둘 다 커버해야 한다 — 이미 제출했으면 경기가 아직 안
+// 끝났어도 "참여"지 "진행중(미제출)"이 아니다(사용자 확인, 2026-08-23).
+function myPredictionFor(m) {
+  if (state.scores[m.id]) return { predicted: state.scores[m.id], picks: POSITIONS.map(p => state.picks[m.id]?.[p]) };
+  if (m.myPrediction) return m.myPrediction;
+  if (m.myResult) return m.myResult;
+  return null;
+}
 
 function ratingTier(r) { return r >= 7 ? 'good' : r >= 6 ? 'mid' : 'bad'; }
 function ratingBadgeClass(tier) { return tier === 'good' ? 'badge-positive' : tier === 'bad' ? 'badge-negative' : 'badge-warning'; }
@@ -652,7 +712,9 @@ function buildOverallLeaderboard() {
 /* ============================================================
    상태 + 렌더 — view: list | score | pick | confirm | complete | result
    ============================================================ */
-const state = { view: 'list', week: null, score: [0,0], picks: {}, activePosition: 'DEF', pickModalPosition: null, countdownTarget: null, resultTab: 'mine', rankExpanded: false };
+// weekGroup = { weekNo, matches: [...] } — 단일 매치위크는 matches가 1개, 더블 매치위크는 2개.
+// scores/picks는 매치 id로 키를 나눠서 경기별로 독립적으로 관리한다(더블 매치위크 지원, 2026-08-23).
+const state = { view: 'list', weekGroup: null, scores: {}, picks: {}, pickModalTarget: null, countdownTarget: null, resultTab: 'mine', rankExpanded: false };
 
 function updateCountdownDisplay() {
   if (!state.countdownTarget) return;
@@ -680,9 +742,13 @@ function startCountdownTicker() {
 
 function setState(patch) { Object.assign(state, patch); render(); }
 
-// 주차 카드 상태는 4가지: 미참여(경기 종료 + 예측 안 함) / 참여(경기 종료 + 예측함) / 진행중(예측 가능) / 예정(예측 오픈 전)
+// 주차 카드 상태는 4가지: 미참여(경기 종료 + 예측 안 함) / 참여(예측 제출함 — 경기가 끝났든 아직이든)
+// / 진행중(경기 전, 아직 미제출) / 예정(예측 오픈 전). "참여"는 myResult(끝난 경기)뿐 아니라
+// myPrediction(아직 안 끝났지만 이미 제출한 경기)도 포함한다 — 이미 제출했으면 안 끝났어도 "진행중"이
+// 아니라 "참여"다(사용자 확인, 2026-08-23. 더블 매치위크는 두 경기를 묶어서 한 번에 제출하므로,
+// 첫 경기가 먼저 끝나도 둘째 경기가 이미 같이 제출된 상태라면 "참여"로 보여야 앞뒤가 맞는다).
 function statusMeta(m) {
-  if (m.status === 'open') return { label: '진행중', cls: 'badge-default' };
+  if (m.status === 'open') return myPredictionFor(m) ? { label: '참여', cls: 'badge-positive' } : { label: '진행중', cls: 'badge-default' };
   if (m.status === 'result') return m.myResult ? { label: '참여', cls: 'badge-positive' } : { label: '미참여', cls: 'badge-outline' };
   return { label: '예정', cls: 'badge-outline' };
 }
@@ -690,10 +756,13 @@ function statusMeta(m) {
 function renderMatchRow(weekNo, m, delay, showMeta) {
   const meta = statusMeta(m);
   const finished = m.status === 'result';
-  const participated = finished && !!m.myResult;
-  // 참여했어도 점수(totalPoints)가 아직 없을 수 있다 — 제출은 했지만 결과 발표 전인 상태.
-  const hasScore = participated && typeof m.myResult.totalPoints === 'number';
-  // 미참여 경기도 결과 화면으로는 들어갈 수 있어야 한다 — 예측을 안 했다는 사실 자체가 그 화면의 안내 내용.
+  const myPrediction = myPredictionFor(m);
+  const participated = !!myPrediction;
+  // 참여했어도 점수(totalPoints)가 아직 없을 수 있다 — 제출은 했지만 결과 발표 전(경기가 안 끝났거나,
+  // 끝났어도 점수 계산 전)인 상태.
+  const hasScore = participated && typeof myPrediction.totalPoints === 'number';
+  // 이미 제출한 경기(진행중이든 끝났든)는 재확인하러 들어갈 수 있어야 하고, 미참여 경기도 결과 화면으로
+  // 들어갈 수 있어야 한다 — 예측을 안 했다는 사실 자체가 그 화면의 안내 내용.
   const clickable = m.status === 'open' || finished;
 
   // 완료된 경기는 결과 스코어 위에, 아직 안 한 경기는 예정 시간 위에 날짜를 작게 붙인다.
@@ -704,8 +773,8 @@ function renderMatchRow(weekNo, m, delay, showMeta) {
   // 우측 요약: 미참여는 생략, 참여는 내 예측(+점수가 나왔으면 같은 텍스트 위계로 점수까지 오른쪽에), 진행중은 예측 링크, 예정은 자물쇠만.
   const actionHtml = participated
     ? hasScore
-      ? `<div class="week-row-result"><p class="t-label-2" style="margin:0; font-weight:800;">예측 ${m.myResult.predicted[0]}-${m.myResult.predicted[1]} <span style="color:var(--c-primary-dark);">+${m.myResult.totalPoints}점</span></p></div>`
-      : `<div class="week-row-result"><p class="t-label-2" style="margin:0; font-weight:800;">예측 ${m.myResult.predicted[0]}-${m.myResult.predicted[1]}</p></div>`
+      ? `<div class="week-row-result"><p class="t-label-2" style="margin:0; font-weight:800;">예측 ${myPrediction.predicted[0]}-${myPrediction.predicted[1]} <span style="color:var(--c-primary-dark);">+${myPrediction.totalPoints}점</span></p></div>`
+      : `<div class="week-row-result"><p class="t-label-2" style="margin:0; font-weight:800;">예측 ${myPrediction.predicted[0]}-${myPrediction.predicted[1]}</p></div>`
     : m.status === 'open'
       ? `<span class="week-row-action">예측하기 ›</span>`
       : m.status === 'upcoming'
@@ -733,12 +802,26 @@ function renderMatchRow(weekNo, m, delay, showMeta) {
     </button>`;
 }
 
-function findMatch(matchId) {
+function findMatchById(matchId) {
   for (const week of WEEKS) {
     const match = week.matches.find(m => m.id === matchId);
     if (match) return { week, match };
   }
   return null;
+}
+
+function findWeek(weekNo) {
+  return WEEKS.find(w => w.weekNo === weekNo) || null;
+}
+
+// 더블 매치위크는 항상 "일정이 빠른 경기가 위, 늦은 경기가 아래"로 보여준다(사용자 확인, 2026-08-23).
+// 데이터 입력 순서에 기대지 않고 kickoff(M/D)를 직접 비교해서 정렬한다.
+function kickoffSortKey(m) {
+  const [month, day] = m.kickoff.split('/').map(Number);
+  return month * 100 + day;
+}
+function sortedMatches(week) {
+  return [...week.matches].sort((a, b) => kickoffSortKey(a) - kickoffSortKey(b));
 }
 
 // 목록 화면의 "전체 랭킹" — 특정 주차 랭킹과 달리 컬럼이 총점 하나뿐이라 더 단촐하다.
@@ -782,15 +865,72 @@ function overallMyRankCardHtml(leaderboard) {
     </div>`;
 }
 
+// 더블 매치위크(경기 2개) 전용 — 경기 하나씩 클릭하는 대신 주차 카드 전체가 하나의 클릭 영역이다
+// (사용자 확인, 2026-08-23). 두 경기 상태가 서로 달라도 각자 배지를 따로 병기한다.
+function multiMatchWeekCardHtml(week, delay) {
+  const matches = sortedMatches(week);
+  // "예측 가능"은 아직 킥오프 전이면서 + 아직 제출 안 한 경기가 있을 때만이다 — 이미 묶어서 제출을
+  // 마쳤다면(myPrediction) 경기가 안 끝났어도 더 할 게 없으니 "예측하기"가 아니라 "제출완료"로 보여준다
+  // (사용자 확인, 2026-08-23).
+  const actionable = matches.some(m => m.status === 'open' && !hasCommittedPrediction(m));
+  const anyStillOpen = matches.some(m => m.status === 'open');
+  const anyResult = matches.some(m => m.status === 'result');
+  const clickable = actionable || anyStillOpen || anyResult;
+  const actionHtml = actionable
+    ? `<span class="week-row-action">예측하기 ›</span>`
+    : anyStillOpen
+      ? `<span class="week-row-action">제출완료 ›</span>`
+      : anyResult
+        ? `<span class="week-row-action">결과보기 ›</span>`
+        : `<span class="week-row-action locked">🔒</span>`;
+
+  const miniBlocks = matches.map((m, i) => {
+    const meta = statusMeta(m);
+    const finished = m.status === 'result';
+    const midHtml = finished
+      ? `<span class="mid-date">${m.kickoff}</span><span class="score">${m.actual[0]} – ${m.actual[1]}</span>`
+      : `<span class="mid-date">${m.kickoff}</span><span class="kickoff">${m.kickoffTime}</span>`;
+    return `
+      ${i > 0 ? `<div style="height:1px; background:var(--c-gray-4); margin:14px 0;"></div>` : ''}
+      <div class="week-row-top">
+        <span class="week-row-round">${m.competition || '프리미어리그'}</span>
+        <span class="badge ${meta.cls}">${meta.label}</span>
+      </div>
+      <div class="match-teams">
+        <div class="side"><img src="${teamBadge(HOME_TEAM)}" alt="" class="team-logo"><span>${HOME_TEAM}</span></div>
+        <div class="mid">${midHtml}</div>
+        <div class="side"><img src="${teamBadge(m.opponent)}" alt="" class="team-logo"><span>${m.opponent}</span></div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="week-box">
+      <button class="week-row" style="animation-delay:${delay}ms;" ${clickable ? '' : 'disabled'} data-week="${week.weekNo}">
+        <p class="t-caption-1" style="margin:0 0 12px; font-weight:800; color:var(--c-primary-dark);">더블 매치위크 · 경기 2개</p>
+        ${miniBlocks}
+        <div class="week-row-meta" style="justify-content:flex-end;">
+          ${actionHtml}
+        </div>
+      </button>
+    </div>`;
+}
+
 function renderList() {
   let delay = 0;
-  // 더블 매치위크(리그+컵처럼 경기가 2개인 주)도 둘 다 그대로 보여준다 — 행 사이 구분은 .week-row의 divider만으로 충분.
+  // 더블 매치위크(리그+컵처럼 경기가 2개인 주)는 개별 경기 행이 아니라 주차 카드 하나로 묶는다.
   const sections = WEEKS.map(week => {
     const label = `${week.weekNo}주차`;
     // 상태 칩/액션 줄(week-row-meta)은 경기와 경기 사이에 끼어 중복돼 보이니 박스의 마지막 경기에만 보여준다.
-    const body = week.matches.length === 0
-      ? `<div class="week-box"><div class="week-empty">이번 주는 예정된 경기가 없어요</div></div>`
-      : `<div class="week-box">${week.matches.map((m, i) => { const html = renderMatchRow(week.weekNo, m, delay, i === week.matches.length - 1); delay += 55; return html; }).join('')}</div>`;
+    let body;
+    if (week.matches.length === 0) {
+      body = `<div class="week-box"><div class="week-empty">이번 주는 예정된 경기가 없어요</div></div>`;
+    } else if (week.matches.length === 1) {
+      body = `<div class="week-box">${renderMatchRow(week.weekNo, week.matches[0], delay, true)}</div>`;
+      delay += 55;
+    } else {
+      body = multiMatchWeekCardHtml(week, delay);
+      delay += 55;
+    }
 
     return `<section class="week-section"><p class="week-section-label">${label}</p>${body}</section>`;
   }).join('');
@@ -829,9 +969,10 @@ function renderList() {
 
 // 스텝 3개(경기예측/선수픽/확인) 공용 메타 — 모바일은 가로, 데스크탑 사이드바는 세로로 그린다.
 // 상태는 완료(●채움+체크)/진행중(◎빈원+안쪽 점+primary 테두리)/대기(○빈 원)로만 표현, 텍스트 라벨 없음.
+// descMulti: 더블 매치위크(경기 2개 동시 진행)일 때만 쓰는 대체 설명(사용자 확인, 2026-08-23).
 const STEP_META = [
-  { key: 'score', name: '경기 예측', desc: '이번 경기 스코어를 예측해보세요' },
-  { key: 'pick', name: '선수 픽', desc: '포지션별로 이번 경기 활약할 선수를 골라보세요' },
+  { key: 'score', name: '경기 예측', desc: '이번 경기 스코어를 예측해보세요', descMulti: '이번 두 경기의 스코어를 예측해보세요' },
+  { key: 'pick', name: '선수 픽', desc: '포지션별로 이번 경기 활약할 선수를 골라보세요', descMulti: '포지션별로 각 경기에서 활약할 선수를 골라보세요' },
   { key: 'confirm', name: '확인', desc: '제출하기 전, 예측 내용을 확인해보세요' },
 ];
 
@@ -841,7 +982,7 @@ function stepCircleHtml(state) {
   return `<span class="step-circle pending"></span>`;
 }
 
-function renderStepIndicator(currentKey, orientation) {
+function renderStepIndicator(currentKey, orientation, isMulti = false) {
   const currentIdx = STEP_META.findIndex(s => s.key === currentKey);
   if (orientation === 'v') {
     return `<div class="step-track-v">${STEP_META.map((s, i) => {
@@ -849,7 +990,8 @@ function renderStepIndicator(currentKey, orientation) {
       const connector = i < STEP_META.length - 1
         ? `<div class="step-connector-v ${i < currentIdx ? 'filled' : ''}"></div>` : '';
       // 설명은 현재 활성화된 단계에만 붙는다 — 완료/대기 노드는 타이틀 한 줄만 유지.
-      const descHtml = nodeState === 'active' ? `<p class="step-node-v-desc">${s.desc}</p>` : '';
+      const desc = isMulti && s.descMulti ? s.descMulti : s.desc;
+      const descHtml = nodeState === 'active' ? `<p class="step-node-v-desc">${desc}</p>` : '';
       return `<div class="step-node-v">${stepCircleHtml(nodeState)}<div><span class="name ${nodeState === 'pending' ? 'pending-text' : ''}">${s.name}</span>${descHtml}</div></div>${connector}`;
     }).join('')}</div>`;
   }
@@ -863,58 +1005,70 @@ function renderStepIndicator(currentKey, orientation) {
 
 // 모바일 전용 — 스텝 트랙 아래 붙는 현재 단계 타이틀/설명. 데스크탑 사이드바(step-node-v-desc)와
 // 같은 텍스트 위계를 쓰되, 여기선 활성 단계 하나만 늘 보여준다 — 타이틀은 활성 상태임을 나타내려 primary 컬러.
-function stepHeroHtml(currentKey) {
+function stepHeroHtml(currentKey, isMulti = false) {
   const step = STEP_META.find(s => s.key === currentKey);
+  const desc = isMulti && step.descMulti ? step.descMulti : step.desc;
   return `
     <div class="step-hero">
       <p class="t-headline-1" style="margin:0 0 4px; color:var(--c-primary);">${step.name}</p>
-      <p class="t-label-2 muted" style="margin:0;">${step.desc}</p>
+      <p class="t-label-2 muted" style="margin:0;">${desc}</p>
     </div>`;
 }
 
-function matchMetaHtml(w) {
+function matchMetaHtml(m) {
   return `
     <div class="match-meta">
-      <p class="league">프리미어리그 · ${w.weekNo}라운드</p>
-      <p class="datetime">${w.kickoff} (${w.isHome ? '홈' : '원정'}) ${w.kickoffTime} · 세인트 제임스 파크</p>
+      <p class="league">${m.competition || '프리미어리그'} · ${m.weekNo}라운드</p>
+      <p class="datetime">${m.kickoff} (${m.isHome ? '홈' : '원정'}) ${m.kickoffTime} · 세인트 제임스 파크</p>
     </div>`;
 }
 
-function scoreWidgetHtml(w) {
+// 더블 매치위크 지원 — 스코어는 경기별로 독립된 state.scores[matchId]에 저장한다.
+function scoreWidgetHtml(m) {
+  const s = state.scores[m.id] || [0, 0];
   return `
     <div class="score-widget">
       <div class="team-label"><img src="${teamBadge(HOME_TEAM)}" alt="" class="team-logo"><span>${HOME_TEAM}</span></div>
-      ${scoreStepperCardHtml(state.score[0], 0)}
-      ${scoreStepperCardHtml(state.score[1], 1)}
-      <div class="team-label"><img src="${teamBadge(w.opponent)}" alt="" class="team-logo"><span>${w.opponent}</span></div>
+      ${scoreStepperCardHtml(s[0], m.id, 0)}
+      ${scoreStepperCardHtml(s[1], m.id, 1)}
+      <div class="team-label"><img src="${teamBadge(m.opponent)}" alt="" class="team-logo"><span>${m.opponent}</span></div>
     </div>`;
 }
 
-function scoreStepperCardHtml(value, idx) {
+function scoreStepperCardHtml(value, matchId, idx) {
   const decDisabled = value <= 0;
   return `
     <div class="score-stepper-card">
-      <button data-score-inc="${idx}" aria-label="점수 증가">+</button>
+      <button data-score-inc="${matchId}:${idx}" aria-label="점수 증가">+</button>
       <div class="value-cell num-bump">${value}</div>
-      <button data-score-dec="${idx}" aria-label="점수 감소" ${decDisabled ? 'disabled' : ''}>−</button>
+      <button data-score-dec="${matchId}:${idx}" aria-label="점수 감소" ${decDisabled ? 'disabled' : ''}>−</button>
     </div>`;
 }
 
-function matchCardHtml(w) {
+function matchCardHtml(m) {
   return `
     <div class="match-card">
-      ${matchMetaHtml(w)}
-      <div style="margin-top:20px;">${scoreWidgetHtml(w)}</div>
+      ${matchMetaHtml(m)}
+      <div style="margin-top:20px;">${scoreWidgetHtml(m)}</div>
     </div>`;
 }
 
 function renderScoreStep() {
-  const w = state.week;
+  // weekGroup.matches는 이 주차의 전체 경기(잠긴 경기·이미 제출된 경기 포함)를 들고 있을 수 있다 —
+  // 예측 단계는 그중 아직 킥오프 전이면서 아직 제출 안 한(=actionable) 경기만 다룬다
+  // (사용자 확인, 2026-08-23: 마감은 경기 단위, 이미 제출한 경기는 다시 예측하지 않음).
+  const matches = state.weekGroup.matches.filter(m => m.status === 'open' && !hasCommittedPrediction(m));
+  const isMulti = matches.length > 1;
+  // 더블 매치위크는 두 match-card를 위(빠른 일정)→아래(늦은 일정) 순으로 쌓고, 각각 "경기 N" 라벨을 붙인다.
+  const cardsHtml = matches.map((m, i) => `
+    ${isMulti ? `<p class="t-label-2" style="margin:${i === 0 ? '0' : '20px'} 0 8px; font-weight:800; color:var(--c-gray-2);">경기 ${i + 1} · ${HOME_TEAM} vs ${m.opponent}</p>` : ''}
+    ${matchCardHtml(m)}`).join('');
+
   return `
     <div class="view-mobile">
       <div class="match-screen">
-        <div style="margin-bottom:28px;">${renderStepIndicator('score', 'h')}${stepHeroHtml('score')}</div>
-        ${matchCardHtml(w)}
+        <div style="margin-bottom:28px;">${renderStepIndicator('score', 'h')}${stepHeroHtml('score', isMulti)}</div>
+        ${cardsHtml}
         <div class="sticky-bar">
           <button class="btn btn-primary btn-lg btn-full" id="nextBtn">다음</button>
         </div>
@@ -924,9 +1078,9 @@ function renderScoreStep() {
       <div class="match-screen">
         <button class="desktop-back" id="desktopBackBtn">‹ 목록으로</button>
         <div class="match-screen-grid">
-          <div>${renderStepIndicator('score', 'v')}</div>
+          <div>${renderStepIndicator('score', 'v', isMulti)}</div>
           <div>
-            ${matchCardHtml(w)}
+            ${cardsHtml}
             <div class="sticky-bar" style="margin-top:32px; display:flex; justify-content:center;">
               <button class="btn btn-primary btn-lg" style="width:200px;" id="nextBtnDesktop">다음</button>
             </div>
@@ -940,11 +1094,12 @@ function renderScoreStep() {
 // 카드 안쪽 콘텐츠만 "포지션 3개 가로 카드"로 교체했다. 실루엣 아이콘은 인라인 SVG(외부 리소스 없음).
 const SILHOUETTE_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>`;
 
-function positionCardHtml(position) {
-  const picked = state.picks[position];
+// 더블 매치위크 지원 — 픽은 경기별로 독립된 state.picks[matchId]에 저장한다.
+function positionCardHtml(matchId, position) {
+  const picked = state.picks[matchId]?.[position];
   if (!picked) {
     return `
-      <button class="position-card" data-open-position="${position}">
+      <button class="position-card" data-open-position="${matchId}:${position}">
         <span class="position-card-label">${POSITION_LABEL[position]}</span>
         <div class="position-card-divider"></div>
         <div class="position-card-empty">
@@ -954,7 +1109,7 @@ function positionCardHtml(position) {
       </button>`;
   }
   return `
-    <button class="position-card filled" data-open-position="${position}">
+    <button class="position-card filled" data-open-position="${matchId}:${position}">
       <span class="position-card-label">${POSITION_LABEL[position]}</span>
       <div class="position-card-divider"></div>
       <div class="position-card-filled">
@@ -1062,14 +1217,30 @@ function positionCompleteRowHtml(position, player) {
 }
 
 function renderPickStep() {
-  const allPicked = POSITIONS.every(p => state.picks[p]);
-  const positionRow = `<div class="position-row">${POSITIONS.map(positionCardHtml).join('')}</div>`;
+  // 예측 가능한(아직 킥오프 전 + 미제출) 경기만 대상으로 한다 — renderScoreStep과 동일한 이유.
+  const matches = state.weekGroup.matches.filter(m => m.status === 'open' && !hasCommittedPrediction(m));
+  const isMulti = matches.length > 1;
+  const allPicked = matches.every(m => POSITIONS.every(p => state.picks[m.id]?.[p]));
+
+  // 더블 매치위크는 경기별로 포지션 3장씩 따로 고른다(사용자 확인, 2026-08-23). 두 번째 경기부터는
+  // 라벨 우측에 기존 edit-link 버튼(수정 링크와 같은 스타일)으로 "그대로 적용"을 붙여 첫 경기 픽을
+  // 복사할 수 있게 한다(사용자 확인, 2026-08-23 — 별도 버튼 스타일 만들지 않고 기존 것 재사용).
+  const pickBlocksHtml = matches.map((m, i) => {
+    const positionRow = `<div class="position-row">${POSITIONS.map(p => positionCardHtml(m.id, p)).join('')}</div>`;
+    const labelHtml = isMulti
+      ? `<div class="confirm-section-head" style="margin:${i === 0 ? '0' : '20px'} 0 8px;">
+          <span class="t-label-2" style="font-weight:800; color:var(--c-gray-2);">경기 ${i + 1} · ${HOME_TEAM} vs ${m.opponent}</span>
+          ${i > 0 ? `<button class="edit-link" data-copy-picks-from="${matches[0].id}" data-copy-picks-to="${m.id}">그대로 적용</button>` : ''}
+        </div>`
+      : '';
+    return `${labelHtml}<div class="match-card">${positionRow}</div>`;
+  }).join('');
 
   return `
     <div class="view-mobile">
       <div class="match-screen">
-        <div style="margin-bottom:28px;">${renderStepIndicator('pick', 'h')}${stepHeroHtml('pick')}</div>
-        <div class="match-card">${positionRow}</div>
+        <div style="margin-bottom:28px;">${renderStepIndicator('pick', 'h')}${stepHeroHtml('pick', isMulti)}</div>
+        ${pickBlocksHtml}
         <div class="sticky-bar">
           <button class="btn btn-primary btn-lg btn-full" id="nextBtn" ${allPicked ? '' : 'disabled'}>다음</button>
         </div>
@@ -1079,9 +1250,9 @@ function renderPickStep() {
       <div class="match-screen">
         <button class="desktop-back" id="desktopBackBtn">‹ 목록으로</button>
         <div class="match-screen-grid">
-          <div>${renderStepIndicator('pick', 'v')}</div>
+          <div>${renderStepIndicator('pick', 'v', isMulti)}</div>
           <div>
-            <div class="match-card">${positionRow}</div>
+            ${pickBlocksHtml}
             <div class="sticky-bar" style="margin-top:32px; display:flex; justify-content:center;">
               <button class="btn btn-primary btn-lg" style="width:200px;" id="nextBtnDesktop" ${allPicked ? '' : 'disabled'}>다음</button>
             </div>
@@ -1093,10 +1264,11 @@ function renderPickStep() {
 }
 
 function renderPickModal() {
-  const position = state.pickModalPosition;
-  if (!position) return '';
+  const target = state.pickModalTarget;
+  if (!target) return '';
+  const { matchId, position } = target;
   const rows = CANDIDATES[position].map(player => {
-    const selected = state.picks[position]?.id === player.id;
+    const selected = state.picks[matchId]?.[position]?.id === player.id;
     return `
       <button class="player-row ${selected ? 'selected' : ''}" data-pick="${player.id}">
         <span class="who">
@@ -1123,35 +1295,47 @@ function renderPickModal() {
 
 // 재사용 — 경기 예측/선수 픽 화면과 같은 셸(스텝 인디케이터 + 흰 match-card). "선수 픽" 섹션은
 // 선수 픽 화면의 positionCardHtml/position-row를 그대로 재사용해 같은 모습으로 나열한다.
-function confirmContentHtml(w) {
-  const positionRow = `<div class="position-row">${POSITIONS.map(positionCardHtml).join('')}</div>`;
-
-  return `
-    <div class="confirm-section-head">
-      <span class="t-body-2">경기 예측</span>
-      <button class="edit-link" data-goto="score">수정</button>
-    </div>
-    <div class="matchup-card">
-      <div class="team"><img src="${teamBadge(HOME_TEAM)}" alt="" class="team-logo"><span>${HOME_TEAM}</span></div>
-      <span class="score">${state.score[0]} – ${state.score[1]}</span>
-      <div class="team"><img src="${teamBadge(w.opponent)}" alt="" class="team-logo"><span>${w.opponent}</span></div>
-    </div>
-    <div class="confirm-section-head" style="margin-top:24px;">
-      <span class="t-body-2">선수 픽</span>
-      <button class="edit-link" data-goto="pick">수정</button>
-    </div>
-    ${positionRow}`;
+// 더블 매치위크는 경기마다 별도의 match-card를 만들고(사용자 확인 — 한 컨테이너에 합치지 않음),
+// 카드 위에 경기 예측/픽 단계와 같은 "경기 N · 상대팀" 라벨을 붙여 식별한다.
+function confirmContentHtml(matches) {
+  const isMulti = matches.length > 1;
+  return matches.map((m, i) => {
+    const s = state.scores[m.id] || [0, 0];
+    const positionRow = `<div class="position-row">${POSITIONS.map(p => positionCardHtml(m.id, p)).join('')}</div>`;
+    const labelHtml = isMulti
+      ? `<p class="t-label-2" style="margin:${i === 0 ? '0' : '20px'} 0 8px; font-weight:800; color:var(--c-gray-2);">경기 ${i + 1} · ${HOME_TEAM} vs ${m.opponent}</p>`
+      : '';
+    return `
+      ${labelHtml}
+      <div class="match-card">
+        <div class="confirm-section-head">
+          <span class="t-body-2">경기 예측</span>
+          <button class="edit-link" data-goto="score">수정</button>
+        </div>
+        <div class="matchup-card">
+          <div class="team"><img src="${teamBadge(HOME_TEAM)}" alt="" class="team-logo"><span>${HOME_TEAM}</span></div>
+          <span class="score">${s[0]} – ${s[1]}</span>
+          <div class="team"><img src="${teamBadge(m.opponent)}" alt="" class="team-logo"><span>${m.opponent}</span></div>
+        </div>
+        <div class="confirm-section-head" style="margin-top:24px;">
+          <span class="t-body-2">선수 픽</span>
+          <button class="edit-link" data-goto="pick">수정</button>
+        </div>
+        ${positionRow}
+      </div>`;
+  }).join('');
 }
 
 function renderConfirmStep() {
-  const w = state.week;
-  const content = confirmContentHtml(w);
+  // 예측 가능한(아직 킥오프 전 + 미제출) 경기만 확인 대상 — 마감됐거나 이미 제출한 경기는 여기서 수정할 수 없다.
+  const matches = state.weekGroup.matches.filter(m => m.status === 'open' && !hasCommittedPrediction(m));
+  const content = confirmContentHtml(matches);
 
   return `
     <div class="view-mobile">
       <div class="match-screen">
         <div style="margin-bottom:28px;">${renderStepIndicator('confirm', 'h')}${stepHeroHtml('confirm')}</div>
-        <div class="match-card">${content}</div>
+        ${content}
         <div class="sticky-bar">
           <button class="btn btn-primary btn-lg btn-full" id="submitBtn">이대로 제출하기</button>
         </div>
@@ -1163,7 +1347,7 @@ function renderConfirmStep() {
         <div class="match-screen-grid">
           <div>${renderStepIndicator('confirm', 'v')}</div>
           <div>
-            <div class="match-card">${content}</div>
+            ${content}
             <div class="sticky-bar" style="margin-top:32px; display:flex; justify-content:center;">
               <button class="btn btn-primary btn-lg" style="width:200px;" id="submitBtnDesktop">이대로 제출하기</button>
             </div>
@@ -1190,14 +1374,19 @@ function countdownTimerHtml() {
     </div>`;
 }
 
-// 목록에서 "제출 완료, 결과 발표 대기" 주차로 바로 들어온 경우 w.myResult(predicted/picks)를 쓰고,
-// 방금 제출 플로우를 마친 경우(state.score/state.picks에만 값이 있음)는 그걸 그대로 쓴다.
-function completeCardHtml(w, shareBtnId, isMobile) {
-  const fromList = !!w.myResult;
-  const predicted = fromList ? w.myResult.predicted : state.score;
-  const pickedList = fromList ? (w.myResult.picks || []) : POSITIONS.map(p => state.picks[p]);
-  const cardHtml = (position, player) => player
-    ? `<button class="position-card filled" data-open-position="${position}">
+// matches에는 이번 주차의 전체 경기(잠긴 경기·이미 제출된 경기 포함)가 들어올 수 있다 — 참여 마감은
+// 경기 단위라 더블 매치위크에서 한 경기만 막 제출했어도, 나머지 경기(이미 마감됐거나 이미 제출된)도
+// 같은 화면에 함께 보여준다(사용자 확인, 2026-08-23). 경기마다 별도의 match-card로 나누고(한
+// 컨테이너에 합치지 않음), 카운트다운과 공유 버튼만 카드 밖에서 공유한다.
+// 경기별로 myPredictionFor()가 있으면(방금 제출/이전에 제출/결과까지 나옴 셋 다 포함) 그 내용을,
+// 없으면(마감됐고 참여도 안 함) 안내 문구만 보여준다.
+function completeCardHtml(matches, shareBtnId, isMobile) {
+  const isMulti = matches.length > 1;
+  // 카운트다운 문구는 "아직 결과(킥오프)가 안 난 경기"가 여러 개일 때만 늦은 경기 기준임을 밝힌다 —
+  // 이미 결과가 확정된 경기는 이미 제출했든 아니든 이 카운트다운과 무관하다.
+  const pendingCount = matches.filter(m => m.status === 'open').length;
+  const cardHtml = (position, player, matchId) => player
+    ? `<button class="position-card filled" data-open-position="${matchId}:${position}">
         <span class="position-card-label">${POSITION_LABEL[position]}</span>
         <div class="position-card-divider"></div>
         <div class="position-card-filled">
@@ -1206,7 +1395,7 @@ function completeCardHtml(w, shareBtnId, isMobile) {
           <span class="rating-num">×${player.multiplier.toFixed(1)}</span>
         </div>
       </button>`
-    : `<button class="position-card" data-open-position="${position}">
+    : `<button class="position-card" data-open-position="${matchId}:${position}">
         <span class="position-card-label">${POSITION_LABEL[position]}</span>
         <div class="position-card-divider"></div>
         <div class="position-card-empty">
@@ -1214,42 +1403,65 @@ function completeCardHtml(w, shareBtnId, isMobile) {
           <span>선수를<br>선택해요</span>
         </div>
       </button>`;
-  const positionRow = isMobile
-    ? `<div class="pick-result-list">${POSITIONS.map((p, i) => positionCompleteRowHtml(p, pickedList[i])).join('')}</div>`
-    : `<div class="position-row">${POSITIONS.map((p, i) => cardHtml(p, pickedList[i])).join('')}</div>`;
+
+  const matchCardsHtml = matches.map((m, i) => {
+    const labelHtml = isMulti
+      ? `<p class="t-label-2" style="margin:${i === 0 ? '0' : '20px'} 0 8px; font-weight:800; color:var(--c-gray-2);">경기 ${i + 1} · ${HOME_TEAM} vs ${m.opponent}</p>`
+      : '';
+
+    const myPrediction = myPredictionFor(m);
+    // 마감됐고 참여한 적도 없는 경기 — 예측/픽 내용 없이 안내만.
+    if (!myPrediction) {
+      return `
+        ${labelHtml}
+        <div class="match-card" style="text-align:left; animation: rise-in .4s ease both .1s;">
+          <p class="t-body-2" style="margin:0 0 10px;">경기 예측</p>
+          <div class="predict-compare-box"><p class="t-label-1 muted" style="margin:0;">이 경기는 예측 마감 시간이 지나 참여하지 못했어요</p></div>
+        </div>`;
+    }
+
+    const predicted = myPrediction.predicted;
+    const pickedList = myPrediction.picks || [];
+    const positionRow = isMobile
+      ? `<div class="pick-result-list">${POSITIONS.map((p, idx) => positionCompleteRowHtml(p, pickedList[idx])).join('')}</div>`
+      : `<div class="position-row">${POSITIONS.map((p, idx) => cardHtml(p, pickedList[idx], m.id)).join('')}</div>`;
+    return `
+      ${labelHtml}
+      <div class="match-card" style="text-align:left; animation: rise-in .4s ease both .1s;">
+        <p class="t-body-2" style="margin:0 0 10px;">경기 예측</p>
+        <div class="matchup-card">
+          <div class="team"><img src="${teamBadge(HOME_TEAM)}" alt="" class="team-logo"><span>${HOME_TEAM}</span></div>
+          <span class="score">${predicted[0]} – ${predicted[1]}</span>
+          <div class="team"><img src="${teamBadge(m.opponent)}" alt="" class="team-logo"><span>${m.opponent}</span></div>
+        </div>
+
+        <p class="t-body-2" style="margin:28px 0 10px;">내 선수 픽</p>
+        ${positionRow}
+      </div>`;
+  }).join('');
+
   return `
     <div class="countdown-block" style="margin-bottom:16px; animation: rise-in .35s ease both;">
-      <p class="countdown-caption">결과 반영까지</p>
+      <p class="countdown-caption">결과 반영까지${pendingCount > 1 ? ' (늦은 경기 종료 기준)' : ''}</p>
       ${countdownTimerHtml()}
     </div>
-    <div class="match-card" style="text-align:left; animation: rise-in .4s ease both .1s;">
-      <p class="t-body-2" style="margin:0 0 10px;">경기 예측</p>
-      <div class="matchup-card">
-        <div class="team"><img src="${teamBadge(HOME_TEAM)}" alt="" class="team-logo"><span>${HOME_TEAM}</span></div>
-        <span class="score">${predicted[0]} – ${predicted[1]}</span>
-        <div class="team"><img src="${teamBadge(w.opponent)}" alt="" class="team-logo"><span>${w.opponent}</span></div>
-      </div>
-
-      <p class="t-body-2" style="margin:28px 0 10px;">내 선수 픽</p>
-      ${positionRow}
-
-      <div style="display:flex; justify-content:center; margin-top:28px;">
-        <button class="btn btn-primary" style="width:160px;" id="${shareBtnId}">↗ 공유하기</button>
-      </div>
+    ${matchCardsHtml}
+    <div style="display:flex; justify-content:center; margin-top:28px;">
+      <button class="btn btn-primary" style="width:160px;" id="${shareBtnId}">↗ 공유하기</button>
     </div>`;
 }
 
 function renderComplete() {
-  const w = state.week;
+  const { weekNo, matches } = state.weekGroup;
   const introHtml = align => `
-    <p class="t-headline-1" style="margin:0 0 4px; text-align:${align}; animation:rise-in .3s ease both;">${w.weekNo}주차 제출 완료</p>
+    <p class="t-headline-1" style="margin:0 0 4px; text-align:${align}; animation:rise-in .3s ease both;">${weekNo}주차 제출 완료</p>
     <p class="t-label-2 muted" style="margin:0; text-align:${align}; animation:rise-in .35s ease both .08s;">킥오프 전까지 언제든 결과를 확인하러 다시 와주세요</p>`;
 
   return `
     <div class="view-mobile">
       <div class="match-screen" style="text-align:center;">
         ${introHtml('center')}
-        <div style="margin-top:20px;">${completeCardHtml(w, 'shareBtn', true)}</div>
+        <div style="margin-top:20px;">${completeCardHtml(matches, 'shareBtn', true)}</div>
         <button class="proto-note" id="simulateResultBtn">(프로토타입 전용) 경기 종료 후 결과 화면 미리보기 →</button>
       </div>
     </div>
@@ -1259,7 +1471,7 @@ function renderComplete() {
         <div class="match-screen-grid">
           <div>${introHtml('left')}</div>
           <div>
-            ${completeCardHtml(w, 'shareBtnDesktop', false)}
+            ${completeCardHtml(matches, 'shareBtnDesktop', false)}
             <button class="proto-note" id="simulateResultBtnDesktop">(프로토타입 전용) 경기 종료 후 결과 화면 미리보기 →</button>
           </div>
         </div>
@@ -1267,35 +1479,47 @@ function renderComplete() {
     </div>`;
 }
 
+// 더블 매치위크는 두 경기의 myResult를 하나의 주차 성적으로 합산한다 — 참여한 경기가 하나도
+// 없으면 null(=미참여 히어로), 하나라도 참여했으면 matchPoints/totalPoints를 모두 더한다.
+// rank/total은 주차 단위 하나만 존재한다고 가정하고 참여한 경기 중 첫 번째 값을 그대로 쓴다(데모용).
+function aggregateWeekResult(matches) {
+  const participated = matches.filter(m => m.myResult && typeof m.myResult.totalPoints === 'number');
+  if (!participated.length) return null;
+  const matchPoints = participated.reduce((sum, m) => sum + m.myResult.matchPoints, 0);
+  const totalPoints = participated.reduce((sum, m) => sum + m.myResult.totalPoints, 0);
+  const { rank, total } = participated[0].myResult;
+  return { matchPoints, pickPoints: totalPoints - matchPoints, totalPoints, rank, total };
+}
+
 // 옵션 3 — 결과 비교 + 점수/등수를 한 블록으로 통합. "내 예측"(예측 비교+선수픽)와
 // "전체 결과"(이 주차 랭킹)를 모바일은 세그먼트 탭으로, 데스크탑은 좌우 컬럼(2:3 비율)으로 나눈다.
 // 히어로 — 경기 예측/선수 픽 카드와 별개인 독립 다크 컨테이너(.result-hero-box, #111011).
 // 참고 레퍼런스(국가대표 카드) 구조 반영: [작은 라벨 → 굵고 큰 값] 헤더 + 인셋 스탯 박스.
 // "N주차 결과"(라벨) → "등수 / 총 인원"(값) → 인셋 박스에 경기예측·선수픽·총점.
-function resultHeroHtml(w, r) {
-  if (!r) {
+// agg는 aggregateWeekResult()의 결과 — 더블 매치위크도 단일 매치위크와 같은 모양이라 그대로 재사용한다.
+function resultHeroHtml(weekNo, agg) {
+  if (!agg) {
     return `
       <div class="result-hero-box">
-        <p class="t-caption-1 muted" style="margin:0;">${w.weekNo}주차 결과</p>
+        <p class="t-caption-1 muted" style="margin:0;">${weekNo}주차 결과</p>
         <p class="t-label-1" style="margin:10px 0 0; font-weight:800;">이 기간에는 예측에 참여하지 않았어요</p>
       </div>`;
   }
-  const pickPts = r.totalPoints - r.matchPoints;
   return `
     <div class="result-hero-box">
-      <p class="t-caption-1 muted" style="margin:0;">${w.weekNo}주차 결과</p>
+      <p class="t-caption-1 muted" style="margin:0;">${weekNo}주차 결과</p>
       <p style="margin:6px 0 0; display:flex; align-items:baseline; justify-content:center; gap:6px;">
-        <span style="font-size:28px; font-weight:900;">${r.rank}위</span>
-        <span class="muted t-label-2">/ ${r.total}명</span>
+        <span style="font-size:28px; font-weight:900;">${agg.rank}위</span>
+        <span class="muted t-label-2">/ ${agg.total}명</span>
       </p>
       <div class="result-hero-stats">
         <div>
           <p class="t-caption-1 muted" style="margin:0;">경기예측</p>
-          <p class="t-label-1" style="margin:4px 0 0; font-weight:800;">${r.matchPoints}점</p>
+          <p class="t-label-1" style="margin:4px 0 0; font-weight:800;">${agg.matchPoints}점</p>
         </div>
         <div>
           <p class="t-caption-1 muted" style="margin:0;">선수픽</p>
-          <p class="t-label-1" style="margin:4px 0 0; font-weight:800;">${pickPts}점</p>
+          <p class="t-label-1" style="margin:4px 0 0; font-weight:800;">${agg.pickPoints}점</p>
         </div>
         <div>
           <p class="t-caption-1 muted" style="margin:0;">총점</p>
@@ -1308,13 +1532,25 @@ function resultHeroHtml(w, r) {
 // 경기 예측 섹션 구조 — 칩 → 구단명/["내 예측" 라벨+스코어를 세로로]/구단명 한 행(matchup-card) → "실제 결과" 라벨 → 스코어.
 // "내 예측" 라벨은 행 전체 위가 아니라 스코어 바로 위에 오도록 스코어와 한 컬럼으로 묶는다.
 // 실제 결과는 라벨과 스코어를 세로로 배열하되 구단명은 넣지 않는다.
-// 미참여 주차는 r이 없다 — "내 예측" 칼럼 자리만 안내 문구로 바꾸고, 팀 로고 두 칸은 그대로 둬서
-// matchup-card 높이가 참여 주차와 항상 같게 유지된다.
+// 미참여 경기는 r이 없다 — "내 예측" 칼럼 자리만 안내 문구로 바꾸고, 팀 로고 두 칸은 그대로 둬서
+// matchup-card 높이가 참여 경기와 항상 같게 유지된다.
 // isMobile=true면 "내 선수 픽"을 가로 카드 3장 대신 세로 목록(점수는 오른쪽)으로 그린다 — 375px에서
 // 카드 3장이 너무 좁아지는 걸 막기 위함. 데스크탑은 폭이 넉넉해 기존 가로 카드를 그대로 쓴다.
-function resultMineCardHtml(w, r, byPos, shareBtnId, isMobile) {
+// 더블 매치위크는 경기마다 별도의 match-card로 나눈다(사용자 확인 — 한 컨테이너에 합치지 않음).
+// 카드 바깥에 붙는 "경기 N · 상대팀" 라벨은 예측/픽 단계와 같은 자리·모양을 재사용하고,
+// 카드 안쪽 헤더("경기 예측"/"내 선수 픽")는 단일 매치위크와 동일하게 유지한다.
+function resultMatchBlockHtml(m, isMobile) {
+  // 더블 매치위크에서 한 경기는 이미 끝났지만 다른 경기가 아직 시작 전인 경우(사용자 확인, 2026-08-23:
+  // 목록 카드에는 두 상태를 각각 병기) — 결과 화면에서도 안내만 하고 예측/픽 내용은 노출하지 않는다.
+  if (m.status !== 'result') {
+    return `
+      <p class="t-body-2" style="margin:0 0 10px;">경기 예측</p>
+      <div class="predict-compare-box"><p class="t-label-1 muted" style="margin:0;">${m.kickoff} ${m.kickoffTime} 예정 · 아직 시작하지 않은 경기예요</p></div>`;
+  }
+
+  const r = m.myResult;
   const participated = !!r;
-  const actual = participated ? r.actual : w.actual;
+  const byPos = participated ? Object.fromEntries(r.picks.map(p => [p.position, p])) : {};
   const positionRow = isMobile
     ? `<div class="pick-result-list">${POSITIONS.map(p =>
         participated ? positionResultRowHtml(p, byPos[p]) : positionEmptyResultRowHtml(p)
@@ -1337,26 +1573,42 @@ function resultMineCardHtml(w, r, byPos, shareBtnId, isMobile) {
       </div>`;
 
   return `
-    <div class="match-card" style="text-align:left; animation: rise-in .4s ease both .1s;">
-      <p class="t-body-2" style="margin:0 0 10px;">경기 예측</p>
-      <div class="predict-compare-box">
-        <span class="badge ${chipClass}">${chipLabel}</span>
-        <div class="matchup-card" style="margin:0;">
-          <div class="team"><img src="${teamBadge(HOME_TEAM)}" alt="" class="team-logo"><span>${HOME_TEAM}</span></div>
-          ${middleColumnHtml}
-          <div class="team"><img src="${teamBadge(w.opponent)}" alt="" class="team-logo"><span>${w.opponent}</span></div>
-        </div>
-        <div class="actual-result-box">
-          <p class="t-caption-1 muted" style="margin:0 0 2px;">실제 결과</p>
-          <p class="t-label-1" style="margin:0; font-weight:800;">${actual[0]} – ${actual[1]}</p>
-        </div>
+    <p class="t-body-2" style="margin:0 0 10px;">경기 예측</p>
+    <div class="predict-compare-box">
+      <span class="badge ${chipClass}">${chipLabel}</span>
+      <div class="matchup-card" style="margin:0;">
+        <div class="team"><img src="${teamBadge(HOME_TEAM)}" alt="" class="team-logo"><span>${HOME_TEAM}</span></div>
+        ${middleColumnHtml}
+        <div class="team"><img src="${teamBadge(m.opponent)}" alt="" class="team-logo"><span>${m.opponent}</span></div>
       </div>
+      <div class="actual-result-box">
+        <p class="t-caption-1 muted" style="margin:0 0 2px;">실제 결과</p>
+        <p class="t-label-1" style="margin:0; font-weight:800;">${m.actual[0]} – ${m.actual[1]}</p>
+      </div>
+    </div>
 
-      <p class="t-body-2" style="margin:28px 0 10px;">내 선수 픽</p>
-      ${positionRow}
+    <p class="t-body-2" style="margin:28px 0 10px;">내 선수 픽</p>
+    ${positionRow}`;
+}
 
-      ${participated ? `<div style="display:flex; justify-content:center; margin-top:28px;"><button class="btn btn-primary" style="width:160px;" id="${shareBtnId}">↗ 공유하기</button></div>` : ''}
-    </div>`;
+function resultMineCardHtml(matches, shareBtnId, isMobile) {
+  const isMulti = matches.length > 1;
+  const anyParticipated = matches.some(m => m.myResult && typeof m.myResult.totalPoints === 'number');
+  const cardsHtml = matches.map((m, i) => {
+    const labelHtml = isMulti
+      ? `<p class="t-label-2" style="margin:${i === 0 ? '0' : '20px'} 0 8px; font-weight:800; color:var(--c-gray-2);">경기 ${i + 1} · ${HOME_TEAM} vs ${m.opponent}</p>`
+      : '';
+    return `
+      ${labelHtml}
+      <div class="match-card" style="text-align:left; animation: rise-in .4s ease both .1s;">
+        ${resultMatchBlockHtml(m, isMobile)}
+      </div>`;
+  }).join('');
+
+  return `
+    ${cardsHtml}
+    ${anyParticipated ? `<div style="display:flex; justify-content:center; margin-top:28px;"><button class="btn btn-primary" style="width:160px;" id="${shareBtnId}">↗ 공유하기</button></div>` : ''}
+  `;
 }
 
 // 레퍼런스(주간 스코어 리더보드) 구조 참고 — 큰 순위 숫자 + 원형 아바타(실루엣) + 이름 + 강조된 점수 셀.
@@ -1417,31 +1669,30 @@ function resultRankCardHtml(leaderboard, opts = {}) {
 }
 
 function renderResult() {
-  const w = state.week;
-  const r = w.myResult || null;
-  const byPos = r ? Object.fromEntries(r.picks.map(p => [p.position, p])) : {};
-  const leaderboard = r ? buildLeaderboard(r) : buildLeaderboardNoParticipation();
+  const { weekNo, matches } = state.weekGroup;
+  const agg = aggregateWeekResult(matches);
+  const leaderboard = agg ? buildLeaderboard(agg) : buildLeaderboardNoParticipation();
 
   return `
     <div class="view-mobile">
       <div class="match-screen">
-        ${resultHeroHtml(w, r)}
+        ${resultHeroHtml(weekNo, agg)}
         <div class="segment-bar">
           <button class="segment ${state.resultTab === 'mine' ? 'active' : ''}" data-result-tab="mine">내 예측</button>
           <button class="segment ${state.resultTab === 'rank' ? 'active' : ''}" data-result-tab="rank">전체 결과</button>
         </div>
         ${state.resultTab === 'rank'
-          ? resultRankCardHtml(leaderboard, { capped: false, toggleId: 'rankViewAllBtn', weekNo: w.weekNo })
-          : resultMineCardHtml(w, r, byPos, 'shareBtn', true)}
+          ? resultRankCardHtml(leaderboard, { capped: false, toggleId: 'rankViewAllBtn', weekNo })
+          : resultMineCardHtml(matches, 'shareBtn', true)}
       </div>
     </div>
     <div class="view-desktop">
       <div class="match-screen">
         <button class="desktop-back" id="desktopBackBtn">‹ 목록으로</button>
         <div style="max-width:709px; margin:0 auto;">
-          ${resultHeroHtml(w, r)}
-          ${resultMineCardHtml(w, r, byPos, 'shareBtnDesktop', false)}
-          <div style="margin-top:24px;">${resultRankCardHtml(leaderboard, { capped: true, toggleId: 'rankViewAllBtnDesktop', weekNo: w.weekNo })}</div>
+          ${resultHeroHtml(weekNo, agg)}
+          ${resultMineCardHtml(matches, 'shareBtnDesktop', false)}
+          <div style="margin-top:24px;">${resultRankCardHtml(leaderboard, { capped: true, toggleId: 'rankViewAllBtnDesktop', weekNo })}</div>
         </div>
       </div>
     </div>`;
@@ -1471,8 +1722,9 @@ function render() {
   stopCountdownTicker();
   if (state.view === 'complete') startCountdownTicker();
 
-  if (state.view === 'result' && state.week.myResult) {
-    animateCountUp('total-points-value', state.week.myResult.totalPoints);
+  if (state.view === 'result') {
+    const agg = aggregateWeekResult(state.weekGroup.matches);
+    if (agg) animateCountUp('total-points-value', agg.totalPoints);
   }
 }
 
@@ -1480,21 +1732,59 @@ function bindEvents() {
   document.getElementById('backBtn').onclick = () => setState({ view: 'list' });
 
   if (state.view === 'list') {
+    // 단일 경기 주차 — 경기 행 하나하나가 그대로 클릭 단위(기존과 동일). 이미 제출했지만 아직
+    // 경기 전인 경우(myPrediction)도 새로 예측하는 게 아니라 제출완료 화면으로 보낸다(사용자 확인, 2026-08-23).
     document.querySelectorAll('[data-match]').forEach(el => {
       el.onclick = () => {
-        const found = findMatch(el.dataset.match);
+        const found = findMatchById(el.dataset.match);
         if (!found) return;
-        const week = { weekNo: found.week.weekNo, ...found.match };
-        if (week.status === 'open') {
-          setState({ view: 'score', week, score: [0,0], picks: {}, activePosition: 'DEF' });
-        } else if (week.status === 'result') {
-          if (week.myResult && typeof week.myResult.totalPoints !== 'number') {
+        const match = { ...found.match, weekNo: found.week.weekNo };
+        if (match.status === 'open' && !match.myPrediction) {
+          setState({
+            view: 'score',
+            weekGroup: { weekNo: match.weekNo, matches: [match] },
+            scores: { [match.id]: [0, 0] },
+            picks: { [match.id]: {} },
+          });
+        } else if (match.status === 'open' && match.myPrediction) {
+          setState({ view: 'complete', weekGroup: { weekNo: match.weekNo, matches: [match] }, countdownTarget: Date.now() + (2 * 86400 + 10 * 3600 + 57 * 60 + 32) * 1000 });
+        } else if (match.status === 'result') {
+          if (match.myResult && typeof match.myResult.totalPoints !== 'number') {
             // 제출은 했지만 아직 결과(점수) 발표 전 — 결과 발표 카운트다운 화면으로.
-            setState({ view: 'complete', week, countdownTarget: Date.now() + (14*3600 + 22*60) * 1000 });
+            setState({ view: 'complete', weekGroup: { weekNo: match.weekNo, matches: [match] }, countdownTarget: Date.now() + (14 * 3600 + 22 * 60) * 1000 });
           } else {
             // 참여(점수 있음) + 미참여 둘 다 결과 화면으로 — 미참여는 화면 안에서 안내한다.
-            setState({ view: 'result', week, resultTab: 'mine', rankExpanded: false });
+            setState({ view: 'result', weekGroup: { weekNo: match.weekNo, matches: [match] }, resultTab: 'mine', rankExpanded: false });
           }
+        }
+      };
+    });
+
+    // 더블 매치위크 — 주차 카드 전체가 클릭 단위(사용자 확인, 2026-08-23). 참여 마감은 "주차"가
+    // 아니라 "경기" 단위지만, 두 경기가 같이 열려있는 동안은 묶어서 한 번에 제출하는 구조라서
+    // "예측할 게 남아있는지"(actionable = 아직 열려있고 미제출)로 분기한다(사용자 확인, 2026-08-23):
+    //  - actionable이 있으면 → 'score'(예측할 경기만). 예측/픽/확인 단계는 render 함수에서 이 조건으로
+    //    한 번 더 걸러 쓴다.
+    //  - actionable은 없지만 아직 안 끝난 경기가 있으면(둘 다 이미 제출 완료, 결과 대기) → 'complete'.
+    //  - 전부 끝났으면 → 'result'.
+    // weekGroup에는 항상 이 주차의 전체 경기를 담아, 마감된/이미 제출된 경기도 같은 맥락에서 함께 보여준다.
+    document.querySelectorAll('[data-week]').forEach(el => {
+      el.onclick = () => {
+        const week = findWeek(+el.dataset.week);
+        if (!week) return;
+        const matches = sortedMatches(week).map(m => ({ ...m, weekNo: week.weekNo }));
+        const actionableMatches = matches.filter(m => m.status === 'open' && !hasCommittedPrediction(m));
+        if (actionableMatches.length > 0) {
+          setState({
+            view: 'score',
+            weekGroup: { weekNo: week.weekNo, matches },
+            scores: Object.fromEntries(actionableMatches.map(m => [m.id, [0, 0]])),
+            picks: Object.fromEntries(actionableMatches.map(m => [m.id, {}])),
+          });
+        } else if (matches.some(m => m.status === 'open')) {
+          setState({ view: 'complete', weekGroup: { weekNo: week.weekNo, matches }, countdownTarget: Date.now() + (2 * 86400 + 10 * 3600 + 57 * 60 + 32) * 1000 });
+        } else if (matches.some(m => m.status === 'result')) {
+          setState({ view: 'result', weekGroup: { weekNo: week.weekNo, matches }, resultTab: 'mine', rankExpanded: false });
         }
       };
     });
@@ -1502,10 +1792,22 @@ function bindEvents() {
 
   if (state.view === 'score') {
     document.querySelectorAll('[data-score-dec]').forEach(el => {
-      el.onclick = () => { const i = +el.dataset.scoreDec; const s = [...state.score]; s[i] = Math.max(0, s[i]-1); setState({ score: s }); };
+      el.onclick = () => {
+        const [matchId, idxStr] = el.dataset.scoreDec.split(':');
+        const idx = +idxStr;
+        const s = [...(state.scores[matchId] || [0, 0])];
+        s[idx] = Math.max(0, s[idx] - 1);
+        setState({ scores: { ...state.scores, [matchId]: s } });
+      };
     });
     document.querySelectorAll('[data-score-inc]').forEach(el => {
-      el.onclick = () => { const i = +el.dataset.scoreInc; const s = [...state.score]; s[i] = s[i]+1; setState({ score: s }); };
+      el.onclick = () => {
+        const [matchId, idxStr] = el.dataset.scoreInc.split(':');
+        const idx = +idxStr;
+        const s = [...(state.scores[matchId] || [0, 0])];
+        s[idx] = s[idx] + 1;
+        setState({ scores: { ...state.scores, [matchId]: s } });
+      };
     });
     ['nextBtn', 'nextBtnDesktop'].forEach(id => {
       const el = document.getElementById(id);
@@ -1517,18 +1819,32 @@ function bindEvents() {
 
   if (state.view === 'pick') {
     document.querySelectorAll('[data-open-position]').forEach(el => {
-      el.onclick = () => setState({ pickModalPosition: el.dataset.openPosition });
+      el.onclick = () => {
+        const [matchId, position] = el.dataset.openPosition.split(':');
+        setState({ pickModalTarget: { matchId, position } });
+      };
     });
     document.querySelectorAll('[data-pick]').forEach(el => {
       el.onclick = () => {
-        const position = state.pickModalPosition;
+        const { matchId, position } = state.pickModalTarget;
         const player = CANDIDATES[position].find(p => p.id === el.dataset.pick);
-        setState({ picks: { ...state.picks, [position]: player }, pickModalPosition: null });
+        setState({
+          picks: { ...state.picks, [matchId]: { ...(state.picks[matchId] || {}), [position]: player } },
+          pickModalTarget: null,
+        });
+      };
+    });
+    // "N전 픽 그대로 적용" — 첫 경기에서 고른 픽을 다른 경기에 그대로 복사한다(사용자 확인, 2026-08-23).
+    document.querySelectorAll('[data-copy-picks-from]').forEach(el => {
+      el.onclick = () => {
+        const from = el.dataset.copyPicksFrom;
+        const to = el.dataset.copyPicksTo;
+        setState({ picks: { ...state.picks, [to]: { ...(state.picks[from] || {}) } } });
       };
     });
     const overlay = document.getElementById('pickModalOverlay');
     if (overlay) {
-      overlay.onclick = e => { if (e.target === overlay) setState({ pickModalPosition: null }); };
+      overlay.onclick = e => { if (e.target === overlay) setState({ pickModalTarget: null }); };
     }
     ['nextBtn', 'nextBtnDesktop'].forEach(id => {
       const el = document.getElementById(id);
@@ -1548,24 +1864,43 @@ function bindEvents() {
     });
     ['submitBtn', 'submitBtnDesktop'].forEach(id => {
       const el = document.getElementById(id);
-      // 데모용 임의 목표 시각 — 결과 발표(=경기 종료) 시점까지 2일 10시간 57분 32초 남은 상태로 시작
-      if (el) el.onclick = () => setState({ view: 'complete', countdownTarget: Date.now() + (2*86400 + 10*3600 + 57*60 + 32) * 1000 });
+      if (el) el.onclick = () => {
+        // 방금 제출한 예측을 실제 데이터(WEEKS)에도 남긴다 — 안 그러면 목록으로 돌아갔다가 같은
+        // 경기를 다시 눌렀을 때 "아직 아무것도 안 한 경기"로 보여서 또 예측하게 되는 버그가 난다
+        // (사용자 확인, 2026-08-23 — "참여"는 제출한 상태를 뜻하므로 제출 즉시 반영돼야 한다).
+        state.weekGroup.matches
+          .filter(m => m.status === 'open' && !hasCommittedPrediction(m) && state.scores[m.id])
+          .forEach(m => {
+            const found = findMatchById(m.id);
+            if (found) found.match.myPrediction = { predicted: state.scores[m.id], picks: POSITIONS.map(p => state.picks[m.id]?.[p]) };
+          });
+        // 데모용 임의 목표 시각 — 결과 발표(=경기 종료) 시점까지 2일 10시간 57분 32초 남은 상태로 시작.
+        // 더블 매치위크도 이 값 하나만 쓴다 — 실제 구현에서는 더 늦게 끝나는 경기 기준으로 계산해야 한다.
+        setState({ view: 'complete', countdownTarget: Date.now() + (2 * 86400 + 10 * 3600 + 57 * 60 + 32) * 1000 });
+      };
     });
     const desktopBack = document.getElementById('desktopBackBtn');
     if (desktopBack) desktopBack.onclick = () => setState({ view: 'list' });
   }
 
   if (state.view === 'complete') {
+    // 더블 매치위크는 이번 세션에서 방금 예측한(status:'open') 경기만 시뮬레이션한다 — 이미 마감됐거나
+    // 결과가 나온 다른 경기(사용자 확인, 2026-08-23: 참여 마감은 경기 단위)는 그대로 둔다.
+    const DEMO_ACTUALS = [[2, 0], [1, 1]];
     function simulateResult() {
-      const actual = [2, 0];
-      const mp = matchPoints(state.score, actual);
-      const picksArr = POSITIONS.map(p => state.picks[p]);
-      const total = mp + picksArr.reduce((sum, p) => sum + demoPoints(p), 0);
-      const week = {
-        ...state.week, status: 'result',
-        myResult: { predicted: state.score, actual, matchPoints: mp, totalPoints: total, rank: 8, total: 42, picks: picksArr },
-      };
-      setState({ view: 'result', week, resultTab: 'mine', rankExpanded: false });
+      const matches = state.weekGroup.matches.map((m, i) => {
+        if (m.status !== 'open') return m;
+        const actual = m.actual || DEMO_ACTUALS[i % DEMO_ACTUALS.length];
+        const predicted = state.scores[m.id] || [0, 0];
+        const mp = matchPoints(predicted, actual);
+        const picksArr = POSITIONS.map(p => state.picks[m.id]?.[p]);
+        const total = mp + picksArr.reduce((sum, p) => sum + (p ? demoPoints(p) : 0), 0);
+        return {
+          ...m, status: 'result', actual,
+          myResult: { predicted, actual, matchPoints: mp, totalPoints: total, rank: 8, total: 42, picks: picksArr },
+        };
+      });
+      setState({ view: 'result', weekGroup: { ...state.weekGroup, matches }, resultTab: 'mine', rankExpanded: false });
     }
     const desktopBack = document.getElementById('desktopBackBtn');
     if (desktopBack) desktopBack.onclick = () => setState({ view: 'list' });
@@ -1626,5 +1961,6 @@ function shareNotice(btn) {
 
 render();
 </script>
+
 
 </body></html>
