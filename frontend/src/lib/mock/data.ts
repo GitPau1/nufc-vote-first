@@ -336,9 +336,10 @@ export const MOCK_FIXTURES: FixtureRow[] = [
   mockFixture(9002, { id: 8456, name: 'Man City' },   { days: -12, isHome: false, competition: 'Premier League', score: [0, 2] }),
   mockFixture(9003, { id: 8650, name: 'Liverpool' },  { days: -5,  isHome: true,  competition: 'Premier League', score: [2, 0] }),
   mockFixture(9004, { id: 9825, name: 'Arsenal' },    { days: 2,   isHome: false, competition: 'Premier League' }),
+  // 9004와 같은 주 — 더블 매치위크(경기 2개 = 한 예측 세션) 확인용.
+  // 오픈된 주차에 둬야 목 모드에서 주 단위 제출 플로우까지 밟을 수 있다.
+  mockFixture(9006, { id: 9937, name: 'Brentford' },  { days: 3,   isHome: false, competition: 'EFL Cup' }),
   mockFixture(9005, { id: 8455, name: 'Chelsea' },    { days: 9,   isHome: true,  competition: 'Premier League' }),
-  // 9005와 같은 주 — 더블 매치위크(경기 2개 = 한 예측 세션) 확인용
-  mockFixture(9006, { id: 9937, name: 'Brentford' },  { days: 8,   isHome: false, competition: 'EFL Cup' }),
   mockFixture(9007, { id: 8668, name: 'Everton' },    { days: 30,  isHome: true,  competition: 'Premier League' }),
 ]
 

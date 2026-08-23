@@ -20,7 +20,7 @@ function loadSubmitModule() {
   return cjsModule.exports
 }
 
-const { buildPredictionRow } = loadSubmitModule()
+const { buildPredictionRows } = loadSubmitModule()
 
 const CANDIDATES = {
   DEF: [{ id: 4, name: '보트만', position: 'DEF', multiplier: 2.1 }],
@@ -30,58 +30,93 @@ const CANDIDATES = {
 
 const PICKS = { DEF: 4, MID: 39, FWD: 14 }
 
-const HOME_MATCH = { id: '9001', isHome: true, status: 'open' }
-const AWAY_MATCH = { id: '9002', isHome: false, status: 'open' }
+/** 경기 1개짜리 주차 */
+const SINGLE = { status: 'open', matches: [{ id: '9001', isHome: true }] }
+/** 더블 매치위크 — 홈 1경기 + 원정 1경기 */
+const DOUBLE = {
+  status: 'open',
+  matches: [
+    { id: '9001', isHome: true },
+    { id: '9002', isHome: false },
+  ],
+}
 
-test('경기 하나 = 1행. 배당은 후보 목록에서 스냅샷된다', () => {
-  const result = buildPredictionRow(HOME_MATCH, { ourScore: 2, theirScore: 1, picks: PICKS }, CANDIDATES)
+test('경기 1개인 주차 = 1행. 배당은 후보 목록에서 스냅샷된다', () => {
+  const result = buildPredictionRows(SINGLE, { scores: { 9001: [2, 1] }, picks: PICKS }, CANDIDATES)
 
   assert.ok(!('error' in result), JSON.stringify(result))
+  assert.equal(result.rows.length, 1)
   assert.deepEqual(
-    [result.row.fixture_id, result.row.home_score, result.row.away_score],
+    [result.rows[0].fixture_id, result.rows[0].home_score, result.rows[0].away_score],
     [9001, 2, 1],
   )
   // 배당은 클라이언트 값이 아니라 후보 목록에서 스냅샷된다.
   assert.deepEqual(
-    [result.row.def_multiplier, result.row.mid_multiplier, result.row.fwd_multiplier],
+    [result.rows[0].def_multiplier, result.rows[0].mid_multiplier, result.rows[0].fwd_multiplier],
     [2.1, 1.7, 1.3],
   )
-  assert.equal(result.row.def_player_id, 4)
+  assert.equal(result.rows[0].def_player_id, 4)
 })
 
-test('원정 경기는 [우리, 상대] → [홈, 원정]으로 뒤집힌다', () => {
-  const result = buildPredictionRow(AWAY_MATCH, { ourScore: 0, theirScore: 3, picks: PICKS }, CANDIDATES)
+test('더블 매치위크 = 2행. 픽은 주 단위 1세트라 두 행에 같은 값이 들어간다', () => {
+  const result = buildPredictionRows(
+    DOUBLE,
+    { scores: { 9001: [2, 1], 9002: [0, 3] }, picks: PICKS },
+    CANDIDATES,
+  )
 
   assert.ok(!('error' in result), JSON.stringify(result))
-  assert.deepEqual([result.row.home_score, result.row.away_score], [3, 0])
+  assert.deepEqual(result.rows.map(r => r.fixture_id), [9001, 9002])
+  // 원정 경기는 [우리, 상대] → [홈, 원정]으로 뒤집힌다
+  assert.deepEqual([result.rows[1].home_score, result.rows[1].away_score], [3, 0])
+  // 픽/배당은 두 행이 동일 — 주 단위 픽이 경기별로 채점되어 합산된다(FR-017)
+  for (const row of result.rows) {
+    assert.deepEqual(
+      [row.def_player_id, row.mid_player_id, row.fwd_player_id],
+      [4, 39, 14],
+    )
+    assert.deepEqual([row.def_multiplier, row.mid_multiplier, row.fwd_multiplier], [2.1, 1.7, 1.3])
+  }
+})
+
+test('그 주 경기 중 하나라도 스코어가 없으면 거절된다 (부분 제출 방지)', () => {
+  assert.deepEqual(
+    buildPredictionRows(DOUBLE, { scores: { 9001: [2, 1] }, picks: PICKS }, CANDIDATES),
+    { error: 'incomplete' },
+  )
 })
 
 test('마감/미완성/범위초과/모르는 선수는 전부 거절된다', () => {
-  const score = { ourScore: 1, theirScore: 0 }
+  const scores = { 9001: [1, 0] }
 
   assert.deepEqual(
-    buildPredictionRow({ ...HOME_MATCH, status: 'result' }, { ...score, picks: PICKS }, CANDIDATES),
+    buildPredictionRows({ ...SINGLE, status: 'result' }, { scores, picks: PICKS }, CANDIDATES),
     { error: 'closed' },
   )
   assert.deepEqual(
-    buildPredictionRow({ ...HOME_MATCH, status: 'upcoming' }, { ...score, picks: PICKS }, CANDIDATES),
+    buildPredictionRows({ ...SINGLE, status: 'upcoming' }, { scores, picks: PICKS }, CANDIDATES),
     { error: 'closed' },
   )
+  // 경기가 없는 주차는 제출 대상이 아니다
   assert.deepEqual(
-    buildPredictionRow(HOME_MATCH, { ...score, picks: { DEF: 4, MID: 39 } }, CANDIDATES),
+    buildPredictionRows({ status: 'open', matches: [] }, { scores, picks: PICKS }, CANDIDATES),
     { error: 'incomplete' },
   )
   assert.deepEqual(
-    buildPredictionRow(HOME_MATCH, { ourScore: 99, theirScore: 0, picks: PICKS }, CANDIDATES),
+    buildPredictionRows(SINGLE, { scores, picks: { DEF: 4, MID: 39 } }, CANDIDATES),
+    { error: 'incomplete' },
+  )
+  assert.deepEqual(
+    buildPredictionRows(SINGLE, { scores: { 9001: [99, 0] }, picks: PICKS }, CANDIDATES),
     { error: 'invalid_score' },
   )
   assert.deepEqual(
-    buildPredictionRow(HOME_MATCH, { ourScore: 1.5, theirScore: 0, picks: PICKS }, CANDIDATES),
+    buildPredictionRows(SINGLE, { scores: { 9001: [1.5, 0] }, picks: PICKS }, CANDIDATES),
     { error: 'invalid_score' },
   )
   // 후보 목록에 없는 id = 조작되거나 다른 시즌 선수
   assert.deepEqual(
-    buildPredictionRow(HOME_MATCH, { ...score, picks: { ...PICKS, FWD: 999 } }, CANDIDATES),
+    buildPredictionRows(SINGLE, { scores, picks: { ...PICKS, FWD: 999 } }, CANDIDATES),
     { error: 'unknown_player' },
   )
 })
@@ -91,9 +126,9 @@ test('같은 선수를 두 포지션에 넣으면 거절된다 (DB check와 같�
     ...CANDIDATES,
     MID: [...CANDIDATES.MID, { id: 4, name: '보트만', position: 'MID', multiplier: 2.1 }],
   }
-  const result = buildPredictionRow(
-    HOME_MATCH,
-    { ourScore: 1, theirScore: 0, picks: { DEF: 4, MID: 4, FWD: 14 } },
+  const result = buildPredictionRows(
+    SINGLE,
+    { scores: { 9001: [1, 0] }, picks: { DEF: 4, MID: 4, FWD: 14 } },
     candidates,
   )
 

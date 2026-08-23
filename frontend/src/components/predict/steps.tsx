@@ -3,8 +3,8 @@ import { cn } from '@/lib/utils'
 export type StepKey = 'score' | 'pick' | 'confirm'
 
 export const STEP_META: { key: StepKey; name: string; desc: string }[] = [
-  { key: 'score',   name: '경기 예측', desc: '이번 경기 스코어를 예측해보세요' },
-  { key: 'pick',    name: '선수 픽',   desc: '포지션별로 이번 경기 활약할 선수를 골라보세요' },
+  { key: 'score',   name: '경기 예측', desc: '이번 주 경기 스코어를 예측해보세요' },
+  { key: 'pick',    name: '선수 픽',   desc: '포지션별로 이번 주 활약할 선수를 골라보세요' },
   { key: 'confirm', name: '확인',      desc: '제출하기 전, 예측 내용을 확인해보세요' },
 ]
 

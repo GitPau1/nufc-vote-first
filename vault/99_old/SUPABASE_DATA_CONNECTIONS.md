@@ -551,14 +551,21 @@ Update note 2026-05-30:
 진입점:
 
 - `frontend/src/app/predictions/page.tsx` (주차별 경기 목록 + 랭킹 사이드바)
-- `frontend/src/app/predictions/week/[weekKey]/page.tsx` (스코어 → 선수 픽 → 확인). `weekKey`는 `2026-35` 형태의 ISO 연도-주차이고, `status === 'open'`인 주만 진입 가능합니다.
-- `frontend/src/lib/queries/fixtures.ts`
+- `frontend/src/app/predictions/[weekKey]/page.tsx` (스코어 → 선수 픽 → 확인). `weekKey`는 `2026-35` 형태의 ISO 연도-주차이고, `status === 'open'`인 주만 진입 가능합니다.
+- `frontend/src/lib/queries/fixtures.ts`, `frontend/src/lib/queries/predictions.ts`, `frontend/src/lib/queries/squads.ts`
+- 제출: `frontend/src/lib/actions/predictions.ts`의 `submitWeekPrediction(weekKey, input)`
 
 사용 데이터:
 
 - `fixtures` 전체 조회 후 `lib/predictions/week.ts`에서 주차 그룹핑 → 주 단위 예측 세션(더블 매치위크는 경기 2개가 한 세션)
-- 선수 후보/배당은 아직 DB가 아니라 `frontend/src/lib/predictions/candidates.ts`의 고정 더미
-- 예측 제출/채점/랭킹 테이블은 아직 없음(다음 단계)
+- 선수 후보/배당은 `season_squads`(`prediction_multiplier`)에서 옵니다 — `lib/queries/squads.ts`
+- 제출은 `predictions`, 채점은 `prediction_results` view. `fixture_leaderboard`/`season_leaderboard`는 있지만 화면에 아직 연결되지 않았습니다(`RankingCard`는 빈 배열).
+
+주 단위 제출이 테이블에 앉는 방식:
+
+- `predictions`는 **경기당 1행**(`unique (user_id, fixture_id)`)이지만, 제출은 주 단위 1회입니다. 그 주 경기 전부를 **한 번의 insert**로 넣고(다중 행 insert = 단일 statement라 부분 제출이 생기지 않음), 선수 픽 3개는 모든 행에 같은 값으로 복사됩니다. 그래서 기존 경기별 채점 view가 그대로 동작하면서 픽 점수는 주 단위로 합산됩니다(FR-017).
+- insert RLS는 `그 주 첫 경기 킥오프` 기준입니다 — `prediction_week_first_kickoff(fixture_id)`가 `now()`와 `now() + 7 days` 사이여야 통과(`20260823130000_predictions_weekly_window.sql`). 프론트의 `weekStatus`와 같은 기준이므로 한쪽만 바꾸면 어긋납니다.
+- 주차 경계는 한국시간 월요일 시작입니다(SQL: `date_trunc('week', kickoff_at at time zone 'Asia/Seoul')` / TS: `week.ts`의 ISO 주차).
 
 ## DB 수정 체크리스트
 

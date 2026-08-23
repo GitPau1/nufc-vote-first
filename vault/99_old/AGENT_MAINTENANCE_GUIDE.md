@@ -72,12 +72,15 @@ DB나 Supabase 연동을 건드릴 때:
 
 승부예측:
 
-- 조회: `frontend/src/lib/queries/fixtures.ts`
+- 조회: `frontend/src/lib/queries/fixtures.ts`(경기), `frontend/src/lib/queries/predictions.ts`(내 제출), `frontend/src/lib/queries/squads.ts`(픽 후보/배당)
 - 주차 그룹핑/주 세션 상태 파생/`toPredictWeeks` 어댑터: `frontend/src/lib/predictions/week.ts` (+ `week.test.mjs`)
-- 선수 후보 더미: `frontend/src/lib/predictions/candidates.ts`
-- 화면: `frontend/src/app/predictions/page.tsx`, `frontend/src/app/predictions/week/[weekKey]/page.tsx`, `frontend/src/components/predict/*`
+- 제출 검증/insert 행 생성: `frontend/src/lib/predictions/submit.ts` (+ `submit.test.mjs`), action은 `frontend/src/lib/actions/predictions.ts`
+- 포지션 정의/표시 헬퍼: `frontend/src/lib/predictions/candidates.ts`
+- 화면: `frontend/src/app/predictions/page.tsx`, `frontend/src/app/predictions/[weekKey]/page.tsx`, `frontend/src/components/predict/*`
 - 예측/제출 단위는 경기가 아니라 **주(week)**다. 상태(`open`/`result`/`upcoming`)도 주 레벨에만 있고, 더블 매치위크는 경기 2개가 한 세션이다.
-- 아직 없는 것: 예측 제출 action, 완료/결과 화면, 랭킹 데이터(`RankingCard`는 빈 배열로 렌더), predictions 테이블
+- 오픈/마감 기준은 **그 주 첫 경기 킥오프**(7일 전 오픈 → 첫 킥오프에 마감). 프론트는 `week.ts`의 `weekStatus`, DB는 `20260823130000_predictions_weekly_window.sql`의 `prediction_week_first_kickoff` — 둘이 같은 기준이라 한쪽만 고치면 안 된다.
+- `predictions` 테이블은 **경기당 1행**이지만 제출은 주 단위 1회다: 그 주 경기 전부를 한 번의 insert로 넣고, 선수 픽은 모든 행에 같은 값이 복사된다(FR-017 = 픽 점수 주 단위 합산). "같은 주의 픽은 같다"는 DB 제약이 아니라 server action의 불변식이니 predictions에 쓰는 다른 경로를 만들면 안 된다.
+- 아직 없는 것: 결과(채점) 화면, 주간 랭킹 view, 랭킹 데이터 주입(`RankingCard`는 빈 배열로 렌더), `fixture_player_ratings` 입력 UI
 
 인증/온보딩/마이페이지:
 

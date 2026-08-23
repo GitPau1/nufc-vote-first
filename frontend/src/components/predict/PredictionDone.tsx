@@ -4,8 +4,13 @@ import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { PlayerPhoto, Silhouette, TeamBadge } from './shared'
 import { POSITIONS, POSITION_LABEL, playerPhotoUrl, type Candidate, type Position } from '@/lib/predictions/candidates'
-import { NUFC_LABEL, NUFC_TEAM_ID, teamLogoUrl, type MatchSession } from '@/lib/predictions/week'
-import type { MyPrediction } from '@/lib/queries/predictions'
+import {
+  NUFC_LABEL,
+  NUFC_TEAM_ID,
+  teamLogoUrl,
+  type WeekPrediction,
+  type WeekSession,
+} from '@/lib/predictions/week'
 import type { PickCandidates } from '@/lib/queries/squads'
 import { cn } from '@/lib/utils'
 
@@ -17,7 +22,7 @@ type PickedPlayer = {
   multiplier: number
 }
 
-function resolvePicks(prediction: MyPrediction, candidates: PickCandidates): PickedPlayer[] {
+function resolvePicks(prediction: WeekPrediction, candidates: PickCandidates): PickedPlayer[] {
   return POSITIONS.map(position => {
     const { playerId, multiplier } = prediction.picks[position]
     const found: Candidate | undefined = candidates[position].find(c => c.id === playerId)
@@ -32,26 +37,25 @@ function resolvePicks(prediction: MyPrediction, candidates: PickCandidates): Pic
 }
 
 /**
- * 제출 완료 화면. 퍼블리싱 `renderComplete` / `completeCardHtml` 구조를 따른다:
+ * 주차 제출 완료 화면. 퍼블리싱 `renderComplete` / `completeCardHtml` 구조를 따른다:
  * 헤드라인 → 독립 카운트다운 블록 → 카드(경기 예측 · 내 선수 픽 · 공유하기).
+ * 카운트다운 기준은 그 주 첫 경기 킥오프 — 마감 기준과 같다.
  * 제출 후 수정이 불가하므로(DB UNIQUE + UPDATE 정책 없음) 픽 카드는 클릭되지 않는다.
  */
 export function PredictionDone({
-  match,
+  week,
   prediction,
   candidates,
 }: {
-  match: MatchSession
-  prediction: MyPrediction
+  week: WeekSession
+  prediction: WeekPrediction
   candidates: PickCandidates
 }) {
-  const [home, away] = prediction.score
-  const [ourScore, theirScore] = match.isHome ? [home, away] : [away, home]
   const picks = resolvePicks(prediction, candidates)
 
   const intro = (align: 'center' | 'left') => (
     <div className={align === 'center' ? 'text-center' : 'text-left'}>
-      <p className="text-headline-1 font-extrabold text-black">{match.weekNo}주차 제출 완료</p>
+      <p className="text-headline-1 font-extrabold text-black">{week.weekNo}주차 제출 완료</p>
       <p className="mt-1 text-label-2 text-gray-2">킥오프 전까지 언제든 결과를 확인하러 다시 와주세요</p>
     </div>
   )
@@ -66,16 +70,23 @@ export function PredictionDone({
         </div>
 
         <div>
-          <Countdown targetIso={match.kickoffAt} />
+          <Countdown targetIso={week.firstKickoffAt} />
 
           <div className="rounded-lg border border-gray-4 bg-surface px-4 py-5">
             <p className="mb-2.5 text-body-2-normal font-bold">경기 예측</p>
-            <div className="flex items-center justify-center gap-2 sm:gap-6">
-              <MatchupTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
-              <span className="text-title-2 font-black">
-                {ourScore} – {theirScore}
-              </span>
-              <MatchupTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
+            <div className="flex flex-col gap-4">
+              {week.matches.map(match => {
+                const [ourScore, theirScore] = prediction.scores[match.id] ?? [0, 0]
+                return (
+                  <div key={match.id} className="flex items-center justify-center gap-2 sm:gap-6">
+                    <MatchupTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
+                    <span className="text-title-2 font-black">
+                      {ourScore} – {theirScore}
+                    </span>
+                    <MatchupTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
+                  </div>
+                )
+              })}
             </div>
 
             <p className="mb-2.5 mt-7 text-body-2-normal font-bold">내 선수 픽</p>

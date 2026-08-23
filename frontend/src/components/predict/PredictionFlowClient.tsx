@@ -9,20 +9,28 @@ import { PredictionDone } from './PredictionDone'
 import { PlayerPhoto, Silhouette, TeamBadge } from './shared'
 import { StepHero, StepTrack, StepTrackVertical, type StepKey } from './steps'
 import { POSITIONS, POSITION_LABEL, type Candidate, type Position } from '@/lib/predictions/candidates'
-import { submitPrediction, type SubmitPredictionResult } from '@/lib/actions/predictions'
-import { NUFC_LABEL, NUFC_TEAM_ID, teamLogoUrl, type MatchSession } from '@/lib/predictions/week'
-import type { MyPrediction } from '@/lib/queries/predictions'
+import { submitWeekPrediction, type SubmitPredictionResult } from '@/lib/actions/predictions'
+import {
+  NUFC_LABEL,
+  NUFC_TEAM_ID,
+  teamLogoUrl,
+  type MatchView,
+  type WeekPrediction,
+  type WeekSession,
+} from '@/lib/predictions/week'
 import type { PickCandidates } from '@/lib/queries/squads'
 import { cn } from '@/lib/utils'
 
 type Picks = Partial<Record<Position, Candidate>>
+/** fixture_id → [우리, 상대] */
+type Scores = Record<string, [number, number]>
 
 type SubmitError = Extract<SubmitPredictionResult, { error: string }>['error']
 
 const ERROR_MESSAGE: Record<SubmitError, string> = {
   unauthenticated: '로그인이 필요해요',
-  already_submitted: '이미 제출한 경기예요. 제출한 예측은 수정할 수 없어요.',
-  closed: '예측이 마감된 경기예요',
+  already_submitted: '이미 제출한 주차예요. 제출한 예측은 수정할 수 없어요.',
+  closed: '예측이 마감된 주차예요',
   incomplete: '스코어와 선수 픽을 모두 채워주세요',
   invalid_score: '스코어는 0~20 사이로 입력해주세요',
   duplicate_picks: '포지션마다 서로 다른 선수를 골라주세요',
@@ -32,23 +40,25 @@ const ERROR_MESSAGE: Record<SubmitError, string> = {
 }
 
 /**
- * 예측 세션 하나 = 경기(fixture) 하나. 더블 매치위크의 두 경기는 각각 이 플로우를 따로 밟는다.
+ * 예측 세션 하나 = 주차 하나. 더블 매치위크면 그 주 경기 스코어를 다 입력하고,
+ * 선수 픽은 주 단위로 1세트만 고른 뒤 한 번에 제출한다(FR-017).
  * 제출 후에는 수정할 수 없어서(DB UNIQUE + UPDATE 정책 없음) 완료 화면으로 고정된다.
  */
 export function PredictionFlowClient({
-  match,
+  week,
   candidates,
   submitted,
 }: {
-  match: MatchSession
+  week: WeekSession
   candidates: PickCandidates
-  /** 이미 제출한 경기면 내 제출 내역(스코어 + 픽) */
-  submitted?: MyPrediction
+  /** 이미 제출한 주차면 내 제출 내역(경기별 스코어 + 주 단위 픽) */
+  submitted?: WeekPrediction
 }) {
   const router = useLoadingRouter()
   const [step, setStep] = useState<StepKey>('score')
-  // [우리, 상대] 예측 스코어.
-  const [score, setScore] = useState<[number, number]>([0, 0])
+  const [scores, setScores] = useState<Scores>(() =>
+    Object.fromEntries(week.matches.map(match => [match.id, [0, 0] as [number, number]])),
+  )
   const [picks, setPicks] = useState<Picks>({})
   const [pickPosition, setPickPosition] = useState<Position | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -58,20 +68,20 @@ export function PredictionFlowClient({
   const allPicked = POSITIONS.every(position => picks[position])
   const goBackToList = () => router.push('/predictions')
 
-  function changeScore(side: 0 | 1, delta: number) {
-    setScore(prev => {
-      const next: [number, number] = [prev[0], prev[1]]
+  function changeScore(fixtureId: string, side: 0 | 1, delta: number) {
+    setScores(prev => {
+      const current = prev[fixtureId] ?? [0, 0]
+      const next: [number, number] = [current[0], current[1]]
       next[side] = Math.max(0, next[side] + delta)
-      return next
+      return { ...prev, [fixtureId]: next }
     })
   }
 
   function handleSubmit() {
     setError(null)
     startTransition(async () => {
-      const result = await submitPrediction(match.id, {
-        ourScore: score[0],
-        theirScore: score[1],
+      const result = await submitWeekPrediction(week.weekKey, {
+        scores,
         picks: {
           DEF: picks.DEF?.id,
           MID: picks.MID?.id,
@@ -93,7 +103,7 @@ export function PredictionFlowClient({
   }
 
   if (submitted) {
-    return <PredictionDone match={match} prediction={submitted} candidates={candidates} />
+    return <PredictionDone week={week} prediction={submitted} candidates={candidates} />
   }
 
   return (
@@ -120,14 +130,25 @@ export function PredictionFlowClient({
         <div>
           <div className="rounded-lg border border-border bg-surface px-4 py-5">
             {step === 'score' && (
-              <div>
-                <MatchMeta match={match} />
-                <div className="mt-5 flex items-center justify-center gap-5">
-                  <TeamColumn logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
-                  <ScoreStepper value={score[0]} onChange={delta => changeScore(0, delta)} />
-                  <ScoreStepper value={score[1]} onChange={delta => changeScore(1, delta)} />
-                  <TeamColumn logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
-                </div>
+              // 더블 매치위크는 경기별 입력 블록이 세로로 쌓인다 — 픽은 주 단위라 다음 스텝에서 한 번만.
+              <div className="flex flex-col gap-7">
+                {week.matches.map(match => (
+                  <div key={match.id}>
+                    <MatchMeta weekNo={week.weekNo} match={match} />
+                    <div className="mt-5 flex items-center justify-center gap-5">
+                      <TeamColumn logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
+                      <ScoreStepper
+                        value={scores[match.id]?.[0] ?? 0}
+                        onChange={delta => changeScore(match.id, 0, delta)}
+                      />
+                      <ScoreStepper
+                        value={scores[match.id]?.[1] ?? 0}
+                        onChange={delta => changeScore(match.id, 1, delta)}
+                      />
+                      <TeamColumn logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -136,12 +157,16 @@ export function PredictionFlowClient({
             {step === 'confirm' && (
               <>
                 <SectionHead title="경기 예측" onEdit={() => setStep('score')} />
-                <div className="flex items-center justify-center gap-2 sm:gap-6">
-                  <ConfirmTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
-                  <span className="text-title-2 font-black">
-                    {score[0]} – {score[1]}
-                  </span>
-                  <ConfirmTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
+                <div className="flex flex-col gap-4">
+                  {week.matches.map(match => (
+                    <div key={match.id} className="flex items-center justify-center gap-2 sm:gap-6">
+                      <ConfirmTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
+                      <span className="text-title-2 font-black">
+                        {scores[match.id]?.[0] ?? 0} – {scores[match.id]?.[1] ?? 0}
+                      </span>
+                      <ConfirmTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
+                    </div>
+                  ))}
                 </div>
                 <div className="mt-6">
                   <SectionHead title="선수 픽" onEdit={() => setStep('pick')} />
@@ -203,11 +228,11 @@ export function PredictionFlowClient({
   )
 }
 
-function MatchMeta({ match }: { match: MatchSession }) {
+function MatchMeta({ weekNo, match }: { weekNo: number; match: MatchView }) {
   return (
     <div className="text-center">
       <p className="mb-1 text-label-2 font-extrabold text-gray-2">
-        {match.competition} · {match.weekNo}라운드
+        {match.competition} · {weekNo}라운드
       </p>
       <p className="text-label-2 text-gray-3">
         {match.kickoff} ({match.isHome ? '홈' : '원정'}) {match.kickoffTime}
