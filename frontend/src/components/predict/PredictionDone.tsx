@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { trackEvent } from '@/lib/analytics/mixpanel'
 import { PlayerPhoto, ShareButton, Silhouette, TeamBadge } from './shared'
 import { POSITIONS, POSITION_LABEL, playerPhotoUrl, type Candidate, type Position } from '@/lib/predictions/candidates'
 import {
@@ -61,6 +62,19 @@ export function PredictionDone({
   const isMulti = week.matches.length > 1
   // 카운트다운은 아직 킥오프 전인 경기가 여러 개일 때만 "늦은 경기 기준"임을 밝힌다.
   const pendingCount = week.matches.filter(match => !match.finished).length
+
+  // 퍼널 A의 종료 지점. 제출 성공 직후 router.refresh()로 이 화면이 마운트되므로 사실상
+  // 제출 성공과 1:1이고, 앞 단계가 전부 클라이언트 이벤트라 퍼널이 한 계층에서 일관된다.
+  // (지표용 prediction_submitted는 별도로 서버가 보낸다 — 측정 대상이 달라 중복이 아니다.)
+  useEffect(() => {
+    trackEvent('prediction_done_viewed', {
+      week_key: week.weekKey,
+      submitted_match_count: submittedMatches.length,
+      missed_match_count: missedMatches.length,
+      is_partial: missedMatches.length > 0,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [week.weekKey])
 
   const intro = (align: 'center' | 'left') => (
     <div className={align === 'center' ? 'text-center' : 'text-left'}>

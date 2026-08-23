@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useLoadingRouter } from '@/components/layout/NavigationLoading'
+import { trackEvent } from '@/lib/analytics/mixpanel'
 import { PlayerPhoto, ShareButton, Silhouette, TeamBadge } from './shared'
 import { WeekRankCard } from './WeekRankCard'
 import { POSITIONS, POSITION_LABEL, playerPhotoUrl, type Position } from '@/lib/predictions/candidates'
@@ -45,6 +46,20 @@ export function PredictionResult({
   const [tab, setTab] = useState<'mine' | 'rank'>('mine')
   const summary = aggregateWeekResult(week, results, ranking)
   const participated = summary !== null
+
+  // 재방문 트리거 퍼널(제출 → 경기 종료 후 결과 확인)의 도착 지점. 원페이저가 건 가설
+  // "경기 일정이 재방문 캘린더 역할을 한다"를 직접 검증하는 이벤트라, 제출과 같은 week_key로
+  // 묶어서 본다. 재방문 자체가 신호이므로 중복 조회를 일부러 걸러내지 않는다.
+  useEffect(() => {
+    trackEvent('prediction_result_viewed', {
+      week_key: week.weekKey,
+      participated,
+      rank: summary?.rank ?? null,
+      total_points: summary?.totalPoints ?? null,
+      total_entries: ranking.length,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [week.weekKey])
 
   return (
     <div className="mx-auto max-w-[560px] px-4 pb-16 pt-4 sm:max-w-content sm:px-10 sm:pt-6">

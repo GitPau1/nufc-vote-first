@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { trackServerEvent } from '@/lib/analytics/server'
 import { IS_MOCK } from '@/lib/config'
 import { getFixtureWeeks } from '@/lib/queries/fixtures'
 import { getPickCandidates } from '@/lib/queries/squads'
@@ -89,6 +90,18 @@ export async function submitWeekPrediction(
     console.error('submitWeekPrediction insert failed:', error)
     return { error: 'failed' }
   }
+
+  // 리텐션·WAU 지표의 authoritative source라 서버에서 보낸다 — 애드블록에 막히지 않고
+  // distinct_id가 user.id로 정확하다. 퍼널 종료 지점은 클라이언트 prediction_done_viewed가 맡는다.
+  // is_partial: 그 주 경기 전부를 예측한 게 아닌 상태(이미 킥오프된 경기가 있었음).
+  // 부분 참여자를 주간·시즌 집계에서 어떻게 다룰지는 미확정(요구사항 명세서 CST-006)이라,
+  // 어느 쪽으로 결정되든 소급 재분석할 수 있게 분모가 되는 경기 수를 함께 남긴다.
+  await trackServerEvent('prediction_submitted', user.id, {
+    week_key: weekKey,
+    match_count: built.rows.length,
+    week_match_count: week.matches.length,
+    is_partial: built.rows.length < week.matches.length,
+  })
 
   revalidatePath('/predictions')
   revalidatePath(`/predictions/${weekKey}`)

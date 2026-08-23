@@ -100,6 +100,17 @@ export function weekKey(kst: Date): string {
 }
 
 /**
+ * 지금 시각이 속한 ISO 주차 키. 트래킹·집계에서 "이번 주"를 판정할 때 쓴다.
+ *
+ * weekKey()는 이름 그대로 **+9h 시프트된 Date**를 기대한다(toKst 참고). 호출부에서 그 변환을
+ * 빠뜨리고 weekKey(new Date())를 부르면 UTC 달력 기준으로 계산되어 KST 00:00~09:00이 전날로
+ * 밀리고, 월요일 오전엔 지난 주차로 잡힌다 — 주간 지표가 조용히 어긋나는 실수를 막는 래퍼다.
+ */
+export function currentWeekKey(now: Date = new Date()): string {
+  return weekKey(new Date(now.getTime() + KST_OFFSET_MS))
+}
+
+/**
  * 경기 단위 마감 판정. 킥오프가 지났거나 이미 시작했거나 일정이 미정이면 그 경기는 예측 불가다.
  * 주차 세션의 마감(= 그 주 **마지막** 경기 킥오프)은 여기서 파생된다 —
  * 마지막 경기 킥오프이 지나면 잠기지 않은 경기가 하나도 남지 않기 때문이다.

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { useLoadingRouter } from '@/components/layout/NavigationLoading'
+import { trackEvent } from '@/lib/analytics/mixpanel'
 import { Button } from '@/components/ui/button'
 import { LoginModal } from '@/components/polls/LoginModal'
 import { PlayerPickModal } from './PlayerPickModal'
@@ -70,12 +71,48 @@ export function PredictionFlowClient({
   const [error, setError] = useState<string | null>(null)
   const [loginOpen, setLoginOpen] = useState(false)
   const [submitting, startTransition] = useTransition()
+  /** "그대로 적용"을 한 번이라도 썼는지 — 픽 단계 완료 이벤트에만 실어보낸다. */
+  const copyUsedRef = useRef(false)
 
   // 경기마다 3포지션이 다 채워져야 다음 단계로 넘어갈 수 있다.
   const allPicked = pending.every(match => POSITIONS.every(position => picks[match.id]?.[position]))
   // 더블 매치위크 = 이번에 제출할 경기가 2개 이상 — 스코어 입력이 경기별로 쌓이므로 안내 문구가 갈린다.
   const isMulti = pending.length > 1
   const goBackToList = () => router.push('/predictions')
+
+  // 퍼널 A의 시작점. submitted면 아래에서 PredictionDone으로 갈리므로 플로우를 본 게 아니다
+  // — 그 경우는 PredictionDone이 자기 마운트 이벤트를 쏜다.
+  useEffect(() => {
+    if (submitted) return
+    trackEvent('prediction_flow_viewed', {
+      week_key: week.weekKey,
+      pending_match_count: pending.length,
+      total_match_count: week.matches.length,
+      // 그 주 경기 일부가 이미 킥오프돼서 남은 경기만 예측하는 상태(부분 제출)
+      is_partial: pending.length < week.matches.length,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [week.weekKey])
+
+  /** 스텝 완료 — 스코어 +/− 클릭마다 심으면 노이즈라 전환 시점에 스냅샷만 남긴다. */
+  function completeStep(from: Extract<StepKey, 'score' | 'pick'>, next: StepKey) {
+    trackEvent('prediction_step_completed', {
+      week_key: week.weekKey,
+      step: from,
+      match_count: pending.length,
+      is_multi: isMulti,
+      ...(from === 'score'
+        // 스코어는 전부 0-0으로 초기화돼 있어 "미입력" 상태가 없다. 대신 0-0을 그대로 넘긴
+        // 경기 수를 본다 — 스테퍼를 아예 만지지 않고 통과하는 비율이 드러난다.
+        ? {
+            untouched_score_count: pending.filter(
+              match => (scores[match.id]?.[0] ?? 0) === 0 && (scores[match.id]?.[1] ?? 0) === 0,
+            ).length,
+          }
+        : { used_copy_picks: copyUsedRef.current }),
+    })
+    setStep(next)
+  }
 
   function changeScore(fixtureId: string, side: 0 | 1, delta: number) {
     setScores(prev => {
@@ -88,6 +125,7 @@ export function PredictionFlowClient({
 
   /** "그대로 적용" — 첫 경기 픽을 다른 경기에 복사한다. 경기끼리 같은 선수를 골라도 제약에 걸리지 않는다. */
   function copyPicks(fromMatchId: string, toMatchId: string) {
+    copyUsedRef.current = true
     setPicks(prev => ({ ...prev, [toMatchId]: { ...prev[fromMatchId] } }))
   }
 
@@ -109,14 +147,27 @@ export function PredictionFlowClient({
       })
 
       if ('success' in result) {
+        // 성공 이벤트(prediction_submitted)는 서버 액션이 보낸다 — 애드블록에 막히지 않게.
+        // 퍼널 종료 지점은 아래 refresh로 마운트되는 PredictionDone이 맡는다.
         // 제출 내역은 서버가 다시 읽는다(revalidate) — 새로고침하면 완료 화면으로 들어온다.
         router.refresh()
         return
       }
       if (result.error === 'unauthenticated') {
+        // 퍼널 C: 비로그인 유저가 3스텝을 다 채운 뒤에야 만나는 로그인 벽.
+        // 여기서 login_completed로 넘어가는 비율이 낮으면 로그인 요구를 앞으로 당겨야 한다.
+        trackEvent('prediction_auth_required', {
+          week_key: week.weekKey,
+          match_count: pending.length,
+        })
         setLoginOpen(true)
         return
       }
+      trackEvent('prediction_submit_failed', {
+        week_key: week.weekKey,
+        error: result.error,
+        match_count: pending.length,
+      })
       setError(ERROR_MESSAGE[result.error])
     })
   }
@@ -242,12 +293,12 @@ export function PredictionFlowClient({
 
           <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-shell -translate-x-1/2 border-t border-border bg-white/95 p-4 backdrop-blur sm:static sm:mx-auto sm:mt-8 sm:flex sm:max-w-[560px] sm:translate-x-0 sm:justify-center sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
             {step === 'score' && (
-              <Button size="lg" className="w-full sm:w-[200px]" onClick={() => setStep('pick')}>
+              <Button size="lg" className="w-full sm:w-[200px]" onClick={() => completeStep('score', 'pick')}>
                 다음
               </Button>
             )}
             {step === 'pick' && (
-              <Button size="lg" className="w-full sm:w-[200px]" disabled={!allPicked} onClick={() => setStep('confirm')}>
+              <Button size="lg" className="w-full sm:w-[200px]" disabled={!allPicked} onClick={() => completeStep('pick', 'confirm')}>
                 다음
               </Button>
             )}

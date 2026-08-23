@@ -26,8 +26,32 @@ const {
   findWeekSession,
   findWeekPrediction,
   submittableMatches,
+  weekKey,
+  currentWeekKey,
   NUFC_TEAM_ID,
 } = loadWeekModule()
+
+test('currentWeekKey: KST 자정 직후는 UTC 기준 전날이어도 새 주차로 잡힌다', () => {
+  // 2026-08-24(월) 00:30 KST = 2026-08-23(일) 15:30 UTC.
+  // KST 달력으로는 34주차가 끝나고 35주차가 시작된 시점이다.
+  const mondayEarlyKst = new Date('2026-08-23T15:30:00Z')
+
+  assert.equal(currentWeekKey(mondayEarlyKst), '2026-35')
+  // +9h 시프트를 빠뜨리면 UTC 달력(일요일)로 계산되어 지난 주차가 나온다 — 이게 막으려는 버그다.
+  assert.equal(weekKey(mondayEarlyKst), '2026-34')
+})
+
+test('currentWeekKey: 주 중간은 UTC/KST 어느 쪽으로 계산해도 같은 주차다', () => {
+  // 2026-08-20(목) 12:00 KST = 같은 날 03:00 UTC — 34주차(8/17 월 ~ 8/23 일).
+  const thursdayNoonKst = new Date('2026-08-20T03:00:00Z')
+
+  assert.equal(currentWeekKey(thursdayNoonKst), '2026-34')
+})
+
+test('currentWeekKey: 연말 경계에서 ISO 연도가 주차를 따라간다', () => {
+  // 2026-12-28(월) 09:00 KST = 2026-12-28 00:00 UTC — ISO 53주차.
+  assert.equal(currentWeekKey(new Date('2026-12-28T00:00:00Z')), '2026-53')
+})
 
 function fixture(overrides) {
   return {
