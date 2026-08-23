@@ -8,7 +8,7 @@ export default async function PredictionsPage() {
 
   return (
     <>
-      <AppHeader />
+      <AppHeader showAuth={false} />
       <main className="min-h-[calc(100vh-62px)] bg-background">
         <PredictListClient weeks={weeks} myPredictions={myPredictions} />
       </main>
