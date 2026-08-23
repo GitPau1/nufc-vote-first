@@ -199,7 +199,7 @@ const SUBMITTED_PICKS = {
   FWD: { playerId: 14, multiplier: 1.3 },
 }
 
-test('findWeekPrediction: 주 단위 제출은 경기별 스코어 + 픽 1세트로 읽힌다', () => {
+test('findWeekPrediction: 주 단위 제출은 경기별 스코어 + 경기별 픽으로 읽힌다', () => {
   const [week] = groupFixturesByWeek(
     [
       fixture({ fixture_id: 1, kickoff_at: '2026-08-24T15:30:00+00:00' }),
@@ -216,14 +216,15 @@ test('findWeekPrediction: 주 단위 제출은 경기별 스코어 + 픽 1세트
     KICKOFF,
   )
 
-  // 그 주 경기가 한 번에 들어가고 픽은 모든 행에 같은 값으로 복사된다.
+  // 그 주 경기가 한 번에 들어가고, 픽은 경기별로 다를 수 있다.
+  const otherPicks = { ...SUBMITTED_PICKS, FWD: { playerId: 10, multiplier: 1.6 } }
   const submitted = {
     1: { score: [2, 1], picks: SUBMITTED_PICKS },
-    2: { score: [0, 3], picks: SUBMITTED_PICKS },
+    2: { score: [0, 3], picks: otherPicks },
   }
   const mine = findWeekPrediction(week, submitted)
   assert.deepEqual(mine.scores, { 1: [2, 1], 2: [3, 0] })
-  assert.deepEqual(mine.picks, SUBMITTED_PICKS)
+  assert.deepEqual(mine.picks, { 1: SUBMITTED_PICKS, 2: otherPicks })
 
   assert.equal(findWeekPrediction(week, {}), undefined)
 })

@@ -4,7 +4,7 @@
  */
 
 import type { PredictWeek } from '@/components/predict/MatchWeekList'
-import type { MyPrediction, MyPredictionMap } from '@/lib/queries/predictions'
+import type { MyPredictionMap } from '@/lib/queries/predictions'
 import type { Position } from '@/lib/predictions/candidates'
 
 export type FixtureRow = {
@@ -248,23 +248,25 @@ export function findWeekSession(weeks: WeekGroup[], key: string): WeekSession | 
   return weeks.find(week => week.weekKey === key) ?? null
 }
 
-/** 내가 그 주에 제출한 내역 — 스코어는 경기별, 픽은 주 단위 1세트. */
+/** 내가 그 주에 제출한 내역 — 스코어도 픽도 경기별이다(2026-08-23 확정). */
 export type WeekPrediction = {
   /** fixture_id → [우리, 상대] 예측 스코어 */
   scores: Record<string, [number, number]>
-  picks: Record<Position, { playerId: number; multiplier: number }>
+  /** fixture_id → 그 경기의 포지션별 픽 */
+  picks: Record<string, Record<Position, { playerId: number; multiplier: number }>>
 }
 
 /**
  * 제출은 주 단위 1회(그 주 경기 전부를 한 번에 insert)라 행이 하나라도 있으면 제출한 것이다.
- * 픽도 주 단위 1세트라 아무 행에서나 꺼내도 같다 — lib/actions/predictions.ts가 같은 값을 넣는다.
+ * 픽은 경기별로 다를 수 있어 경기마다 따로 담는다 — 더블 매치위크에서 두 경기의 픽이 서로 다르다.
  */
 export function findWeekPrediction(
   week: WeekGroup,
   myPredictions: MyPredictionMap,
 ): WeekPrediction | undefined {
   const scores: Record<string, [number, number]> = {}
-  let picks: MyPrediction['picks'] | undefined
+  const picks: WeekPrediction['picks'] = {}
+  let found = false
 
   for (const match of week.matches) {
     const mine = myPredictions[match.id]
@@ -272,10 +274,11 @@ export function findWeekPrediction(
     const [home, away] = mine.score
     // MyPrediction.score는 [홈, 원정] — 화면은 항상 [우리, 상대]로 다룬다.
     scores[match.id] = match.isHome ? [home, away] : [away, home]
-    picks ??= mine.picks
+    picks[match.id] = mine.picks
+    found = true
   }
 
-  return picks ? { scores, picks } : undefined
+  return found ? { scores, picks } : undefined
 }
 
 /**

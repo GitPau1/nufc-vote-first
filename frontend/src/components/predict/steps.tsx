@@ -2,14 +2,10 @@ import { cn } from '@/lib/utils'
 
 export type StepKey = 'score' | 'pick' | 'confirm'
 
-/**
- * descMulti는 더블 매치위크(한 세션에 경기 2개)에서만 쓰는 대체 설명이다.
- * 스코어는 경기별로 입력하니 문구가 갈리지만, 선수 픽은 주 단위 1세트라(FR-017) 경기 수와 무관하게
- * 같은 문구를 쓴다 — 퍼블리싱의 픽 단계 descMulti("각 경기에서")는 경기별 픽 전제라 채택하지 않았다.
- */
+/** descMulti는 더블 매치위크(한 세션에 경기 2개)에서만 쓰는 대체 설명 — 스코어도 픽도 경기별로 입력한다. */
 export const STEP_META: { key: StepKey; name: string; desc: string; descMulti?: string }[] = [
   { key: 'score',   name: '경기 예측', desc: '이번 주 경기 스코어를 예측해보세요', descMulti: '이번 주 두 경기의 스코어를 예측해보세요' },
-  { key: 'pick',    name: '선수 픽',   desc: '포지션별로 이번 주 활약할 선수를 골라보세요' },
+  { key: 'pick',    name: '선수 픽',   desc: '포지션별로 이번 주 활약할 선수를 골라보세요', descMulti: '포지션별로 각 경기에서 활약할 선수를 골라보세요' },
   { key: 'confirm', name: '확인',      desc: '제출하기 전, 예측 내용을 확인해보세요' },
 ]
 

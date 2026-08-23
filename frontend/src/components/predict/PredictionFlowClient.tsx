@@ -21,7 +21,8 @@ import {
 import type { PickCandidates } from '@/lib/queries/squads'
 import { cn } from '@/lib/utils'
 
-type Picks = Partial<Record<Position, Candidate>>
+/** fixture_id → 그 경기의 포지션별 픽. 픽은 경기별로 따로 고른다(2026-08-23 확정). */
+type Picks = Record<string, Partial<Record<Position, Candidate>>>
 /** fixture_id → [우리, 상대] */
 type Scores = Record<string, [number, number]>
 
@@ -40,8 +41,8 @@ const ERROR_MESSAGE: Record<SubmitError, string> = {
 }
 
 /**
- * 예측 세션 하나 = 주차 하나. 더블 매치위크면 아직 킥오프이 안 지난 경기 스코어를 다 입력하고,
- * 선수 픽은 주 단위로 1세트만 고른 뒤 한 번에 제출한다(FR-017).
+ * 예측 세션 하나 = 주차 하나. 더블 매치위크면 아직 킥오프이 안 지난 경기의 스코어와 선수 픽을
+ * 경기마다 각각 입력한 뒤 한 번에 제출한다(2026-08-23 확정 — 픽도 경기별).
  * 첫 경기가 끝난 뒤 들어오면 `pending`에 남은 경기만 담겨 온다 — 그 경기들만 예측한다.
  * 제출 후에는 수정할 수 없어서(DB UNIQUE + UPDATE 정책 없음) 완료 화면으로 고정된다.
  */
@@ -64,12 +65,14 @@ export function PredictionFlowClient({
     Object.fromEntries(pending.map(match => [match.id, [0, 0] as [number, number]])),
   )
   const [picks, setPicks] = useState<Picks>({})
-  const [pickPosition, setPickPosition] = useState<Position | null>(null)
+  /** 열려 있는 픽 모달이 어느 경기의 어느 포지션인지 */
+  const [pickTarget, setPickTarget] = useState<{ matchId: string; position: Position } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loginOpen, setLoginOpen] = useState(false)
   const [submitting, startTransition] = useTransition()
 
-  const allPicked = POSITIONS.every(position => picks[position])
+  // 경기마다 3포지션이 다 채워져야 다음 단계로 넘어갈 수 있다.
+  const allPicked = pending.every(match => POSITIONS.every(position => picks[match.id]?.[position]))
   // 더블 매치위크 = 이번에 제출할 경기가 2개 이상 — 스코어 입력이 경기별로 쌓이므로 안내 문구가 갈린다.
   const isMulti = pending.length > 1
   const goBackToList = () => router.push('/predictions')
@@ -83,16 +86,26 @@ export function PredictionFlowClient({
     })
   }
 
+  /** "그대로 적용" — 첫 경기 픽을 다른 경기에 복사한다. 경기끼리 같은 선수를 골라도 제약에 걸리지 않는다. */
+  function copyPicks(fromMatchId: string, toMatchId: string) {
+    setPicks(prev => ({ ...prev, [toMatchId]: { ...prev[fromMatchId] } }))
+  }
+
   function handleSubmit() {
     setError(null)
     startTransition(async () => {
       const result = await submitWeekPrediction(week.weekKey, {
         scores,
-        picks: {
-          DEF: picks.DEF?.id,
-          MID: picks.MID?.id,
-          FWD: picks.FWD?.id,
-        },
+        picks: Object.fromEntries(
+          pending.map(match => [
+            match.id,
+            {
+              DEF: picks[match.id]?.DEF?.id,
+              MID: picks[match.id]?.MID?.id,
+              FWD: picks[match.id]?.FWD?.id,
+            },
+          ]),
+        ),
       })
 
       if ('success' in result) {
@@ -160,7 +173,30 @@ export function PredictionFlowClient({
               </div>
             )}
 
-            {step === 'pick' && <PositionRow picks={picks} onOpen={setPickPosition} />}
+            {step === 'pick' &&
+              // 경기마다 포지션 3장씩 따로 고른다. 두 번째 경기부터는 첫 경기 픽을 그대로 복사할 수 있다.
+              pending.map((match, i) => (
+                <div key={match.id} className={cn(i > 0 && 'mt-7')}>
+                  {isMulti && (
+                    <div className="mb-2 flex items-center justify-between">
+                      <MatchLabel index={i} opponent={match.opponent} />
+                      {i > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => copyPicks(pending[0].id, match.id)}
+                          className="text-label-2 font-bold text-primary"
+                        >
+                          그대로 적용
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  <PositionRow
+                    picks={picks[match.id] ?? {}}
+                    onOpen={position => setPickTarget({ matchId: match.id, position })}
+                  />
+                </div>
+              ))}
           </div>
           )}
 
@@ -180,17 +216,21 @@ export function PredictionFlowClient({
                         </span>
                         <ConfirmTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
                       </div>
+
+                      <div className="mt-6">
+                        <SectionHead title="선수 픽" onEdit={() => setStep('pick')} />
+                      </div>
+                      <PositionRow
+                        picks={picks[match.id] ?? {}}
+                        onOpen={position => setPickTarget({ matchId: match.id, position })}
+                      />
                     </div>
                   </div>
                 ))}
 
-                <div className="mt-5 rounded-lg border border-border bg-surface px-4 py-5">
-                  <SectionHead title="선수 픽" onEdit={() => setStep('pick')} />
-                  <PositionRow picks={picks} onOpen={setPickPosition} />
-                  <p className="mt-4 text-center text-caption-1 text-gray-3">
-                    제출한 예측은 수정할 수 없어요
-                  </p>
-                </div>
+                <p className="mt-4 text-center text-caption-1 text-gray-3">
+                  제출한 예측은 수정할 수 없어요
+                </p>
               </>
           )}
 
@@ -221,16 +261,19 @@ export function PredictionFlowClient({
       </div>
 
       <PlayerPickModal
-        open={pickPosition !== null}
-        onOpenChange={open => !open && setPickPosition(null)}
-        positionLabel={pickPosition ? POSITION_LABEL[pickPosition] : ''}
-        players={pickPosition ? candidates[pickPosition] : []}
-        selectedPlayerId={pickPosition ? picks[pickPosition]?.id ?? null : null}
+        open={pickTarget !== null}
+        onOpenChange={open => !open && setPickTarget(null)}
+        positionLabel={pickTarget ? POSITION_LABEL[pickTarget.position] : ''}
+        players={pickTarget ? candidates[pickTarget.position] : []}
+        selectedPlayerId={pickTarget ? picks[pickTarget.matchId]?.[pickTarget.position]?.id ?? null : null}
         onSelect={player => {
-          if (!pickPosition) return
-          const picked = candidates[pickPosition].find(candidate => candidate.id === player.id)
-          if (picked) setPicks(prev => ({ ...prev, [pickPosition]: picked }))
-          setPickPosition(null)
+          if (!pickTarget) return
+          const { matchId, position } = pickTarget
+          const picked = candidates[position].find(candidate => candidate.id === player.id)
+          if (picked) {
+            setPicks(prev => ({ ...prev, [matchId]: { ...prev[matchId], [position]: picked } }))
+          }
+          setPickTarget(null)
         }}
       />
 
@@ -321,7 +364,14 @@ function SectionHead({ title, onEdit }: { title: string; onEdit: () => void }) {
   )
 }
 
-function PositionRow({ picks, onOpen }: { picks: Picks; onOpen: (position: Position) => void }) {
+function PositionRow({
+  picks,
+  onOpen,
+}: {
+  /** 경기 하나의 픽 — 상위에서 picks[matchId]를 넘긴다 */
+  picks: Partial<Record<Position, Candidate>>
+  onOpen: (position: Position) => void
+}) {
   return (
     <div className="flex gap-2.5">
       {POSITIONS.map(position => {

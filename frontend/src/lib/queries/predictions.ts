@@ -291,3 +291,29 @@ export async function getMyResults(): Promise<MyResultMap> {
 function num(value: number | string | null): number | null {
   return value === null ? null : Number(value)
 }
+
+/**
+ * 한 경기의 선수 평점 — 관리자 입력 화면이 기존 값을 채워 보여줄 때 쓴다.
+ * 행이 없는 선수는 "미집계"이고 픽 점수가 0으로 계산된다.
+ * 관리자용이라 캐시하지 않는다(입력 직후 값이 그대로 보여야 한다).
+ */
+export async function getFixtureRatings(fixtureId: string): Promise<Record<string, number>> {
+  if (IS_MOCK) return {}
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('fixture_player_ratings')
+    .select('player_id, rating')
+    .eq('fixture_id', fixtureId)
+
+  if (error) {
+    console.error('getFixtureRatings error:', error)
+    return {}
+  }
+
+  const map: Record<string, number> = {}
+  for (const row of (data ?? []) as unknown as { player_id: number; rating: number | string }[]) {
+    map[String(row.player_id)] = Number(row.rating)
+  }
+  return map
+}

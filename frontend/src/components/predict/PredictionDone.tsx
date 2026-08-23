@@ -21,9 +21,14 @@ type PickedPlayer = {
   multiplier: number
 }
 
-function resolvePicks(prediction: WeekPrediction, candidates: PickCandidates): PickedPlayer[] {
+/** 경기 하나의 픽 3개 — 픽은 경기별이라 경기 id로 꺼낸다. */
+function resolvePicks(
+  prediction: WeekPrediction,
+  matchId: string,
+  candidates: PickCandidates,
+): PickedPlayer[] {
   return POSITIONS.map(position => {
-    const { playerId, multiplier } = prediction.picks[position]
+    const { playerId, multiplier } = prediction.picks[matchId][position]
     const found: Candidate | undefined = candidates[position].find(c => c.id === playerId)
     return {
       position,
@@ -50,7 +55,6 @@ export function PredictionDone({
   prediction: WeekPrediction
   candidates: PickCandidates
 }) {
-  const picks = resolvePicks(prediction, candidates)
   const submittedMatches = week.matches.filter(match => prediction.scores[match.id])
   // 마감돼서 제출하지 못한 경기 — 결과가 아직 안 나왔어도 "참여하지 못했다"는 사실은 지금 알려줘야 한다.
   const missedMatches = week.matches.filter(match => !prediction.scores[match.id])
@@ -95,37 +99,44 @@ export function PredictionDone({
             </div>
           ))}
 
-          <div className="rounded-lg border border-gray-4 bg-surface px-4 py-5">
-            <p className="mb-2.5 text-body-2-normal font-bold">경기 예측</p>
-            <div className="flex flex-col gap-4">
-              {submittedMatches.map(match => {
-                const [ourScore, theirScore] = prediction.scores[match.id]!
-                return (
-                  <div key={match.id} className="flex items-center justify-center gap-2 sm:gap-6">
+          {/* 픽이 경기별이라 카드도 경기별로 나눈다 — 스코어와 그 경기 픽이 한 카드 안에 있다. */}
+          {submittedMatches.map((match, i) => {
+            const [ourScore, theirScore] = prediction.scores[match.id]!
+            const picks = resolvePicks(prediction, match.id, candidates)
+            return (
+              <div key={match.id} className={cn(i > 0 && 'mt-4')}>
+                {isMulti && (
+                  <p className="mb-2 text-label-2 font-extrabold text-gray-2">
+                    경기 {i + 1} · {NUFC_LABEL} vs {match.opponent}
+                  </p>
+                )}
+                <div className="rounded-lg border border-gray-4 bg-surface px-4 py-5">
+                  <p className="mb-2.5 text-body-2-normal font-bold">경기 예측</p>
+                  <div className="flex items-center justify-center gap-2 sm:gap-6">
                     <MatchupTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
                     <span className="text-title-2 font-black">
                       {ourScore} – {theirScore}
                     </span>
                     <MatchupTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
                   </div>
-                )
-              })}
-            </div>
 
-            <p className="mb-2.5 mt-7 text-body-2-normal font-bold">내 선수 픽</p>
-            {/* 모바일은 행 리스트, 데스크탑은 포지션 카드 3개 (퍼블리싱 동일) */}
-            <div className="sm:hidden">
-              <PickResultList picks={picks} />
-            </div>
-            <div className="hidden sm:flex sm:gap-2.5">
-              {picks.map(pick => (
-                <PickCard key={pick.position} pick={pick} />
-              ))}
-            </div>
+                  <p className="mb-2.5 mt-7 text-body-2-normal font-bold">내 선수 픽</p>
+                  {/* 모바일은 행 리스트, 데스크탑은 포지션 카드 3개 (퍼블리싱 동일) */}
+                  <div className="sm:hidden">
+                    <PickResultList picks={picks} />
+                  </div>
+                  <div className="hidden sm:flex sm:gap-2.5">
+                    {picks.map(pick => (
+                      <PickCard key={pick.position} pick={pick} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
 
-            <div className="mt-7 flex justify-center">
-              <ShareButton />
-            </div>
+          <div className="mt-7 flex justify-center">
+            <ShareButton />
           </div>
 
           {/* 퍼블리싱엔 없는 문구 — DB UNIQUE + UPDATE 정책 없음을 반영 */}

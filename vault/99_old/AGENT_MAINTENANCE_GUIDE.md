@@ -83,9 +83,10 @@ DB나 Supabase 연동을 건드릴 때:
 - 세션은 **그 주 첫 경기 킥오프 7일 전**에 열리고 **그 주 마지막 경기 킥오프**에 닫힌다. 마감 판정은 실제로는 경기별(`isMatchLocked`)이고, 잠기지 않은 경기가 하나도 없으면 주차가 닫히는 구조다.
 - 그래서 **부분 제출이 정상 상태**다: 첫 경기가 끝난 뒤 처음 들어온 사용자는 남은 경기만 예측한다(`submittableMatches`). 페이지가 미제출·미잠김 경기를 `pending`으로 넘기고, 비어 있으면 완료 화면을 띄운다.
 - 프론트는 `week.ts`의 `isMatchLocked`/`weekStatus`, DB는 `20260823130000_predictions_weekly_window.sql`의 insert 정책(`kickoff_at > now()` + `prediction_week_first_kickoff < now() + 7 days`) — 둘이 같은 기준이라 한쪽만 고치면 안 된다.
-- `predictions` 테이블은 **경기당 1행**이지만 제출은 주 단위 1회다: 그 주 경기 전부를 한 번의 insert로 넣고, 선수 픽은 모든 행에 같은 값이 복사된다(FR-017 = 픽 점수 주 단위 합산). "같은 주의 픽은 같다"는 DB 제약이 아니라 server action의 불변식이니 predictions에 쓰는 다른 경로를 만들면 안 된다.
+- `predictions` 테이블은 **경기당 1행**이고 제출은 주 단위 1회다: 그 주 경기 전부를 한 번의 insert로 넣는다. 스코어도 **선수 픽도 경기별**이다(2026-08-23 확정 — 더블 매치위크는 경기마다 다른 선수를 고를 수 있고, 화면에 첫 경기 픽을 복사하는 "그대로 적용" 버튼이 있다). 포지션 간 중복 금지(`predictions_distinct_picks`)는 행 단위라 경기끼리 같은 선수를 고르는 건 허용된다. 점수는 그 주 행들을 합해 주차 성적이 된다(FR-017 = 픽 점수 주 단위 합산).
 - 랭킹 조회는 `lib/queries/predictions.ts`의 `getWeekRanking(weekKey)`(주차, `week_leaderboard` view) / `getSeasonRanking(limit)`(시즌 누적, `season_leaderboard` view). `week_leaderboard.week_key`는 `week.ts`의 `weekKey()`와 같은 ISO 주차 문자열이라 둘을 같이 고쳐야 한다.
-- 아직 없는 것: `fixture_player_ratings` 입력 UI(평점이 없으면 픽 점수가 0으로 계산된다), 순위 변동(▲/▼) 표시용 지난 주차 순위 보관
+- 경기별 선수 평점 입력은 `/admin/ratings`(`app/admin/ratings/page.tsx` + `components/admin/AdminRatingsForm.tsx`), 쓰기는 `lib/actions/fixture-ratings.ts`의 `saveFixtureRatings`. `fixture_player_ratings`에 insert 정책이 없어 service-role(`requireAdminClient`)로만 쓴다. 평점 행이 없는 선수는 픽 점수가 0으로 계산되므로, 경기가 끝나면 여기서 평점을 넣어야 결과·랭킹이 의미를 갖는다. 이름이 `actions/ratings.ts`가 아닌 이유: 그 파일은 선수 평점 **투표**(rating_votes)가 이미 쓰고 있다.
+- 아직 없는 것: 평점 자동 주입(sofascore 스크래핑 → `fixture_player_ratings`), 순위 변동(▲/▼) 표시용 지난 주차 순위 보관
 
 인증/온보딩/마이페이지:
 
@@ -109,8 +110,8 @@ DB나 Supabase 연동을 건드릴 때:
 
 관리자:
 
-- 화면: `frontend/src/app/admin/page.tsx`, `frontend/src/app/admin/AdminDashboard.tsx`
-- action: `frontend/src/lib/actions/admin.ts`, `frontend/src/lib/actions/farewells.ts`
+- 화면: `frontend/src/app/admin/page.tsx`(링크 허브), `frontend/src/app/admin/ratings/page.tsx`(경기별 선수 평점)
+- action: `frontend/src/lib/actions/admin.ts`, `frontend/src/lib/actions/farewells.ts`, `frontend/src/lib/actions/fixture-ratings.ts`
 - 권한 판정: `frontend/src/lib/admin.ts`
 - service-role client: `frontend/src/lib/supabase/admin.ts`
 

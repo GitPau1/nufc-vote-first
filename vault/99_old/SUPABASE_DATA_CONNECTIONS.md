@@ -560,13 +560,14 @@ Update note 2026-05-30:
 - `fixtures` 전체 조회 후 `lib/predictions/week.ts`에서 주차 그룹핑 → 주 단위 예측 세션(더블 매치위크는 경기 2개가 한 세션)
 - 선수 후보/배당은 `season_squads`(`prediction_multiplier`)에서 옵니다 — `lib/queries/squads.ts`
 - 제출은 `predictions`, 채점은 `prediction_results` view(종료 경기만) — 조회는 `getMyResults()`. 배당은 view에 없어서 결과 화면이 `getMyPredictions()`의 제출 스냅샷과 함께 읽습니다.
+- `fixture_player_ratings`는 픽 점수의 입력값입니다. 읽기는 공개(`getFixtureRatings`), 쓰기는 insert 정책이 없어 service-role만 가능하고 경로는 `/admin/ratings` 화면 + `lib/actions/fixture-ratings.ts`의 `saveFixtureRatings`(upsert) 하나뿐입니다. 평점 삭제는 지원하지 않습니다.
 - 랭킹은 주차 단위 `week_leaderboard`(`20260823140000_week_leaderboard.sql`)와 시즌 누적 `season_leaderboard`를 씁니다 — `lib/queries/predictions.ts`의 `getWeekRanking(weekKey)` / `getSeasonRanking(limit)`. 목록 화면 사이드바(TOP3 + 내 순위)는 연결됐고, 주차 랭킹은 결과 화면이 붙을 때 연결됩니다.
 - 경기 단위 `fixture_leaderboard`는 랭킹 단위가 주차로 정리되면서 삭제했습니다(화면에서 참조한 적 없음).
 - `week_leaderboard.week_key`는 `to_char(week_start, 'IYYY-IW')`로 만든 값이라 `week.ts`의 `weekKey()`와 같은 문자열입니다 — 한쪽 기준만 바꾸면 화면이 랭킹을 못 찾습니다.
 
 주 단위 제출이 테이블에 앉는 방식:
 
-- `predictions`는 **경기당 1행**(`unique (user_id, fixture_id)`)이지만, 제출은 주 단위 1회입니다. 그 주에서 아직 킥오프이 안 지난 경기 전부를 **한 번의 insert**로 넣고, 선수 픽 3개는 모든 행에 같은 값으로 복사됩니다. 그래서 기존 경기별 채점 view가 그대로 동작하면서 픽 점수는 주 단위로 합산됩니다(FR-017).
+- `predictions`는 **경기당 1행**(`unique (user_id, fixture_id)`)이고, 제출은 주 단위 1회입니다. 그 주에서 아직 킥오프이 안 지난 경기 전부를 **한 번의 insert**로 넣습니다. 스코어와 선수 픽 모두 **경기별**이라 행마다 다른 값이 들어갈 수 있습니다(2026-08-23 확정). 채점은 경기별 view가 그대로 하고, 픽 점수는 주 단위로 합산됩니다(FR-017).
 - 세션은 **첫 경기 킥오프 7일 전에 열리고 마지막 경기 킥오프에 닫힙니다**. 마감은 실제로 경기별이라, 첫 경기가 끝난 뒤 처음 들어온 사용자는 남은 경기만 제출합니다(부분 제출이 정상 상태). 화면은 `submittableMatches`로 남은 경기를 골라 `pending`으로 넘깁니다.
 - insert RLS(`20260823130000_predictions_weekly_window.sql`): 그 경기가 `cancelled = false and started = false and kickoff_at > now()`이고, `prediction_week_first_kickoff(fixture_id) < now() + interval '7 days'`여야 통과합니다. 프론트의 `isMatchLocked`/`weekStatus`와 같은 기준이므로 한쪽만 바꾸면 어긋납니다.
 - 주차 경계는 한국시간 월요일 시작입니다(SQL: `date_trunc('week', kickoff_at at time zone 'Asia/Seoul')` / TS: `week.ts`의 ISO 주차).
