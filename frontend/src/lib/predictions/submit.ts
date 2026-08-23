@@ -3,6 +3,7 @@
  *
  * 제출 단위는 주(week) 하나다. predictions 테이블은 경기당 1행이라 그 주 경기 수만큼 행이 나가고,
  * 선수 픽은 주 단위 1세트라 모든 행에 같은 값이 들어간다(FR-017: 픽 점수는 주 단위 합산).
+ * 이미 킥오프이 지난 경기는 제출 대상에서 빠진다 — 첫 경기가 끝난 뒤 들어와도 남은 경기는 예측할 수 있다.
  * 배당은 클라이언트가 보낸 값을 쓰지 않는다 — 서버가 읽은 후보 목록에서 다시 꺼낸다.
  */
 
@@ -13,7 +14,7 @@ export const MAX_SCORE = 20
 
 /** 화면이 모으는 값은 항상 뉴캐슬 관점([우리, 상대])이다. 홈/원정 변환은 여기서 한다. */
 export type PredictionInput = {
-  /** fixture_id(문자열) → [우리, 상대] 예측 스코어. 그 주 경기 전부가 있어야 한다. */
+  /** fixture_id(문자열) → [우리, 상대] 예측 스코어. 그 주 **아직 안 잠긴** 경기 전부가 있어야 한다. */
   scores: Record<string, [number, number]>
   /** 포지션별로 고른 season_squads.fotmob_player_id */
   picks: Partial<Record<Position, number>>
@@ -41,7 +42,7 @@ export type SubmitValidationError =
 /** 제출 대상 주차 — WeekSession 중 검증에 필요한 부분만. */
 type WeekTarget = {
   status: WeekStatus
-  matches: { id: string; isHome: boolean }[]
+  matches: { id: string; isHome: boolean; locked: boolean }[]
 }
 
 function isValidScore(value: unknown): value is number {
@@ -54,7 +55,9 @@ export function buildPredictionRows(
   candidates: Record<Position, Candidate[]>,
 ): { rows: PredictionInsertRow[] } | { error: SubmitValidationError } {
   if (week.status !== 'open') return { error: 'closed' }
-  if (week.matches.length === 0) return { error: 'incomplete' }
+  // 킥오프이 지난 경기는 조용히 제외한다 — 남은 경기만으로 주 단위 제출이 성립한다.
+  const targets = week.matches.filter(match => !match.locked)
+  if (targets.length === 0) return { error: 'closed' }
 
   const picked: Partial<Record<Position, Candidate>> = {}
   for (const position of POSITIONS) {
@@ -71,9 +74,9 @@ export function buildPredictionRows(
   if (def.id === mid.id || mid.id === fwd.id || def.id === fwd.id) return { error: 'duplicate_picks' }
 
   const rows: PredictionInsertRow[] = []
-  for (const match of week.matches) {
+  for (const match of targets) {
     const score = input.scores[match.id]
-    // 그 주 경기 중 하나라도 스코어가 없으면 주 단위 제출이 성립하지 않는다.
+    // 남은 경기 중 하나라도 스코어가 없으면 주 단위 제출이 성립하지 않는다.
     if (!score) return { error: 'incomplete' }
     const [ourScore, theirScore] = score
     if (!isValidScore(ourScore) || !isValidScore(theirScore)) return { error: 'invalid_score' }

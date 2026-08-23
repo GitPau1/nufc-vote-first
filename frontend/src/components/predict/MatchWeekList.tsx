@@ -7,7 +7,8 @@ import { cn } from '@/lib/utils'
 /**
  * 클릭/예측의 단위는 "주차(week)"다 — 더블 매치위크(경기 2개)도 한 예측 세션으로 함께 열리고
  * 함께 제출된다. 그래서 status·submitted는 주차에 붙어 있고, 경기 행은 그 주에 뭘 예측하는지
- * 보여주는 정보 행일 뿐이다. 오픈/마감 기준은 그 주 첫 경기 킥오프다.
+ * 보여주는 정보 행일 뿐이다. 세션은 그 주 첫 경기 킥오프 7일 전에 열리고 **마지막** 경기
+ * 킥오프에 닫힌다 — 이미 시작된 경기는 빠지므로 남은 경기만 예측하는 부분 제출이 가능하다.
  */
 export type WeekSessionStatus = 'open' | 'result' | 'upcoming'
 
@@ -22,6 +23,8 @@ export interface PredictWeekMatch {
   kickoff: string
   /** "오후 8:00" 형태 — 아직 안 끝난 경기에만 사용 */
   kickoffTime: string
+  /** 이 경기는 예측 마감(킥오프 지남/이미 시작) — 주차가 열려 있어도 제출 대상이 아니다 */
+  locked: boolean
   /** 이 경기가 종료됐는지 — 주차 상태와 별개로 스코어 표시를 가른다 */
   finished: boolean
   /** [홈팀 점수, 원정팀 점수] — isHome과 무관하게 항상 이 순서. finished일 때만 존재 */
@@ -43,8 +46,10 @@ export interface PredictWeek {
   /** "2026-35" — 예측 세션 URL 파라미터 */
   weekKey: string
   status: WeekSessionStatus
-  /** 이 주차 예측을 제출했는지(주 단위 1회) */
+  /** 이 주차에 예측을 제출한 경기가 하나라도 있는지 = 참여 여부 */
   submitted: boolean
+  /** 아직 제출할 수 있는(안 잠기고 미제출인) 경기가 남았는지 */
+  hasPending: boolean
   /** 0(경기 없는 주) · 1(일반) · 2(더블 매치위크). 주차 전체가 하나의 예측 세션이다 */
   matches: PredictWeekMatch[]
 }
@@ -165,6 +170,7 @@ function WeekSessionCard({
   const meta = statusMeta(week)
   // ponytail: 퍼블리싱은 종료 주차(미참여 포함)도 결과 화면으로 열리지만 그 화면이 아직 없다.
   // 결과 화면이 생기면 여기에 `|| week.status === 'result'`를 되돌린다.
+  // 제출을 마친 주차도 열려 있는 동안은 완료 화면(카운트다운·내 픽)을 볼 수 있게 클릭을 남긴다.
   const clickable = week.status === 'open'
 
   return (
@@ -194,10 +200,13 @@ function WeekSessionCard({
       <div className="flex items-center justify-between gap-2 border-t border-gray-4 p-3.5 pt-3">
         <span className={cn(BADGE_BASE, BADGE_VARIANT[meta.variant])}>{meta.label}</span>
 
-        {week.submitted ? (
+        {week.status === 'open' && week.hasPending ? (
+          // 부분 제출 상태(첫 경기만 제출)에서도 남은 경기를 예측하러 다시 들어와야 한다.
+          <span className="flex items-center gap-0.5 text-label-2 font-bold text-primary">
+            {week.submitted ? '남은 경기 예측하기 ›' : '예측하기 ›'}
+          </span>
+        ) : week.submitted ? (
           <span className="text-label-2 font-extrabold text-black">제출 완료</span>
-        ) : week.status === 'open' ? (
-          <span className="flex items-center gap-0.5 text-label-2 font-bold text-primary">예측하기 ›</span>
         ) : week.status === 'upcoming' ? (
           <Lock className="h-4 w-4 text-gray-3" aria-label="예측 오픈 전" />
         ) : null}

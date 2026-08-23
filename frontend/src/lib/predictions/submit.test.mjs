@@ -31,13 +31,21 @@ const CANDIDATES = {
 const PICKS = { DEF: 4, MID: 39, FWD: 14 }
 
 /** 경기 1개짜리 주차 */
-const SINGLE = { status: 'open', matches: [{ id: '9001', isHome: true }] }
+const SINGLE = { status: 'open', matches: [{ id: '9001', isHome: true, locked: false }] }
 /** 더블 매치위크 — 홈 1경기 + 원정 1경기 */
 const DOUBLE = {
   status: 'open',
   matches: [
-    { id: '9001', isHome: true },
-    { id: '9002', isHome: false },
+    { id: '9001', isHome: true, locked: false },
+    { id: '9002', isHome: false, locked: false },
+  ],
+}
+/** 첫 경기 킥오프이 지난 더블 매치위크 — 두 번째 경기만 제출 가능 */
+const DOUBLE_FIRST_LOCKED = {
+  status: 'open',
+  matches: [
+    { id: '9001', isHome: true, locked: true },
+    { id: '9002', isHome: false, locked: false },
   ],
 }
 
@@ -79,10 +87,41 @@ test('더블 매치위크 = 2행. 픽은 주 단위 1세트라 두 행에 같은
   }
 })
 
-test('그 주 경기 중 하나라도 스코어가 없으면 거절된다 (부분 제출 방지)', () => {
+test('남은 경기 중 하나라도 스코어가 없으면 거절된다', () => {
   assert.deepEqual(
     buildPredictionRows(DOUBLE, { scores: { 9001: [2, 1] }, picks: PICKS }, CANDIDATES),
     { error: 'incomplete' },
+  )
+})
+
+test('킥오프이 지난 경기는 제외되고 남은 경기만 제출된다', () => {
+  // 첫 경기 스코어를 보내도 무시하고 남은 경기만 행으로 나간다
+  const result = buildPredictionRows(
+    DOUBLE_FIRST_LOCKED,
+    { scores: { 9001: [9, 9], 9002: [0, 3] }, picks: PICKS },
+    CANDIDATES,
+  )
+
+  assert.ok(!('error' in result), JSON.stringify(result))
+  assert.deepEqual(result.rows.map(r => r.fixture_id), [9002])
+  assert.deepEqual([result.rows[0].home_score, result.rows[0].away_score], [3, 0])
+
+  // 잠긴 경기 스코어가 없어도 통과해야 한다
+  const withoutLocked = buildPredictionRows(
+    DOUBLE_FIRST_LOCKED,
+    { scores: { 9002: [0, 3] }, picks: PICKS },
+    CANDIDATES,
+  )
+  assert.ok(!('error' in withoutLocked), JSON.stringify(withoutLocked))
+
+  // 전부 잠기면 제출할 게 없다
+  assert.deepEqual(
+    buildPredictionRows(
+      { status: 'open', matches: DOUBLE_FIRST_LOCKED.matches.map(m => ({ ...m, locked: true })) },
+      { scores: { 9002: [0, 3] }, picks: PICKS },
+      CANDIDATES,
+    ),
+    { error: 'closed' },
   )
 })
 
@@ -100,7 +139,7 @@ test('마감/미완성/범위초과/모르는 선수는 전부 거절된다', ()
   // 경기가 없는 주차는 제출 대상이 아니다
   assert.deepEqual(
     buildPredictionRows({ status: 'open', matches: [] }, { scores, picks: PICKS }, CANDIDATES),
-    { error: 'incomplete' },
+    { error: 'closed' },
   )
   assert.deepEqual(
     buildPredictionRows(SINGLE, { scores, picks: { DEF: 4, MID: 39 } }, CANDIDATES),

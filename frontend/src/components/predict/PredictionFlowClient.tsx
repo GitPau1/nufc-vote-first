@@ -40,30 +40,34 @@ const ERROR_MESSAGE: Record<SubmitError, string> = {
 }
 
 /**
- * 예측 세션 하나 = 주차 하나. 더블 매치위크면 그 주 경기 스코어를 다 입력하고,
+ * 예측 세션 하나 = 주차 하나. 더블 매치위크면 아직 킥오프이 안 지난 경기 스코어를 다 입력하고,
  * 선수 픽은 주 단위로 1세트만 고른 뒤 한 번에 제출한다(FR-017).
+ * 첫 경기가 끝난 뒤 들어오면 `pending`에 남은 경기만 담겨 온다 — 그 경기들만 예측한다.
  * 제출 후에는 수정할 수 없어서(DB UNIQUE + UPDATE 정책 없음) 완료 화면으로 고정된다.
  */
 export function PredictionFlowClient({
   week,
+  pending,
   candidates,
   submitted,
 }: {
   week: WeekSession
+  /** 이번에 제출할 경기 — 그 주에서 아직 안 잠기고 미제출인 것들 */
+  pending: MatchView[]
   candidates: PickCandidates
-  /** 이미 제출한 주차면 내 제출 내역(경기별 스코어 + 주 단위 픽) */
+  /** 남은 경기를 다 제출했으면 내 제출 내역(경기별 스코어 + 주 단위 픽) */
   submitted?: WeekPrediction
 }) {
   const router = useLoadingRouter()
   const [step, setStep] = useState<StepKey>('score')
   const [scores, setScores] = useState<Scores>(() =>
-    Object.fromEntries(week.matches.map(match => [match.id, [0, 0] as [number, number]])),
+    Object.fromEntries(pending.map(match => [match.id, [0, 0] as [number, number]])),
   )
   const [picks, setPicks] = useState<Picks>({})
   const [pickPosition, setPickPosition] = useState<Position | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loginOpen, setLoginOpen] = useState(false)
-  const [pending, startTransition] = useTransition()
+  const [submitting, startTransition] = useTransition()
 
   const allPicked = POSITIONS.every(position => picks[position])
   const goBackToList = () => router.push('/predictions')
@@ -132,7 +136,7 @@ export function PredictionFlowClient({
             {step === 'score' && (
               // 더블 매치위크는 경기별 입력 블록이 세로로 쌓인다 — 픽은 주 단위라 다음 스텝에서 한 번만.
               <div className="flex flex-col gap-7">
-                {week.matches.map(match => (
+                {pending.map(match => (
                   <div key={match.id}>
                     <MatchMeta weekNo={week.weekNo} match={match} />
                     <div className="mt-5 flex items-center justify-center gap-5">
@@ -158,7 +162,7 @@ export function PredictionFlowClient({
               <>
                 <SectionHead title="경기 예측" onEdit={() => setStep('score')} />
                 <div className="flex flex-col gap-4">
-                  {week.matches.map(match => (
+                  {pending.map(match => (
                     <div key={match.id} className="flex items-center justify-center gap-2 sm:gap-6">
                       <ConfirmTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
                       <span className="text-title-2 font-black">
@@ -197,8 +201,8 @@ export function PredictionFlowClient({
               </Button>
             )}
             {step === 'confirm' && (
-              <Button size="lg" className="w-full sm:w-[200px]" disabled={pending} onClick={handleSubmit}>
-                {pending ? '제출 중…' : '이대로 제출하기'}
+              <Button size="lg" className="w-full sm:w-[200px]" disabled={submitting} onClick={handleSubmit}>
+                {submitting ? '제출 중…' : '이대로 제출하기'}
               </Button>
             )}
           </div>

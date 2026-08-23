@@ -25,6 +25,7 @@ const {
   toPredictWeeks,
   findWeekSession,
   findWeekPrediction,
+  submittableMatches,
   NUFC_TEAM_ID,
 } = loadWeekModule()
 
@@ -61,9 +62,9 @@ test('같은 주 경기 2개는 한 예측 세션(주차)으로 묶인다 (더�
   assert.deepEqual(weeks[0].matches.map(m => m.id), ['1', '2'])
   assert.equal(weeks[0].monthKey, '2026-08')
   assert.equal(weeks[0].weekKey, '2026-35')
-  // 상태는 주차 단위 하나 — 기준은 그 주 첫 경기 킥오프다.
+  // 상태는 주차 단위 하나. 마감은 그 주 마지막 경기 킥오프다.
   assert.equal(weeks[0].status, 'open')
-  assert.equal(weeks[0].firstKickoffAt, '2026-08-23T15:30:00+00:00')
+  assert.equal(weeks[0].deadlineAt, '2026-08-29T18:45:00+00:00')
 })
 
 test('경기 없는 중간 주차는 빈 그룹으로 채워진다', () => {
@@ -77,26 +78,46 @@ test('경기 없는 중간 주차는 빈 그룹으로 채워진다', () => {
 
   assert.equal(weeks.length, 4)
   assert.deepEqual(weeks.map(w => w.matches.length), [1, 0, 0, 1])
-  assert.deepEqual(weeks[1].firstKickoffAt, null)
+  assert.deepEqual(weeks[1].deadlineAt, null)
   assert.equal(weeks[1].status, 'upcoming')
 })
 
-test('주차 상태는 첫 경기 킥오프 기준으로 갈린다', () => {
+test('주차는 첫 경기 킥오프 7일 전에 열리고 마지막 경기 킥오프에 닫힌다', () => {
   const first = fixture({ fixture_id: 1, kickoff_at: '2026-08-23T15:30:00+00:00' })
   const second = fixture({ fixture_id: 2, kickoff_at: '2026-08-29T18:45:00+00:00' })
+  const LAST_KICKOFF = new Date('2026-08-29T18:45:00Z').getTime()
 
   // 첫 킥오프 7일 이내 = 오픈, 그보다 이르면 예정
   assert.equal(weekStatus([first, second], KICKOFF - 86_400_000), 'open')
   assert.equal(weekStatus([first, second], KICKOFF - 30 * 86_400_000), 'upcoming')
-  // 첫 경기가 시작되면 두 번째 경기가 남아 있어도 그 주 전체가 닫힌다
-  assert.equal(weekStatus([{ ...first, started: true }, second], KICKOFF - 3_600_000), 'upcoming')
-  assert.equal(weekStatus([first, second], KICKOFF + 1), 'upcoming')
+  // 첫 경기가 시작·종료돼도 두 번째 경기가 남아 있으면 세션은 열려 있다
+  assert.equal(weekStatus([{ ...first, started: true }, second], KICKOFF + 1), 'open')
+  assert.equal(weekStatus([{ ...first, started: true, finished: true }, second], KICKOFF + 1), 'open')
+  // 마지막 경기 킥오프이 지나면 닫힌다
+  assert.equal(
+    weekStatus([{ ...first, finished: true }, second], LAST_KICKOFF + 1),
+    'upcoming',
+  )
   // 그 주 경기가 전부 끝나야 결과
   assert.equal(
-    weekStatus([{ ...first, finished: true }, { ...second, finished: true }], KICKOFF + 1),
+    weekStatus([{ ...first, finished: true }, { ...second, finished: true }], LAST_KICKOFF + 1),
     'result',
   )
-  assert.equal(weekStatus([{ ...first, finished: true }, second], KICKOFF + 1), 'upcoming')
+})
+
+test('submittableMatches: 이미 시작된 경기는 빠지고 남은 경기만 제출 대상이다', () => {
+  const [week] = groupFixturesByWeek(
+    [
+      // 첫 경기는 이미 끝났고, 두 번째 경기는 아직 남아 있다
+      fixture({ fixture_id: 1, kickoff_at: '2026-08-24T15:30:00+00:00', started: true, finished: true, home_score: 2, away_score: 0 }),
+      fixture({ fixture_id: 2, kickoff_at: '2026-08-29T18:45:00+00:00' }),
+    ],
+    new Date('2026-08-26T00:00:00Z').getTime(),
+  )
+
+  assert.equal(week.status, 'open')
+  assert.deepEqual(week.matches.map(m => m.locked), [true, false])
+  assert.deepEqual(submittableMatches(week).map(m => m.id), ['2'])
 })
 
 test('원정 경기는 상대/스코어가 뒤집혀 우리 관점으로 나온다', () => {
@@ -112,6 +133,7 @@ test('원정 경기는 상대/스코어가 뒤집혀 우리 관점으로 나온�
       finished: true,
       kickoff_at: '2026-08-23T10:30:00+00:00',
     }),
+    KICKOFF,
   )
 
   assert.equal(view.isHome, false)
@@ -162,6 +184,7 @@ test('toPredictWeeks: 원정 경기 스코어는 [홈, 원정] 순서로 되돌�
   const [week] = toPredictWeeks(weeks)
   assert.equal(week.status, 'result')
   assert.equal(week.submitted, false)
+  assert.equal(week.hasPending, false)
   assert.equal(week.matches[0].finished, true)
   // MatchView는 [우리, 상대] = [3, 1] → PredictWeekMatch는 [홈, 원정] = [1, 3]
   assert.deepEqual(week.matches[0].actual, [1, 3])
@@ -220,7 +243,29 @@ test('toPredictWeeks: 제출 여부는 주차 단위, 예측 스코어는 경기
   }
   const [week] = toPredictWeeks(weeks, submitted)
   assert.equal(week.submitted, true)
+  assert.equal(week.hasPending, false)
   assert.equal(week.weekKey, '2026-35')
   assert.deepEqual(week.matches[0].myResult, { predicted: [2, 1] })
   assert.deepEqual(week.matches[1].myResult, { predicted: [0, 0] })
+})
+
+test('toPredictWeeks: 첫 경기만 제출된 상태면 남은 경기가 pending으로 남는다', () => {
+  const weeks = groupFixturesByWeek(
+    [
+      fixture({ fixture_id: 1, kickoff_at: '2026-08-24T15:30:00+00:00', started: true, finished: true, home_score: 2, away_score: 0 }),
+      fixture({ fixture_id: 2, kickoff_at: '2026-08-29T18:45:00+00:00' }),
+    ],
+    new Date('2026-08-26T00:00:00Z').getTime(),
+  )
+
+  // 첫 경기가 끝난 뒤 처음 들어온 사용자 = 아무것도 제출 안 함
+  const [fresh] = toPredictWeeks(weeks)
+  assert.equal(fresh.status, 'open')
+  assert.equal(fresh.submitted, false)
+  assert.equal(fresh.hasPending, true)
+
+  // 남은 경기까지 제출하면 pending이 사라진다
+  const [done] = toPredictWeeks(weeks, { 2: { score: [1, 1], picks: SUBMITTED_PICKS } })
+  assert.equal(done.submitted, true)
+  assert.equal(done.hasPending, false)
 })

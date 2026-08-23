@@ -70,13 +70,16 @@ export function PredictionDone({
         </div>
 
         <div>
-          <Countdown targetIso={week.firstKickoffAt} />
+          <Countdown targetIso={week.deadlineAt} />
 
           <div className="rounded-lg border border-gray-4 bg-surface px-4 py-5">
             <p className="mb-2.5 text-body-2-normal font-bold">경기 예측</p>
             <div className="flex flex-col gap-4">
+              {/* 내가 제출한 경기만 — 킥오프이 지나 예측하지 못한 경기는 여기 없다. */}
               {week.matches.map(match => {
-                const [ourScore, theirScore] = prediction.scores[match.id] ?? [0, 0]
+                const submittedScore = prediction.scores[match.id]
+                if (!submittedScore) return null
+                const [ourScore, theirScore] = submittedScore
                 return (
                   <div key={match.id} className="flex items-center justify-center gap-2 sm:gap-6">
                     <MatchupTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />

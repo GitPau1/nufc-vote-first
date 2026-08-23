@@ -78,7 +78,9 @@ DB나 Supabase 연동을 건드릴 때:
 - 포지션 정의/표시 헬퍼: `frontend/src/lib/predictions/candidates.ts`
 - 화면: `frontend/src/app/predictions/page.tsx`, `frontend/src/app/predictions/[weekKey]/page.tsx`, `frontend/src/components/predict/*`
 - 예측/제출 단위는 경기가 아니라 **주(week)**다. 상태(`open`/`result`/`upcoming`)도 주 레벨에만 있고, 더블 매치위크는 경기 2개가 한 세션이다.
-- 오픈/마감 기준은 **그 주 첫 경기 킥오프**(7일 전 오픈 → 첫 킥오프에 마감). 프론트는 `week.ts`의 `weekStatus`, DB는 `20260823130000_predictions_weekly_window.sql`의 `prediction_week_first_kickoff` — 둘이 같은 기준이라 한쪽만 고치면 안 된다.
+- 세션은 **그 주 첫 경기 킥오프 7일 전**에 열리고 **그 주 마지막 경기 킥오프**에 닫힌다. 마감 판정은 실제로는 경기별(`isMatchLocked`)이고, 잠기지 않은 경기가 하나도 없으면 주차가 닫히는 구조다.
+- 그래서 **부분 제출이 정상 상태**다: 첫 경기가 끝난 뒤 처음 들어온 사용자는 남은 경기만 예측한다(`submittableMatches`). 페이지가 미제출·미잠김 경기를 `pending`으로 넘기고, 비어 있으면 완료 화면을 띄운다.
+- 프론트는 `week.ts`의 `isMatchLocked`/`weekStatus`, DB는 `20260823130000_predictions_weekly_window.sql`의 insert 정책(`kickoff_at > now()` + `prediction_week_first_kickoff < now() + 7 days`) — 둘이 같은 기준이라 한쪽만 고치면 안 된다.
 - `predictions` 테이블은 **경기당 1행**이지만 제출은 주 단위 1회다: 그 주 경기 전부를 한 번의 insert로 넣고, 선수 픽은 모든 행에 같은 값이 복사된다(FR-017 = 픽 점수 주 단위 합산). "같은 주의 픽은 같다"는 DB 제약이 아니라 server action의 불변식이니 predictions에 쓰는 다른 경로를 만들면 안 된다.
 - 아직 없는 것: 결과(채점) 화면, 주간 랭킹 view, 랭킹 데이터 주입(`RankingCard`는 빈 배열로 렌더), `fixture_player_ratings` 입력 UI
 

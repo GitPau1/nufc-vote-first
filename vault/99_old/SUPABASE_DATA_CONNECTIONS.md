@@ -563,8 +563,9 @@ Update note 2026-05-30:
 
 주 단위 제출이 테이블에 앉는 방식:
 
-- `predictions`는 **경기당 1행**(`unique (user_id, fixture_id)`)이지만, 제출은 주 단위 1회입니다. 그 주 경기 전부를 **한 번의 insert**로 넣고(다중 행 insert = 단일 statement라 부분 제출이 생기지 않음), 선수 픽 3개는 모든 행에 같은 값으로 복사됩니다. 그래서 기존 경기별 채점 view가 그대로 동작하면서 픽 점수는 주 단위로 합산됩니다(FR-017).
-- insert RLS는 `그 주 첫 경기 킥오프` 기준입니다 — `prediction_week_first_kickoff(fixture_id)`가 `now()`와 `now() + 7 days` 사이여야 통과(`20260823130000_predictions_weekly_window.sql`). 프론트의 `weekStatus`와 같은 기준이므로 한쪽만 바꾸면 어긋납니다.
+- `predictions`는 **경기당 1행**(`unique (user_id, fixture_id)`)이지만, 제출은 주 단위 1회입니다. 그 주에서 아직 킥오프이 안 지난 경기 전부를 **한 번의 insert**로 넣고, 선수 픽 3개는 모든 행에 같은 값으로 복사됩니다. 그래서 기존 경기별 채점 view가 그대로 동작하면서 픽 점수는 주 단위로 합산됩니다(FR-017).
+- 세션은 **첫 경기 킥오프 7일 전에 열리고 마지막 경기 킥오프에 닫힙니다**. 마감은 실제로 경기별이라, 첫 경기가 끝난 뒤 처음 들어온 사용자는 남은 경기만 제출합니다(부분 제출이 정상 상태). 화면은 `submittableMatches`로 남은 경기를 골라 `pending`으로 넘깁니다.
+- insert RLS(`20260823130000_predictions_weekly_window.sql`): 그 경기가 `cancelled = false and started = false and kickoff_at > now()`이고, `prediction_week_first_kickoff(fixture_id) < now() + interval '7 days'`여야 통과합니다. 프론트의 `isMatchLocked`/`weekStatus`와 같은 기준이므로 한쪽만 바꾸면 어긋납니다.
 - 주차 경계는 한국시간 월요일 시작입니다(SQL: `date_trunc('week', kickoff_at at time zone 'Asia/Seoul')` / TS: `week.ts`의 ISO 주차).
 
 ## DB 수정 체크리스트
