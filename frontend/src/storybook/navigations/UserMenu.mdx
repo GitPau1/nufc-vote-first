@@ -5,7 +5,7 @@ import * as UserMenuStories from './UserMenu.stories'
 
 # UserMenu
 
-로그인한 사용자의 아바타 + 드롭다운이다. [AppHeader](?path=/docs/navigations-appheader--docs) 우측 끝에만 들어가는 조각이고, 직접 배치하는 컴포넌트가 아니다 — 헤더가 `HeaderAuthStatus`를 통해 이 컴포넌트를 꽂는다(`src/components/layout/HeaderAuthStatus.tsx`가 유일한 사용처). 로그아웃 상태에서 이 자리에 들어가는 것은 [LoginButton](?path=/docs/actions-loginbutton--docs)이고, 둘이 갈리는 규칙은 그쪽 문서에 정리했다.
+로그인한 사용자의 아바타 + 드롭다운이다. [AppHeader](?path=/docs/composition-common-appheader--docs) 우측 끝에만 들어가는 조각이고, 직접 배치하는 컴포넌트가 아니다 — 헤더가 `HeaderAuthStatus`를 통해 이 컴포넌트를 꽂는다(`src/components/composition/common/HeaderAuthStatus.tsx`가 유일한 사용처). 로그아웃 상태에서 이 자리에 들어가는 것은 [LoginButton](?path=/docs/composition-common-loginbutton--docs)이고, 둘이 갈리는 규칙은 그쪽 문서에 정리했다.
 
 <Canvas of={UserMenuStories.Default} />
 <Controls of={UserMenuStories.Default} />
@@ -29,7 +29,7 @@ import * as UserMenuStories from './UserMenu.stories'
 
 아바타 자체는 관리자와 일반 사용자가 완전히 같다 — 권한 차이는 열어봐야만 보인다. 위 두 스토리는 `play` 함수로 아바타를 클릭해 열어둔 상태다.
 
-모바일 하단 내비의 '메뉴'(`/menu`)에 있던 피드백·관리자 진입이 이 드롭다운으로 옮겨온 것이라, 데스크탑에서는 [BottomNav](?path=/docs/navigations-bottomnav--docs)의 '메뉴' 탭 대신 여기가 그 역할을 한다.
+모바일 하단 내비의 '메뉴'(`/menu`)에 있던 피드백·관리자 진입이 이 드롭다운으로 옮겨온 것이라, 데스크탑에서는 [BottomNav](?path=/docs/composition-common-bottomnav--docs)의 '메뉴' 탭 대신 여기가 그 역할을 한다.
 
 ## 닫힘 조건
 

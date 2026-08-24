@@ -81,7 +81,7 @@ function InteractiveWeekList(props: React.ComponentProps<typeof MatchWeekList>) 
 const mobileWidth = { decorators: [(Story: () => React.JSX.Element) => <div style={{ maxWidth: 358 }}><Story /></div>] }
 
 const meta = {
-  title: 'Contents/MatchWeekList',
+  title: 'Composition/Predict/MatchWeekList',
   component: MatchWeekList,
   ...mobileWidth,
   argTypes: {

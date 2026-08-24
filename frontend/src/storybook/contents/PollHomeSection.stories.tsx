@@ -39,7 +39,7 @@ const FIVE_POLLS: PollListItem[] = [
 ]
 
 const meta = {
-  title: 'Contents/PollHomeSection',
+  title: 'Composition/Polls/PollHomeSection',
   component: PollHomeSection,
   parameters: {
     // 내부 PollCard가 usePathname()/next/link를 쓴다 — appDirectory: true가 없으면

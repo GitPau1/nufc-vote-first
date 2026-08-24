@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
 const meta = {
-  title: 'Selection and Input/TextInput',
+  title: 'Primitives/TextInput',
 } satisfies Meta
 
 export default meta

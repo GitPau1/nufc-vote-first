@@ -5,7 +5,7 @@ import * as LoginModalStories from './LoginModal.stories'
 
 # LoginModal
 
-`components/polls/LoginModal.tsx`. 비로그인 사용자에게 그 화면 위에 띄우는 로그인 모달이다. 진입 맥락은 두 가지 — 사용자가 스스로 로그인을 시작한 경우(헤더·메뉴)와 하려던 행동이 막힌 경우(투표·승부예측). `triggerAction`이 그 둘을 갈라 설명 문구를 바꾼다.
+`components/primitives/modal/contents/Login.tsx`. 비로그인 사용자에게 그 화면 위에 띄우는 로그인 모달이다. 진입 맥락은 두 가지 — 사용자가 스스로 로그인을 시작한 경우(헤더·메뉴)와 하려던 행동이 막힌 경우(투표·승부예측). `triggerAction`이 그 둘을 갈라 설명 문구를 바꾼다.
 
 이 서비스에는 `/login` 페이지가 없다. 로그인은 언제나 이 모달로만 일어난다 — 그래서 "로그인 화면으로 보낸다"는 선택지 자체가 없고, 어디서 막혔든 그 자리에서 모달을 띄운다.
 
@@ -15,13 +15,13 @@ import * as LoginModalStories from './LoginModal.stories'
 
 | 파일 | `triggerAction` | 케이스 |
 | --- | --- | --- |
-| `components/layout/LoginButton.tsx` (헤더 로그인 버튼) | `login` | 일반 로그인 |
+| `components/composition/common/LoginButton.tsx` (헤더 로그인 버튼) | `login` | 일반 로그인 |
 | `app/menu/MenuActions.tsx` (메뉴 화면) | `login` | 일반 로그인 |
-| `components/auth/RequireAuthModal.tsx` (보호된 화면 게이트) | `login` | 일반 로그인 |
-| `components/polls/TypeAPollClient.tsx` | `vote` | 행동 유도 |
-| `components/polls/TypeBPollClient.tsx` | `vote` | 행동 유도 |
-| `components/polls/OverallRatingPollClient.tsx` | `vote` | 행동 유도 |
-| `components/predict/PredictionFlowClient.tsx` (승부예측 제출) | `predict` | 행동 유도 |
+| `components/composition/auth/RequireAuthModal.tsx` (보호된 화면 게이트) | `login` | 일반 로그인 |
+| `components/composition/polls/TypeAPollClient.tsx` | `vote` | 행동 유도 |
+| `components/composition/polls/TypeBPollClient.tsx` | `vote` | 행동 유도 |
+| `components/composition/polls/OverallRatingPollClient.tsx` | `vote` | 행동 유도 |
+| `components/composition/predict/PredictionFlowClient.tsx` (승부예측 제출) | `predict` | 행동 유도 |
 
 ## triggerAction이 설명 문구를 가른다
 
@@ -38,7 +38,7 @@ import * as LoginModalStories from './LoginModal.stories'
 - **케이스 1 — 일반 로그인(`login`)**: 사용자가 특정 행동에 막힌 게 아니라 스스로 로그인을 시작한 경우다. 여기서 "투표에 참여하려면"이라고 말하면 하지도 않은 행동을 전제하게 되니, 대신 로그인해서 얻는 것을 말한다.
 - **케이스 2 — 행동 유도(`vote`, `predict`)**: 하려던 행동이 막혀서 뜬 경우다. 막힌 그 행동을 문구에 그대로 담는다. 새 유도 지점이 생기면 값을 추가하고 문구를 한 줄 더 쓴다(`LoginModal.tsx`의 `TRIGGER_DESCRIPTION` 맵).
 
-`components/polls/login-modal.test.mjs`가 (1) 문구가 값별로 실제로 다른지, (2) 호출부마다 맥락에 맞는 값을 넘기는지를 소스 문자열로 고정한다.
+`components/composition/polls/login-modal.test.mjs`가 (1) 문구가 값별로 실제로 다른지, (2) 호출부마다 맥락에 맞는 값을 넘기는지를 소스 문자열로 고정한다.
 
 `triggerAction`에 `'comment'`·`'create_poll'` 값은 없다 — 댓글 작성은 투표 참여자만 가능해서 비로그인 사용자가 도달하지 못하고, 투표 생성 페이지는 `RequireAuthModal`(`login`)을 쓰기 때문이다.
 
@@ -48,7 +48,7 @@ import * as LoginModalStories from './LoginModal.stories'
 
 ## RequireAuthModal — 유일한 래퍼
 
-`components/auth/RequireAuthModal.tsx`(24줄)는 이 모달을 `open` 고정 + `onClose={() => router.push('/')}` + `triggerAction="login"`으로 감싼 것뿐이다. 로그인 없이는 볼 내용이 없는 화면에서 `redirect('/login')` 대신 쓴다: `app/admin/page.tsx`, `app/polls/create/page.tsx`, `app/my/page.tsx`, `app/my/feedback/page.tsx`, `app/onboarding/page.tsx`.
+`components/composition/auth/RequireAuthModal.tsx`(24줄)는 이 모달을 `open` 고정 + `onClose={() => router.push('/')}` + `triggerAction="login"`으로 감싼 것뿐이다. 로그인 없이는 볼 내용이 없는 화면에서 `redirect('/login')` 대신 쓴다: `app/admin/page.tsx`, `app/polls/create/page.tsx`, `app/my/page.tsx`, `app/my/feedback/page.tsx`, `app/onboarding/page.tsx`.
 
 닫기 = 홈으로 이탈이라 "닫고 그 화면에 머무르기"가 없다. 그게 유일한 차이라서 별도 컴포넌트 문서로 나누지 않고 여기 스토리 하나로 둔다.
 
@@ -66,6 +66,6 @@ CTA 버튼 라벨과 아이콘은 `triggerAction`이 아니라 `lib/config.ts`�
 
 ## 구조
 
-[BottomSheet](?path=/docs/feedback-bottomsheet--docs) 위에 얹혀 있어 모바일(`<768px`)은 바텀시트, 데스크톱은 중앙 모달로 뜬다 — 화면 폭이 유일한 기준이다. `components/polls/login-modal.test.mjs`가 이 규칙(그리고 CTA가 `outline`이 아닌 채움 버튼이라는 점, 맥락별 문구, 호출부별 `triggerAction` 값까지)을 소스 문자열로 검사하므로, 문구나 호출부를 고칠 때 그 테스트를 함께 본다.
+[BottomSheet](?path=/docs/primitives-modal--docs) 위에 얹혀 있어 모바일(`<768px`)은 바텀시트, 데스크톱은 중앙 모달로 뜬다 — 화면 폭이 유일한 기준이다. `components/composition/polls/login-modal.test.mjs`가 이 규칙(그리고 CTA가 `outline`이 아닌 채움 버튼이라는 점, 맥락별 문구, 호출부별 `triggerAction` 값까지)을 소스 문자열로 검사하므로, 문구나 호출부를 고칠 때 그 테스트를 함께 본다.
 
 <Canvas of={LoginModalStories.Interactive} />

@@ -5,8 +5,8 @@ import * as PlayerPhotoStories from './PlayerPhoto.stories'
 
 # PlayerPhoto
 
-승부예측에서 선수 사진이 들어가는 원형 자리. `src/components/predict/shared.tsx`에 있고 `url`(nullable)과 `size`(기본 64)만 받는다.
-[Avatar](?path=/docs/contents-avatar--docs) 위에 얹은 **선수 사진 전용 래퍼**다 — 폴백이 이니셜이 아니라 실루엣이라는 것 하나가 차이의 전부다.
+승부예측에서 선수 사진이 들어가는 원형 자리. `src/components/composition/predict/shared.tsx`에 있고 `url`(nullable)과 `size`(기본 64)만 받는다.
+[Avatar](?path=/docs/primitives-avatar--docs) 위에 얹은 **선수 사진 전용 래퍼**다 — 폴백이 이니셜이 아니라 실루엣이라는 것 하나가 차이의 전부다.
 
 <Canvas of={PlayerPhotoStories.Default} />
 
@@ -19,11 +19,11 @@ import * as PlayerPhotoStories from './PlayerPhoto.stories'
 
 ## 사용자 프로필 아바타와 뭐가 다른가
 
-같은 `ui/avatar.tsx` 프리미티브를 쓰지만 **폴백이 다르다.**
+같은 `primitives/avatar.tsx` 프리미티브를 쓰지만 **폴백이 다르다.**
 
 | | 폴백 | 쓰는 곳 |
 |---|---|---|
-| 사용자 프로필 | 이름 **이니셜** (`bg-brand-weak`/`bg-disabled`) | `components/layout/UserMenu.tsx`, `components/my/MyPageClient.tsx`, `components/polls/CommentsSection.tsx` |
+| 사용자 프로필 | 이름 **이니셜** (`bg-brand-weak`/`bg-disabled`) | `components/composition/common/UserMenu.tsx`, `components/composition/my/MyPageClient.tsx`, `components/composition/polls/CommentsSection.tsx` |
 | `PlayerPhoto` | **실루엣 아이콘** (`bg-disabled`) | 승부예측 화면 (아래 표) |
 
 선수 자리는 사진 옆·아래에 이름이 이미 붙어 있어서 이니셜이 정보를 더하지 않는다. 반대로 사용자 아바타는 목록에서 단독으로 서는 경우가 있어 이니셜이 식별에 쓰인다. 새 자리를 만들 때 이 기준으로 고른다 — 이름이 옆에 있으면 실루엣, 아바타만 서면 이니셜.
@@ -42,12 +42,12 @@ import * as PlayerPhotoStories from './PlayerPhoto.stories'
 
 | 파일 | 자리 | size |
 |---|---|---|
-| `components/predict/PlayerPickModal.tsx:132` | 선수 선택 목록의 행 | 기본(64) |
-| `components/predict/PredictionFlowClient.tsx:474` | 선수 선택 단계의 선택된 카드 | 기본(64) |
-| `components/predict/PredictionResult.tsx:395` | 결과 화면 포지션별 카드 | 기본(64) |
-| `components/predict/PredictionResult.tsx:368` | 결과 요약 줄 | 48 |
-| `components/predict/PredictionDone.tsx:260` | 제출 완료 화면 카드 | 기본(64) |
-| `components/predict/PredictionDone.tsx:235` | 제출 완료 요약 줄 | 48 |
+| `components/primitives/modal/contents/PlayerPick.tsx:132` | 선수 선택 목록의 행 | 기본(64) |
+| `components/composition/predict/PredictionFlowClient.tsx:474` | 선수 선택 단계의 선택된 카드 | 기본(64) |
+| `components/composition/predict/PredictionResult.tsx:395` | 결과 화면 포지션별 카드 | 기본(64) |
+| `components/composition/predict/PredictionResult.tsx:368` | 결과 요약 줄 | 48 |
+| `components/composition/predict/PredictionDone.tsx:260` | 제출 완료 화면 카드 | 기본(64) |
+| `components/composition/predict/PredictionDone.tsx:235` | 제출 완료 요약 줄 | 48 |
 
 실제로 쓰이는 값은 40·48·64 세 개다. `size`는 `Avatar` 기본 `h-10 w-10`을 인라인 `style`로 덮어쓰는 방식이라 임의 px이 그대로 들어간다.
 

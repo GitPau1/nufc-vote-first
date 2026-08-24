@@ -5,7 +5,7 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 
 # MatchWeekList
 
-승부예측 월별 주차 목록. `src/components/predict/MatchWeekList.tsx`이고, 사용처는 `components/predict/PredictListClient.tsx`(예측 탭)다. [RankingCard](?path=/docs/contents-rankingcard--docs)와 마찬가지로 **승부예측 기능과 함께 들어왔지만 디자인시스템에 문서화된 적이 없던 컴포넌트**다 — 아래 규칙은 새로 정한 게 아니라 소스에 이미 있던 동작이다.
+승부예측 월별 주차 목록. `src/components/composition/predict/MatchWeekList.tsx`이고, 사용처는 `components/composition/predict/PredictListClient.tsx`(예측 탭)다. [RankingCard](?path=/docs/composition-predict-rankingcard--docs)와 마찬가지로 **승부예측 기능과 함께 들어왔지만 디자인시스템에 문서화된 적이 없던 컴포넌트**다 — 아래 규칙은 새로 정한 게 아니라 소스에 이미 있던 동작이다.
 
 ## 핵심 규칙 — 세션은 주 단위, 제출과 배지는 경기 단위
 
@@ -83,7 +83,7 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 
 ## MatchdayHero와의 관계 — 아직 안 이어져 있다
 
-같은 승부예측 기능이지만 [MatchdayHero](?path=/docs/contents-matchdayhero--docs)와 **데이터를 공유하지 않는다.** 확인한 차이는 셋이다.
+같은 승부예측 기능이지만 [MatchdayHero](?path=/docs/composition-predict-matchdayhero--docs)와 **데이터를 공유하지 않는다.** 확인한 차이는 셋이다.
 
 | | MatchdayHero | MatchWeekList |
 |---|---|---|
@@ -97,7 +97,7 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 
 ## 알려진 제약
 
-- 상태 배지는 [Badge](?path=/docs/contents-badge--docs)의 스타일을 쓰지만 컴포넌트가 아니라 `badgeVariants()`를 span에 얹는다 — 카드 전체가 `<button>`이고 `Badge`는 `div`를 렌더해서 버튼 안에 넣을 수 없기 때문이다. 스타일 원본은 `ui/badge.tsx` 하나다. **variant 이름이 화면 문구와 다르다**: 참여(초록)는 `positive`가 아니라 `secondary`다.
+- 상태 배지는 [Badge](?path=/docs/primitives-badge--docs)의 스타일을 쓰지만 컴포넌트가 아니라 `badgeVariants()`를 span에 얹는다 — 카드 전체가 `<button>`이고 `Badge`는 `div`를 렌더해서 버튼 안에 넣을 수 없기 때문이다. 스타일 원본은 `primitives/badge.tsx` 하나다. **variant 이름이 화면 문구와 다르다**: 참여(초록)는 `positive`가 아니라 `secondary`다.
 - 클릭 가능한 카드의 `active` 배경이 `hover`와 같은 `bg-brand-weak`다. pressed 전용 값(`brand-weak-pressed`, blue-200)은 본문 회색과 4.48:1로 AA 미달이라 일부러 안 쓴다 — [State](?path=/docs/foundations-state--docs)에 기록된 예외다.
 - 매치 행 우측의 라운드 표기는 `{weekNo}라운드`로, **주차 번호를 그대로 라운드 번호로 쓴다.** 리그 라운드와 ISO 주차는 같은 값이 아니라, 컵 경기나 연기된 경기가 끼면 어긋난다. 더블 매치위크에서는 이 자리가 경기별 배지로 대체되어 라운드 표기가 아예 사라진다.
 - 로고는 `next/image`가 아니라 `<img>`를 직접 쓴다. `alt=""`(장식)이고 팀 이름은 아래 텍스트로 읽힌다.

@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { Button } from '@/components/primitives/button'
 
 const meta = {
-  title: 'Actions/Button',
+  title: 'Primitives/Button',
   component: Button,
   args: {
     children: '버튼',

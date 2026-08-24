@@ -48,7 +48,7 @@ function ShellProbe() {
 }
 
 const meta = {
-  title: 'Presentation/PageContainer',
+  title: 'Primitives/PageContainer',
   component: PageContainer,
   parameters: {
     // usePathname()으로 셸/패스스루 분기를 결정하므로 navigation.pathname이 사실상 이 컴포넌트의

@@ -7,7 +7,7 @@ import * as StickyActionBarStories from './StickyActionBar.stories'
 
 화면 하단 제출 버튼 바. 투표 상세(`/polls/[id]`)의 세 화면(`TypeAPollClient`·`TypeBPollClient`·`OverallRatingPollClient`)과 승부예측 제출(`/predictions/[weekKey]`의 `PredictionFlowClient`)에 거의 동일하게 복붙돼 있던 마크업을 하나로 합친 것이다.
 
-코드: `src/components/layout/StickyActionBar.tsx`. props는 `children`과 `className`뿐이다. **공유하는 건 "모바일 fixed → 데스크탑 static" 전환 로직**이고, 화면마다 다른 부분(폭·데스크탑 정렬)은 `className`으로 넘긴다 — `cn()`이 `twMerge`라 `max-w-*` 같은 충돌 유틸리티는 넘긴 쪽이 이긴다. 예측 플로우는 `max-w-shell sm:max-w-[560px] sm:flex sm:justify-center`로 더 좁은 폭 + 가운데 고정폭 버튼을 만든다. 새 화면에서 하단 고정 CTA가 필요하면 `fixed bottom-0`를 직접 쓰지 말고 이걸 쓴다.
+코드: `src/components/primitives/sticky-action-bar.tsx`. props는 `children`과 `className`뿐이다. **공유하는 건 "모바일 fixed → 데스크탑 static" 전환 로직**이고, 화면마다 다른 부분(폭·데스크탑 정렬)은 `className`으로 넘긴다 — `cn()`이 `twMerge`라 `max-w-*` 같은 충돌 유틸리티는 넘긴 쪽이 이긴다. 예측 플로우는 `max-w-shell sm:max-w-[560px] sm:flex sm:justify-center`로 더 좁은 폭 + 가운데 고정폭 버튼을 만든다. 새 화면에서 하단 고정 CTA가 필요하면 `fixed bottom-0`를 직접 쓰지 말고 이걸 쓴다.
 
 <Canvas of={StickyActionBarStories.VoteSubmit} />
 
@@ -29,7 +29,7 @@ import * as StickyActionBarStories from './StickyActionBar.stories'
 
 ## 안에 들어가는 버튼
 
-투표 3곳은 [Button](?path=/docs/actions-button--docs)의 **`variant="default"`(1차 CTA) 1개**를 `className="h-12 w-full"`로 꽉 채워 넣는다. 예측 플로우는 같은 버튼을 모바일에선 `w-full`, 데스크탑에선 `sm:w-[200px]` 고정폭으로 두는 차이만 있다. 버튼 2개를 나란히 두거나 부가 텍스트를 함께 넣는 사용처는 현재 없다 — 새로 그런 형태가 필요하면 이 문서에 형태를 추가하고 나서 쓴다.
+투표 3곳은 [Button](?path=/docs/primitives-button--docs)의 **`variant="default"`(1차 CTA) 1개**를 `className="h-12 w-full"`로 꽉 채워 넣는다. 예측 플로우는 같은 버튼을 모바일에선 `w-full`, 데스크탑에선 `sm:w-[200px]` 고정폭으로 두는 차이만 있다. 버튼 2개를 나란히 두거나 부가 텍스트를 함께 넣는 사용처는 현재 없다 — 새로 그런 형태가 필요하면 이 문서에 형태를 추가하고 나서 쓴다.
 
 <Canvas of={StickyActionBarStories.RatingStepNext} />
 
@@ -48,13 +48,13 @@ import * as StickyActionBarStories from './StickyActionBar.stories'
 
 ## BottomNav와는 동시에 뜨지 않는다
 
-[BottomNav](?path=/docs/navigations-bottomnav--docs)는 `/`, `/polls`, `/predictions`, `/players`, `/menu` 5개 경로에서만 렌더되고(그 외에는 `return null`), StickyActionBar는 투표 상세(`/polls/[id]`)와 예측 제출(`/predictions/[weekKey]`)에서만 쓰인다 — 둘 다 BottomNav가 `return null`인 경로라 실제로 겹치는 화면이 없다.
+[BottomNav](?path=/docs/composition-common-bottomnav--docs)는 `/`, `/polls`, `/predictions`, `/players`, `/menu` 5개 경로에서만 렌더되고(그 외에는 `return null`), StickyActionBar는 투표 상세(`/polls/[id]`)와 예측 제출(`/predictions/[weekKey]`)에서만 쓰인다 — 둘 다 BottomNav가 `return null`인 경로라 실제로 겹치는 화면이 없다.
 
 겹칠 경우 BottomNav가 위에 온다 — `z-40` 대 액션바 `z-30`이고 둘 다 `bottom-0`이라 액션바가 가려진다. 폭도 달라서(`max-w-shell` 480px 대 `max-w-detail` 680px) 어긋난 두 겹으로 보인다. **BottomNav가 보이는 5개 경로에는 StickyActionBar를 쓰지 않는다.** 참고로 `NavigationLoading` 오버레이는 `z-[100]`이라 로딩 중에는 둘 다 덮는다.
 
 ## PageContainer가 세로 마진을 안 주는 이유
 
-`src/components/layout/PageContainer.tsx`는 셸에 `top`/`bottom` 마진을 의도적으로 주지 않는다 — 이 컴포넌트의 모바일 `fixed`는 뷰포트 기준이라, 셸에 세로 마진이 생기면 액션바가 셸 카드 밖으로 삐져나온다. PageContainer 쪽을 고칠 때 이 제약을 깨지 않도록 주의한다. (코드 의존은 없고 주석으로만 연결된 관계다.)
+`src/components/primitives/page-container.tsx`는 셸에 `top`/`bottom` 마진을 의도적으로 주지 않는다 — 이 컴포넌트의 모바일 `fixed`는 뷰포트 기준이라, 셸에 세로 마진이 생기면 액션바가 셸 카드 밖으로 삐져나온다. PageContainer 쪽을 고칠 때 이 제약을 깨지 않도록 주의한다. (코드 의존은 없고 주석으로만 연결된 관계다.)
 
 ## 문서상의 제약
 

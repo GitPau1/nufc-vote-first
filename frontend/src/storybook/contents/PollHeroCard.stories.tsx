@@ -34,7 +34,7 @@ function mockPoll(overrides: Partial<PollListItem>): PollListItem {
 const mobileWidth = { decorators: [(Story: () => React.JSX.Element) => <div style={{ maxWidth: 358 }}><Story /></div>] }
 
 const meta = {
-  title: 'Contents/PollHeroCard',
+  title: 'Composition/Polls/PollHeroCard',
   component: PollHeroCard,
   parameters: {
     // appDirectory: true가 없으면 내부의 usePathname()이

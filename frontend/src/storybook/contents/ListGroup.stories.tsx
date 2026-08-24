@@ -7,7 +7,7 @@ const ITEMS = [
 ]
 
 const meta = {
-  title: 'Contents/ListGroup',
+  title: 'Primitives/ListGroup',
 } satisfies Meta
 
 export default meta

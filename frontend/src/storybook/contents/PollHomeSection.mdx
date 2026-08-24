@@ -5,7 +5,7 @@ import * as PollHomeSectionStories from './PollHomeSection.stories'
 
 # PollHomeSection
 
-홈(`/`)의 "진행 중인 투표 / 예정된 투표 / 종료된 투표" 섹션 하나를 그리는 컴포넌트. 소스는 `src/components/polls/PollHomeSection.tsx`이고, `src/components/polls/HomeClient.tsx`(← `src/app/page.tsx`)에서 세 번 재사용된다. 카드 자체는 [PollCard](?path=/docs/contents-pollcard--docs)를 그대로 쓰고, 이 컴포넌트가 담당하는 건 **제목 줄 + 목록을 몇 개까지 어떤 배치로 보여줄지**다.
+홈(`/`)의 "진행 중인 투표 / 예정된 투표 / 종료된 투표" 섹션 하나를 그리는 컴포넌트. 소스는 `src/components/composition/polls/PollHomeSection.tsx`이고, `src/components/composition/common/HomeClient.tsx`(← `src/app/page.tsx`)에서 세 번 재사용된다. 카드 자체는 [PollCard](?path=/docs/composition-polls-pollcard--docs)를 그대로 쓰고, 이 컴포넌트가 담당하는 건 **제목 줄 + 목록을 몇 개까지 어떤 배치로 보여줄지**다.
 
 props는 `title`, `polls`, `action?` 셋뿐이다. 정렬·필터는 이미 `getPollHomeSections`(`lib/queries/polls.ts`)에서 끝난 상태로 넘어온다.
 

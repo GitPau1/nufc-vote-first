@@ -38,7 +38,7 @@ function mockFixture(overrides: Partial<MatchdayFixture>): MatchdayFixture {
 const mobileWidth = { decorators: [(Story: () => React.JSX.Element) => <div style={{ maxWidth: 358 }}><Story /></div>] }
 
 const meta = {
-  title: 'Contents/MatchdayHero',
+  title: 'Composition/Predict/MatchdayHero',
   component: MatchdayHero,
   parameters: {
     // appDirectory: true가 없으면 내부의 next/link가

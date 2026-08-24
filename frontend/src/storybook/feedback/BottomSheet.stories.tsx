@@ -7,7 +7,7 @@ import { Button } from '@/components/primitives/button'
 
 // 공용 껍데기(Modal) 데모. form으로 default(중앙)/sheet(바텀)/responsive(폭 따라 자동)를 고른다.
 const meta = {
-  title: 'Feedback/BottomSheet',
+  title: 'Primitives/Modal',
 } satisfies Meta
 
 export default meta

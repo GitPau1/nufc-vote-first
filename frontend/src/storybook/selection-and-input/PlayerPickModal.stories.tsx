@@ -42,7 +42,7 @@ type PickArgs = {
 // 선수 선택 내용(PlayerPickContent)을 공용 껍데기(Modal, form=responsive)에 끼워 보여준다 —
 // 모바일=하단 바텀시트 / 데스크탑=중앙 모달.
 const meta = {
-  title: 'Selection and Input/PlayerPickModal',
+  title: 'Primitives/Modal/PlayerPick',
   parameters: {
     viewport: { options: INITIAL_VIEWPORTS },
   },

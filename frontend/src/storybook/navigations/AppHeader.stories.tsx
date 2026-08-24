@@ -4,7 +4,7 @@ import { INITIAL_VIEWPORTS } from 'storybook/viewport'
 import { AppHeader } from '@/components/composition/common/AppHeader'
 
 const meta = {
-  title: 'Navigations/AppHeader',
+  title: 'Composition/Common/AppHeader',
   component: AppHeader,
   parameters: {
     // appDirectory: true가 없으면 next/navigation 훅(useRouter 등)이

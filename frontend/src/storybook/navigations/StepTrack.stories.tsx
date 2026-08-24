@@ -34,7 +34,7 @@ function StepRow({ label, children }: { label: string; children: React.ReactNode
 }
 
 const meta = {
-  title: 'Navigations/StepTrack',
+  title: 'Composition/Predict/StepTrack',
   component: StepTrack,
   argTypes: {
     current: { control: 'radio', options: STEP_KEYS },

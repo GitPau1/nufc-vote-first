@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { Users } from 'lucide-react'
 
 const meta = {
-  title: 'Selection and Input/FormSection',
+  title: 'Composition/Polls/FormSection',
 } satisfies Meta
 
 export default meta

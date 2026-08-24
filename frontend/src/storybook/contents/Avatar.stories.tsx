@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/primitives/avatar'
 
 const meta = {
-  title: 'Contents/Avatar',
+  title: 'Primitives/Avatar',
   component: Avatar,
 } satisfies Meta<typeof Avatar>
 

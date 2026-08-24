@@ -5,11 +5,11 @@ import * as PlayerPickModalStories from './PlayerPickModal.stories'
 
 # PlayerPickModal
 
-승부예측 "예측하기" 플로우에서 포지션별로 선수를 고르는 모달이다. 모달이라는 형태 때문에 Feedback으로 보이지만 사용자에게 알림·확인을 요구하는 게 아니라 **목록에서 하나를 고르는 선택 UI**가 본질이라서 Selection and Input에 둔다 — 성격이 가장 가까운 이웃은 [FormSection](?path=/docs/selection-and-input-formsection--docs)의 선수 선택 picker이고, [ConfirmModal](?path=/docs/feedback-confirmmodal--docs)이 아니다.
+승부예측 "예측하기" 플로우에서 포지션별로 선수를 고르는 모달이다. 모달이라는 형태 때문에 Feedback으로 보이지만 사용자에게 알림·확인을 요구하는 게 아니라 **목록에서 하나를 고르는 선택 UI**가 본질이라서 Selection and Input에 둔다 — 성격이 가장 가까운 이웃은 [FormSection](?path=/docs/composition-polls-formsection--docs)의 선수 선택 picker이고, [ConfirmModal](?path=/docs/primitives-modal-confirm--docs)이 아니다.
 
-코드는 `components/predict/PlayerPickModal.tsx`, 사용처는 `components/predict/PredictionFlowClient.tsx`(예측 제출 플로우의 포지션별 선수 픽) 한 곳이다.
+코드는 `components/primitives/modal/contents/PlayerPick.tsx`, 사용처는 `components/composition/predict/PredictionFlowClient.tsx`(예측 제출 플로우의 포지션별 선수 픽) 한 곳이다.
 
-공용 shell [BottomSheet](?path=/docs/feedback-bottomsheet--docs)(`ui/bottom-sheet.tsx`)을 그대로 쓴다 — 모바일=바텀시트 / 데스크탑(sm+)=중앙 모달 전환, 오버레이, 드래그 핸들, 포커스 트랩·ESC, 우측 상단 X 닫기가 shell에서 함께 온다. 이 컴포넌트는 content(타이틀 + 선수 목록)만 담당하고, 목록 스크롤 높이만 `className`으로 주입한다.
+공용 shell [BottomSheet](?path=/docs/primitives-modal--docs)(`primitives/modal/Modal.tsx`)을 그대로 쓴다 — 모바일=바텀시트 / 데스크탑(sm+)=중앙 모달 전환, 오버레이, 드래그 핸들, 포커스 트랩·ESC, 우측 상단 X 닫기가 shell에서 함께 온다. 이 컴포넌트는 content(타이틀 + 선수 목록)만 담당하고, 목록 스크롤 높이만 `className`으로 주입한다.
 
 <Canvas of={PlayerPickModalStories.Default} />
 <Canvas of={PlayerPickModalStories.Mobile} />
@@ -18,7 +18,7 @@ import * as PlayerPickModalStories from './PlayerPickModal.stories'
 
 `id`는 `season_squads.fotmob_player_id`(number)이고, `squadNumber`·`photoUrl`·`nationality`·`age`는 **모두 nullable**이다 — 스쿼드 동기화가 덜 채워진 선수가 실제로 들어온다.
 
-사진은 `shared.tsx`의 `PlayerPhoto`가 그리고, 그 안은 [Avatar](?path=/docs/contents-avatar--docs)다. 그래서 `photoUrl`이 **null인 경우와 URL은 있는데 요청이 실패하는 경우**(`lib/predictions/candidates.ts`의 `playerPhotoUrl`이 조립한 FotMob CDN 주소가 404/403 — 사진이 아직 없는 선수) 둘 다 실루엣 원형으로 떨어진다. Radix Avatar가 로드 실패를 스스로 fallback으로 넘기므로 `onError` 핸들러는 없다. fallback은 이니셜이 아니라 실루엣 아이콘이다 — 이 자리에서는 이름이 사진 오른쪽에 이미 있어서 이니셜이 정보를 더하지 않는다.
+사진은 `shared.tsx`의 `PlayerPhoto`가 그리고, 그 안은 [Avatar](?path=/docs/primitives-avatar--docs)다. 그래서 `photoUrl`이 **null인 경우와 URL은 있는데 요청이 실패하는 경우**(`lib/predictions/candidates.ts`의 `playerPhotoUrl`이 조립한 FotMob CDN 주소가 404/403 — 사진이 아직 없는 선수) 둘 다 실루엣 원형으로 떨어진다. Radix Avatar가 로드 실패를 스스로 fallback으로 넘기므로 `onError` 핸들러는 없다. fallback은 이니셜이 아니라 실루엣 아이콘이다 — 이 자리에서는 이름이 사진 오른쪽에 이미 있어서 이니셜이 정보를 더하지 않는다.
 
 ## 선택 상태
 
@@ -43,4 +43,4 @@ import * as PlayerPickModalStories from './PlayerPickModal.stories'
 
 ## 알려진 어긋남
 
-- 배당 배지는 [Badge](?path=/docs/contents-badge--docs)의 스타일을 쓰지만 컴포넌트가 아니라 `badgeVariants()`를 span에 얹는다 — 행 전체가 `<button>`이고 `Badge`는 `div`를 렌더해서 버튼 안에 넣을 수 없다. 스타일 원본은 `ui/badge.tsx` 하나이므로 색·타이포를 이 파일에서 따로 바꾸지 않는다.
+- 배당 배지는 [Badge](?path=/docs/primitives-badge--docs)의 스타일을 쓰지만 컴포넌트가 아니라 `badgeVariants()`를 span에 얹는다 — 행 전체가 `<button>`이고 `Badge`는 `div`를 렌더해서 버튼 안에 넣을 수 없다. 스타일 원본은 `primitives/badge.tsx` 하나이므로 색·타이포를 이 파일에서 따로 바꾸지 않는다.

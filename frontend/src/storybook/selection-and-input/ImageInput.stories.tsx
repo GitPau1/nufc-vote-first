@@ -10,7 +10,7 @@ const formWidth = {
 }
 
 const meta = {
-  title: 'Selection and Input/ImageInput',
+  title: 'Composition/Common/ImageInput',
   component: CroppedImageInput,
   args: { name: 'thumbnail_image_file', label: '대표 이미지 크롭' },
 } satisfies Meta<typeof CroppedImageInput>

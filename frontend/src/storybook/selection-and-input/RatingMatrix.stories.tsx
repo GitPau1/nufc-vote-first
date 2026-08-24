@@ -37,7 +37,7 @@ function RatingRow({ initial }: { initial: number | null }) {
 }
 
 const meta = {
-  title: 'Selection and Input/RatingMatrix',
+  title: 'Composition/Polls/RatingMatrix',
 } satisfies Meta
 
 export default meta

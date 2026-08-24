@@ -64,7 +64,7 @@ const desktopWidth = { decorators: [(Story: () => React.JSX.Element) => <div sty
 const phoneViewport = { globals: { viewport: { value: 'iphone12' } } }
 
 const meta = {
-  title: 'Contents/WeekRankCard',
+  title: 'Composition/Predict/WeekRankCard',
   component: WeekRankCard,
   parameters: {
     viewport: { options: INITIAL_VIEWPORTS },

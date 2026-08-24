@@ -4,7 +4,7 @@ import { userEvent, within } from 'storybook/test'
 import { ShareButton } from '@/components/composition/predict/shared'
 
 const meta = {
-  title: 'Actions/ShareButton',
+  title: 'Composition/Predict/ShareButton',
   component: ShareButton,
 } satisfies Meta<typeof ShareButton>
 

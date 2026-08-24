@@ -5,7 +5,7 @@ import * as ShareButtonStories from './ShareButton.stories'
 
 # ShareButton
 
-승부예측 결과 화면의 "공유하기" 버튼(`src/components/predict/shared.tsx`). 이름과 `↗` 화살표는 공유를 가리키지만 실제 동작은 **현재 주소 링크 복사 한 가지뿐**이다 — 아래 "실제로 하는 일"을 먼저 읽고 쓸지 판단한다.
+승부예측 결과 화면의 "공유하기" 버튼(`src/components/composition/predict/shared.tsx`). 이름과 `↗` 화살표는 공유를 가리키지만 실제 동작은 **현재 주소 링크 복사 한 가지뿐**이다 — 아래 "실제로 하는 일"을 먼저 읽고 쓸지 판단한다.
 
 <Canvas of={ShareButtonStories.Default} />
 
@@ -40,9 +40,9 @@ setTimeout(() => setCopied(false), 2000)
 
 ## Button과의 관계
 
-자체 마크업이 아니라 [Button](?path=/docs/actions-button--docs)의 **`default` variant**(variant를 넘기지 않아 defaultVariants가 적용된다)에 `className="w-40"`만 얹은 얇은 래퍼다. 따라서 배경은 `bg-brand-solid`, 글자는 `text-on-solid`, press는 `active:bg-brand-solid-pressed`이고 높이는 `size="default"`의 `h-11`이다.
+자체 마크업이 아니라 [Button](?path=/docs/primitives-button--docs)의 **`default` variant**(variant를 넘기지 않아 defaultVariants가 적용된다)에 `className="w-40"`만 얹은 얇은 래퍼다. 따라서 배경은 `bg-brand-solid`, 글자는 `text-on-solid`, press는 `active:bg-brand-solid-pressed`이고 높이는 `size="default"`의 `h-11`이다.
 
-`w-40`(160px) 고정폭이라 컨테이너를 채우지 않는다 — 화면 하단에 가로로 꽉 차는 1차 CTA가 필요하면 이 컴포넌트가 아니라 [StickyActionBar](?path=/docs/actions-stickyactionbar--docs) 안의 `w-full` Button을 쓴다.
+`w-40`(160px) 고정폭이라 컨테이너를 채우지 않는다 — 화면 하단에 가로로 꽉 차는 1차 CTA가 필요하면 이 컴포넌트가 아니라 [StickyActionBar](?path=/docs/primitives-stickyactionbar--docs) 안의 `w-full` Button을 쓴다.
 
 <Canvas of={ShareButtonStories.CenteredInResultFooter} />
 
@@ -50,8 +50,8 @@ setTimeout(() => setCopied(false), 2000)
 
 | 파일 | 위치 | 조건 |
 |---|---|---|
-| `src/components/predict/PredictionResult.tsx` | 결과 본문 맨 아래, `mt-7 flex justify-center` | `participated`가 true일 때만 렌더 |
-| `src/components/predict/PredictionDone.tsx` | 제출 완료 본문 맨 아래, 같은 래퍼 | 항상 |
+| `src/components/composition/predict/PredictionResult.tsx` | 결과 본문 맨 아래, `mt-7 flex justify-center` | `participated`가 true일 때만 렌더 |
+| `src/components/composition/predict/PredictionDone.tsx` | 제출 완료 본문 맨 아래, 같은 래퍼 | 항상 |
 
 두 곳 모두 감싸는 마크업이 동일하고, props가 하나도 없어서(`ShareButton()`) 라벨·폭·복사 대상은 호출부에서 바꿀 수 없다. 다른 문구나 다른 URL이 필요하면 소스를 고쳐야 한다.
 

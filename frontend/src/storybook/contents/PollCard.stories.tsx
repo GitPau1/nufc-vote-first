@@ -28,7 +28,7 @@ function mockPoll(overrides: Partial<PollListItem>): PollListItem {
 }
 
 const meta = {
-  title: 'Contents/PollCard',
+  title: 'Composition/Polls/PollCard',
   component: PollCard,
   parameters: {
     // appDirectory: true가 없으면 내부의 usePathname()이

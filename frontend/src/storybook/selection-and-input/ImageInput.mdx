@@ -5,13 +5,13 @@ import * as ImageInputStories from './ImageInput.stories'
 
 # ImageInput
 
-`components/images/CroppedImageInput.tsx`의 이미지 입력이다. 사용자가 고른 이미지를 브라우저에서 지정한 크기로 크롭·리사이즈해 webp로 만든 뒤, 숨겨진 `<input type="file">`에 그 파일을 넣어 폼과 함께 제출한다. 서버에 원본을 올리고 자르는 게 아니라 **제출 전에 클라이언트에서 이미 잘려 있다는 점**이 이 컴포넌트의 핵심이다.
+`components/composition/common/CroppedImageInput.tsx`의 이미지 입력이다. 사용자가 고른 이미지를 브라우저에서 지정한 크기로 크롭·리사이즈해 webp로 만든 뒤, 숨겨진 `<input type="file">`에 그 파일을 넣어 폼과 함께 제출한다. 서버에 원본을 올리고 자르는 게 아니라 **제출 전에 클라이언트에서 이미 잘려 있다는 점**이 이 컴포넌트의 핵심이다.
 
-`outputWidth`/`outputHeight`/`previewClassName`/`fileName`으로 출력 규격을 정한다. 사용처는 `components/polls/UserPollCreateForm.tsx` 두 곳 — 대표 이미지(1200×400)와 자유 선택지 카드 이미지(1000×1300)다.
+`outputWidth`/`outputHeight`/`previewClassName`/`fileName`으로 출력 규격을 정한다. 사용처는 `components/composition/polls/UserPollCreateForm.tsx` 두 곳 — 대표 이미지(1200×400)와 자유 선택지 카드 이미지(1000×1300)다.
 
 <Canvas of={ImageInputStories.Default} />
 
-파일을 고르기 전에는 라벨 + 파일 선택 줄뿐이다. 점선 테두리(`border-dashed`)는 [FormSection](?path=/docs/selection-and-input-formsection--docs)의 빈 선택 안내와 같은 "아직 채워지지 않은 자리" 표시다.
+파일을 고르기 전에는 라벨 + 파일 선택 줄뿐이다. 점선 테두리(`border-dashed`)는 [FormSection](?path=/docs/composition-polls-formsection--docs)의 빈 선택 안내와 같은 "아직 채워지지 않은 자리" 표시다.
 
 ## Preset
 

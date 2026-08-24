@@ -10,7 +10,7 @@ import { Button } from '@/components/primitives/button'
 // 로그인 내용(LoginContent)을 공용 껍데기(Modal)에 끼워 보여준다. 로그인은 form="default"라
 // 모바일에서도 중앙 모달로 뜬다(다른 모달은 responsive라 모바일에서 바텀시트).
 const meta = {
-  title: 'Feedback/LoginModal',
+  title: 'Primitives/Modal/Login',
   parameters: {
     // usePathname()을 쓰기 때문에 appDirectory: true가 없으면
     // "invariant expected app router to be mounted"로 죽는다.

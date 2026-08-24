@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { RadioIndicator, RadioOption } from '@/components/primitives/radio'
 
 const meta = {
-  title: 'Selection and Input/Radio',
+  title: 'Primitives/Radio',
 } satisfies Meta
 
 export default meta

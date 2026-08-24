@@ -42,7 +42,7 @@ const COMMENTS: CommentItem[] = [
 ]
 
 const meta = {
-  title: 'Contents/CommentsSection',
+  title: 'Composition/Polls/CommentsSection',
   component: CommentsSection,
   // 실제로는 결과 화면(max-w-detail 680px, px-4) 안에 들어가는 블록이라 그 폭으로 맞춘다.
   decorators: [(Story: () => React.JSX.Element) => <div style={{ maxWidth: 648 }}><Story /></div>],

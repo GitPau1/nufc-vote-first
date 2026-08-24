@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { Badge } from '@/components/primitives/badge'
 
 const meta = {
-  title: 'Contents/Badge',
+  title: 'Primitives/Badge',
   component: Badge,
   args: { children: '배지', variant: 'default' },
   argTypes: {

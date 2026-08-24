@@ -7,7 +7,7 @@ import * as StepTrackStories from './StepTrack.stories'
 
 승부예측 입력 플로우(`score` → `pick` → `confirm`) 안에서 **지금 어디쯤이고 몇 개가 남았는지**를 알려주는 진행 표시라, 콘텐츠가 아니라 Navigations에 둔다. 다만 노드를 눌러 이동하는 기능은 없다 — 이동은 각 스텝의 버튼이 하고 이 컴포넌트는 상태만 그린다.
 
-`src/components/predict/steps.tsx` 한 파일이 5개를 내보낸다.
+`src/components/composition/predict/steps.tsx` 한 파일이 5개를 내보낸다.
 
 | export | 정체 | 쓰이는 곳 |
 |---|---|---|
@@ -56,7 +56,7 @@ import * as StepTrackStories from './StepTrack.stories'
 
 ## 배치
 
-사용처는 `src/components/predict/PredictionFlowClient.tsx` 한 곳뿐이고, 같은 `step` 상태를 반응형 분기로 두 벌 그린다.
+사용처는 `src/components/composition/predict/PredictionFlowClient.tsx` 한 곳뿐이고, 같은 `step` 상태를 반응형 분기로 두 벌 그린다.
 
 - `sm:hidden` — `<StepTrack current={step} />` + `<StepHero current={step} multi={isMulti} />`
 - `hidden sm:block` — `<StepTrackVertical current={step} multi={isMulti} />`

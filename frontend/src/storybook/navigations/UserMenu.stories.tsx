@@ -4,7 +4,7 @@ import { userEvent, within } from 'storybook/test'
 import { UserMenu } from '@/components/composition/common/UserMenu'
 
 const meta = {
-  title: 'Navigations/UserMenu',
+  title: 'Composition/Common/UserMenu',
   component: UserMenu,
   parameters: {
     // 드롭다운 항목이 next/link라서 appDirectory: true가 없으면

@@ -5,7 +5,7 @@ import * as DesktopNavLinksStories from './DesktopNavLinks.stories'
 
 # DesktopNavLinks
 
-데스크탑 헤더의 GNB(투표 · 예측 · 역대 선수)다. [AppHeader](?path=/docs/navigations-appheader--docs)의 데스크탑 레이어 안에서만 쓰이고(`src/components/layout/AppHeader.tsx`가 유일한 사용처), 페이지에서 직접 배치하지 않는다.
+데스크탑 헤더의 GNB(투표 · 예측 · 역대 선수)다. [AppHeader](?path=/docs/composition-common-appheader--docs)의 데스크탑 레이어 안에서만 쓰이고(`src/components/composition/common/AppHeader.tsx`가 유일한 사용처), 페이지에서 직접 배치하지 않는다.
 
 `className` 하나만 받는다. 현재 경로는 props가 아니라 `usePathname()`으로 직접 읽는다 — 아래 스토리들은 Storybook의 Next.js 라우터 mock(`parameters.nextjs.navigation.pathname`)으로 경로를 바꿔 보여준 것이다.
 
@@ -31,14 +31,14 @@ GNB에 없는 경로에서는 활성 항목이 하나도 없다.
 
 같은 내비게이션을 폭에 따라 나눠 맡는다. 둘은 항목 배열과 활성 판정 로직이 **각자 복사돼 있으므로, 탭을 추가·수정할 때 반드시 함께 고쳐야 한다.**
 
-| | DesktopNavLinks | [BottomNav](?path=/docs/navigations-bottomnav--docs) |
+| | DesktopNavLinks | [BottomNav](?path=/docs/composition-common-bottomnav--docs) |
 |---|---|---|
 | 보이는 폭 | `hidden sm:flex` → **640px 이상에서만** | 모바일 상시, GNB로 대체되는 5개 경로에서는 `sm:hidden` |
 | 위치 | 헤더 안(sticky top) | `fixed bottom-0` |
 | 항목 | 투표 · 예측 · 역대 선수 (3개) | 위 3개 + **메뉴**(`/menu`) |
 | 렌더 조건 | 헤더가 있는 모든 화면 | `/`, `/polls`, `/predictions`, `/players`, `/menu` 외에는 `return null` |
 
-'메뉴' 탭이 데스크탑 GNB에 없는 것은 의도다 — 피드백·관리자 진입은 [UserMenu](?path=/docs/navigations-usermenu--docs) 드롭다운으로 옮겼다.
+'메뉴' 탭이 데스크탑 GNB에 없는 것은 의도다 — 피드백·관리자 진입은 [UserMenu](?path=/docs/composition-common-usermenu--docs) 드롭다운으로 옮겼다.
 
 ## Docs에서의 렌더 방식
 

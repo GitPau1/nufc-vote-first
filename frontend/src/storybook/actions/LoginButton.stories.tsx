@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { LoginButton } from '@/components/composition/common/LoginButton'
 
 const meta = {
-  title: 'Actions/LoginButton',
+  title: 'Composition/Common/LoginButton',
   component: LoginButton,
   parameters: {
     // LoginModal이 usePathname()으로 트래킹 경로를 읽기 때문에,

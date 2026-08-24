@@ -5,7 +5,7 @@ import * as RankingCardStories from './RankingCard.stories'
 
 # RankingCard
 
-승부예측 시즌 누적 랭킹 카드. `src/components/predict/RankingCard.tsx`이고, 사용처는 `components/predict/PredictListClient.tsx`(예측 탭 데스크탑 사이드)에서 `top3`·`mine` 두 개를 나란히 놓는 것이다. 주차 단위 랭킹은 별개 컴포넌트(`predict/WeekRankCard.tsx`, 아직 미문서화)다. **승부예측 기능과 함께 들어왔지만 디자인시스템에 문서화된 적이 없던 컴포넌트**라, 이 페이지가 첫 문서다 — 여기 적힌 규칙은 새로 정한 게 아니라 소스에 이미 있던 동작을 읽어 적은 것이다.
+승부예측 시즌 누적 랭킹 카드. `src/components/composition/predict/RankingCard.tsx`이고, 사용처는 `components/composition/predict/PredictListClient.tsx`(예측 탭 데스크탑 사이드)에서 `top3`·`mine` 두 개를 나란히 놓는 것이다. 주차 단위 랭킹은 별개 컴포넌트(`predict/WeekRankCard.tsx`, 아직 미문서화)다. **승부예측 기능과 함께 들어왔지만 디자인시스템에 문서화된 적이 없던 컴포넌트**라, 이 페이지가 첫 문서다 — 여기 적힌 규칙은 새로 정한 게 아니라 소스에 이미 있던 동작을 읽어 적은 것이다.
 
 `RankingEntry[]`를 받아 렌더만 하는 프레젠테이션 컴포넌트다. 순위·점수·변동(`delta`)을 **계산하지 않는다** — 전부 부모가 넣어준 값을 그대로 그린다.
 
@@ -13,7 +13,7 @@ import * as RankingCardStories from './RankingCard.stories'
 
 `lib/queries/`에 랭킹 쿼리가 없고, `RankingEntry`를 만드는 코드는 프리뷰 페이지의 `buildLeaderboard()`(하드코딩 10명) 하나뿐이다. 즉 이 컴포넌트는 아직 실데이터에 연결되지 않았다.
 
-같은 예측 기능의 [MatchdayHero](?path=/docs/contents-matchdayhero--docs)와는 **데이터를 공유하지 않는다.** MatchdayHero는 `lib/queries/fixtures.ts`가 만든 `MatchdayFixture`(실제 `fixtures` 테이블)를 받는 반면, RankingCard의 `RankingEntry`는 컴포넌트 파일이 직접 들고 있는 손으로 만든 타입이다. fixture 한 건과 랭킹은 애초에 다른 축의 데이터라, 나중에 실데이터가 붙어도 둘이 같은 쿼리를 쓸 일은 없다.
+같은 예측 기능의 [MatchdayHero](?path=/docs/composition-predict-matchdayhero--docs)와는 **데이터를 공유하지 않는다.** MatchdayHero는 `lib/queries/fixtures.ts`가 만든 `MatchdayFixture`(실제 `fixtures` 테이블)를 받는 반면, RankingCard의 `RankingEntry`는 컴포넌트 파일이 직접 들고 있는 손으로 만든 타입이다. fixture 한 건과 랭킹은 애초에 다른 축의 데이터라, 나중에 실데이터가 붙어도 둘이 같은 쿼리를 쓸 일은 없다.
 
 ## variant 2종 — 같은 배열을 그대로 두 번 넘긴다
 
@@ -70,4 +70,4 @@ import * as RankingCardStories from './RankingCard.stories'
 
 - **동점 처리는 부모 책임이고, 공동 순위는 지금 구조에서 안전하지 않다.** 행의 React key가 `entry.rank`라서, 동점자에게 같은 순위를 주면(2위 두 명) key가 중복된다. 컴포넌트는 순위를 계산하지 않으니 동점을 어떻게 부여할지도 부모가 정한다 — 공동 순위를 쓰려면 컴포넌트의 key를 고쳐야 한다.
 - `mine` variant는 `isMe` 항목이 여러 개일 때를 고려하지 않는다(`find`로 첫 항목만).
-- 카드 셸을 [Card](?path=/docs/contents-card--docs)로 만들지 않고 `rounded-lg border border-neutral-weak bg-surface p-4`를 직접 쓴다. 남은 차이는 그림자(`shadow-g200`)뿐이다 — 테두리는 예측 화면 전체를 `border-neutral-weak`로 맞추면서 `Card`와 같아졌다(같은 예측 탭의 `WeekRankCard`도 동일). 예측 화면을 `Card`로 통일하려면 그림자 유무를 먼저 정해야 한다.
+- 카드 셸을 [Card](?path=/docs/primitives-card--docs)로 만들지 않고 `rounded-lg border border-neutral-weak bg-surface p-4`를 직접 쓴다. 남은 차이는 그림자(`shadow-g200`)뿐이다 — 테두리는 예측 화면 전체를 `border-neutral-weak`로 맞추면서 `Card`와 같아졌다(같은 예측 탭의 `WeekRankCard`도 동일). 예측 화면을 `Card`로 통일하려면 그림자 유무를 먼저 정해야 한다.

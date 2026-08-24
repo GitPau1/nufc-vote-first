@@ -37,7 +37,7 @@ function mockLeaderboard(myRank: number): RankingEntry[] {
 const cardWidth = { decorators: [(Story: () => React.JSX.Element) => <div style={{ maxWidth: 358 }}><Story /></div>] }
 
 const meta = {
-  title: 'Contents/RankingCard',
+  title: 'Composition/Predict/RankingCard',
   component: RankingCard,
   ...cardWidth,
   argTypes: {

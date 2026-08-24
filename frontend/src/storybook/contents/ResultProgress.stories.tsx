@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { ResultProgress } from '@/components/primitives/result-progress'
 
 const meta = {
-  title: 'Contents/ResultProgress',
+  title: 'Primitives/ResultProgress',
   component: ResultProgress,
   args: {
     percent: 62,

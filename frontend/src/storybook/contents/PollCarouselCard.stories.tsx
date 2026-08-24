@@ -30,7 +30,7 @@ const poll: PollDetail = {
 }
 
 const meta = {
-  title: 'Contents/PollCarouselCard',
+  title: 'Composition/Polls/PollCarouselCard',
   component: TypeBPollClient,
   parameters: {
     // appDirectory: true가 없으면 내부의 useRouter()가

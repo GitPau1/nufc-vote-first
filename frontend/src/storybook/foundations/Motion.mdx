@@ -60,7 +60,7 @@ duration은 **네 개**뿐이다. 역할로 고른다.
 | 퇴장 | `ease-in` | 부드럽게 시작해서 빠르게 빠진다 |
 | 마이크로 피드백 | 지정하지 않음 (기본값) | 150ms에서는 이징 차이가 인지되지 않는다 |
 
-**실제 코드는 아직 여기에 맞지 않는다.** `ui/sheet.tsx`는 양방향 모두 `ease-in-out`을 쓰고, `PlayerPickModal`은 열림에만 `ease-out`을 지정하고 닫힘은 기본값이다. `PlayersPageClient`의 카드는 `ease-in-out`이다.
+**실제 코드는 아직 여기에 맞지 않는다.** `primitives/modal/sheet.tsx`는 양방향 모두 `ease-in-out`을 쓰고, `PlayerPickModal`은 열림에만 `ease-out`을 지정하고 닫힘은 기본값이다. `PlayersPageClient`의 카드는 `ease-in-out`이다.
 
 이 불일치를 알고 쓴다 — 새로 만드는 것은 위 규칙을 따르고, 기존 코드를 맞추는 작업은 별건이다. duration과 달리 easing은 아직 토큰화하지 않았고 검사도 없다.
 

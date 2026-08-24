@@ -5,17 +5,17 @@ import * as WeekRankCardStories from './WeekRankCard.stories'
 
 # WeekRankCard
 
-승부예측 **한 주차** 랭킹 카드. `src/components/predict/WeekRankCard.tsx`이고, 사용처는 `components/predict/PredictionResult.tsx`(주차 결과 화면의 "전체 결과" 탭) 하나다. 데이터는 `lib/queries/predictions.ts`의 `getWeekRanking(weekKey)`가 `week_leaderboard` view에서 읽은 `RankingRow[]`를 그대로 받는다.
+승부예측 **한 주차** 랭킹 카드. `src/components/composition/predict/WeekRankCard.tsx`이고, 사용처는 `components/composition/predict/PredictionResult.tsx`(주차 결과 화면의 "전체 결과" 탭) 하나다. 데이터는 `lib/queries/predictions.ts`의 `getWeekRanking(weekKey)`가 `week_leaderboard` view에서 읽은 `RankingRow[]`를 그대로 받는다.
 
 받은 값을 그리기만 한다 — 순위·점수를 계산하지 않는다. 유일한 자체 상태는 "전체보기"로 펼쳤는지(`expanded`)뿐이다.
 
 <Canvas of={WeekRankCardStories.Mobile} />
 
-## [RankingCard](?path=/docs/contents-rankingcard--docs)와 무엇이 다른가
+## [RankingCard](?path=/docs/composition-predict-rankingcard--docs)와 무엇이 다른가
 
 이름이 비슷하고 행 모양도 닮았지만 **다른 카드다.** 둘을 헷갈리면 컬럼과 데이터가 어긋난다.
 
-| | WeekRankCard | [RankingCard](?path=/docs/contents-rankingcard--docs) |
+| | WeekRankCard | [RankingCard](?path=/docs/composition-predict-rankingcard--docs) |
 |---|---|---|
 | 범위 | 한 주차 랭킹 | 시즌 누적 랭킹 |
 | 점수 컬럼 | **예측 / 선수픽 / 종합** 3개 | 종합(총점) 1개, `N점` 표기 |
@@ -76,7 +76,7 @@ import * as WeekRankCardStories from './WeekRankCard.stories'
 
 `RankingRow`에서 `matchPoints`·`pickPoints`는 **주차 랭킹 전용 옵셔널**이다. 시즌 누적 행(`getSeasonRanking()`)에는 없고, 그런 행을 이 카드에 넘기면 빈칸이 아니라 `?? 0`으로 **0**이 찍혀 "0점을 받았다"처럼 읽힌다. 이 카드에는 `getWeekRanking()` 결과만 넘긴다.
 
-점수 칸에 [Badge](?path=/docs/contents-badge--docs)는 쓰지 않는다. 세 컬럼 모두 그냥 텍스트이고, 값에 따라 색이 바뀌는 tier도 없다 — 예측/선수픽은 `text-neutral-muted`, 종합은 `text-brand` 고정이다. 적중/근접 같은 tier 배지(`PointsBadge`·`RatingBadge`)는 같은 화면의 `PredictionResult.tsx`에 따로 있고, 이 카드와 공유하지 않는다.
+점수 칸에 [Badge](?path=/docs/primitives-badge--docs)는 쓰지 않는다. 세 컬럼 모두 그냥 텍스트이고, 값에 따라 색이 바뀌는 tier도 없다 — 예측/선수픽은 `text-neutral-muted`, 종합은 `text-brand` 고정이다. 적중/근접 같은 tier 배지(`PointsBadge`·`RatingBadge`)는 같은 화면의 `PredictionResult.tsx`에 따로 있고, 이 카드와 공유하지 않는다.
 
 <Canvas of={WeekRankCardStories.Empty} />
 
@@ -97,4 +97,4 @@ import * as WeekRankCardStories from './WeekRankCard.stories'
 - 컬럼 헤더가 `sticky top-0`인데, 모바일 카드는 `overflow-hidden`이라 안에서 스크롤이 일어나지 않아 접힌 상태에서는 sticky가 아무 일도 하지 않는다. 펼친 뒤 페이지 스크롤에서만 효과가 있다.
 - 실사용처가 카드를 두 번 렌더하므로 랭킹 목록이 DOM에 **두 벌** 존재한다(하나는 CSS로 숨김). 펼침 상태도 인스턴스마다 따로다 — 화면 폭이 `sm` 경계를 넘나들면 펼쳤던 게 접힌 것처럼 보인다.
 - `max-h-[46vh]`는 스케일 밖 임의값이고, 뷰포트 높이에 직접 의존한다. Storybook docs 프레임에서는 46vh가 실제 기기보다 커서 잘리는 위치가 달라진다 — 그래서 모바일 스토리는 `iphone12` 뷰포트를 고정해 둔다.
-- 카드 셸을 [Card](?path=/docs/contents-card--docs)로 만들지 않고 `rounded-lg border border-neutral-weak bg-surface p-4`를 직접 쓴다(RankingCard와 동일). 남은 차이는 그림자(`shadow-g200`)뿐이라, 예측 화면을 `Card`로 통일하려면 그림자 유무를 먼저 정해야 한다.
+- 카드 셸을 [Card](?path=/docs/primitives-card--docs)로 만들지 않고 `rounded-lg border border-neutral-weak bg-surface p-4`를 직접 쓴다(RankingCard와 동일). 남은 차이는 그림자(`shadow-g200`)뿐이라, 예측 화면을 `Card`로 통일하려면 그림자 유무를 먼저 정해야 한다.

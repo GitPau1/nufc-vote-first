@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { DesktopNavLinks } from '@/components/composition/common/DesktopNavLinks'
 
 const meta = {
-  title: 'Navigations/DesktopNavLinks',
+  title: 'Composition/Common/DesktopNavLinks',
   component: DesktopNavLinks,
   parameters: {
     // appDirectory: true가 없으면 next/navigation 훅이

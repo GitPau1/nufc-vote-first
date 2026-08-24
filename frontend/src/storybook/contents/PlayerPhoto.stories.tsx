@@ -12,7 +12,7 @@ const PLACEHOLDER_PHOTO = 'https://placehold.co/64x64/2a2f36/8a929c?text=%20'
 const BROKEN_PHOTO = 'https://images.fotmob.invalid/image_resources/playerimages/999999.png'
 
 const meta = {
-  title: 'Contents/PlayerPhoto',
+  title: 'Composition/Predict/PlayerPhoto',
   component: PlayerPhoto,
   argTypes: {
     url: {

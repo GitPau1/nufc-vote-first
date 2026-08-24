@@ -16,7 +16,7 @@ import { Separator } from '@/components/primitives/separator'
 const mobileWidth = { decorators: [(Story: () => React.JSX.Element) => <div style={{ maxWidth: 358 }}><Story /></div>] }
 
 const meta = {
-  title: 'Contents/Card',
+  title: 'Primitives/Card',
   component: Card,
 } satisfies Meta<typeof Card>
 

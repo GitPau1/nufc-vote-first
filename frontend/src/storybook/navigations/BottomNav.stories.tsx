@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { BottomNav } from '@/components/composition/common/BottomNav'
 
 const meta = {
-  title: 'Navigations/BottomNav',
+  title: 'Composition/Common/BottomNav',
   component: BottomNav,
   parameters: {
     // appDirectory: true가 없으면 next/navigation 훅이

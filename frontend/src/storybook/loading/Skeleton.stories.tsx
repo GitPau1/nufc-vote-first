@@ -25,7 +25,7 @@ const screenDecorator = [
 ]
 
 const meta = {
-  title: 'Loading/Skeleton',
+  title: 'Primitives/Skeleton',
 } satisfies Meta
 
 export default meta

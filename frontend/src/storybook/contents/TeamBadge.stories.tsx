@@ -12,7 +12,7 @@ const PLACEHOLDER_LOGO = 'https://placehold.co/48x48/2a2f36/8a929c?text=NU'
 const BROKEN_LOGO = 'https://images.fotmob.invalid/image_resources/logo/teamlogo/999999.png'
 
 const meta = {
-  title: 'Contents/TeamBadge',
+  title: 'Composition/Predict/TeamBadge',
   component: TeamBadge,
   argTypes: {
     logoUrl: {

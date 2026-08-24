@@ -5,17 +5,17 @@ import * as LoginButtonStories from './LoginButton.stories'
 
 # LoginButton
 
-로그아웃 상태에서 [AppHeader](?path=/docs/navigations-appheader--docs) 우측 끝에 들어가는 "로그인" 버튼이다. props가 없고, 사용처는 `src/components/layout/HeaderAuthStatus.tsx` 한 곳뿐이다 — **헤더 밖에서 로그인 진입점이 필요하면 이 컴포넌트를 재사용하지 말고 [LoginModal](?path=/docs/feedback-loginmodal--docs)을 직접 띄운다.** 화면 안 로그인 유도(투표·댓글 시도 등)는 이미 그렇게 되어 있다.
+로그아웃 상태에서 [AppHeader](?path=/docs/composition-common-appheader--docs) 우측 끝에 들어가는 "로그인" 버튼이다. props가 없고, 사용처는 `src/components/composition/common/HeaderAuthStatus.tsx` 한 곳뿐이다 — **헤더 밖에서 로그인 진입점이 필요하면 이 컴포넌트를 재사용하지 말고 [LoginModal](?path=/docs/primitives-modal-login--docs)을 직접 띄운다.** 화면 안 로그인 유도(투표·댓글 시도 등)는 이미 그렇게 되어 있다.
 
 <Canvas of={LoginButtonStories.Default} />
 
 ## 헤더 우측 자리를 나눠 쓰는 세 가지 상태
 
-`HeaderAuthStatus`는 로그인 상태에 따라 이 자리를 갈아 끼우는 얇은 컨테이너다. 서버에서 `auth`를 넘기지 않으면(`undefined`) 클라이언트에서 `getHeaderAuth()`를 불러오는 동안 **32px 회색 원형 placeholder**를 먼저 보여주고, 결과가 `null`이면 `LoginButton`, 값이 있으면 [UserMenu](?path=/docs/navigations-usermenu--docs)를 렌더한다. 이 3단 분기는 헤더가 인증 조회를 기다리며 서버 렌더를 막지 않게 하려는 것이고(`src/components/layout/header-auth-status.test.mjs`가 이 구조를 고정한다), 그래서 로그인 여부와 무관하게 헤더의 아바타 자리 폭은 항상 32px로 유지된다.
+`HeaderAuthStatus`는 로그인 상태에 따라 이 자리를 갈아 끼우는 얇은 컨테이너다. 서버에서 `auth`를 넘기지 않으면(`undefined`) 클라이언트에서 `getHeaderAuth()`를 불러오는 동안 **32px 회색 원형 placeholder**를 먼저 보여주고, 결과가 `null`이면 `LoginButton`, 값이 있으면 [UserMenu](?path=/docs/composition-common-usermenu--docs)를 렌더한다. 이 3단 분기는 헤더가 인증 조회를 기다리며 서버 렌더를 막지 않게 하려는 것이고(`src/components/composition/common/header-auth-status.test.mjs`가 이 구조를 고정한다), 그래서 로그인 여부와 무관하게 헤더의 아바타 자리 폭은 항상 32px로 유지된다.
 
 ## Button variant
 
-[Button](?path=/docs/actions-button--docs)의 **`outline` + `size="sm"`** 위에 헤더 전용 override를 얹었다.
+[Button](?path=/docs/primitives-button--docs)의 **`outline` + `size="sm"`** 위에 헤더 전용 override를 얹었다.
 
 | 얹은 것 | 이유 |
 |---|---|
@@ -24,10 +24,10 @@ import * as LoginButtonStories from './LoginButton.stories'
 | `border-brand-solid text-brand` (기본 `border-neutral-weak text-neutral` 대신) | 헤더에서 유일한 액션이라 brand로 강조 |
 | `font-semibold` (기본 `font-bold` 대신) | 로고(`font-black`)보다 약하게 |
 
-즉 **순수한 `outline` variant가 아니다.** 다른 화면에서 비슷한 버튼이 필요하다고 이 클래스 묶음을 복사하지 말고, 그 화면에 맞는 variant를 [Button](?path=/docs/actions-button--docs)에서 고른다.
+즉 **순수한 `outline` variant가 아니다.** 다른 화면에서 비슷한 버튼이 필요하다고 이 클래스 묶음을 복사하지 말고, 그 화면에 맞는 variant를 [Button](?path=/docs/primitives-button--docs)에서 고른다.
 
 ## 클릭하면 LoginModal이 뜬다
 
-내부 `useState`로 [LoginModal](?path=/docs/feedback-loginmodal--docs)을 `triggerAction="login"`으로 열 뿐이다 — 실제 로그인 처리는 전부 모달 쪽에 있다. `triggerAction="login"`은 "헤더에서 스스로 시작한 로그인"이라는 뜻이고, 모달의 설명 문구를 중립 문구(로그인해서 얻는 것)로 고정한다 — "투표하다 막혀서 뜬 로그인"(`vote`)과 문구가 다르다. 같은 값이 `auth_prompt_viewed` 이벤트의 `trigger_action`으로도 나간다.
+내부 `useState`로 [LoginModal](?path=/docs/primitives-modal-login--docs)을 `triggerAction="login"`으로 열 뿐이다 — 실제 로그인 처리는 전부 모달 쪽에 있다. `triggerAction="login"`은 "헤더에서 스스로 시작한 로그인"이라는 뜻이고, 모달의 설명 문구를 중립 문구(로그인해서 얻는 것)로 고정한다 — "투표하다 막혀서 뜬 로그인"(`vote`)과 문구가 다르다. 같은 값이 `auth_prompt_viewed` 이벤트의 `trigger_action`으로도 나간다.
 
 Storybook에서 버튼을 눌러 모달을 여는 것까지는 되지만, 그 안의 로그인은 서버 액션(mock) 또는 Supabase OAuth 리다이렉트라 **동작하지 않는다.**

@@ -43,7 +43,7 @@ function PollDetailFrame({ children }: { children: React.ReactNode }) {
 }
 
 const meta = {
-  title: 'Actions/StickyActionBar',
+  title: 'Primitives/StickyActionBar',
   component: StickyActionBar,
   parameters: {
     // 화면 하단 고정 컴포넌트라 캔버스 패딩이 있으면 위치가 실제와 달라진다.

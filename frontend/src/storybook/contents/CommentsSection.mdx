@@ -5,11 +5,11 @@ import * as CommentsSectionStories from './CommentsSection.stories'
 
 # CommentsSection
 
-투표 결과 화면 하단의 댓글 블록. 소스는 `src/components/polls/CommentsSection.tsx`이고, 쓰이는 곳은 `src/components/polls/ResultView.tsx` 한 곳뿐이다(→ `src/app/polls/[id]/page.tsx`가 결과를 보여줄 때만 렌더). 입력창 + 목록이 한 컴포넌트에 붙어 있고, 목록 데이터는 `initialComments`로 서버에서 받아 그 뒤부터는 내부 state로 관리한다.
+투표 결과 화면 하단의 댓글 블록. 소스는 `src/components/composition/polls/CommentsSection.tsx`이고, 쓰이는 곳은 `src/components/composition/polls/ResultView.tsx` 한 곳뿐이다(→ `src/app/polls/[id]/page.tsx`가 결과를 보여줄 때만 렌더). 입력창 + 목록이 한 컴포넌트에 붙어 있고, 목록 데이터는 `initialComments`로 서버에서 받아 그 뒤부터는 내부 state로 관리한다.
 
 <Canvas of={CommentsSectionStories.Default} />
 
-구조: 입력 textarea(300자 제한, 200자를 넘으면 우측에 카운터) + 투표 항목 힌트 → "댓글" 제목이 붙은 surface 카드 → 항목마다 아바타 / 이름 · 투표 항목 칩 · 상대 시간 / 본문 / 좋아요 버튼. 항목 사이 구분선은 [ListGroup](?path=/docs/contents-listgroup--docs)의 `divide-y`가 아니라 마지막 항목만 빼고 넣는 `mx-4 h-px` 라인이다(좌우로 4 만큼 들여쓴 선).
+구조: 입력 textarea(300자 제한, 200자를 넘으면 우측에 카운터) + 투표 항목 힌트 → "댓글" 제목이 붙은 surface 카드 → 항목마다 아바타 / 이름 · 투표 항목 칩 · 상대 시간 / 본문 / 좋아요 버튼. 항목 사이 구분선은 [ListGroup](?path=/docs/primitives-listgroup--docs)의 `divide-y`가 아니라 마지막 항목만 빼고 넣는 `mx-4 h-px` 라인이다(좌우로 4 만큼 들여쓴 선).
 
 ## Storybook에서 되는 것과 안 되는 것
 
@@ -48,7 +48,7 @@ import * as CommentsSectionStories from './CommentsSection.stories'
 | `forbidden` | 이 댓글을 쓸 권한이 없어요 |
 | 그 외(`failed` 등) | 댓글을 등록하지 못했어요. 잠시 후 다시 시도해주세요 |
 
-이 상태는 Storybook에서 재현할 수 없다 — 문구가 뜨려면 서버 액션이 실제로 실패를 돌려줘야 하고, 서버 액션은 Storybook에서 아예 실행되지 않는다. 회귀는 `src/components/polls/comment-permission.test.mjs`가 막는다(서버 액션의 투표 검사 + UI의 실패 렌더 둘 다).
+이 상태는 Storybook에서 재현할 수 없다 — 문구가 뜨려면 서버 액션이 실제로 실패를 돌려줘야 하고, 서버 액션은 Storybook에서 아예 실행되지 않는다. 회귀는 `src/components/composition/polls/comment-permission.test.mjs`가 막는다(서버 액션의 투표 검사 + UI의 실패 렌더 둘 다).
 
 `myVotedOptionLabel`은 입력창 아래 "댓글에 OO 항목이 함께 표시됩니다" 힌트에만 쓰인다. 목록에 붙는 칩은 각 댓글의 `voted_option_label`을 따르고, 이 값이 null이면 칩 없이 이름 + 시간만 나온다(위 Default의 마지막 항목 — `display_name`이 null이면 이름도 '익명', 이니셜은 '?'로 떨어진다).
 

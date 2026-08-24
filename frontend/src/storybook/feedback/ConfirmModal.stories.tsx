@@ -18,7 +18,7 @@ type ConfirmArgs = {
 // 확인 내용(ConfirmContent)을 공용 껍데기(Modal, form=responsive)에 끼워 보여준다 —
 // 데스크탑은 중앙 모달, 모바일(768px 미만)은 바텀시트로 뜬다.
 const meta = {
-  title: 'Feedback/ConfirmModal',
+  title: 'Primitives/Modal/Confirm',
   parameters: {
     viewport: { options: INITIAL_VIEWPORTS },
   },

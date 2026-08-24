@@ -48,73 +48,73 @@ Montage 분류(Actions / Contents / Feedback / Loading / Navigations / Presentat
 
 | 패턴 | tier | 한 줄 | 코드 | 원본 |
 |---|---|---|---|---|
-| Button | T1 | 1차 CTA·보조 액션. `default`/`destructive`/`secondary`/`outline`/`ghost`/`link` 6개 variant | `components/ui/button.tsx` | `actions/Button.mdx` |
-| StickyActionBar | T1 | 투표 상세 하단 제출 버튼 바. 모바일은 fixed, 데스크탑은 흐름 안 static | `components/layout/StickyActionBar.tsx` | `actions/StickyActionBar.mdx` |
-| LoginButton | 2-a | 로그아웃 상태 헤더 우측 "로그인" 버튼. Button `outline`+`sm`에 4개 클래스를 덮어쓴 헤더 전용 파생형 | `components/layout/LoginButton.tsx` | `actions/LoginButton.mdx` |
-| ShareButton | 2-a | 예측 결과·완료 화면의 링크 복사 버튼. 이름과 달리 Web Share API가 아니라 현재 주소 클립보드 복사다 | `components/predict/shared.tsx` | `actions/ShareButton.mdx` |
+| Button | T1 | 1차 CTA·보조 액션. `default`/`destructive`/`secondary`/`outline`/`ghost`/`link` 6개 variant | `components/primitives/button.tsx` | `actions/Button.mdx` |
+| StickyActionBar | T1 | 투표 상세 하단 제출 버튼 바. 모바일은 fixed, 데스크탑은 흐름 안 static | `components/primitives/sticky-action-bar.tsx` | `actions/StickyActionBar.mdx` |
+| LoginButton | 2-a | 로그아웃 상태 헤더 우측 "로그인" 버튼. Button `outline`+`sm`에 4개 클래스를 덮어쓴 헤더 전용 파생형 | `components/composition/common/LoginButton.tsx` | `actions/LoginButton.mdx` |
+| ShareButton | 2-a | 예측 결과·완료 화면의 링크 복사 버튼. 이름과 달리 Web Share API가 아니라 현재 주소 클립보드 복사다 | `components/composition/predict/shared.tsx` | `actions/ShareButton.mdx` |
 
 ### Contents
 
 | 패턴 | tier | 한 줄 | 코드 | 원본 |
 |---|---|---|---|---|
-| Badge | T1 | 라벨·상태 배지. 4개 variant(이름과 실제 색이 하나 어긋남 — MDX 참고) | `components/ui/badge.tsx` | `contents/Badge.mdx` |
-| Avatar | T1 | 사용자·선수 원형 이미지 | `components/ui/avatar.tsx` | `contents/Avatar.mdx` |
-| PollCard | 2-a | 투표 목록 한 줄(썸네일·상태·제목·참여자 수) | `components/polls/PollCard.tsx` | `contents/PollCard.mdx` |
-| PollCarouselCard | 패턴 | 투표 상세 캐러셀. 가운데 카드 확대 + 좌우 스와이프 | `components/polls/TypeBPollClient.tsx` | `contents/PollCarouselCard.mdx` |
-| ResultProgress | T1 | 투표 결과 한 줄(사진+이름+득표율 막대+퍼센트) | `components/ui/result-progress.tsx` | `contents/ResultProgress.mdx` |
+| Badge | T1 | 라벨·상태 배지. 4개 variant(이름과 실제 색이 하나 어긋남 — MDX 참고) | `components/primitives/badge.tsx` | `contents/Badge.mdx` |
+| Avatar | T1 | 사용자·선수 원형 이미지 | `components/primitives/avatar.tsx` | `contents/Avatar.mdx` |
+| PollCard | 2-a | 투표 목록 한 줄(썸네일·상태·제목·참여자 수) | `components/composition/polls/PollCard.tsx` | `contents/PollCard.mdx` |
+| PollCarouselCard | 패턴 | 투표 상세 캐러셀. 가운데 카드 확대 + 좌우 스와이프 | `components/composition/polls/TypeBPollClient.tsx` | `contents/PollCarouselCard.mdx` |
+| ResultProgress | T1 | 투표 결과 한 줄(사진+이름+득표율 막대+퍼센트) | `components/primitives/result-progress.tsx` | `contents/ResultProgress.mdx` |
 | ListGroup | 패턴 | `divide-y divide-neutral-weak` 패턴. 행 내용은 사용처마다 다름(컴포넌트 아님) | 사용처 4곳 | `contents/ListGroup.mdx` |
-| MatchdayHero | 2-a | 홈 히어로의 다음/직전 경기 카드(예정·진행중·종료 + 최우수 선수) | `components/predict/MatchdayHero.tsx` | `contents/MatchdayHero.mdx` |
-| Card | T1 | 정보 덩어리를 배경에서 띄우는 컨테이너. 실사용은 `Card`+`CardContent` 두 겹뿐(Header/Title/Description/Footer 사용처 0곳) | `components/ui/card.tsx` | `contents/Card.mdx` |
-| PollHeroCard | 2-a | 홈 히어로 자리의 252px 고정높이 투표 배너. MatchdayHero가 없을 때의 폴백 | `components/polls/PollHeroCard.tsx` | `contents/PollHeroCard.mdx` |
-| PollHomeSection | 2-a | 홈의 투표 섹션 하나(제목+링크+목록). 모바일 세로 리스트 / 데스크탑 한 줄 그리드+페이지 넘김 | `components/polls/PollHomeSection.tsx` | `contents/PollHomeSection.mdx` |
-| CommentsSection | 2-a | 투표 결과 화면의 댓글 입력창+목록(투표 항목 칩·좋아요·내 댓글 수정/삭제) | `components/polls/CommentsSection.tsx` | `contents/CommentsSection.mdx` |
-| RankingCard | 2-a | 승부예측 시즌 누적 랭킹 카드. `top3`/`mine` 2개 variant | `components/predict/RankingCard.tsx` | `contents/RankingCard.mdx` |
-| MatchWeekList | 2-a | 승부예측 월별 주차 목록. 주차 1개 = 예측 세션 1개(진행중/결과/예정) | `components/predict/MatchWeekList.tsx` | `contents/MatchWeekList.mdx` |
-| WeekRankCard | 2-a | 주차 랭킹 카드. 예측·선수픽·종합 3컬럼, 데스크탑 10명 캡 + 모바일 화면높이 크롭 | `components/predict/WeekRankCard.tsx` | `contents/WeekRankCard.mdx` |
-| TeamBadge | 2-a | 승부예측 팀 엠블럼. `logoUrl` 없음·로드 실패 모두 팀명 첫 글자 원형으로 폴백 | `components/predict/shared.tsx` | `contents/TeamBadge.mdx` |
-| PlayerPhoto | 2-a | 선수 사진 원형. Avatar(Radix) 기반이라 null·로드 실패 모두 실루엣 폴백 | `components/predict/shared.tsx` | `contents/PlayerPhoto.mdx` |
+| MatchdayHero | 2-a | 홈 히어로의 다음/직전 경기 카드(예정·진행중·종료 + 최우수 선수) | `components/composition/predict/MatchdayHero.tsx` | `contents/MatchdayHero.mdx` |
+| Card | T1 | 정보 덩어리를 배경에서 띄우는 컨테이너. 실사용은 `Card`+`CardContent` 두 겹뿐(Header/Title/Description/Footer 사용처 0곳) | `components/primitives/card.tsx` | `contents/Card.mdx` |
+| PollHeroCard | 2-a | 홈 히어로 자리의 252px 고정높이 투표 배너. MatchdayHero가 없을 때의 폴백 | `components/composition/polls/PollHeroCard.tsx` | `contents/PollHeroCard.mdx` |
+| PollHomeSection | 2-a | 홈의 투표 섹션 하나(제목+링크+목록). 모바일 세로 리스트 / 데스크탑 한 줄 그리드+페이지 넘김 | `components/composition/polls/PollHomeSection.tsx` | `contents/PollHomeSection.mdx` |
+| CommentsSection | 2-a | 투표 결과 화면의 댓글 입력창+목록(투표 항목 칩·좋아요·내 댓글 수정/삭제) | `components/composition/polls/CommentsSection.tsx` | `contents/CommentsSection.mdx` |
+| RankingCard | 2-a | 승부예측 시즌 누적 랭킹 카드. `top3`/`mine` 2개 variant | `components/composition/predict/RankingCard.tsx` | `contents/RankingCard.mdx` |
+| MatchWeekList | 2-a | 승부예측 월별 주차 목록. 주차 1개 = 예측 세션 1개(진행중/결과/예정) | `components/composition/predict/MatchWeekList.tsx` | `contents/MatchWeekList.mdx` |
+| WeekRankCard | 2-a | 주차 랭킹 카드. 예측·선수픽·종합 3컬럼, 데스크탑 10명 캡 + 모바일 화면높이 크롭 | `components/composition/predict/WeekRankCard.tsx` | `contents/WeekRankCard.mdx` |
+| TeamBadge | 2-a | 승부예측 팀 엠블럼. `logoUrl` 없음·로드 실패 모두 팀명 첫 글자 원형으로 폴백 | `components/composition/predict/shared.tsx` | `contents/TeamBadge.mdx` |
+| PlayerPhoto | 2-a | 선수 사진 원형. Avatar(Radix) 기반이라 null·로드 실패 모두 실루엣 폴백 | `components/composition/predict/shared.tsx` | `contents/PlayerPhoto.mdx` |
 
 ### Feedback
 
 | 패턴 | tier | 한 줄 | 코드 | 원본 |
 |---|---|---|---|---|
-| BottomSheet | T1 | 모달·바텀시트 공용 shell(모바일 하단시트 / 데스크탑 중앙 모달). 드래그 핸들 + 자유 본문 + 액션 버튼 | `components/ui/sheet.tsx`, `components/ui/bottom-sheet.tsx` | `feedback/BottomSheet.mdx` |
-| ConfirmModal | 2-a | 투표 제출 직전 선택 확인 — 제출 후 수정 불가라서 되돌릴 수 없는 행동을 한 번 확인받는다 | `components/polls/ConfirmModal.tsx` | `feedback/ConfirmModal.mdx` |
-| LoginModal | 2-a | 비로그인 사용자의 로그인 유도 모달(`/login` 페이지 없이 이 모달이 유일한 로그인 경로) | `components/polls/LoginModal.tsx`, `components/auth/RequireAuthModal.tsx` | `feedback/LoginModal.mdx` |
+| BottomSheet | T1 | 모달·바텀시트 공용 shell(모바일 하단시트 / 데스크탑 중앙 모달). 드래그 핸들 + 자유 본문 + 액션 버튼 | `components/primitives/modal/sheet.tsx`, `components/primitives/modal/Modal.tsx` | `feedback/BottomSheet.mdx` |
+| ConfirmModal | 2-a | 투표 제출 직전 선택 확인 — 제출 후 수정 불가라서 되돌릴 수 없는 행동을 한 번 확인받는다 | `components/primitives/modal/contents/Confirm.tsx` | `feedback/ConfirmModal.mdx` |
+| LoginModal | 2-a | 비로그인 사용자의 로그인 유도 모달(`/login` 페이지 없이 이 모달이 유일한 로그인 경로) | `components/primitives/modal/contents/Login.tsx`, `components/composition/auth/RequireAuthModal.tsx` | `feedback/LoginModal.mdx` |
 
 ### Loading
 
 | 패턴 | tier | 한 줄 | 코드 | 원본 |
 |---|---|---|---|---|
-| Skeleton | T1 | 로딩 플레이스홀더. 경로별 화면 스켈레톤 3종 + 그 외 경로용 상단 진행 바(컴포넌트 아님) | `components/layout/NavigationLoading.tsx`, `.animate-skeleton` | `loading/Skeleton.mdx` |
+| Skeleton | T1 | 로딩 플레이스홀더. 경로별 화면 스켈레톤 3종 + 그 외 경로용 상단 진행 바(컴포넌트 아님) | `components/primitives/navigation-loading.tsx`, `.animate-skeleton` | `loading/Skeleton.mdx` |
 
 ### Navigations
 
 | 패턴 | tier | 한 줄 | 코드 | 원본 |
 |---|---|---|---|---|
-| AppHeader | 2-a | 서비스 공통 상단 헤더. 데스크탑은 화면 무관 동일 GNB, 모바일은 최상위/서브 화면 갈림 | `components/layout/AppHeader.tsx` | `navigations/AppHeader.mdx` |
-| BottomNav | 2-a | 모바일 하단 내비게이션(4개 경로에서만 렌더) | `components/layout/BottomNav.tsx` | `navigations/BottomNav.mdx` |
-| DesktopNavLinks | 2-a | 데스크탑(≥640px) 헤더 GNB 3항목. `usePathname()`으로 활성 항목 판정 | `components/layout/DesktopNavLinks.tsx` | `navigations/DesktopNavLinks.mdx` |
-| UserMenu | 2-a | 로그인 상태 헤더 우측 아바타 + 드롭다운(마이페이지·피드백·로그아웃, 관리자면 1개 추가) | `components/layout/UserMenu.tsx` | `navigations/UserMenu.mdx` |
-| StepTrack | 2-a | 승부예측 3스텝(score→pick→confirm) 진행 표시. 가로 트랙·히어로 문구·세로 트랙 3종 | `components/predict/steps.tsx` | `navigations/StepTrack.mdx` |
+| AppHeader | 2-a | 서비스 공통 상단 헤더. 데스크탑은 화면 무관 동일 GNB, 모바일은 최상위/서브 화면 갈림 | `components/composition/common/AppHeader.tsx` | `navigations/AppHeader.mdx` |
+| BottomNav | 2-a | 모바일 하단 내비게이션(4개 경로에서만 렌더) | `components/composition/common/BottomNav.tsx` | `navigations/BottomNav.mdx` |
+| DesktopNavLinks | 2-a | 데스크탑(≥640px) 헤더 GNB 3항목. `usePathname()`으로 활성 항목 판정 | `components/composition/common/DesktopNavLinks.tsx` | `navigations/DesktopNavLinks.mdx` |
+| UserMenu | 2-a | 로그인 상태 헤더 우측 아바타 + 드롭다운(마이페이지·피드백·로그아웃, 관리자면 1개 추가) | `components/composition/common/UserMenu.tsx` | `navigations/UserMenu.mdx` |
+| StepTrack | 2-a | 승부예측 3스텝(score→pick→confirm) 진행 표시. 가로 트랙·히어로 문구·세로 트랙 3종 | `components/composition/predict/steps.tsx` | `navigations/StepTrack.mdx` |
 
 ### Presentation
 
 | 패턴 | tier | 한 줄 | 코드 | 원본 |
 |---|---|---|---|---|
-| Separator | T1 | 단독으로 놓는 구분선(Radix 기반) | `components/ui/separator.tsx` | `presentation/Separator.mdx` |
-| PageContainer | T1 | 앱 최상위 셸. 폭을 제한하지 않고 통과시키며, 온보딩만 480px 카드 셸로 분기 | `components/layout/PageContainer.tsx` | `presentation/PageContainer.mdx` |
+| Separator | T1 | 단독으로 놓는 구분선(Radix 기반) | `components/primitives/separator.tsx` | `presentation/Separator.mdx` |
+| PageContainer | T1 | 앱 최상위 셸. 폭을 제한하지 않고 통과시키며, 온보딩만 480px 카드 셸로 분기 | `components/primitives/page-container.tsx` | `presentation/PageContainer.mdx` |
 
 ### Selection and Input
 
 | 패턴 | tier | 한 줄 | 코드 | 원본 |
 |---|---|---|---|---|
-| Radio | T1 | 투표 옵션 선택. `RadioIndicator`(시각) + `RadioOption`(전체 행 클릭) | `components/ui/radio.tsx` | `selection-and-input/Radio.mdx` |
+| Radio | T1 | 투표 옵션 선택. `RadioIndicator`(시각) + `RadioOption`(전체 행 클릭) | `components/primitives/radio.tsx` | `selection-and-input/Radio.mdx` |
 | TextInput | 패턴 | 텍스트 입력. CSS 유틸리티 클래스로 관리(컴포넌트 아님) | `.input-field` (globals.css) | `selection-and-input/TextInput.mdx` |
-| RatingMatrix | 패턴 | 전체 평가 투표의 F~S 6단계 점수 선택 그리드 | `components/polls/OverallRatingPollClient.tsx` | `selection-and-input/RatingMatrix.mdx` |
-| FormSection | 패턴 | 투표 생성 폼의 섹션 셸 + 선수 선택 picker | `components/polls/UserPollCreateForm.tsx` | `selection-and-input/FormSection.mdx` |
-| ImageInput | 2-a | 브라우저에서 크롭·webp 변환해 제출하는 이미지 입력(`CroppedImageInput`) | `components/images/CroppedImageInput.tsx` | `selection-and-input/ImageInput.mdx` |
-| PlayerPickModal | 2-a | 승부예측 포지션별 선수 선택(모바일 바텀시트 / sm+ 중앙 다이얼로그) | `components/predict/PlayerPickModal.tsx` | `selection-and-input/PlayerPickModal.mdx` |
+| RatingMatrix | 패턴 | 전체 평가 투표의 F~S 6단계 점수 선택 그리드 | `components/composition/polls/OverallRatingPollClient.tsx` | `selection-and-input/RatingMatrix.mdx` |
+| FormSection | 패턴 | 투표 생성 폼의 섹션 셸 + 선수 선택 picker | `components/composition/polls/UserPollCreateForm.tsx` | `selection-and-input/FormSection.mdx` |
+| ImageInput | 2-a | 브라우저에서 크롭·webp 변환해 제출하는 이미지 입력(`CroppedImageInput`) | `components/composition/common/CroppedImageInput.tsx` | `selection-and-input/ImageInput.mdx` |
+| PlayerPickModal | 2-a | 승부예측 포지션별 선수 선택(모바일 바텀시트 / sm+ 중앙 다이얼로그) | `components/primitives/modal/contents/PlayerPick.tsx` | `selection-and-input/PlayerPickModal.mdx` |
 
 ---
 
@@ -138,6 +138,6 @@ Montage 분류(Actions / Contents / Feedback / Loading / Navigations / Presentat
 
 `deleteUserPoll`은 단순한 죽은 코드가 아니었다 — 호출 UI가 사라진 뒤에도 `'use server'` 모듈의 export로 남아, **화면 없이 외부에서 도달 가능한 삭제 엔드포인트**였다(service-role cascade). 서버 액션은 export되어 있는 것만으로 공개 엔드포인트이므로, 화면을 지울 때 액션도 함께 지운다.
 
-사용처가 없는데도 **일부러 남겨둔 것 셋**: `ui/sheet.tsx`의 `SheetTrigger`/`SheetClose`/`SheetFooter`(shadcn CLI가 관리하는 vendored primitive — 미사용 표면이 의도적이라고 `feedback/BottomSheet.mdx`에 기록돼 있다) · `lib/players/pick-one-rating.ts`의 rating 함수들(Postgres 함수와 같은 알고리즘을 검증하는 참조 구현) · `types/database.ts`의 `*Row` 별칭 블록(스키마 전체를 비추는 것이 파일의 목적).
+사용처가 없는데도 **일부러 남겨둔 것 셋**: `primitives/modal/sheet.tsx`의 `SheetTrigger`/`SheetClose`/`SheetFooter`(shadcn CLI가 관리하는 vendored primitive — 미사용 표면이 의도적이라고 `feedback/BottomSheet.mdx`에 기록돼 있다) · `lib/players/pick-one-rating.ts`의 rating 함수들(Postgres 함수와 같은 알고리즘을 검증하는 참조 구현) · `types/database.ts`의 `*Row` 별칭 블록(스키마 전체를 비추는 것이 파일의 목적).
 
 사용처 없는 구현체는 디자인시스템에 넣지 않고, 되살릴 때는 새로 설계한다.
