@@ -19,8 +19,6 @@ import * as ConfirmModalStories from './ConfirmModal.stories'
 | `components/polls/TypeBPollClient.tsx` | 항상 렌더하고 `selectedLabel={selectedOption?.label ?? ''}` — 선택이 없으면 빈 라벨이 그려질 수 있다 |
 | `components/polls/OverallRatingPollClient.tsx` | 전체 평가. 문구를 바꿔 쓴다(`title="이 평가로 제출하시겠어요?"`, `summaryCaption="내 평가"`, `selectedLabel="선수 N명 평가"`) |
 
-전체 평가는 2026-08-24까지 이 확인 단계 없이 버튼에서 바로 `submitRatingVotes`를 호출했다 — 제출 후 수정 불가라는 제약이 같은데 셋 중 되돌리고 싶을 여지가 가장 큰 투표(선수 20명 이상 채점)여서 확인을 붙였다. 그때 `title`·`summaryCaption`·`confirmLabel`을 optional prop으로 열었고, 기본값은 선택형 투표 문구다.
-
 ## 구조
 
 `ui/bottom-sheet.tsx`([BottomSheet](?path=/docs/feedback-bottomsheet--docs)) 위에 얹은 얇은 레이어다. 모바일(`<768px`)에서는 바텀시트, 데스크톱에서는 중앙 모달로 뜬다 — 이 컴포넌트가 결정하는 게 아니라 `BottomSheet`가 화면 폭으로 결정한다.

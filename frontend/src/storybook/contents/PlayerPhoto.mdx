@@ -10,16 +10,12 @@ import * as PlayerPhotoStories from './PlayerPhoto.stories'
 
 <Canvas of={PlayerPhotoStories.Default} />
 
-## Avatar로 옮긴 이유 (변경 기록)
-
-원래는 생 `<img src={url} className="rounded-pill object-cover">`였고, `url`이 없을 때만 직접 만든 실루엣 원을 렌더했다.
-그래서 **`url`이 null인 경우만 폴백이 걸리고, URL은 있는데 요청이 실패하는 경우는 폴백이 없었다** — `playerPhotoUrl(fotmobPlayerId)`이 만든 FotMob 주소가 404/403인 선수(사진이 아직 올라오지 않은 신입·유스)는 깨진 이미지 아이콘으로 남았다.
-`onError` 상태를 하나 더 들고 있는 대신 [Avatar](?path=/docs/contents-avatar--docs)(Radix `@radix-ui/react-avatar`)로 갈아탔다. Radix가 로드 실패를 스스로 fallback으로 넘기므로 에러 핸들링 코드 없이 두 경우가 한 경로로 합쳐진다.
+## null·로드 실패 폴백
 
 <Canvas of={PlayerPhotoStories.NoPhoto} />
 <Canvas of={PlayerPhotoStories.LoadFailed} />
 
-두 스토리 결과가 같아야 정상이다. `url`이 null이면 `AvatarImage`를 아예 렌더하지 않고, URL이 있으면 렌더한 뒤 실패 시 Radix가 fallback으로 바꾼다.
+`url`이 null인 경우도, URL은 있으나 요청이 실패한 경우도 실루엣 폴백으로 수렴한다. 두 스토리 결과가 같아야 정상이다. `url`이 null이면 `AvatarImage`를 아예 렌더하지 않고, URL이 있으면 렌더한 뒤 실패 시 Radix가 fallback으로 바꾼다.
 
 ## 사용자 프로필 아바타와 뭐가 다른가
 
@@ -55,7 +51,7 @@ import * as PlayerPhotoStories from './PlayerPhoto.stories'
 
 실제로 쓰이는 값은 40·48·64 세 개다. `size`는 `Avatar` 기본 `h-10 w-10`을 인라인 `style`로 덮어쓰는 방식이라 임의 px이 그대로 들어간다.
 
-**"선수를 아직/아예 선택하지 않음"을 그리는 자리도 이 컴포넌트다** — `url={null} size={40}`. 예전에는 예측 플로우·결과·완료 세 화면이 실루엣 원(`h-10 w-10 rounded-pill bg-disabled`)을 각자 손으로 조립해서 폴백 톤을 바꾸려면 네 곳을 함께 고쳐야 했는데, 지금은 전부 `PlayerPhoto`로 모았다. `Silhouette`은 이 컴포넌트의 폴백 전용이니 직접 감싸 쓰지 않는다.
+**"선수를 아직/아예 선택하지 않음"을 그리는 자리도 이 컴포넌트다** — `url={null} size={40}`. `Silhouette`은 이 컴포넌트의 폴백 전용이니 직접 감싸 쓰지 않는다.
 
 <Canvas of={PlayerPhotoStories.Sizes} />
 

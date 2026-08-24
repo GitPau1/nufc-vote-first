@@ -36,10 +36,6 @@ import { Meta } from '@storybook/addon-docs/blocks'
 | 캐러셀 카드 하단 텍스트 가독성 오버레이 | `.banner-text-overlay` (`globals.css`, 흑백 3단 그라디언트) | 사진 위에 이름·번호를 올릴 때 사진 밝기와 무관하게 항상 읽히게. 투표 상세 5개 화면의 배너 이미지에도 동일하게 재사용 |
 | 홈 히어로(승부예측) 다크 카드 배경 | `.spotlight-glow-brand-strong` (`globals.css`) — `MatchdayHero.tsx` | `bg-neutral-strong` 다크 카드가 밋밋해 보이지 않게 두 모서리에 옅은 브랜드 글로우를 얹는다. `spotlight-glow-brand`와 같은 기법의 다크 변형 |
 
-## 발견된 드리프트 — 수정함
-
-`avatar fallback` 자리는 원래 `from-primary/30 to-primary-dark`를 썼다. `primary`/`primary-dark`는 [Color](?path=/docs/foundations-color--docs)가 이미 "옛 시스템(#41b6e6, brand로 대체됨)"이라고 못박은 폐기 이름인데, 이 자리 하나만 그 이전 작업에서 빠져 있었다 — 그라디언트라서 `bg-[...]` 임의값 검사에도 안 걸리고, 문서화된 적이 없어서 아무도 못 잡았다. `brand-solid` 계열로 교정했다.
-
 ## 준비된 유틸리티 — `spotlight-glow-brand`
 
 ```css
@@ -52,8 +48,6 @@ import { Meta } from '@storybook/addon-docs/blocks'
 ```
 
 두 모서리에서 브랜드색이 옅게 스며들다 사라지는 앰비언트 글로우다. **아직 어떤 화면에도 붙이지 않았다** — 새 화면·카드가 생길 때 쓰라고 미리 만들어둔 것이다. 이 클래스는 배경을 통째로 정하므로, 쓰는 요소에 `bg-surface`/`bg-page` 등 다른 배경 클래스를 같이 주지 않는다.
-
-원래 이 자리에는 데스크탑 전용 장식 배경 `.shell-desktop-bg`(온보딩 화면의 데스크탑 좌우 여백)가 있었는데, 그 화면 자체를 안 쓰기로 해서 걷어냈다 — 하드코딩 hex를 쓰던 자리라 드리프트 위험도 같이 없어졌다.
 
 `color-mix()`는 Chrome 111+ / Safari 16.2+ / Firefox 113+에서만 동작한다. 이 프로젝트가 지원하는 브라우저 범위에서 문제없는지는 실제로 화면에 쓰기 전에 한 번 더 확인한다.
 

@@ -38,9 +38,9 @@ import * as LoginModalStories from './LoginModal.stories'
 - **케이스 1 — 일반 로그인(`login`)**: 사용자가 특정 행동에 막힌 게 아니라 스스로 로그인을 시작한 경우다. 여기서 "투표에 참여하려면"이라고 말하면 하지도 않은 행동을 전제하게 되니, 대신 로그인해서 얻는 것을 말한다.
 - **케이스 2 — 행동 유도(`vote`, `predict`)**: 하려던 행동이 막혀서 뜬 경우다. 막힌 그 행동을 문구에 그대로 담는다. 새 유도 지점이 생기면 값을 추가하고 문구를 한 줄 더 쓴다(`LoginModal.tsx`의 `TRIGGER_DESCRIPTION` 맵).
 
-예전엔 이 값이 analytics 속성으로만 쓰여서 헤더 로그인 버튼에서 열어도 "투표에 참여하려면 로그인이 필요합니다"가 떴다. `components/polls/login-modal.test.mjs`가 이제 (1) 문구가 값별로 실제로 다른지, (2) 호출부마다 맥락에 맞는 값을 넘기는지를 소스 문자열로 고정한다.
+`components/polls/login-modal.test.mjs`가 (1) 문구가 값별로 실제로 다른지, (2) 호출부마다 맥락에 맞는 값을 넘기는지를 소스 문자열로 고정한다.
 
-타입에만 있고 넘기는 곳이 없던 `'comment'`·`'create_poll'`은 없앴다 — 값이 문구를 가르게 된 뒤로는 죽은 값이 곧 아무도 못 보는 문구다. 댓글 작성은 투표 참여자만 가능해서 비로그인 사용자가 도달하지 못하고, 투표 생성 페이지는 `RequireAuthModal`(`login`)을 쓴다.
+`triggerAction`에 `'comment'`·`'create_poll'` 값은 없다 — 댓글 작성은 투표 참여자만 가능해서 비로그인 사용자가 도달하지 못하고, 투표 생성 페이지는 `RequireAuthModal`(`login`)을 쓰기 때문이다.
 
 <Canvas of={LoginModalStories.TriggerLogin} />
 
@@ -60,12 +60,12 @@ import * as LoginModalStories from './LoginModal.stories'
 
 CTA 버튼 라벨과 아이콘은 `triggerAction`이 아니라 `lib/config.ts`의 `IS_MOCK`으로 갈린다 — Supabase 환경 변수가 있으면 `Google로 로그인`(+ Google 아이콘), 없으면 `데모로 바로 로그인`(⚡). **Storybook을 실행한 환경의 `.env.local`이 그대로 반영되므로 스토리에서 어느 쪽이 보이는지는 고정이 아니다.**
 
-정리하면 이 모달에서 갈리는 축은 셋이고 서로 겹치지 않는다 — 설명 문구는 `triggerAction`, CTA 라벨은 `IS_MOCK`, 바텀시트/중앙 모달은 화면 폭. 예전엔 설명 문구도 `IS_MOCK`으로 덮여서(`데모 로그인으로 바로 참여할 수 있어요`) mock 모드에서는 맥락별 문구가 아예 보이지 않았는데, 그 분기는 없앴다. 데모 모드라는 사실은 CTA 라벨이 이미 말해준다.
+정리하면 이 모달에서 갈리는 축은 셋이고 서로 겹치지 않는다 — 설명 문구는 `triggerAction`, CTA 라벨은 `IS_MOCK`, 바텀시트/중앙 모달은 화면 폭. 데모 모드라는 사실은 CTA 라벨이 이미 말해준다.
 
 모달이 열릴 때 `auth_prompt_viewed`를 전송하는데, Mixpanel 토큰(`NEXT_PUBLIC_MIXPANEL_TOKEN`)이 없으면 no-op이다.
 
 ## 구조
 
-[BottomSheet](?path=/docs/feedback-bottomsheet--docs) 위에 얹혀 있어 모바일(`<768px`)은 바텀시트, 데스크톱은 중앙 모달로 뜬다. 예전엔 "메뉴에서는 항상 중앙 모달" 같은 `intent` prop 분기가 있었는데 없앴다 — 화면 폭이 유일한 기준이다. `components/polls/login-modal.test.mjs`가 이 규칙(그리고 CTA가 `outline`이 아닌 채움 버튼이라는 점, 맥락별 문구, 호출부별 `triggerAction` 값까지)을 소스 문자열로 검사하므로, 문구나 호출부를 고칠 때 그 테스트를 함께 본다.
+[BottomSheet](?path=/docs/feedback-bottomsheet--docs) 위에 얹혀 있어 모바일(`<768px`)은 바텀시트, 데스크톱은 중앙 모달로 뜬다 — 화면 폭이 유일한 기준이다. `components/polls/login-modal.test.mjs`가 이 규칙(그리고 CTA가 `outline`이 아닌 채움 버튼이라는 점, 맥락별 문구, 호출부별 `triggerAction` 값까지)을 소스 문자열로 검사하므로, 문구나 호출부를 고칠 때 그 테스트를 함께 본다.
 
 <Canvas of={LoginModalStories.Interactive} />

@@ -93,7 +93,7 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 
 실데이터를 붙일 때 부모가 메워야 할 간극이 여기서 나온다 — `fixtures.home_name`은 FotMob 원본(영문)이라 `lib/predict/team-names.ts`의 `koreanTeamName(teamId, fallbackName)`을 먼저 통과시켜야 하고(매핑에 없는 팀은 영문 그대로), 로고도 팀 ID에서 URL을 만들어 넘겨야 한다(안 넘기면 회색 placeholder로 떨어진다).
 
-주차 식별자는 이제 같다 — `PredictWeek.weekKey`가 MatchdayHero와 동일한 `lib/predictions/week.ts`의 `weekKey`(`"2026-35"` = ISO 연도-주차, KST)이므로, `onSelectWeek`에서 `/predictions/{week.weekKey}`로 바로 보낼 수 있다.
+주차 식별자는 MatchdayHero와 같다 — `PredictWeek.weekKey`가 `lib/predictions/week.ts`의 `weekKey`(`"2026-35"` = ISO 연도-주차, KST)이므로, `onSelectWeek`에서 `/predictions/{week.weekKey}`로 바로 보낼 수 있다.
 
 ## 알려진 제약
 

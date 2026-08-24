@@ -36,8 +36,6 @@ import * as CommentsSectionStories from './CommentsSection.stories'
 <Canvas of={CommentsSectionStories.ClosedPollWithoutVote} />
 <Canvas of={CommentsSectionStories.ClosedPollAsVoter} />
 
-`canComment`를 UI에서 막기 전에는 비참여자에게도 입력창이 활성 상태로 보였고, 제출하면 RLS가 거부한 뒤 서버 액션이 `{ error: 'failed' }`만 돌려주는데 컴포넌트가 그 에러를 렌더하지 않아 **아무 일도 일어나지 않은 것처럼 보였다**(2026-08-24 수정). 지금은 `submitComment`가 insert 전에 투표 여부를 직접 확인하고, 컴포넌트가 실패 사유를 입력창 아래에 한 줄로 띄운다.
-
 ## 제출 실패 문구
 
 `submitComment`가 돌려주는 에러 코드를 `text-caption-1 text-critical` 한 줄(`role="alert"`)로 입력창 아래에 보여준다. 다시 타이핑하면 사라진다.
