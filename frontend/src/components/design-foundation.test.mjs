@@ -39,8 +39,10 @@ test('shared UI primitives use foundation radius and typography tokens', () => {
   assert.match(sheet, /text-label-1-reading/)
   assert.doesNotMatch(sheet, /text-\[18px\]|text-\[14px\]|leading-\[1\.25\]/)
 
+  // globals.css에서 타이포 토큰을 쓰는 유틸리티는 이제 .input-field 하나뿐이다.
+  // text-body-2-normal을 쓰던 .btn-primary/.btn-secondary는 ed4972a에서 삭제되고
+  // 버튼 스타일이 components/ui/button.tsx로 옮겨갔다 — 그쪽은 위에서 검증한다.
   assert.match(globals, /text-label-1-normal/)
-  assert.match(globals, /text-body-2-normal/)
   assert.doesNotMatch(globals, /text-\[14px\]|text-\[15px\]/)
 })
 
@@ -81,7 +83,9 @@ test('poll form and carousel surfaces use card radius foundation', () => {
 
   assert.match(carousel, /rounded-lg border border-border bg-surface text-left shadow-g200/)
   assert.match(carousel, /absolute inset-0 rounded-lg/)
-  assert.match(carousel, /bg-primary-dark/)
+  // bg-primary-dark → bg-brand-solid: semantic 토큰 이전(primary→brand)으로 이름이 바뀜.
+  // 새 brand 앵커는 배경·텍스트 대비를 둘 다 통과해 -dark 변형이 필요 없어져 흡수됨.
+  assert.match(carousel, /bg-brand-solid/)
   assert.match(carousel, /text-title-1/)
   assert.doesNotMatch(carousel, /rounded-md border border-border bg-surface text-left shadow-g200|rounded-md ring-inset|#0c2340|text-\[38px\]/)
 })
@@ -89,7 +93,8 @@ test('poll form and carousel surfaces use card radius foundation', () => {
 test('image banners use a readable dark overlay for white text', () => {
   const globals = source('app/globals.css')
   const files = [
-    'components/polls/PollListClient.tsx',
+    // PollHeroCard는 원래 PollListClient.tsx 안에 있던 걸 /(홈)과 /polls가 같이 쓰도록 뽑아낸 것.
+    'components/polls/PollHeroCard.tsx',
     'components/polls/TypeAPollClient.tsx',
     'components/polls/TypeBPollClient.tsx',
     'components/polls/OverallRatingPollClient.tsx',
@@ -108,6 +113,58 @@ test('image banners use a readable dark overlay for white text', () => {
   }
 })
 
+test('motion uses duration tokens, not numeric durations', () => {
+  // duration은 tailwind.config.ts의 4개 토큰(micro/enter/exit/slow)으로만 쓴다.
+  // 다른 검사들과 달리 파일 목록을 하드코딩하지 않고 src 전체를 훑는다 —
+  // 새로 만든 일회성 컴포넌트도 목록에 추가하지 않아도 자동으로 걸린다.
+  const entries = fs.readdirSync(root, { recursive: true })
+  const offenders = []
+
+  for (const entry of entries) {
+    if (typeof entry !== 'string' || !/\.(tsx|ts|css)$/.test(entry)) continue
+    const full = path.join(root, entry)
+    if (!fs.statSync(full).isFile()) continue
+
+    const hits = fs.readFileSync(full, 'utf8').match(/\bduration-\d+/g)
+    if (hits) offenders.push(`${entry} → ${[...new Set(hits)].join(', ')}`)
+  }
+
+  assert.deepEqual(
+    offenders,
+    [],
+    `숫자 duration을 쓰는 파일이 있다. micro / enter / exit / slow 중에서 골라라:\n${offenders.join('\n')}`
+  )
+})
+
+test('state opacity stays on the documented scale', () => {
+  // 상태 표현 opacity는 0 / 50 / 70 / 100 네 값만 쓴다.
+  //   70 = hover, 비활성·마감 표시, 장식 요소 약화
+  //   50 = pressed
+  //   0 / 100 = 숨김 / 표시
+  // duration 검사와 같이 src 전체를 훑는다.
+  // 예외: PlayersPageClient의 Pick One 카드가 쓰는 opacity-[0.34]는
+  // 카드 전용 애니메이션 값이라 스케일에서 제외한다 (State foundation 문서에 기록).
+  const allowed = new Set(['0', '50', '70', '100'])
+  const entries = fs.readdirSync(root, { recursive: true })
+  const offenders = []
+
+  for (const entry of entries) {
+    if (typeof entry !== 'string' || !/\.(tsx|ts|css)$/.test(entry)) continue
+    const full = path.join(root, entry)
+    if (!fs.statSync(full).isFile()) continue
+
+    const hits = fs.readFileSync(full, 'utf8').match(/\bopacity-\d+\b/g) ?? []
+    const bad = [...new Set(hits)].filter((h) => !allowed.has(h.replace('opacity-', '')))
+    if (bad.length) offenders.push(`${entry} → ${bad.join(', ')}`)
+  }
+
+  assert.deepEqual(
+    offenders,
+    [],
+    `문서화되지 않은 opacity 값을 쓰는 파일이 있다. 0 / 50 / 70 / 100 중에서 골라라:\n${offenders.join('\n')}`
+  )
+})
+
 test('primary tab surfaces do not use arbitrary typography classes', () => {
   const files = [
     'app/menu/page.tsx',
@@ -115,6 +172,9 @@ test('primary tab surfaces do not use arbitrary typography classes', () => {
     'components/players/PlayersPageClient.tsx',
     'components/polls/PollListClient.tsx',
     'components/polls/PollCard.tsx',
+    'components/polls/PollHeroCard.tsx',
+    'components/polls/PollHomeSection.tsx',
+    'components/polls/HomeClient.tsx',
   ]
 
   for (const file of files) {
@@ -135,7 +195,7 @@ test('application source does not use arbitrary typography or hardcoded visual c
     'app/players/changes/page.tsx',
     'app/polls/create/page.tsx',
     'components/auth/RequireAuthModal.tsx',
-    'components/images/BannerImageInput.tsx',
+    'components/images/CroppedImageInput.tsx',
     'components/layout/UserMenu.tsx',
     'components/layout/LoginButton.tsx',
     'components/my/MyFeedbackForm.tsx',
@@ -147,7 +207,9 @@ test('application source does not use arbitrary typography or hardcoded visual c
     'components/polls/OverallRatingPollClient.tsx',
     'components/polls/OverallRatingResultView.tsx',
     'components/polls/PollCard.tsx',
-    'components/polls/PollCreateLink.tsx',
+    'components/polls/PollHeroCard.tsx',
+    'components/polls/PollHomeSection.tsx',
+    'components/polls/HomeClient.tsx',
     'components/polls/PollListClient.tsx',
     'components/polls/ResultView.tsx',
     'components/polls/TypeAPollClient.tsx',

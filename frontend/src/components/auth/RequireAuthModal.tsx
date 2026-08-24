@@ -18,7 +18,6 @@ export function RequireAuthModal() {
     <LoginModal
       open
       onClose={() => router.push('/')}
-      intent="direct"
       triggerAction="login"
     />
   )

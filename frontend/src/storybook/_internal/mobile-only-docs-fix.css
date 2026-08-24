@@ -1,0 +1,26 @@
+/**
+ * `sm:hidden`(모바일 전용) 컴포넌트를 Docs 페이지에서 실제 모바일 폭으로 보여주기 위한 보정.
+ *
+ * `parameters.docs.story.inline: false`로 스토리를 진짜 iframe에 담으면(스토리 뷰와 동일한
+ * 조건이 돼 usePathname() mock·position:fixed 문제는 풀리지만), 그 iframe 자체의 너비는
+ * addon-docs가 height만 노출하고 width는 안 줘서 Docs 페이지 본문 폭(데스크탑, 640px 훨씬
+ * 이상)을 그대로 받는다 — 그 결과 `sm:hidden`이 켜져서 컴포넌트가 안 보이게 된다.
+ *
+ * iframe의 CSS width는 그 iframe 내부 뷰포트 자체를 바꾸므로(감싸는 div의 width와 달리
+ * 미디어 쿼리에 실제로 반영된다), 모바일 전용 컴포넌트의 story iframe만 id 접두사로 골라
+ * 375px로 강제한다. Docs 프로즈나 다른 컴포넌트에는 영향 없다.
+ */
+iframe[id^="iframe--navigations-bottomnav"] {
+  width: 375px !important;
+  max-width: 375px !important;
+}
+
+/* StickyActionBar도 같은 이유 — 모바일에서만 fixed(sm:static으로 풀림)라서 Docs 문서 폭에서는
+   데스크탑 분기만 보인다. 모바일 분기를 보여주는 스토리 3개만 375px로 강제하고,
+   데스크탑 분기 스토리(DesktopInFlow)는 iframe에 담지 않아 여기 해당하지 않는다. */
+iframe[id^="iframe--actions-stickyactionbar--vote-submit"],
+iframe[id^="iframe--actions-stickyactionbar--rating-step-next"],
+iframe[id^="iframe--actions-stickyactionbar--rating-submit-disabled"] {
+  width: 375px !important;
+  max-width: 375px !important;
+}

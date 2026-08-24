@@ -103,7 +103,7 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
                 선택
               </Badge>
               {daysLeft > 0 ? (
-                <Badge className="bg-primary text-white border-0 text-caption-2 font-semibold hover:bg-primary pointer-events-none">
+                <Badge className="bg-brand-solid text-white border-0 text-caption-2 font-semibold hover:bg-brand-solid pointer-events-none">
                   D-{daysLeft} 마감
                 </Badge>
               ) : (
@@ -113,7 +113,7 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
               )}
             </div>
             <div className="flex items-end justify-between gap-3">
-              <h1 className="min-w-0 flex-1 text-headline-1 font-black text-white">{poll.title}</h1>
+              <h1 className="min-w-0 flex-1 text-headline-2 sm:text-headline-1 font-black text-white">{poll.title}</h1>
               {poll.creator_name && (
                 <span className="max-w-[38%] truncate text-right text-caption-1 font-bold text-white/80">{poll.creator_name}</span>
               )}
@@ -181,8 +181,8 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
                 onClick={() => !isCenter && isInteractive && setSelectedIdx(i)}
                 className={cn(
                   'absolute top-0 overflow-hidden rounded-lg border border-border bg-surface text-left shadow-g200',
-                  'transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  isCenter && 'border-primary shadow-w200',
+                  'transition-all duration-enter ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  isCenter && 'border-brand-solid shadow-w200',
                   isCenter ? 'cursor-default' : 'cursor-pointer'
                 )}
                 style={{
@@ -195,7 +195,7 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
                   pointerEvents: isInteractive ? 'auto' : 'none',
                 }}
               >
-                <div className="relative aspect-square w-full overflow-hidden bg-primary-dark">
+                <div className="relative aspect-square w-full overflow-hidden bg-brand-solid">
                   {thumbUrl ? (
                     <img
                       src={thumbUrl}
@@ -203,18 +203,18 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/30 to-primary-dark text-title-1 font-black text-white">
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-solid/30 to-brand-solid text-title-1 font-black text-white">
                       {fallbackText}
                     </div>
                   )}
                   <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/35 to-transparent" />
                   {player?.squad_number != null && (
-                    <span className="absolute left-2.5 top-2.5 rounded-pill bg-white/95 px-2.5 py-1 text-caption-1 font-black text-foreground shadow-g100">
+                    <span className="absolute left-2.5 top-2.5 rounded-pill bg-white/95 px-2.5 py-1 text-caption-2 font-black text-foreground shadow-g100">
                       #{player.squad_number}
                     </span>
                   )}
                   {isCenter && (
-                    <div className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-primary shadow-w200">
+                    <div className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-brand-solid shadow-w200">
                       <Check className="h-4 w-4 text-white" />
                     </div>
                   )}
@@ -222,8 +222,8 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
 
                 <div className={cn('bg-surface px-3 py-2.5', isFreeChoice ? 'min-h-[92px]' : 'min-h-[62px]')}>
                   <p className={cn(
-                    'text-body-2-normal font-black text-foreground',
-                    isFreeChoice ? 'line-clamp-2' : 'line-clamp-1'
+                    'font-black text-foreground',
+                    isFreeChoice ? 'text-body-2-reading line-clamp-2' : 'text-body-2-normal line-clamp-1'
                   )}>
                     {option.label}
                   </p>
@@ -239,7 +239,7 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
                   )}
                 </div>
                 {isCenter && (
-                  <div className="absolute inset-0 rounded-lg ring-4 ring-inset ring-primary pointer-events-none" />
+                  <div className="absolute inset-0 rounded-lg ring-4 ring-inset ring-brand-solid pointer-events-none" />
                 )}
               </button>
             )
@@ -254,6 +254,7 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
             className="h-9 w-9 rounded-full"
             onClick={prev}
             disabled={selectedIdx === 0}
+            aria-label="이전 선수"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -265,9 +266,9 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
                 key={i}
                 onClick={() => setSelectedIdx(i)}
                 className={cn(
-                  'rounded-full transition-all duration-200',
+                  'rounded-full transition-all duration-micro',
                   i === selectedIdx
-                    ? 'w-5 h-2 bg-primary'
+                    ? 'w-5 h-2 bg-brand-solid'
                     : 'w-2 h-2 bg-muted-foreground/30'
                 )}
               />
@@ -280,6 +281,7 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
             className="h-9 w-9 rounded-full"
             onClick={next}
             disabled={selectedIdx === options.length - 1}
+            aria-label="다음 선수"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -301,7 +303,7 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
       {/* 하단 고정 제출 버튼 */}
       <StickyActionBar>
         <Button
-          className="w-full h-12 text-label-1-normal font-bold"
+          className="w-full h-12 text-body-2-normal font-bold"
           disabled={isPending}
           onClick={handleSubmit}
         >

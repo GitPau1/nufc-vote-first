@@ -37,3 +37,6 @@ coverage/
 # Obsidian
 vault/.obsidian/
 vault/.trash/
+
+*storybook.log
+storybook-static

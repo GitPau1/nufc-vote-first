@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect } from 'react'
-import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { Lock } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { IS_MOCK } from '@/lib/config'
@@ -12,19 +11,19 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet'
-import { ActionSheet } from '@/components/ui/action-sheet'
+import { BottomSheet } from '@/components/ui/bottom-sheet'
 import { Button } from '@/components/ui/button'
 
 interface LoginModalProps {
   open: boolean
   onClose: () => void
-  intent?: 'prompt' | 'direct'
   triggerAction?: 'vote' | 'comment' | 'create_poll' | 'login'
 }
 
-export function LoginModal({ open, onClose, intent = 'prompt', triggerAction = 'vote' }: LoginModalProps) {
+// 모바일에서는 BottomSheet가 바텀시트로, 데스크톱에서는 중앙 모달로 뜬다 —
+// intent로 "항상 중앙 모달"을 강제하던 예전 분기는 없앴다. 화면 폭이 유일한 기준이다.
+export function LoginModal({ open, onClose, triggerAction = 'vote' }: LoginModalProps) {
   const pathname = usePathname()
-  const isDirect = intent === 'direct'
 
   useEffect(() => {
     if (!open) return
@@ -54,55 +53,11 @@ export function LoginModal({ open, onClose, intent = 'prompt', triggerAction = '
     })
   }
 
-  if (isDirect) {
-    return (
-      <DialogPrimitive.Root open={open} onOpenChange={o => { if (!o) onClose() }}>
-        <DialogPrimitive.Portal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/45" />
-          <DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-32px)] max-w-[448px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-surface p-5 shadow-w300 focus:outline-none">
-            <DialogPrimitive.Title className="text-center text-body-1-normal font-bold text-foreground">
-              NUFCVOTE 로그인
-            </DialogPrimitive.Title>
-            <DialogPrimitive.Description className="sr-only">
-              Google 계정으로 로그인합니다
-            </DialogPrimitive.Description>
-
-            <Button
-              variant="outline"
-              className="mt-5 w-full h-12 font-semibold gap-2"
-              onClick={handleLogin}
-            >
-              {IS_MOCK ? (
-                <>
-                  <span className="text-headline-1">⚡</span>
-                  데모로 바로 로그인
-                </>
-              ) : (
-                <>
-                  <GoogleIcon />
-                  Google로 로그인
-                </>
-              )}
-            </Button>
-
-            <Button
-              variant="ghost"
-              className="mt-2 w-full text-muted-foreground"
-              onClick={onClose}
-            >
-              닫기
-            </Button>
-          </DialogPrimitive.Content>
-        </DialogPrimitive.Portal>
-      </DialogPrimitive.Root>
-    )
-  }
-
   return (
-    <ActionSheet open={open} onOpenChange={o => { if (!o) onClose() }}>
+    <BottomSheet open={open} onOpenChange={o => { if (!o) onClose() }}>
       <div className="text-center mb-6">
-        <div className="w-14 h-14 rounded-full bg-primary-dim flex items-center justify-center mx-auto mb-4">
-          <Lock className="h-6 w-6 text-primary" />
+        <div className="w-14 h-14 rounded-full bg-brand-weak flex items-center justify-center mx-auto mb-4">
+          <Lock className="h-6 w-6 text-brand" />
         </div>
         <SheetHeader>
           <SheetTitle className="text-body-1-normal">로그인이 필요해요</SheetTitle>
@@ -112,8 +67,9 @@ export function LoginModal({ open, onClose, intent = 'prompt', triggerAction = '
         </SheetHeader>
       </div>
 
+      {/* 원탭 로그인 CTA — outline(보조 버튼)이 아니라 default(브랜드 채움)로 둬서
+          "여기를 누르면 바로 로그인된다"는 게 시각적으로 분명하게 드러나야 한다. */}
       <Button
-        variant="outline"
         className="w-full h-12 font-semibold gap-2 mb-2"
         onClick={handleLogin}
       >
@@ -137,7 +93,7 @@ export function LoginModal({ open, onClose, intent = 'prompt', triggerAction = '
       >
         닫기
       </Button>
-    </ActionSheet>
+    </BottomSheet>
   )
 }
 

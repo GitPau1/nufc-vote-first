@@ -1,0 +1,41 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Foundations/Design Token" />
+
+# Design Token
+
+이 페이지는 **토큰 개별 값이 아니라 토큰 체계 자체의 구조**를 설명한다. "무슨 색을 쓸까"는 [Color](?path=/docs/foundations-color--docs)/[Semantic](?path=/docs/foundations-semantic--docs)/[Palette](?path=/docs/foundations-palette--docs)에 있고, 여기는 "그 토큰들이 왜 지금 모양으로 나뉘어 있는가"만 다룬다.
+
+## 세 세대가 같은 코드베이스에 공존한다
+
+`globals.css`/`tailwind.config.ts`를 열면 이름 짓는 방식이 다른 값들이 섞여 있다 — 순서대로 쌓인 세 세대다.
+
+| 세대 | 예 | 정의 위치 | 지금 상태 |
+|---|---|---|---|
+| ① LDSG 이전 세대 — flat hex | `--c-primary`, `--c-gray-1~4`, `--c-positive`, `--c-negative`, `--c-bg`, `--c-surface`, `--r-*`, `--sh-*` | `globals.css` `:root` 상단 | **레거시.** 일부 컴포넌트가 아직 참조하지만 신규 사용 금지 |
+| ② shadcn/ui 세대 — HSL 변수 | `--background`, `--primary`, `--secondary`, `--muted`, `--accent`, `--card`, `--popover`, `--destructive` | `globals.css`, `tailwind.config.ts`의 `colors` 블록 | **레거시.** `shadcn` 스캐폴딩이 넣은 것. `ui/button.tsx` 등 shadcn 원본 컴포넌트 내부가 참조 |
+| ③ Palette → Semantic 2계층 — 지금 규칙 | `--p-blue-700`(원시) → `--sem-bg-brand-solid: var(--p-blue-700)`(역할) | `globals.css` `:root` 하단 | **현재 표준.** Phase 3~7에서 재설계. 새 코드는 이 계층만 참조한다 |
+
+③은 리서치 문서(`디자인시스템-리서치-몽타주-시드디자인.md` §1.2)에서 확인한 Montage의 atomic→semantic 구조와 같은 모양이다 — 원시 팔레트(`--p-*`)는 화면에 직접 안 쓰고, 역할 이름(`--sem-*`)만 컴포넌트가 참조한다.
+
+## 새 코드는 ③만 쓴다
+
+`bg-brand-solid`, `text-neutral-strong`, `border-critical-weak`처럼 **`sem-` 접두사 CSS 변수를 노출하는 Tailwind 클래스만** 새로 쓴다. ①·②는 지우지 않고 남겨둔 이유가 있다 — 아직 참조하는 기존 코드가 있어서 걷어내려면 그 코드를 먼저 ③으로 옮기는 별도 작업이 필요하다(지금 범위 밖). 신규 코드에서 ①·②를 새로 참조하지 않는 것만 지키면 된다.
+
+## 이름이 겹치는 함정 — `primary`
+
+①과 ②가 동시에 `primary`라는 이름을 쓴다. `--c-primary`(①, 옛 브랜드색 `#41b6e6`)와 `--primary`(②, shadcn HSL, 같은 옛 색을 가리킴)가 둘 다 살아있고, `tailwind.config.ts`가 이 둘 다 `bg-primary`/`text-primary`/`bg-primary-dark` 같은 유효한 클래스로 노출한다 — **임의값이 아니라서 `design-foundation.test.mjs`도 못 잡는다.**
+
+문제는 지금 브랜드색을 가리키는 진짜 토큰은 `bg-brand-solid`/`text-brand`(③)라는 것이다. 이름만 보고 "brand니까 primary겠지"라고 고르면 `bg-primary`를 쓰게 되고, 그러면 화면에는 새 브랜드 파랑(`#115aff`)이 아니라 폐기된 옛 파랑(`#41b6e6`)이 나온다 — 실제로 [Gradient](?path=/docs/foundations-gradient--docs) 문서를 쓰다가 이 함정에 걸린 사용처(`TypeBPollClient.tsx`의 그라디언트)를 하나 발견해 고쳤다. 지금 시점 전수 확인 결과 `bg-primary`/`text-primary`(순수 형태) 실사용은 0건이다 — 아직 잠재적 함정일 뿐 활성 버그는 아니다.
+
+**규칙: 색을 고를 때는 이름이 그럴듯해 보여도 항상 [Color](?path=/docs/foundations-color--docs)/[Semantic](?path=/docs/foundations-semantic--docs) 표에서 먼저 확인하고 고른다.** `tailwind.config.ts`나 `globals.css`에 정의돼 있다는 사실 자체가 "지금 써도 되는 토큰"이라는 뜻이 아니다.
+
+## 새 토큰이 필요할 때
+
+먼저 [Palette](?path=/docs/foundations-palette--docs)에 있는 색 계열 안에서 되는지 본다. 안 되면 팔레트를 늘릴지, 기존 semantic 토큰을 재사용할지 먼저 논의한다 — 판단 없이 새 hex를 추가하지 않는다.
+
+## 하지 말 것
+
+- ①·②(레거시) 세대의 변수를 새 코드에서 참조하지 않는다.
+- 이름의 유사성만으로 토큰을 고르지 않는다 — `primary`처럼 두 세대에 겹쳐 존재하는 이름이 있다.
+- 이 페이지에 개별 토큰 값·용도를 옮겨 적지 않는다. 그건 [Color](?path=/docs/foundations-color--docs)/[Semantic](?path=/docs/foundations-semantic--docs)/[Palette](?path=/docs/foundations-palette--docs)의 몫이고, 복사본은 원본보다 먼저 낡는다.

@@ -1,0 +1,44 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as PlayerPickModalStories from './PlayerPickModal.stories'
+
+<Meta of={PlayerPickModalStories} />
+
+# PlayerPickModal
+
+승부예측 "예측하기" 플로우에서 포지션별로 선수를 고르는 모달이다. 모달이라는 형태 때문에 Feedback으로 보이지만 사용자에게 알림·확인을 요구하는 게 아니라 **목록에서 하나를 고르는 선택 UI**가 본질이라서 Selection and Input에 둔다 — 성격이 가장 가까운 이웃은 [FormSection](?path=/docs/selection-and-input-formsection--docs)의 선수 선택 picker이고, [ConfirmModal](?path=/docs/feedback-confirmmodal--docs)이 아니다.
+
+코드는 `components/predict/PlayerPickModal.tsx`, 사용처는 `app/dev/predict-preview/page.tsx`(실데이터 연동 전 임시 확인 페이지) 한 곳이다.
+
+`ui/sheet.tsx`의 바텀시트는 항상 하단 고정이라 이 컴포넌트가 필요한 반응형 전환(모바일=바텀시트 / sm+=중앙 다이얼로그)을 표현할 수 없어서, Radix Dialog를 직접 써서 이 컴포넌트 전용 variant로 만들었다. 다른 모달은 계속 `ui/bottom-sheet.tsx`를 쓴다.
+
+<Canvas of={PlayerPickModalStories.Default} />
+<Canvas of={PlayerPickModalStories.Mobile} />
+
+타이틀은 `positionLabel`에 "선택"을 붙여 만든다(`positionLabel="미드필더"` → "미드필더 선택"). 행 하나는 등번호 / 사진(64×64 원형) / 이름 + `국적 · 나이세` / 오른쪽에 점수 배당 배지(`×1.7`) 구성이다.
+
+## 선택 상태
+
+<Canvas of={PlayerPickModalStories.PreSelected} />
+
+`selectedPlayerId`와 같은 행이 `border-brand-solid bg-brand-weak`로 하이라이트되고 `aria-pressed`가 켜진다. 재오픈했을 때 이미 픽한 선수를 보여주는 용도다.
+
+## 언제 쓰고 언제 쓰지 않는지
+
+- 후보를 눌러 **하나만** 고르는 자리에 쓴다. 다중 선택 모드는 없다.
+- **검색·필터가 없다.** `players`로 넘긴 배열을 받은 순서 그대로 전부 렌더한다. 정렬·필터가 필요하면 호출부에서 미리 처리해서 넘겨야 한다.
+- 목록이 길면 시트 내부가 스크롤된다(`max-h-[78vh]`, sm+ `80vh`). 타이틀도 같이 스크롤되어 사라지므로 후보 수가 20개 넘게 늘어나면 헤더 고정을 먼저 검토한다.
+
+<Canvas of={PlayerPickModalStories.ManyCandidates} />
+<Canvas of={PlayerPickModalStories.NoCandidates} />
+
+## 호출부가 책임지는 것
+
+<Canvas of={PlayerPickModalStories.SelectAndClose} />
+
+`onSelect`는 선택만 알린다 — **컴포넌트가 스스로 닫지 않으므로** 호출부에서 상태를 반영한 뒤 `onOpenChange(false)`까지 호출해야 한다. 배경 클릭·ESC는 Radix가 `onOpenChange`로 넘겨준다.
+
+## 알려진 어긋남
+
+- 배당 배지는 [Badge](?path=/docs/contents-badge--docs)의 스타일을 쓰지만 컴포넌트가 아니라 `badgeVariants()`를 span에 얹는다 — 행 전체가 `<button>`이고 `Badge`는 `div`를 렌더해서 버튼 안에 넣을 수 없다. 스타일 원본은 `ui/badge.tsx` 하나이므로 색·타이포를 이 파일에서 따로 바꾸지 않는다.
+- 선수 사진은 `<img>`에 `onError` 폴백이 없다. `lib/predictions/candidates.ts`의 `playerPhotoUrl`은 FotMob CDN을 그대로 조립하는데, 없는 선수는 사진 자리가 그대로 깨진 채 남는다(스토리는 placehold.co로 우회했다).
+- 모션이 열림에만 `ease-out`이고 닫힘은 기본값이다 — [Motion](?path=/docs/foundations-motion--docs)에 적힌 규칙과 어긋나는 부분이다.

@@ -8,7 +8,7 @@ import { trackEvent } from '@/lib/analytics/mixpanel'
 import { CommentsSection } from './CommentsSection'
 import { PollPageHeader } from './PollPageHeader'
 import { IS_MOCK } from '@/lib/config'
-import { cn } from '@/lib/utils'
+import { ResultProgress } from '@/components/ui/result-progress'
 import type { PlayerRow, PollOptionRow } from '@/types/database'
 
 interface ResultViewProps {
@@ -96,7 +96,7 @@ export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultVie
 
             <div className="px-4 pb-6 pt-2">
               <div className="flex flex-col items-center gap-1 pt-4 text-center">
-                <h1 className="break-keep text-heading-2 font-bold text-foreground">
+                <h1 className="break-keep text-heading-2 sm:text-heading-1 font-bold text-foreground">
                   {poll.title}
                 </h1>
                 <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-caption-1 text-muted-foreground">
@@ -109,7 +109,7 @@ export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultVie
             <div className="mx-4 h-px bg-border" />
 
             <div className="flex flex-col items-center gap-5 py-5">
-              <p className="text-center text-label-2 font-semibold text-gray-1">
+              <p className="text-center text-label-2 font-semibold text-neutral-strong">
                 {isClosed ? '최종 결과' : '현재 결과'}
               </p>
 
@@ -123,56 +123,13 @@ export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultVie
                     const thumb = getOptionThumb(item.option, poll.option_players)
 
                     return (
-                      <div
+                      <ResultProgress
                         key={item.option.id}
-                        className="relative min-h-[50px] overflow-hidden rounded-pill border border-border bg-surface"
-                      >
-                        <div
-                          className={cn(
-                            'absolute inset-y-0 left-0 rounded-l-pill',
-                            index === 0 ? 'bg-primary-dim' : 'bg-disabled'
-                          )}
-                          style={{ width: `${item.percent}%` }}
-                        />
-                        <div
-                          className={cn(
-                            'relative flex min-h-[48px] items-center justify-between gap-3 py-[4px] pr-[17px]',
-                            thumb ? 'pl-[5px]' : 'pl-[17px]'
-                          )}
-                        >
-                          <div className="flex min-w-0 items-center gap-2">
-                            {thumb ? (
-                              <div className="flex size-[40px] flex-shrink-0 items-center justify-center overflow-hidden rounded-pill bg-primary-dark text-caption-1 font-bold text-white">
-                                {thumb.url ? (
-                                  <img
-                                    src={thumb.url}
-                                    alt={thumb.label}
-                                    className="h-full w-full object-cover"
-                                  />
-                                ) : (
-                                  <span>{thumb.fallback}</span>
-                                )}
-                              </div>
-                            ) : null}
-                            <p
-                              className={cn(
-                                'min-w-0 truncate break-keep text-caption-1',
-                                index === 0 ? 'font-semibold text-primary-dark' : 'font-medium text-muted-foreground'
-                              )}
-                            >
-                              {item.option.label}
-                            </p>
-                          </div>
-                          <span
-                            className={cn(
-                              'flex-shrink-0 text-caption-1 tabular-nums',
-                              index === 0 ? 'font-semibold text-primary-dark' : 'font-medium text-muted-foreground'
-                            )}
-                          >
-                            {item.percent}%
-                          </span>
-                        </div>
-                      </div>
+                        percent={item.percent}
+                        highlighted={index === 0}
+                        thumb={thumb}
+                        optionLabel={item.option.label}
+                      />
                     )
                   })}
                 </div>
@@ -193,6 +150,8 @@ export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultVie
             initialComments={comments}
             isMockMode={IS_MOCK}
             myVotedOptionLabel={myVotedOptionLabel}
+            // 마감 여부가 아니라 참여 여부로만 판단한다 — 마감된 투표도 참여자는 댓글을 쓸 수 있다.
+            canComment={!!myOptionId}
           />
         </main>
       </div>

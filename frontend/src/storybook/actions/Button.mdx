@@ -1,0 +1,40 @@
+import { Meta, Canvas, Controls } from '@storybook/addon-docs/blocks'
+import * as ButtonStories from './Button.stories'
+
+<Meta of={ButtonStories} />
+
+# Button
+
+<Canvas of={ButtonStories.Default} />
+<Controls of={ButtonStories.Default} />
+
+## 6개 variant
+
+<Canvas of={ButtonStories.AllVariants} />
+
+| variant | 쓸 곳 |
+|---|---|
+| `default` | 화면당 1개, 1차 CTA |
+| `destructive` | 되돌릴 수 없는 동작(탈퇴·삭제) — 색은 [Color](?path=/docs/foundations-color--docs)의 critical 참고 |
+| `secondary` | 1차 CTA와 나란히 두는 2차 동작 |
+| `outline` | 취소·닫기처럼 강조가 필요 없는 동작 |
+| `ghost` | 목록 안 인라인 동작처럼 배경 자체가 필요 없을 때 |
+| `link` | 텍스트 링크처럼 보여야 할 때 |
+
+**`destructive`는 단순 취소·닫기에 쓰지 않는다** — 그건 `outline`이나 `ghost`다. `destructive`는 되돌릴 수 없는 동작 전용이다.
+
+## 크기
+
+<Canvas of={ButtonStories.AllSizes} />
+
+`icon`은 아이콘만 넣는 정사각형 버튼이다 — 텍스트를 넣지 않는다.
+
+## Disabled
+
+<Canvas of={ButtonStories.Disabled} />
+
+색 교체(`disabled:bg-disabled disabled:text-disabled`)로 표현한다. 상태 표현 원칙은 [State](?path=/docs/foundations-state--docs) 참고.
+
+## Pressed
+
+`default`(brand-solid)와 `secondary`는 누르면 배경색 자체가 `-pressed` 토큰으로 바뀐다. 나머지 4개(`destructive`·`outline`·`ghost`·`link`)는 배경에 스왑할 색이 없거나(투명) AA 대비 문제로(destructive) opacity를 쓴다 — 근거는 [State](?path=/docs/foundations-state--docs)의 pressed 섹션 참고.

@@ -1,0 +1,81 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Foundations/Gradient" />
+
+# Gradient
+
+**예외적으로만 쓴다.** 대부분의 화면은 [Color](?path=/docs/foundations-color--docs)의 solid 값으로 충분하다. 지금 그라디언트가 쓰이는 곳은 실제로 4곳이고, 전부 "여러 색을 섞어 꾸미는" 용도가 아니라 **한 가지 실용적인 문제**(스크롤 시 헤더 경계, 사진 없을 때 배경, 사진 위 텍스트 가독성, 어두운 카드에 밋밋하지 않은 포인트)를 풀기 위한 것이다. 여기에 **아직 화면에 붙이지 않고 준비만 해둔 유틸리티 1개**(`spotlight-glow-brand`, 라이트 카드용)가 더 있다. 새 화면에 그라디언트가 필요해 보이면 먼저 flat color로 되는지 확인한다.
+
+<div className="my-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+  <div className="flex flex-col gap-1.5">
+    <div className="h-16 rounded-sm border border-border bg-gradient-to-b from-white to-white/75" />
+    <code className="text-caption-2 text-muted-foreground">AppHeader</code>
+  </div>
+  <div className="flex flex-col gap-1.5">
+    <div className="h-16 rounded-sm bg-gradient-to-br from-brand-solid/30 to-brand-solid" />
+    <code className="text-caption-2 text-muted-foreground">avatar fallback</code>
+  </div>
+  <div className="flex flex-col gap-1.5">
+    <div className="banner-text-overlay h-16 rounded-sm" />
+    <code className="text-caption-2 text-muted-foreground">banner-text-overlay</code>
+  </div>
+  <div className="flex flex-col gap-1.5">
+    <div className="spotlight-glow-brand h-16 rounded-sm" />
+    <code className="text-caption-2 text-muted-foreground">spotlight-glow-brand (준비됨)</code>
+  </div>
+  <div className="flex flex-col gap-1.5">
+    <div className="spotlight-glow-brand-strong h-16 rounded-sm" />
+    <code className="text-caption-2 text-muted-foreground">spotlight-glow-brand-strong</code>
+  </div>
+</div>
+
+| 쓰는 곳 | 클래스 / 정의 | 왜 그라디언트인가 |
+|---|---|---|
+| 상단 고정 헤더 배경 | `bg-gradient-to-b from-white to-white/75` (+ `backdrop-blur`) — `AppHeader.tsx` | 스크롤 시 헤더 뒤로 콘텐츠가 그대로 잘려 보이지 않게, 아래쪽을 반투명으로 흐린다 |
+| 선수 사진이 없을 때의 대체 배경 | `bg-gradient-to-br from-brand-solid/30 to-brand-solid` — `TypeBPollClient.tsx` 캐러셀 카드 | 이니셜 하나만 있는 자리표시자가 flat color보다 덜 비어 보이게 |
+| 캐러셀 카드 하단 텍스트 가독성 오버레이 | `.banner-text-overlay` (`globals.css`, 흑백 3단 그라디언트) | 사진 위에 이름·번호를 올릴 때 사진 밝기와 무관하게 항상 읽히게. 투표 상세 5개 화면의 배너 이미지에도 동일하게 재사용 |
+| 홈 히어로(승부예측) 다크 카드 배경 | `.spotlight-glow-brand-strong` (`globals.css`) — `MatchdayHero.tsx` | `bg-neutral-strong` 다크 카드가 밋밋해 보이지 않게 두 모서리에 옅은 브랜드 글로우를 얹는다. `spotlight-glow-brand`와 같은 기법의 다크 변형 |
+
+## 발견된 드리프트 — 수정함
+
+`avatar fallback` 자리는 원래 `from-primary/30 to-primary-dark`를 썼다. `primary`/`primary-dark`는 [Color](?path=/docs/foundations-color--docs)가 이미 "옛 시스템(#41b6e6, brand로 대체됨)"이라고 못박은 폐기 이름인데, 이 자리 하나만 그 이전 작업에서 빠져 있었다 — 그라디언트라서 `bg-[...]` 임의값 검사에도 안 걸리고, 문서화된 적이 없어서 아무도 못 잡았다. `brand-solid` 계열로 교정했다.
+
+## 준비된 유틸리티 — `spotlight-glow-brand`
+
+```css
+.spotlight-glow-brand {
+  background:
+    radial-gradient(250px at 0% 0%, color-mix(in srgb, var(--p-blue-700) 20%, transparent) 0%, transparent 70%),
+    radial-gradient(250px at 100% 0%, color-mix(in srgb, var(--p-blue-600) 20%, transparent) 0%, transparent 70%),
+    var(--c-bg);
+}
+```
+
+두 모서리에서 브랜드색이 옅게 스며들다 사라지는 앰비언트 글로우다. **아직 어떤 화면에도 붙이지 않았다** — 새 화면·카드가 생길 때 쓰라고 미리 만들어둔 것이다. 이 클래스는 배경을 통째로 정하므로, 쓰는 요소에 `bg-surface`/`bg-background` 등 다른 배경 클래스를 같이 주지 않는다.
+
+원래 이 자리에는 데스크탑 전용 장식 배경 `.shell-desktop-bg`(온보딩 화면의 데스크탑 좌우 여백)가 있었는데, 그 화면 자체를 안 쓰기로 해서 걷어냈다 — 하드코딩 hex를 쓰던 자리라 드리프트 위험도 같이 없어졌다.
+
+`color-mix()`는 Chrome 111+ / Safari 16.2+ / Firefox 113+에서만 동작한다. 이 프로젝트가 지원하는 브라우저 범위에서 문제없는지는 실제로 화면에 쓰기 전에 한 번 더 확인한다.
+
+## 다크 변형 — `spotlight-glow-brand-strong`
+
+```css
+.spotlight-glow-brand-strong {
+  background:
+    radial-gradient(250px at 0% 0%, color-mix(in srgb, var(--p-blue-700) 15%, transparent) 0%, transparent 70%),
+    radial-gradient(250px at 100% 0%, color-mix(in srgb, var(--p-blue-600) 15%, transparent) 0%, transparent 70%),
+    var(--sem-bg-neutral-strong);
+}
+```
+
+`spotlight-glow-brand`와 같은 기법이지만 베이스가 `bg-neutral-strong`(어두운 중립 배경, Pick One 카드와 같은 색)이다. 어두운 배경 위에서는 같은 opacity의 블루가 라이트 배경보다 훨씬 도드라져 보여서 계수를 20% → 15%로 낮췄다. `MatchdayHero.tsx`(홈 히어로)에 적용됨.
+
+이 앱은 다크모드 자체가 없어서(라이트 테마 전용, Color.mdx 참고) `text-positive` 같은 상태 색 텍스트는 라이트 배경 기준으로 대비가 맞춰져 있다 — 이 다크 카드 안에서는 그 토큰들을 그대로 쓰지 않고, 이미 `bg-neutral-strong` 카드(`PlayersPageClient.tsx`의 Pick One 카드)가 쓰는 `text-white`(주요 텍스트) / `text-disabled`(보조 텍스트) 조합을 그대로 재사용한다.
+
+로딩 중 뼈대(skeleton)의 shimmer 그라디언트(`.animate-skeleton`)는 색 자체보다 애니메이션이 핵심이라 [Motion](?path=/docs/foundations-motion--docs)에서 다룬다.
+
+## 하지 말 것
+
+- 새 그라디언트를 임의 hex로 만들지 않는다. 위 목록 중 하나를 재사용할 수 없는지 먼저 확인하고, 안 되면 새로 만들기 전에 논의한다.
+- flat color(Color.mdx)로 되는 화면에 강조 목적으로 그라디언트를 얹지 않는다.
+- 새 그라디언트에도 폐기된 색 이름(`primary`/`primary-dark`/`negative`/`positive-dim` 등)을 쓰지 않는다 — semantic 이름(`brand-solid` 등)만 쓴다.

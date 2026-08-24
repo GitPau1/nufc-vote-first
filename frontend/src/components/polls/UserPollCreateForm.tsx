@@ -6,7 +6,7 @@ import { Check, Plus, Search, Users, X } from 'lucide-react'
 import { createUserPoll } from '@/lib/actions/polls'
 import { uploadPollImage } from '@/lib/actions/images'
 import { trackEvent } from '@/lib/analytics/mixpanel'
-import { CroppedImageInput } from '@/components/images/BannerImageInput'
+import { CroppedImageInput } from '@/components/images/CroppedImageInput'
 import type { PollFormPlayer } from '@/lib/queries/polls'
 import type { PollType, Position } from '@/types/database'
 import {
@@ -236,9 +236,9 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
                   key={item.type}
                   type="button"
                   onClick={() => setPollType(item.type)}
-                  className={`rounded-sm border px-3 py-3 text-left transition-opacity hover:opacity-70 ${selected ? 'border-primary bg-primary-dim' : 'border-border bg-surface'}`}
+                  className={`rounded-sm border px-3 py-3 text-left transition-opacity hover:opacity-70 ${selected ? 'border-brand-solid bg-brand-weak' : 'border-border bg-surface'}`}
                 >
-                  <span className={`block text-label-2 font-black ${selected ? 'text-primary' : 'text-foreground'}`}>{item.label}</span>
+                  <span className={`block text-label-2 font-black ${selected ? 'text-brand' : 'text-foreground'}`}>{item.label}</span>
                   <span className="mt-1 block text-caption-1 text-muted-foreground">{item.description}</span>
                 </button>
               )
@@ -283,7 +283,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
               ))}
             </div>
             {textOptions.length < 5 && (
-              <button type="button" onClick={() => setTextOptions(prev => [...prev, ''])} className="inline-flex items-center gap-1 text-caption-1 font-bold text-primary">
+              <button type="button" onClick={() => setTextOptions(prev => [...prev, ''])} className="inline-flex items-center gap-1 text-caption-1 font-bold text-brand">
                 <Plus className="h-3.5 w-3.5" /> 선택지 추가
               </button>
             )}
@@ -329,7 +329,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
               ))}
             </div>
             {freeOptions.length < 8 && (
-              <button type="button" onClick={() => setFreeOptions(prev => [...prev, { label: '', description: '', imageUrl: '' }])} className="inline-flex items-center gap-1 text-caption-1 font-bold text-primary">
+              <button type="button" onClick={() => setFreeOptions(prev => [...prev, { label: '', description: '', imageUrl: '' }])} className="inline-flex items-center gap-1 text-caption-1 font-bold text-brand">
                 <Plus className="h-3.5 w-3.5" /> 선택지 추가
               </button>
             )}
@@ -359,7 +359,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
           </section>
         )}
 
-        {message && <p className="rounded-sm bg-negative-dim px-3 py-2 text-caption-1 font-semibold text-negative">{message}</p>}
+        {message && <p className="rounded-sm bg-critical-weak px-3 py-2 text-caption-1 font-semibold text-critical">{message}</p>}
         <Button type="submit" disabled={isPending} className="w-full h-12">
           {isPending ? '생성 중...' : '투표 생성'}
         </Button>
@@ -389,7 +389,7 @@ function EmptySelection({ label }: { label: string }) {
 function PlayerSummary({ player }: { player: PollFormPlayer }) {
   return (
     <div className="flex items-center gap-3 rounded-md border border-border bg-disabled px-3 py-2">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface text-caption-1 font-black text-primary">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface text-caption-1 font-black text-brand">
         {player.photo_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={player.photo_url} alt="" className="h-full w-full object-cover" />
@@ -474,7 +474,7 @@ function PlayerPickerSheet({
                   key={filter.id}
                   type="button"
                   onClick={() => setPlayerFilter(filter.id)}
-                  className={`shrink-0 rounded-pill border px-2.5 py-1 text-caption-2 font-black transition-opacity hover:opacity-70 ${selected ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-surface text-muted-foreground'}`}
+                  className={`shrink-0 rounded-pill border px-2.5 py-1 text-caption-2 font-black transition-opacity hover:opacity-70 ${selected ? 'border-brand-solid bg-brand-solid text-on-solid' : 'border-border bg-surface text-muted-foreground'}`}
                 >
                   {filter.label}
                 </button>
@@ -497,9 +497,9 @@ function PlayerPickerSheet({
                         key={player.id}
                         type="button"
                         onClick={() => onToggle(player.id)}
-                        className={`flex w-full items-center gap-3 rounded-sm border px-3 py-2 text-left transition-opacity hover:opacity-70 ${selected ? 'border-primary bg-primary-dim' : 'border-border bg-surface'}`}
+                        className={`flex w-full items-center gap-3 rounded-sm border px-3 py-2 text-left transition-opacity hover:opacity-70 ${selected ? 'border-brand-solid bg-brand-weak' : 'border-border bg-surface'}`}
                       >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary text-caption-1 font-black text-primary">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary text-caption-1 font-black text-brand">
                           {player.photo_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={player.photo_url} alt="" className="h-full w-full object-cover" />
@@ -511,7 +511,7 @@ function PlayerPickerSheet({
                           <p className="truncate text-label-2 font-black text-foreground">{player.name}</p>
                           <p className="mt-0.5 text-caption-2 font-semibold text-muted-foreground">{getPlayerMeta(player)}</p>
                         </div>
-                        <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${selected ? 'border-primary bg-primary text-primary-foreground' : 'border-border text-transparent'}`}>
+                        <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${selected ? 'border-brand-solid bg-brand-solid text-on-solid' : 'border-border text-transparent'}`}>
                           <Check className="h-3.5 w-3.5" />
                         </span>
                       </button>

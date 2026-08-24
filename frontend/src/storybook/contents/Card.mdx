@@ -1,0 +1,47 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as CardStories from './Card.stories'
+
+<Meta of={CardStories} />
+
+# Card
+
+`src/components/ui/card.tsx`. shadcn 원본을 토큰만 프로젝트 값으로 바꿔 쓰는 컨테이너다 — `Card` 자체는 `rounded-lg border border-border bg-surface shadow-g200`인 껍데기이고, 안쪽 구조는 서브 컴포넌트 조합으로 만든다.
+
+한 화면 안에서 **독립적인 정보 덩어리를 배경에서 띄워야 할 때** 쓴다. 화면 전체를 감싸는 용도가 아니다(그건 `PageContainer`), 목록의 각 행을 감싸는 용도도 아니다(그건 카드 하나 안에 [ListGroup](?path=/docs/contents-listgroup--docs) 형태로 넣는다 — 아래 `ListContainer` 참고).
+
+<Canvas of={CardStories.Default} />
+
+## 서브 컴포넌트 실사용 현황
+
+shadcn 기본 구성이라 6개가 export돼 있지만, 이 리포에서 실제로 쓰이는 건 2개뿐이다. (`src/components/**` 전체 grep 기준)
+
+| 서브 컴포넌트 | 기본 클래스 | 실사용 |
+|---|---|---|
+| `Card` | `rounded-lg border border-border bg-surface shadow-g200` | 4개 파일 |
+| `CardContent` | `p-4 pt-0` | 4개 파일 (전부 패딩을 덮어씀) |
+| `CardHeader` | `flex flex-col space-y-1.5 p-4` | 사용처 없음 |
+| `CardTitle` | `text-headline-1 font-bold` | 사용처 없음 |
+| `CardDescription` | `text-label-1-reading text-muted-foreground` | 사용처 없음 |
+| `CardFooter` | `flex items-center p-4 pt-0` | 사용처 없음 |
+
+실사용처 4곳:
+
+- `src/components/polls/TypeAPollClient.tsx` — 투표 상세의 선수 정보 카드
+- `src/components/polls/OverallRatingPollClient.tsx` — 평점 입력 시 선수 1명당 카드
+- `src/components/polls/OverallRatingResultView.tsx` — 평점 결과 시 선수 1명당 카드
+- `src/components/my/MyPageClient.tsx` — 내 계정 정보 카드, 참여한 투표 목록 컨테이너
+
+즉 실제 패턴은 전부 `Card` + `CardContent` 두 겹이고, 제목/설명은 카드 **바깥**에 섹션 라벨(`text-caption-1 uppercase text-muted-foreground`)로 두거나 `CardContent` 안에서 직접 `<p>`로 쓴다. 새 화면에서 `CardHeader`/`CardTitle`을 쓰기 시작하면 기존 4곳과 제목 위치·타이포가 어긋나므로, 굳이 쓰려면 기존 화면도 같이 옮길지 먼저 정해라.
+
+## 패딩은 항상 직접 지정한다
+
+`CardContent`의 기본값이 `p-4 pt-0`(= `CardHeader` 아래에 붙는 것을 전제)이라, Header 없이 Content만 쓰는 이 앱의 패턴에서는 위쪽 패딩이 비어버린다. 그래서 실사용 4곳 모두 `className`으로 패딩을 다시 준다 — 내용물 카드는 `p-4`, 목록 컨테이너는 `p-0`.
+
+<Canvas of={CardStories.ContentOnly} />
+<Canvas of={CardStories.ListContainer} />
+
+## 알려진 제약
+
+- 앱의 "카드처럼 보이는 서피스"는 이 컴포넌트보다 인라인 클래스 반복이 더 많다. `PollCard`, `ResultView`, `PollListClient`, `PlayersPageClient`, `NavigationLoading`, `TypeBPollClient`, `CommentsSection` 등은 `Card`를 쓰지 않고 `rounded-lg border border-border bg-surface`를 직접 붙인다. 값은 같아도 컴포넌트 경유가 아니므로, 카드 스타일을 바꿀 일이 생기면 `ui/card.tsx` 하나만 고쳐서는 끝나지 않는다.
+- `Card`는 `text-card-foreground`(`--card-foreground`)를 쓰는데 대부분의 화면 텍스트는 `text-foreground`를 쓴다. 라이트 테마에서 둘의 값이 거의 같아 눈에 안 띄지만 같은 토큰은 아니다 — 카드 안 텍스트 색은 자식 요소에서 명시하는 편이 안전하다.
+- 라운드·타이포 토큰은 `src/components/design-foundation.test.mjs`가 문자열로 검사한다(`rounded-lg border border-border bg-surface`, `text-headline-1`, `text-label-1-reading`). 이 클래스들을 고치면 그 테스트가 깨진다(별도 npm script는 없고 `node --test src/components/design-foundation.test.mjs`로 돈다).

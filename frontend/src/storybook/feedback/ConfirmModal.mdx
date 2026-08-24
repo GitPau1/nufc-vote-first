@@ -1,0 +1,47 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as ConfirmModalStories from './ConfirmModal.stories'
+
+<Meta of={ConfirmModalStories} />
+
+# ConfirmModal
+
+`components/polls/ConfirmModal.tsx`. 투표 제출 직전에 "이 선택으로 투표하시겠어요?"를 확인받는 모달이다.
+
+이 서비스에서 **투표는 제출 후 수정할 수 없다**(DB UNIQUE 제약으로 사용자당 1표). 되돌릴 수 없는 행동이라 제출 버튼 하나로 끝내지 않고, 무엇을 고른 상태인지 다시 보여주고 확인을 받는 게 이 모달의 목적이다. 그래서 헤더 설명이 "제출 후에는 변경할 수 없습니다"로 고정돼 있다 — 이 문구는 컴포넌트에 하드코딩이고 prop으로 바꿀 수 없다.
+
+<Canvas of={ConfirmModalStories.Default} />
+
+## 사용처
+
+| 파일 | 비고 |
+| --- | --- |
+| `components/polls/TypeAPollClient.tsx` | `selectedOption`이 있을 때만 렌더 (`{selectedOption && <ConfirmModal .../>}`) |
+| `components/polls/TypeBPollClient.tsx` | 항상 렌더하고 `selectedLabel={selectedOption?.label ?? ''}` — 선택이 없으면 빈 라벨이 그려질 수 있다 |
+| `components/polls/OverallRatingPollClient.tsx` | 전체 평가. 문구를 바꿔 쓴다(`title="이 평가로 제출하시겠어요?"`, `summaryCaption="내 평가"`, `selectedLabel="선수 N명 평가"`) |
+
+전체 평가는 2026-08-24까지 이 확인 단계 없이 버튼에서 바로 `submitRatingVotes`를 호출했다 — 제출 후 수정 불가라는 제약이 같은데 셋 중 되돌리고 싶을 여지가 가장 큰 투표(선수 20명 이상 채점)여서 확인을 붙였다. 그때 `title`·`summaryCaption`·`confirmLabel`을 optional prop으로 열었고, 기본값은 선택형 투표 문구다.
+
+## 구조
+
+`ui/bottom-sheet.tsx`([BottomSheet](?path=/docs/feedback-bottomsheet--docs)) 위에 얹은 얇은 레이어다. 모바일(`<768px`)에서는 바텀시트, 데스크톱에서는 중앙 모달로 뜬다 — 이 컴포넌트가 결정하는 게 아니라 `BottomSheet`가 화면 폭으로 결정한다.
+
+"내 선택" 요약 박스는 [Radio](?path=/docs/selection-and-input-radio--docs)의 `RadioIndicator`를 `selected` 고정으로 쓴다. 클릭 대상이 아니라 상태 표시용이므로 `RadioOption`(행 전체가 버튼)은 쓰지 않는다.
+
+<Canvas of={ConfirmModalStories.Interactive} />
+
+## Props와 상태
+
+- `open` / `onCancel` / `onConfirm` — 모달은 자기 열림 상태를 갖지 않는다. 배경 클릭·ESC도 `onCancel`로 들어온다(`onOpenChange`에서 닫힘일 때 `onCancel` 호출).
+- `isPending` — 취소·최종 제출 두 버튼을 함께 disabled로 만들고 제출 버튼 문구를 "제출 중…"으로 바꾼다. 수정 불가인 투표라 이중 제출을 막는 게 목적이다.
+- `title` / `summaryCaption` / `confirmLabel` — optional. 안 넘기면 선택형 투표 문구("이 선택으로 투표하시겠어요?" / "내 선택" / "최종 제출")다. "제출 후에는 변경할 수 없습니다" 설명은 고정이다 — 이 모달이 존재하는 이유라서 끌 수 없게 뒀다.
+
+<Canvas of={ConfirmModalStories.RatingSubmit} />
+
+<Canvas of={ConfirmModalStories.Pending} />
+
+## 주의
+
+- 실제 제출(`lib/actions/*`의 서버 액션)은 이 모달이 아니라 상위 투표 클라이언트가 한다. Storybook에서 "최종 제출"은 스토리에 넘긴 콜백만 실행되고 DB에 아무 일도 일어나지 않는다.
+- `selectedLabel`은 길이 제한이 없다(사용자가 만든 투표의 선택지 텍스트가 그대로 들어온다). 긴 라벨 스토리로 요약 박스가 줄바꿈될 때 버튼 행이 밀리지 않는지 확인한다.
+
+<Canvas of={ConfirmModalStories.LongSelectedLabel} />

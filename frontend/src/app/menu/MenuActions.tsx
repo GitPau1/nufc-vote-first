@@ -64,7 +64,7 @@ export function MenuActions({ isLoggedIn, isAdmin }: MenuActionsProps) {
         )}
       </div>
 
-      <LoginModal open={loginOpen} onClose={closeLogin} intent="direct" triggerAction="login" />
+      <LoginModal open={loginOpen} onClose={closeLogin} triggerAction="login" />
     </>
   )
 }

@@ -28,14 +28,14 @@ export function AppHeader({ auth, showAuth = true, mobileBack = false }: AppHead
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-gradient-to-b from-white to-white/75 backdrop-blur">
-      <div className="relative mx-auto flex h-[62px] max-w-content items-center px-4">
+      <div className="relative mx-auto flex h-[56px] max-w-content items-center px-4">
         {/* 모바일 전용 레이어 */}
         <div className="flex w-full items-center justify-center sm:hidden">
           {mobileBack ? (
             <button
               onClick={() => router.back()}
               className="absolute left-4 flex items-center gap-1.5 text-label-1-normal font-semibold text-muted-foreground
-                         hover:text-foreground active:opacity-50 transition-all duration-100 focus:outline-none"
+                         hover:text-foreground active:opacity-50 transition-all duration-micro focus:outline-none"
             >
               <ChevronLeft className="h-4 w-4" />
               돌아가기

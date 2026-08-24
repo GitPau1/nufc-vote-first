@@ -1,0 +1,14 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as PollCarouselCardStories from './PollCarouselCard.stories'
+
+<Meta of={PollCarouselCardStories} />
+
+# PollCarouselCard
+
+`TypeBPollClient`(선수 선택형 투표) 전체를 mock 데이터로 렌더한 것 — 가운데 카드가 크고 양옆 카드가 `SIDE_SCALE`(0.83)만큼 작아지는 캐러셀, 좌우 화살표, 터치 스와이프를 함께 갖고 있다.
+
+<Canvas of={PollCarouselCardStories.Default} />
+
+## 컴포넌트로 분리하지 않은 이유
+
+캐러셀 로직(터치 시작 좌표, 카드 폭·높이 계산, 이전/다음 인덱스)이 투표 제출·로그인 모달·분석 이벤트와 한 파일(`TypeBPollClient.tsx`, 329줄)에 얽혀 있다. 카드 하나만 분리하는 건 오늘 범위를 넘어서서, 지금은 실제 컴포넌트를 그대로 문서화했다 — 스토리북 렌더가 곧 회귀 확인 역할도 겸한다(mock 데이터로도 깨지면 바로 보인다).

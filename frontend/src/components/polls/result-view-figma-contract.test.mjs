@@ -4,6 +4,9 @@ import { test } from 'node:test'
 
 const resultView = readFileSync(new URL('./ResultView.tsx', import.meta.url), 'utf8')
 const commentsSection = readFileSync(new URL('./CommentsSection.tsx', import.meta.url), 'utf8')
+// 결과 막대(퍼센트 바 + 썸네일)는 ResultView.tsx에서 ui/result-progress.tsx(ResultProgress)로
+// 추출됐다 — 관련 리터럴은 이제 그쪽 파일에 있다. 아래 두 테스트가 이 파일을 같이 읽는다.
+const resultProgress = readFileSync(new URL('../ui/result-progress.tsx', import.meta.url), 'utf8')
 
 test('result page keeps the Figma-sized cover image', () => {
   assert.match(resultView, /h-\[252px\]/)
@@ -42,18 +45,21 @@ test('comment option badges use the compact caption component', () => {
 
 test('result page renders all options as Figma-style percentage bars', () => {
   assert.match(resultView, /resultItems\.map/)
-  assert.match(resultView, /width: `\$\{item\.percent\}%`/)
+  assert.match(resultView, /<ResultProgress/)
+  // 퍼센트 막대 자체의 width 계산은 ResultProgress로 옮겨갔다.
+  assert.match(resultProgress, /width: `\$\{percent\}%`/)
   assert.doesNotMatch(resultView, /slice\(1\)/)
-  assert.doesNotMatch(resultView, /text-\[40px\]/)
+  assert.doesNotMatch(resultProgress, /text-\[40px\]/)
 })
 
 test('result page adds Figma-style option thumbnails only for image or player options', () => {
   assert.match(resultView, /getOptionThumb/)
   assert.match(resultView, /option\.image_url/)
   assert.match(resultView, /poll\.option_players/)
-  assert.match(resultView, /size-\[40px\]/)
-  assert.match(resultView, /thumb \?/ )
-  assert.doesNotMatch(resultView, /placehold\.co\/40x40/)
+  // 썸네일 렌더(size-[40px], thumb 삼항)는 ResultProgress로 옮겨갔다.
+  assert.match(resultProgress, /size-\[40px\]/)
+  assert.match(resultProgress, /thumb \?/ )
+  assert.doesNotMatch(resultProgress, /placehold\.co\/40x40/)
 })
 
 test('comment composer keeps the Figma input proportions', () => {

@@ -1,0 +1,40 @@
+import { Meta, Canvas, Controls } from '@storybook/addon-docs/blocks'
+import * as UserMenuStories from './UserMenu.stories'
+
+<Meta of={UserMenuStories} />
+
+# UserMenu
+
+로그인한 사용자의 아바타 + 드롭다운이다. [AppHeader](?path=/docs/navigations-appheader--docs) 우측 끝에만 들어가는 조각이고, 직접 배치하는 컴포넌트가 아니다 — 헤더가 `HeaderAuthStatus`를 통해 이 컴포넌트를 꽂는다(`src/components/layout/HeaderAuthStatus.tsx`가 유일한 사용처). 로그아웃 상태에서 이 자리에 들어가는 것은 [LoginButton](?path=/docs/actions-loginbutton--docs)이고, 둘이 갈리는 규칙은 그쪽 문서에 정리했다.
+
+<Canvas of={UserMenuStories.Default} />
+<Controls of={UserMenuStories.Default} />
+
+## 아바타는 항상 32px 원형 한 칸
+
+`avatarUrl`이 없으면 `displayName`의 **첫 글자 하나**로 떨어지고, 이름까지 없으면 `'U'`가 된다.
+
+<Canvas of={UserMenuStories.FallbackInitial} />
+<Canvas of={UserMenuStories.NoIdentity} />
+
+`displayName`은 아바타 `alt`와 fallback 첫 글자에만 쓰인다 — **드롭다운에는 사용자 이름이 표시되지 않는다.** 이름이 아무리 길어도 레이아웃이 밀리지 않는 이유이자, "헤더에서 내 계정 이름을 확인할 수 없다"는 제약이기도 하다.
+
+## 드롭다운 항목은 권한에 따라 3개 또는 4개
+
+<Canvas of={UserMenuStories.Open} />
+
+일반 사용자는 마이페이지(`/my`) · 피드백 남기기(`/my/feedback`) · 로그아웃. `isAdmin`이면 관리자 페이지(`/admin`)가 한 줄 더 붙는다.
+
+<Canvas of={UserMenuStories.AdminOpen} />
+
+아바타 자체는 관리자와 일반 사용자가 완전히 같다 — 권한 차이는 열어봐야만 보인다. 위 두 스토리는 `play` 함수로 아바타를 클릭해 열어둔 상태다.
+
+모바일 하단 내비의 '메뉴'(`/menu`)에 있던 피드백·관리자 진입이 이 드롭다운으로 옮겨온 것이라, 데스크탑에서는 [BottomNav](?path=/docs/navigations-bottomnav--docs)의 '메뉴' 탭 대신 여기가 그 역할을 한다.
+
+## 닫힘 조건
+
+바깥 영역 `mousedown` 또는 `Escape`로 닫힌다. 메뉴 항목을 누르면 이동과 함께 닫힌다. 열림 상태는 내부 `useState`이므로 외부에서 제어할 수 없다 — 트리거에는 `aria-expanded`가 붙는다.
+
+## Storybook에서 안 되는 것
+
+로그아웃은 mock 모드에서는 서버 액션(`mockLogout`), 실연동에서는 Supabase 클라이언트 `signOut()` + `window.location` 이동을 호출한다. **Storybook에서 로그아웃 버튼은 동작하지 않는다** — 항목 배치와 스타일 확인용으로만 본다.

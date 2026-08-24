@@ -21,12 +21,18 @@ test('players Pick One uses the approved card transition states', () => {
   const file = source('components/players/PlayersPageClient.tsx')
 
   assert.match(file, /phase.*'idle'.*'confirming'.*'centered'/s)
-  assert.match(file, /setTimeout[\s\S]*1000/)
-  assert.match(file, /window\.setTimeout[\s\S]*120/)
+  // 1000/120/700이던 setTimeout 인자는 디자인시스템 실행계획 §3.18에서 이름 있는
+  // 상수로 추출됐다(값은 그대로) — 리터럴 숫자 대신 상수명을 검사한다.
+  assert.match(file, /PICK_ONE_CONFIRM_HOLD_MS = 1000/)
+  assert.match(file, /PICK_ONE_EXIT_STAGGER_MS = 120/)
+  assert.match(file, /PICK_ONE_EXIT_FADE_MS = 700/)
+  assert.match(file, /setTimeout[\s\S]*PICK_ONE_CONFIRM_HOLD_MS/)
+  assert.match(file, /window\.setTimeout[\s\S]*PICK_ONE_EXIT_STAGGER_MS/)
   assert.match(file, /enter-right/)
   assert.match(file, /requestAnimationFrame\(\(\) => \{\s*window\.setTimeout/s)
   assert.match(file, /한 번 더 누르면 다음 선택으로 넘어갑니다\./)
-  assert.match(file, /ring-4 ring-inset ring-primary/)
+  // ring-primary → ring-brand-solid: semantic 토큰 이전(primary→brand)으로 이름이 바뀜.
+  assert.match(file, /ring-4 ring-inset ring-brand-solid/)
   assert.doesNotMatch(file, /Target/)
   assert.doesNotMatch(file, /PickOneResult/)
 })

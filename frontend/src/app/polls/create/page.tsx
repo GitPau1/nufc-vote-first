@@ -34,8 +34,8 @@ export default async function PollCreatePage() {
       <PollPageHeader />
       <main className="mx-auto max-w-detail px-4 pt-4 pb-24 animate-enter">
         <div className="mb-3">
-          <h1 className="text-heading-2 font-black text-foreground">투표 만들기</h1>
-          <p className="mt-1 text-label-2 text-muted-foreground">투표는 생성 즉시 시작되고 지정한 종료일에 마감됩니다.</p>
+          <h1 className="text-heading-2 sm:text-heading-1 font-black text-foreground">투표 만들기</h1>
+          <p className="mt-1 text-label-1-reading text-muted-foreground">투표는 생성 즉시 시작되고 지정한 종료일에 마감됩니다.</p>
         </div>
         <UserPollCreateForm players={players} />
       </main>

@@ -13,20 +13,26 @@ npm run dev              # 개발 서버 (mock 모드는 .env.local 없이도 �
 npm run build
 npm run lint
 
+npm test                 # src 아래 *.test.mjs 전부 (현재 94개) — 커밋 전에 이걸 돌린다
 npm run test:vote-eligibility   # 개별 단위 테스트 (node --test)
 npm run test:rating
 npm run test:query-cache
 npm run test:middleware-auth
 npm run test:header-auth
 npm run test:prefetch-policy
-npm run test:images   # 유일하게 --experimental-strip-types로 실행 (.ts 파일 직접 실행)
+npm run test:images   # .ts 파일을 직접 import해서 --experimental-strip-types가 필요하다
+
+npm run storybook        # 디자인시스템 Storybook (localhost:6006)
+npm run build-storybook
 
 npm run types:supabase    # DB 스키마 변경 후 database.generated.ts 재생성 (supabase CLI 필요)
 ```
 
 DB migration은 리포 루트에서 `supabase db push` (사전에 `supabase link --project-ref <ref>` 필요).
 
-각 테스트는 대응하는 소스 옆의 `*.test.mjs` 파일을 직접 실행하는 방식이라 개별 테스트 필터링 플래그는 없다 — 파일 자체가 하나의 테스트 단위다.
+각 테스트는 대응하는 소스 옆의 `*.test.mjs` 파일을 직접 실행하는 방식이라 개별 테스트 필터링 플래그는 없다 — 파일 자체가 하나의 테스트 단위다. **개별 script는 전체 테스트 파일의 일부만 덮는다**(13개 중 7개) — 나머지(`design-foundation`, `poll-list-client`, `root-route`, `navigation-loading`, `login-modal`, `bottom-nav`, `result-view-figma-contract`)는 `npm test`로만 돌아간다. 2026-08-24에 이 script가 없어서 화면 구조가 바뀐 뒤에도 4건이 깨진 채 방치돼 있었다.
+
+이 테스트들은 대부분 **소스 문자열을 정규식으로 검사**한다(렌더링 테스트가 아니다). 그래서 화면 구조를 옮기면 로직이 옳아도 깨진다 — 그럴 때는 테스트를 지우지 말고 **옮겨간 자리를 기준으로 단정문을 다시 쓴다.**
 
 ## Architecture
 

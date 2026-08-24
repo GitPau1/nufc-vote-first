@@ -18,6 +18,12 @@ interface CommentsSectionProps {
   initialComments: CommentItem[]
   isMockMode?: boolean
   myVotedOptionLabel?: string | null  // 현재 유저의 투표 항목 (입력 힌트용)
+  /**
+   * 투표에 참여했는지 — 참여자만 입력창을 본다. DB의 `comments: insert for voters` RLS와
+   * 같은 조건이라, 여기서 막지 않으면 제출이 서버에서 조용히 실패한다.
+   * 마감 여부와는 무관하다: 마감된 투표에도 참여자는 댓글을 쓸 수 있다.
+   */
+  canComment: boolean
 }
 
 function formatRelative(dateStr: string): string {
@@ -42,6 +48,7 @@ export function CommentsSection({
   initialComments,
   isMockMode = false,
   myVotedOptionLabel = null,
+  canComment,
 }: CommentsSectionProps) {
   const [comments, setComments]   = useState<LocalComment[]>(initialComments)
   const [text, setText]           = useState('')
@@ -141,7 +148,8 @@ export function CommentsSection({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* 댓글 입력 */}
+      {/* 댓글 입력 — 투표 참여자에게만 보인다 */}
+      {canComment && (
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
           <textarea
@@ -151,7 +159,7 @@ export function CommentsSection({
             rows={2}
             className="h-[62px] flex-1 resize-none rounded-lg border border-border bg-surface px-[13px] py-[11px]
                        text-label-1-reading text-foreground placeholder:text-muted-foreground
-                       focus:border-primary focus:outline-none"
+                       focus:border-brand-solid focus:outline-none"
           />
           <Button
             size="icon"
@@ -166,7 +174,7 @@ export function CommentsSection({
         {/* 투표 항목 표시 힌트 */}
         {myVotedOptionLabel && (
           <p className="text-caption-2 text-muted-foreground flex items-center gap-1.5 px-1">
-            <span className="opacity-60">💬</span>
+            <span className="opacity-70">💬</span>
             댓글에{' '}
             <CommentOptionBadge>{myVotedOptionLabel}</CommentOptionBadge>
             {' '}항목이 함께 표시됩니다
@@ -177,18 +185,27 @@ export function CommentsSection({
           <p className="text-caption-1 text-muted-foreground text-right">{text.length} / 300</p>
         )}
       </div>
+      )}
 
       {/* 댓글 목록 */}
       <div className="overflow-hidden rounded-lg border border-border bg-surface shadow-g200">
         <div className="px-4 pb-3 pt-5">
-          <p className="text-label-2 font-bold text-gray-1">
+          <p className="text-label-2 font-bold text-neutral-strong">
             댓글
           </p>
+          {/* 입력창이 없는 이유를 알려준다 — 마감 여부에 따라 되돌릴 수 있는 상태인지가 다르다 */}
+          {!canComment && (
+            <p className="mt-1 text-caption-2 text-muted-foreground">
+              {pollStatus === 'closed'
+                ? '투표에 참여하지 않아 댓글을 남길 수 없어요'
+                : '투표에 참여하면 댓글을 남길 수 있어요'}
+            </p>
+          )}
         </div>
 
         {comments.length === 0 ? (
           <p className="px-4 pb-6 pt-2 text-center text-label-1-normal text-muted-foreground">
-            첫 번째 댓글을 남겨보세요
+            {canComment ? '첫 번째 댓글을 남겨보세요' : '아직 댓글이 없어요'}
           </p>
         ) : (
           <div>
@@ -220,15 +237,15 @@ export function CommentsSection({
                             {formatRelative(comment.created_at)}
                           </span>
                           {comment._local && (
-                            <span className="text-caption-2 text-primary">방금 등록</span>
+                            <span className="text-caption-2 text-brand">방금 등록</span>
                           )}
                         </div>
                         {comment.is_mine && !isEditing && (
-                          <div className="flex flex-shrink-0 gap-2 text-caption-2 font-semibold text-muted-foreground">
+                          <div className="flex flex-shrink-0 gap-2 text-label-2 font-semibold text-muted-foreground">
                             <button type="button" onClick={() => startEditing(comment)} className="hover:text-foreground">
                               수정
                             </button>
-                            <button type="button" onClick={() => handleDelete(comment.id)} className="hover:text-negative">
+                            <button type="button" onClick={() => handleDelete(comment.id)} className="hover:text-critical">
                               삭제
                             </button>
                           </div>
@@ -240,13 +257,13 @@ export function CommentsSection({
                             value={editingText}
                             onChange={event => setEditingText(event.target.value.slice(0, 300))}
                             rows={2}
-                            className="resize-none rounded-sm border border-border bg-surface px-3 py-2 text-label-1-reading text-foreground focus:border-primary focus:outline-none"
+                            className="resize-none rounded-sm border border-border bg-surface px-3 py-2 text-label-1-reading text-foreground focus:border-brand-solid focus:outline-none"
                           />
                           <div className="flex justify-end gap-1.5">
-                            <Button size="sm" variant="outline" className="h-8 px-2 text-caption-1" onClick={cancelEditing} disabled={isPending}>
+                            <Button size="sm" variant="outline" className="h-8 px-2 text-caption-1" onClick={cancelEditing} disabled={isPending} aria-label="댓글 수정 취소">
                               <X className="h-3.5 w-3.5" />
                             </Button>
-                            <Button size="sm" className="h-8 px-2 text-caption-1" onClick={() => handleUpdate(comment.id)} disabled={!editingText.trim() || isPending}>
+                            <Button size="sm" className="h-8 px-2 text-caption-1" onClick={() => handleUpdate(comment.id)} disabled={!editingText.trim() || isPending} aria-label="댓글 수정 완료">
                               <Check className="h-3.5 w-3.5" />
                             </Button>
                           </div>
@@ -285,7 +302,7 @@ function CommentOptionBadge({
   return (
     <span
       className={[
-        'inline-flex items-center rounded-pill border-0 bg-primary-dim px-[9px] py-[3px] text-caption-2 font-semibold text-primary-dark pointer-events-none',
+        'inline-flex items-center rounded-pill border-0 bg-brand-weak px-[9px] py-[3px] text-caption-2 font-semibold text-brand pointer-events-none',
         className,
       ].filter(Boolean).join(' ')}
     >
@@ -306,7 +323,7 @@ function CommentReactionButton({
   onClick: () => void
 }) {
   const toneClass = isLiked
-    ? 'text-primary font-semibold'
+    ? 'text-brand font-semibold'
     : 'text-muted-foreground hover:text-foreground'
   const disabledClass = disabled ? 'pointer-events-none opacity-50' : ''
 
@@ -316,7 +333,7 @@ function CommentReactionButton({
       onClick={onClick}
       disabled={disabled}
       className={[
-        'mt-1.5 inline-flex h-7 items-center gap-1 rounded-pill bg-disabled px-2 text-caption-2 transition-all duration-100 active:scale-90',
+        'mt-1.5 inline-flex h-7 items-center gap-1 rounded-pill bg-disabled px-2 text-label-2 transition-all duration-micro active:scale-90',
         toneClass,
         disabledClass,
       ].filter(Boolean).join(' ')}

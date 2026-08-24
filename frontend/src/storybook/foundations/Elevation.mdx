@@ -1,0 +1,45 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import { TokenList, Box, BoxValue } from '../_internal/TokenList'
+
+<Meta title="Foundations/Elevation" />
+
+# Elevation
+
+그림자는 **어떤 배경 위에 놓이는가**로 그룹을 먼저 고르고, 그 안에서 크기를 고른다. 이게 이 시스템의 유일하고 중요한 규칙이다.
+
+| 배경 | 쓸 그룹 |
+|---|---|
+| `background` (`#fafafa`) — 화면 기본 배경 | `shadow-g*` |
+| `surface` (`#ffffff`) — 카드·헤더 위 | `shadow-w*` |
+
+같은 크기라도 회색 배경 위에서는 그림자가 더 강하게 보이기 때문에, `g` 그룹은 `w` 그룹보다 옅게 설계되어 있다. 배경을 무시하고 고르면 어떤 카드는 떠 보이고 어떤 카드는 눌려 보인다.
+
+## On Gray — 화면 배경 위
+
+<TokenList
+  items={[
+    { name: 'shadow-g100', sample: <Box className="rounded-md shadow-g100" />, value: <BoxValue className="shadow-g100" readProperty="boxShadow" />, usage: '소형 요소' },
+    { name: 'shadow-g200', sample: <Box className="rounded-md shadow-g200" />, value: <BoxValue className="shadow-g200" readProperty="boxShadow" />, usage: '**기본값.** 투표 카드, 결과 카드, 프로필 카드' },
+    { name: 'shadow-g300', sample: <Box className="rounded-md shadow-g300" />, value: <BoxValue className="shadow-g300" readProperty="boxShadow" />, usage: '대형 시트' },
+  ]}
+/>
+
+## On White — 흰 면 위
+
+<TokenList
+  items={[
+    { name: 'shadow-w100', sample: <Box className="rounded-md border border-border shadow-w100" />, value: <BoxValue className="shadow-w100" readProperty="boxShadow" />, usage: '앱 헤더, 소형 컴포넌트' },
+    { name: 'shadow-w200', sample: <Box className="rounded-md border border-border shadow-w200" />, value: <BoxValue className="shadow-w200" readProperty="boxShadow" />, usage: 'contained 버튼, Google 로그인 버튼' },
+    { name: 'shadow-w300', sample: <Box className="rounded-md border border-border shadow-w300" />, value: <BoxValue className="shadow-w300" readProperty="boxShadow" />, usage: 'Bottom Sheet, 대형 카드' },
+  ]}
+/>
+
+## 그림자와 테두리
+
+이 시스템에서 카드는 **그림자와 테두리를 함께** 쓴다 (`border border-border` + `shadow-g200`). 그림자만으로는 흰 카드와 회색 배경의 경계가 약하기 때문이다. 둘 중 하나만 쓰지 않는다.
+
+## 하지 말 것
+
+- `shadow-[0_1px_4px_rgba(...)]` 같은 임의값을 쓰지 않는다. `design-foundation.test.mjs`가 막는다.
+- Tailwind 기본값(`shadow-sm`, `shadow-md`, `shadow-lg`)을 쓰지 않는다 — 배경별 구분이 없어서 이 시스템의 규칙을 깨뜨린다.
+- 강조를 위해 그림자를 키우지 않는다. 강조는 색(`brand`)이나 테두리로 한다.

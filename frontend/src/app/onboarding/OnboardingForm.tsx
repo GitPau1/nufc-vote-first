@@ -36,13 +36,13 @@ export function OnboardingForm() {
           <label className="text-label-2 font-semibold text-foreground">닉네임</label>
           <input
             name="displayName"
-            className="w-full px-3.5 py-3 rounded-sm border border-border text-body-2-normal text-foreground bg-surface outline-none focus:border-primary placeholder:text-gray-3"
+            className="w-full px-3.5 py-3 rounded-sm border border-border text-body-1-normal text-foreground bg-surface outline-none focus:border-brand-solid placeholder:text-placeholder"
             placeholder="예: 까치사랑해"
             maxLength={12}
             autoFocus
           />
           <span className="text-caption-2 text-muted-foreground">2~12자, 특수문자 제외</span>
-          {error && <span className="text-caption-1 text-negative font-medium">{error}</span>}
+          {error && <span className="text-caption-1 text-critical font-medium">{error}</span>}
         </div>
 
         <Button type="submit" disabled={isPending} className="w-full h-12 mt-2">

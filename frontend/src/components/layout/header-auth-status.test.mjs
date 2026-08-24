@@ -18,7 +18,7 @@ test('public header does not block server render on auth lookup', () => {
 })
 
 test('app header uses the home header treatment by default', () => {
-  assert.match(appHeaderSource, /h-\[62px\]/)
+  assert.match(appHeaderSource, /h-\[56px\]/)
   assert.match(appHeaderSource, /backdrop-blur/)
   assert.match(appHeaderSource, /from-white/)
   assert.match(appHeaderSource, /justify-center/)

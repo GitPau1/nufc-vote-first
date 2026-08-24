@@ -1,0 +1,120 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import { TokenList, Box } from '../_internal/TokenList'
+
+<Meta title="Foundations/State" />
+
+# State
+
+상태는 두 유형으로 나뉜다. 이 구분이 "어떻게 표현할지"와 "겹칠 수 있는지"를 결정한다.
+
+| 유형 | 무엇인가 | 예 |
+|---|---|---|
+| **상호작용 상태** | 사용자의 동작에 따라 변한다 | hover, pressed |
+| **옵션 상태** | 컴포넌트에 주어진 옵션으로 정해진다 | selected, disabled, loading, closed |
+
+핵심 차이: **hover는 항상 opacity로, 옵션 상태는 색 교체로 표현한다. pressed(active)는 배경에 색이 있는지에 따라 갈린다.**
+
+## hover — 항상 opacity로
+
+색을 바꾸지 않고 투명도만 조절한다. 색 조합을 늘리지 않고도 피드백을 주기 위한 LDSG 방식이다.
+
+<TokenList
+  items={[
+    { name: 'opacity-100 (기본)', sample: <Box className="rounded-sm bg-brand-solid opacity-100" />, usage: '아무 동작도 없는 상태' },
+    { name: 'hover:opacity-70', sample: <Box className="rounded-sm bg-brand-solid opacity-70" />, usage: '마우스를 올린 상태' },
+  ]}
+/>
+
+전환에는 `duration-micro`를 쓴다 → [Motion](?path=/docs/foundations-motion--docs)
+
+## pressed(active) — 배경에 색이 있으면 토큰, 없으면 opacity
+
+**채워진 배경(solid·weak 색을 이미 깔고 있는) variant**는 `active:opacity-50` 대신 `active:bg-{intent}-{prominence}-pressed` 토큰으로 배경 자체를 바꾼다. 예: `bg-brand-solid` → `active:bg-brand-solid-pressed`.
+
+**투명 배경(테두리·텍스트만 있는) variant**는 스왑할 배경색이 없어 `active:opacity-50`을 그대로 쓴다.
+
+<TokenList
+  items={[
+    { name: 'active:bg-brand-solid-pressed', sample: <Box className="rounded-sm bg-brand-solid-pressed" />, usage: '채워진 배경(default 버튼)' },
+    { name: 'active:opacity-50', sample: <Box className="rounded-sm bg-brand-solid opacity-50" />, usage: '투명 배경(outline·ghost·link 버튼)' },
+  ]}
+/>
+
+**색 교체 전에 반드시 텍스트 대비를 검산한다.** 배경이 한 단계 진해지면 그 위 텍스트 대비가 4.5:1 아래로 떨어질 수 있다 — 실제로 두 경우에서 AA 미달이 나와 opacity를 그대로 썼다:
+
+| 케이스 | 시도한 값 | 대비 | 처리 |
+|---|---|---|---|
+| destructive 버튼(`text-critical` on `bg-critical-weak-pressed`) | red-700 on red-200 | 3.94:1 (미달, 평상시도 4.54:1로 턱걸이) | `active:opacity-50` 유지 |
+| `MatchWeekList`(`text-muted-foreground` on `bg-brand-weak-pressed`) | #666666 on blue-200 | 4.48:1 (미달) | pressed 전용 값 대신 hover와 같은 톤(`bg-brand-weak`) 유지 |
+| `PollCard`(`text-muted-foreground` on `bg-neutral-weak-pressed`) | #666666 on neutral-300 | 4.06:1 (미달) | pressed 전용 값 대신 `bg-neutral-weak`(기존 `bg-disabled`와 같은 값) 유지 |
+
+세 경우 다 "한 단계 더 진하게"가 대비를 깨서, 대신 **이미 검증된 톤을 재사용**하는 쪽으로 처리했다.
+
+## 옵션 상태 — 색 교체로
+
+### Selected
+
+컨테이너는 `border-brand-solid` + `bg-brand-weak`으로 바꾼다. opacity를 쓰지 않는다 — 선택은 "흐려지는 것"이 아니라 "강조되는 것"이다.
+
+원형 인디케이터가 있는 경우(투표 옵션)는 테두리를 `border-brand-solid`로 바꾸고 안쪽에 `bg-brand-solid` 점을 넣는다.
+
+### Disabled
+
+`bg-disabled` + `text-disabled`로 **색을 교체**하고, 함께 이렇게 처리한다.
+
+```
+disabled:bg-disabled disabled:text-disabled disabled:opacity-100 disabled:pointer-events-none
+```
+
+`disabled:opacity-100`이 중요하다 — 이게 없으면 hover·pressed opacity가 disabled 색 위에 겹쳐서 더 흐려진다. **비활성 상태는 다른 상호작용 상태와 함께 표현하지 않는다.** `pointer-events-none`은 hover 자체를 막는다.
+
+### Loading
+
+`animate-skeleton` 유틸리티를 쓴다 (`disabled` 배경에서 밝은 색으로 흐르는 shimmer). 자리표시자의 radius는 스켈레톤 전용 값을 새로 만들지 않고, **그 자리에 들어올 실물에 Radius가 배정한 값**을 따른다 — 텍스트 한 줄·작은 배지는 `rounded-xs`, 원형 아바타는 `rounded-pill`, 썸네일·아이콘 박스는 `rounded-md`.
+
+전체 화면 전환 로딩은 `NavigationLoading`이 담당하며, 실제 화면의 레이아웃 구조를 그대로 흉내낸다 — 빈 박스 하나로 대체하지 않는다.
+
+### Closed / 마감
+
+마감된 투표 카드는 `opacity-70`으로 약화한다. 이건 상호작용 상태의 hover와 **같은 값을 공유**하지만 다른 역할이다 (아래 opacity 스케일 참고).
+
+### Empty · Error
+
+전용 컴포넌트가 아직 없다. 현재는 각 화면이 개별적으로 안내 문구를 렌더한다.
+
+빈 상태 문구는 `text-muted-foreground`, 에러 문구는 `text-critical`을 쓴다. 반복 패턴으로 굳으면 컴포넌트로 승격할지 논의한다.
+
+## opacity 스케일
+
+**네 값만 쓴다.** `design-foundation.test.mjs`가 다른 값을 막는다.
+
+| 값 | 역할 |
+|---|---|
+| `opacity-0` | 숨김 (자리는 차지) |
+| `opacity-50` | pressed — 채워진 배경이 없어 색 교체를 못 쓰는 variant에 한함 |
+| `opacity-70` | hover · 마감·비활성 표시 · 장식 요소 약화 |
+| `opacity-100` | 기본, 그리고 disabled에서 상호작용 opacity를 상쇄할 때 |
+
+`opacity-70`이 세 가지 역할을 겸한다. 값이 같아도 역할은 구분해서 쓴다 — 마감 표시에 `hover:` 접두사를 붙이거나 그 반대로 하지 않는다.
+
+## 상태 조합 규칙
+
+| 조합 | 허용 | 처리 |
+|---|---|---|
+| hover + pressed | 가능 | pressed가 이긴다 (`active:`가 뒤에 온다). 채워진 배경 variant는 pressed가 색 교체라 hover의 opacity와 안 겹친다 |
+| selected + hover | 가능 | selected 색 위에 opacity가 겹친다 |
+| **disabled + 상호작용** | **불가** | `pointer-events-none`으로 막고 `opacity-100`으로 상쇄 |
+| loading + 상호작용 | 불가 | 로딩 중에는 조작을 막는다 |
+| closed(마감) + hover | 실질적으로 없음 | 마감 카드는 opacity로만 약화되고 hover 상호작용이 없다 |
+
+## 예외 기록
+
+`PlayersPageClient`의 Pick One 카드는 흐려질 때 `opacity-[0.34]` + `saturate-[0.35]`를 쓴다. 카드 전용 애니메이션 값이라 위 4단계 스케일에서 제외했고, 검사에서도 예외로 뒀다.
+
+이 값이 다른 곳에서도 필요해지면 스케일에 정식 추가할지 논의한다 — 두 번째 사용처가 생기는 순간이 그 시점이다.
+
+## 하지 말 것
+
+- 색을 흐리게 만들려고 opacity를 쓰지 않는다. 그건 색상 위계의 문제다 → [Color](?path=/docs/foundations-color--docs)
+- disabled를 opacity만으로 표현하지 않는다. 색을 교체해야 "누를 수 없음"이 읽힌다.
+- 새 opacity 값을 만들지 않는다.

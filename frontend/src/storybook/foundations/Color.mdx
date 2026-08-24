@@ -1,0 +1,87 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import { ColorSwatch, TextSwatch, SwatchGrid } from '../_internal/ColorSwatch'
+
+<Meta title="Foundations/Color" />
+
+# Color
+
+라이트 테마 전용이다. 아래 값은 브라우저가 실제로 칠하는 색을 읽어서 표시한다.
+
+## Brand
+
+<SwatchGrid>
+  <ColorSwatch className="bg-brand-solid" name="bg-brand-solid" />
+  <ColorSwatch className="bg-brand-weak" name="bg-brand-weak" bordered />
+</SwatchGrid>
+
+| 쓸 곳 | 토큰 |
+|---|---|
+| 1차 CTA 배경, 선택 상태 테두리, 활성 내비게이션 | `bg-brand-solid` / `border-brand-solid` |
+| 선택된 항목의 배경 — `brand-solid`를 배경으로 쓰기엔 강할 때 | `bg-brand-weak` |
+| 흰 배경 위의 브랜드색 **텍스트·아이콘** | `text-brand` |
+
+옛 시스템(`primary` #41b6e6)은 텍스트로 쓰면 대비가 부족해서 `primary-dark`라는 더 어두운 전용 텍스트 색을 따로 둬야 했다. 새 brand 앵커(#115aff)는 흰 배경 대비 5.34:1로 AA를 통과해서, **배경(`bg-brand-solid`)과 텍스트(`text-brand`)가 값도 이름도 하나로 합쳐졌다** — 별도의 "-dark" 변형이 필요 없다.
+
+## 텍스트
+
+위계 순서대로 놓았다. 왼쪽이 가장 진하다.
+
+<SwatchGrid>
+  <TextSwatch className="text-foreground" name="text-foreground" note="본문" />
+  <TextSwatch className="text-neutral-strong" name="text-neutral-strong" note="강조 라벨" />
+  <TextSwatch className="text-muted-foreground" name="text-muted-foreground" note="부제·설명" />
+  <TextSwatch className="text-neutral-subtle" name="text-neutral-subtle" note="힌트" />
+  <TextSwatch className="text-disabled" name="text-disabled" note="비활성" />
+</SwatchGrid>
+
+**역할로 고른다.** "좀 더 흐리게 하고 싶어서" 한 단계 아래를 고르지 않는다.
+
+| 이 텍스트가 무엇인가 | 토큰 |
+|---|---|
+| 본문, 제목, 값 | `text-foreground` |
+| 굵게 강조하는 라벨 — `foreground`와 `muted-foreground` 사이가 필요할 때만 | `text-neutral-strong` |
+| 부제, 설명, 메타 정보, 타임스탬프 | `text-muted-foreground` |
+| 입력창 힌트(placeholder 아닌 보조 텍스트) | `text-neutral-subtle` |
+| 입력창 placeholder | `placeholder:text-placeholder` |
+| 비활성 상태 텍스트 | `disabled:text-disabled` |
+
+`text-neutral-subtle`과 `placeholder:text-placeholder`는 값이 같다 — 둘 다 "읽혀야 하는 보조 텍스트" 역할이라 의도적으로 같은 값을 쓰고, 위치(본문 흐름 vs placeholder)로만 구분한다. `text-disabled`는 이보다 한 단계 더 밝다 — 비활성은 "안 보이는 게 목적"이라 힌트보다 옅어야 한다.
+
+대부분의 화면에서는 `text-foreground`/`text-muted-foreground` 두 단계로 충분하다.
+
+## 표면과 경계
+
+<SwatchGrid>
+  <ColorSwatch className="bg-background" name="bg-background" bordered note="화면 배경" />
+  <ColorSwatch className="bg-surface" name="bg-surface" bordered note="카드·헤더" />
+  <ColorSwatch className="bg-border" name="bg-border" note="테두리·구분선" />
+  <ColorSwatch className="bg-disabled" name="bg-disabled" bordered note="비활성 배경" />
+</SwatchGrid>
+
+`background`와 `surface`의 구분이 그림자 그룹 선택 기준이 된다 — 회색 배경 위에는 `shadow-g*`, 흰 면 위에는 `shadow-w*`. [Elevation](?path=/docs/foundations-elevation--docs) 참고.
+
+카드는 `bg-surface` + `border-border` + `shadow-g200`을 함께 쓴다. 그림자만으로는 흰 카드와 회색 배경의 경계가 약하다.
+
+## 상태
+
+<SwatchGrid>
+  <ColorSwatch className="bg-positive" name="bg-positive" />
+  <ColorSwatch className="bg-positive-weak" name="bg-positive-weak" bordered />
+  <ColorSwatch className="bg-critical-solid" name="bg-critical-solid" note="미사용, 준비만" />
+  <ColorSwatch className="bg-critical-weak" name="bg-critical-weak" bordered />
+</SwatchGrid>
+
+진한 색은 **텍스트·아이콘**에, `-weak`는 그 텍스트의 **배경**에 쓴다. chip이 이 조합의 대표 사용처다.
+
+| 상황 | 조합 |
+|---|---|
+| 완료·성공·긍정 결과 | `bg-positive-weak` + `text-positive` |
+| 삭제·탈퇴처럼 되돌릴 수 없는 동작, 마감 임박 | `bg-critical-weak` + `text-critical` |
+
+`critical`은 **되돌릴 수 없는 동작**에만 쓴다. 단순한 취소·닫기는 critical이 아니다 — 그건 outlined나 ghost 버튼이다.
+
+## 하지 말 것
+
+- 임의 색상(`bg-[#...]`, `text-[#...]`)을 만들지 않는다. `design-foundation.test.mjs`가 막는다.
+- 색을 흐리게 만들려고 `opacity`를 쓰지 않는다. opacity는 상태 표현 전용이다 → [State](?path=/docs/foundations-state--docs)
+- Tailwind 기본 팔레트(`bg-blue-500`, `text-gray-700` 등)를 쓰지 않는다. 이 목록에 없는 색이 필요하면 추가할지 먼저 논의한다.

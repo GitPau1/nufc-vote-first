@@ -10,6 +10,7 @@ import { Loader2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { RadioOption } from '@/components/ui/radio'
 import { StickyActionBar } from '@/components/layout/StickyActionBar'
 import { ConfirmModal } from './ConfirmModal'
 import { LoginModal } from './LoginModal'
@@ -91,7 +92,7 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
                 평가
               </Badge>
               {daysLeft > 0 ? (
-                <Badge className="bg-primary text-white border-0 text-caption-2 font-semibold hover:bg-primary pointer-events-none">
+                <Badge className="bg-brand-solid text-white border-0 text-caption-2 font-semibold hover:bg-brand-solid pointer-events-none">
                   D-{daysLeft} 마감
                 </Badge>
               ) : (
@@ -102,7 +103,7 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
             </div>
             {/* 제목 */}
             <div className="flex items-end justify-between gap-3">
-              <p className="min-w-0 flex-1 text-headline-1 font-black text-white">{poll.title}</p>
+              <p className="min-w-0 flex-1 text-headline-2 sm:text-headline-1 font-black text-white">{poll.title}</p>
               {poll.creator_name && (
                 <span className="max-w-[38%] truncate text-right text-caption-1 font-bold text-white/80">{poll.creator_name}</span>
               )}
@@ -128,34 +129,18 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
             {poll.poll_options.map(option => {
               const selected = selectedId === option.id
               return (
-                <button
+                <RadioOption
                   key={option.id}
+                  selected={selected}
                   onClick={() => setSelectedId(option.id)}
-                  className={cn(
-                    'w-full flex items-center gap-3 px-4 py-4 rounded-sm border text-left',
-                    'transition-opacity duration-100 hover:opacity-70 focus:outline-none focus-visible:outline-none',
-                  'active:scale-[0.98]',
-                    selected
-                      ? 'border-primary bg-primary-dim'
-                      : 'border-border bg-surface'
-                  )}
                 >
-                  {/* 라디오 인디케이터 */}
-                  <div className={cn(
-                    'w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center',
-                    selected ? 'border-primary' : 'border-muted-foreground/40'
-                  )}>
-                    {selected && (
-                      <div className="w-2.5 h-2.5 rounded-full bg-primary" />
-                    )}
-                  </div>
                   <span className={cn(
-                    'text-label-1-normal font-semibold',
-                    selected ? 'text-primary' : 'text-foreground'
+                    'text-body-2-normal font-semibold',
+                    selected ? 'text-brand' : 'text-foreground'
                   )}>
                     {option.label}
                   </span>
-                </button>
+                </RadioOption>
               )
             })}
           </div>
@@ -179,7 +164,7 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
                     <p className="text-caption-1 text-muted-foreground mt-0.5">
                       {poll.player.position}
                       <span className="mx-1.5">·</span>
-                      <span className="font-semibold text-primary">#{poll.player.squad_number}</span>
+                      <span className="font-semibold text-brand">#{poll.player.squad_number}</span>
                     </p>
                   </div>
                 </div>
@@ -192,7 +177,7 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
       {/* 하단 고정 제출 버튼 */}
       <StickyActionBar>
         <Button
-          className="w-full h-12 text-label-1-normal font-bold"
+          className="w-full h-12 text-body-2-normal font-bold"
           disabled={!selectedId || isPending}
           onClick={handleSubmitClick}
         >

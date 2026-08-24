@@ -2,6 +2,7 @@
 
 export type PollType = 'evaluation' | 'selection' | 'subject_options' | 'question_targets' | 'free_choice' | 'overall_rating'
 export type PollStatus = 'scheduled' | 'active' | 'closed'
+export type SquadPosition = 'GK' | 'DEF' | 'MID' | 'FWD'
 export type Position = 'GK' | 'DEF' | 'MID' | 'FWD' | 'MGR'
 export type PlayerStatus = 'first_team' | 'loan' | 'u21'
 
@@ -202,6 +203,82 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['user_feedback']['Row'], 'id' | 'created_at'>
         Update: never
       }
+      // FotMob 팀 API 동기화 테이블. id 없이 fixture_id(FotMob 원본 ID)가 PK다 —
+      // supabase/migrations/20260821100000_create_fixtures.sql 참고.
+      fixtures: {
+        Row: {
+          fixture_id: number
+          competition_id: number | null
+          competition_name: string | null
+          stage: string | null
+          kickoff_at: string | null
+          home_id: number
+          home_name: string
+          home_score: number | null
+          away_id: number
+          away_name: string
+          away_score: number | null
+          score_str: string | null
+          result: 'WIN' | 'DRAW' | 'LOSS' | null
+          started: boolean
+          finished: boolean
+          cancelled: boolean
+          status_code: string | null
+          status_description: string | null
+          synced_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['fixtures']['Row'], 'synced_at'> & { synced_at?: string }
+        Update: Partial<Database['public']['Tables']['fixtures']['Insert']>
+      }
+      // 시즌 표시(홈/원정 이름은 fixtures와 무관, 승부예측 시즌 스쿼드 구분용) —
+      // supabase/migrations의 원격 seasons 테이블. is_current로 "지금 시즌" 하나만 켜져 있다.
+      seasons: {
+        Row: {
+          id: string
+          name: string
+          starts_at: string | null
+          ends_at: string | null
+          is_current: boolean
+          display_order: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: Database['public']['Tables']['seasons']['Row']
+        Update: Partial<Database['public']['Tables']['seasons']['Row']>
+      }
+      // 시즌 스쿼드(외부 API 동기화). 승부예측 선수 픽 후보이자 배당 소스 —
+      // supabase/migrations/20260821110000_create_season_squads.sql 참고.
+      season_squads: {
+        Row: {
+          season_id: string
+          fotmob_player_id: number
+          player_id: string | null
+          name: string
+          name_ko: string | null
+          shirt_number: number | null
+          position: SquadPosition
+          position_ids_desc: string | null
+          nationality_code: string | null
+          nationality_name: string | null
+          date_of_birth: string | null
+          transfer_value: number | null
+          prediction_multiplier: number
+          synced_at: string
+        }
+        Insert: Database['public']['Tables']['season_squads']['Row']
+        Update: Partial<Database['public']['Tables']['season_squads']['Row']>
+      }
+      // 경기별 선수 평점 — supabase/migrations/20260821120000_create_predictions.sql 참고.
+      fixture_player_ratings: {
+        Row: {
+          fixture_id: number
+          player_id: number
+          rating: number
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['fixture_player_ratings']['Row'], 'created_at'>
+        Update: Partial<Database['public']['Tables']['fixture_player_ratings']['Insert']>
+      }
     }
     Views: {
       [_ in never]: never
@@ -216,6 +293,10 @@ export interface Database {
   }
 }
 
+export type FixtureRow = Database['public']['Tables']['fixtures']['Row']
+export type SeasonRow = Database['public']['Tables']['seasons']['Row']
+export type SeasonSquadRow = Database['public']['Tables']['season_squads']['Row']
+export type FixturePlayerRatingRow = Database['public']['Tables']['fixture_player_ratings']['Row']
 export type UserRow = Database['public']['Tables']['users']['Row']
 export type PublicProfileRow = Database['public']['Tables']['public_profiles']['Row']
 export type PlayerRow = Database['public']['Tables']['players']['Row']

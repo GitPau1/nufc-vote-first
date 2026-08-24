@@ -1,0 +1,46 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as PageContainerStories from './PageContainer.stories'
+
+<Meta of={PageContainerStories} />
+
+# PageContainer
+
+`app/layout.tsx`가 앱 전체를 감싸는 최상위 셸. 사용처는 그 한 곳뿐이고, props는 `children` 하나다 — 어떤 모양으로 그릴지는 props가 아니라 `usePathname()`으로 결정한다. 그래서 이 페이지의 스토리는 args가 아니라 `parameters.nextjs.navigation.pathname`으로 갈린다.
+
+분기는 딱 두 갈래다.
+
+| 경로 | 렌더 |
+|---|---|
+| `SHELL_PATHS`(`/onboarding`)를 제외한 전부 | `min-h-screen w-full bg-background` — 폭을 건드리지 않고 통과 |
+| `/onboarding` | `max-w-shell`(480px) 카드를 중앙 정렬 + `sm:border-x` |
+
+## 기본(패스스루)
+
+<Canvas of={PageContainerStories.Default} />
+
+**폭을 제한하지 않는다.** 헤더가 있는 화면은 데스크탑에서 전부 같은 풀와이드 GNB를 쓰기로 정해졌기 때문에, 배경도 화면 전체를 흰색으로 두고 폭 제한은 각 화면이 스스로 건다. 점선 3개가 자식이 직접 거는 폭 토큰이다.
+
+어느 화면에 어느 토큰을 쓰는지는 [Layout](?path=/docs/foundations-layout--docs)의 "컨테이너 폭 토큰" 표가 기준이다 — 여기서 다시 서술하지 않는다.
+
+<Canvas of={PageContainerStories.NoWidthConstraint} />
+
+새 화면을 만들 때 `max-w-*`를 빼먹으면 이렇게 된다. PageContainer가 막아주지 않으니 화면 쪽에서 챙긴다.
+
+## 셸 분기 — 온보딩만
+
+<Canvas of={PageContainerStories.ShellDesktop} />
+<Canvas of={PageContainerStories.ShellMobile} />
+
+헤더 자체가 없는 독립 화면만 예외로 카드형 셸이 된다. 데스크탑(≥640px)에서는 480px 카드 좌우에 `border-border/60` 세로선이 생기고 바깥은 body 배경이 그대로 드러난다. 모바일에서는 `sm:` 접두사가 꺼져 세로선 없이 화면 폭을 다 쓴다.
+
+위 두 캔버스가 똑같이 보인다면 정상이다 — Docs 페이지의 인라인 스토리는 Docs 본문 폭을 그대로 물려받아서 `sm:` 미디어 쿼리가 항상 데스크탑으로 평가된다. `ShellMobile`의 뷰포트 설정은 사이드바에서 스토리를 단독으로 열었을 때만 반영된다.
+
+로그인은 이 목록에 없다 — 페이지가 아니라 `LoginModal`이라 어떤 화면 위에서든 모달로 뜬다.
+
+## 세로 여백을 주지 않는다
+
+`py-*`, `my-*`를 이 컨테이너에 붙이면 안 된다. BottomNav·스티키 액션바·`NavigationLoading`이 모두 `fixed`로 뷰포트 기준 위치를 잡기 때문에, 셸에 세로 마진이 생기면 그 요소들이 카드 밖으로 삐져나온다. 화면 상하 여백은 각 화면 내부에서 준다.
+
+## 스토리와 실제 렌더의 차이
+
+`min-h-screen` 때문에 스토리 하나가 뷰포트 높이를 다 먹어서, Docs 페이지에서는 상단 320px만 보이도록 잘라 두었다. 실제로는 화면 높이만큼 배경이 채워진다.

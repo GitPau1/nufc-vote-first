@@ -1,0 +1,16 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as ListGroupStories from './ListGroup.stories'
+
+<Meta of={ListGroupStories} />
+
+# ListGroup
+
+`divide-y divide-border` 두 단어 조합. 컴포넌트가 아니라 4곳(`players/changes`, `PlayersPageClient`, `PollListClient`, `NavigationLoading`)에서 반복되는 클래스 패턴이다 — 각 사용처마다 행 내용이 다 달라서(표 형태 grid, `PollCard`, 스켈레톤 등) 컴포넌트로 묶으면 오히려 props가 과해진다.
+
+<Canvas of={ListGroupStories.Default} />
+
+## 언제 쓰는가
+
+세로로 쌓이는 행 사이에 구분선이 필요할 때. 각 행의 실제 내용은 그때그때 다르게 채운다 — 이 스토리의 이름/부제 2줄 레이아웃은 예시 중 하나일 뿐이다.
+
+단독 구분선이 필요하면 [Separator](?path=/docs/presentation-separator--docs)를 쓴다 — 목적이 다르다.

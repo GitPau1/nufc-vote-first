@@ -17,7 +17,9 @@ const PRESETS: Record<ImageUploadPreset, PresetConfig> = {
   general: { width: 1280, fit: 'inside', quality: 72 },
   'player-photo': { width: 720, fit: 'inside', quality: 72 },
   'poll-thumbnail': { width: 1280, fit: 'inside', quality: 72 },
-  'poll-option': { width: 720, fit: 'inside', quality: 70 },
+  // 크롭 UI(CroppedImageInput)가 1000×1300으로 잘라 보내는데 720으로 줄이면 약속한 해상도가
+  // 깨진다 — 옵션 카드는 상세 캐러셀에서 화면 폭을 거의 다 쓰므로 크롭 결과를 그대로 보존한다.
+  'poll-option': { width: 1000, fit: 'inside', quality: 70 },
 }
 
 const PRESET_VALUES = new Set<ImageUploadPreset>([

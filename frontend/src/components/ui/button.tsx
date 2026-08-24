@@ -5,19 +5,24 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-body-2-normal font-bold transition-opacity hover:opacity-70 active:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:bg-disabled disabled:text-gray-3 disabled:opacity-100 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-body-2-normal font-bold transition-[opacity,background-color] duration-micro hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:bg-disabled disabled:text-disabled disabled:opacity-100 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-w200",
+        // 채워진 배경이 있는 variant는 active(press)를 opacity가 아니라 -pressed 토큰(색 자체)으로 표현한다.
+        default: "bg-brand-solid text-on-solid shadow-w200 active:bg-brand-solid-pressed",
+        // 예외: critical-weak-pressed(red-200) 위에 text-critical(red-700)을 올리면 3.94:1로 AA 미달
+        // (평상시 critical-weak도 4.54:1로 턱걸이라 한 단계만 진해져도 기준 아래로 떨어진다).
+        // 색 교체 대신 opacity를 유지한다.
         destructive:
-          "border border-negative-dim bg-negative-dim text-negative shadow-none",
-        outline:
-          "border border-gray-4 bg-transparent text-foreground shadow-none",
+          "border border-critical-weak bg-critical-weak text-critical shadow-none active:opacity-50",
         secondary:
-          "bg-disabled text-foreground shadow-none",
-        ghost: "bg-transparent text-muted-foreground shadow-none",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-disabled text-foreground shadow-none active:bg-neutral-weak-pressed",
+        // 투명 배경 variant는 스왑할 배경색이 없어 기존 opacity 방식을 유지한다.
+        outline:
+          "border border-neutral-weak bg-transparent text-foreground shadow-none active:opacity-50",
+        ghost: "bg-transparent text-muted-foreground shadow-none active:opacity-50",
+        link: "text-brand underline-offset-4 hover:underline active:opacity-50",
       },
       size: {
         default: "h-11 px-4 py-3.5",

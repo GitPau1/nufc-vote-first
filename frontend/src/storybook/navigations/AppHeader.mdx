@@ -1,0 +1,24 @@
+import { Meta, Canvas, Controls } from '@storybook/addon-docs/blocks'
+import * as AppHeaderStories from './AppHeader.stories'
+
+<Meta of={AppHeaderStories} />
+
+# AppHeader
+
+**앱 전체에서 재사용하는 유일한 헤더**다 — 화면마다 다른 헤더를 만들지 않는다.
+
+<Canvas of={AppHeaderStories.LoggedOut} />
+<Controls of={AppHeaderStories.LoggedOut} />
+
+## 데스크탑과 모바일이 다른 원칙을 따른다
+
+- **데스크탑**(≥640px): 어떤 화면에 들어가도 완전히 동일한 GNB(로고·투표·역대 선수·아바타)가 뜬다. 화면 성격과 무관하다.
+- **모바일**: 화면 성격에 따라 갈린다 — 최상위 화면은 로고 중앙 정렬, 서브 화면은 `mobileBack`으로 "돌아가기" 버튼.
+
+<Canvas of={AppHeaderStories.MobileBack} />
+
+## 로그인 상태
+
+<Canvas of={AppHeaderStories.LoggedIn} />
+
+`auth`가 `null`이면 로그인 버튼, 있으면 아바타로 바뀐다(`HeaderAuthStatus`가 담당). `showAuth={false}`면 모바일에서 이 영역 자체를 안 보여준다.

@@ -1,0 +1,22 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import { PaletteRow } from '../_internal/PaletteSwatch'
+
+<Meta title="Foundations/Palette" />
+
+# Palette
+
+원시 색(primitive). 화면에 직접 쓰지 않는다 — [Semantic](?path=/docs/foundations-semantic--docs)이 이 위에서 역할 이름을 붙인 걸 쓴다.
+
+11단계(50~950)를 OKLCH 색공간에서 만들었다. HSL로 만들면 같은 단계에서도 색상별로 밝기가 들쭉날쭉해진다.
+
+<PaletteRow family="blue" label="blue — brand" />
+<PaletteRow family="red" label="red — critical" />
+<PaletteRow family="green" label="green — positive" />
+<PaletteRow family="orange" label="orange — warning" />
+<PaletteRow family="cyan" label="cyan — informative" />
+<PaletteRow family="violet" label="violet — magic" />
+<PaletteRow family="neutral" label="neutral" />
+
+## 하지 말 것
+
+- `bg-[var(--p-blue-700)]`처럼 팔레트 변수를 화면 코드에서 직접 참조하지 않는다. 항상 semantic 토큰(`bg-brand-solid` 등)을 거친다 — 그래야 나중에 팔레트 값이 바뀌어도 화면 코드를 안 건드릴 수 있다.

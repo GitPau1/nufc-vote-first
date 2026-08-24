@@ -1,0 +1,80 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as MatchWeekListStories from './MatchWeekList.stories'
+
+<Meta of={MatchWeekListStories} />
+
+# MatchWeekList
+
+승부예측 월별 주차 목록. `src/components/predict/MatchWeekList.tsx`이고, 지금 유일한 사용처는 임시 프리뷰 페이지 `src/app/dev/predict-preview/page.tsx`다. [RankingCard](?path=/docs/contents-rankingcard--docs)와 마찬가지로 **승부예측 기능과 함께 들어왔지만 디자인시스템에 문서화된 적이 없던 컴포넌트**다 — 아래 규칙은 새로 정한 게 아니라 소스에 이미 있던 동작이다.
+
+## 핵심 규칙 — 예측의 단위는 "주"다
+
+**주차 하나 = 버튼 하나 = 예측 세션 하나.** 경기가 2개인 주(더블 매치위크)도 카드 하나로 묶여서 같이 열리고 닫히고 제출된다. 그래서 `status`·`myResult`는 `PredictWeek`(주 레벨)에만 있고, `PredictWeekMatch`는 팀·킥오프·실제 스코어 같은 표시용 정보만 갖는다. 매치를 개별로 클릭하거나 매치별 상태를 갖게 하려면 이 컴포넌트가 아니라 데이터 모델을 먼저 바꿔야 한다.
+
+이 컴포넌트는 **데이터를 소유하지 않는다.** `monthLabel`(문자열)과 `weeks`를 받고, 달 이동은 `onPrevMonth`/`onNextMonth` 콜백만 부른다 — 그 달의 `weeks`를 다시 채워 넣는 건 부모 몫이다(아래 스토리에서 달을 넘겨도 목록이 그대로인 이유).
+
+## 상태 3종
+
+<Canvas of={MatchWeekListStories.Open} />
+<Canvas of={MatchWeekListStories.Result} />
+<Canvas of={MatchWeekListStories.Upcoming} />
+
+| `status` | 배지 | 우측 | 클릭 | 중앙 표시 |
+|---|---|---|---|---|
+| `open` | `진행중`(brand) | `예측하기 ›` | 가능 | `kickoffTime` |
+| `result` | `참여`(secondary, 초록) / `미참여`(outline) | 예측 스코어 + 점수 | 가능 | `actual` 스코어 |
+| `upcoming` | `예정`(outline) | 자물쇠 아이콘 | **disabled** | `kickoffTime` |
+
+`result`는 같은 status 안에서 `myResult`에 따라 세 갈래로 갈린다.
+
+1. `myResult` 없음 → `미참여` 배지만, 우측 텍스트 없음
+2. `myResult.predicted`만 있음 → `참여` + `예측 1-0` (점수 집계 전)
+3. `totalPoints`까지 있음 → 뒤에 `+7점`이 브랜드 색으로 붙는다
+
+**미참여 주차도 클릭된다** — "예측을 안 했다"는 안내 자체가 결과 화면의 내용이라서다. 클릭이 막히는 건 `upcoming`뿐이고, 이때는 `disabled`라 hover·active도 전부 죽고 배경이 `--c-bg`로 가라앉는다.
+
+## 더블 매치위크
+
+<Canvas of={MatchWeekListStories.DoubleMatchWeek} />
+
+매치 행이 구분선으로 쌓이고, 배지·예측 표기는 카드 하단에 **하나**만 붙는다. 예측 스코어는 `1-0 / 2-0`으로 이어 붙고(`formatPredicted`), 점수는 경기별이 아니라 **세션 합산 하나**다. `myResult.predicted`는 `matches`와 같은 순서·개수여야 한다 — 컴포넌트가 검증하지 않으니 어긋나면 그대로 잘못된 스코어가 표시된다.
+
+<Canvas of={MatchWeekListStories.NoMatches} />
+
+경기가 없는 주(`matches: []`)는 카드가 아니라 안내 박스로 대체된다. 버튼 자체가 렌더되지 않으므로 배지·자물쇠도 없고 클릭도 없다 — `status`가 무엇이든 마찬가지다.
+
+## 좌우 배치와 스코어 순서
+
+<Canvas of={MatchWeekListStories.HomeAndAway} />
+
+좌측이 항상 홈이다. `isHome: false`(원정)면 우리 팀이 우측으로 간다. 그런데 **`actual`은 `isHome`과 무관하게 항상 `[홈, 원정]` 순서**라, 원정 경기에서 좌측 숫자는 상대 점수다. 이 순서를 헷갈리면 결과가 반대로 보이니, 데이터를 만들 때 "우리 점수 먼저"로 넣지 않는다.
+
+팀 배지는 `w-[84px]` 고정폭이라 이름이 길어져도 중앙 스코어가 밀리지 않는다.
+
+## 실제 목록
+
+<Canvas of={MatchWeekListStories.FullMonth} />
+
+한 달 안에 결과·진행중·예정·경기 없는 주가 섞인 상태. 주차마다 `animate-enter`가 55ms씩 밀려 순차로 등장한다(애니메이션 자체는 [Motion](?path=/docs/foundations-motion--docs) 참고). 지연은 `weeks` 배열 인덱스로 계산하므로, 배열이 길어질수록 마지막 주차는 그만큼 늦게 뜬다.
+
+## MatchdayHero와의 관계 — 아직 안 이어져 있다
+
+같은 승부예측 기능이지만 [MatchdayHero](?path=/docs/contents-matchdayhero--docs)와 **데이터를 공유하지 않는다.** 확인한 차이는 셋이다.
+
+| | MatchdayHero | MatchWeekList |
+|---|---|---|
+| 데이터 출처 | `lib/queries/fixtures.ts`(실제 `fixtures` 테이블) | 없음 — 프리뷰 페이지의 하드코딩 배열뿐 |
+| 시각 | ISO 문자열을 받아 컴포넌트가 포맷 | 이미 포맷된 문자열(`"8/2"`, `"오후 8:00"`)을 받는다 |
+| 팀 표기 | FotMob 팀 ID → `images.fotmob.com` 크레스트 URL 조립 | 팀 이름 문자열 + 로고 URL을 그대로 받는다 |
+
+실데이터를 붙일 때 부모가 메워야 할 간극이 여기서 나온다 — `fixtures.home_name`은 FotMob 원본(영문)이라 `lib/predict/team-names.ts`의 `koreanTeamName(teamId, fallbackName)`을 먼저 통과시켜야 하고(매핑에 없는 팀은 영문 그대로), 로고도 팀 ID에서 URL을 만들어 넘겨야 한다(안 넘기면 회색 placeholder로 떨어진다).
+
+주차 식별자도 아직 다르다. MatchdayHero는 `lib/predictions/week.ts`의 `weekKey`(`"2026-35"` = ISO 연도-주차, KST)로 예측 세션을 가리키는데, `PredictWeek`엔 `weekNo`(숫자)만 있고 `weekKey`가 없다. `onSelectWeek`로 실제 라우팅(`/predictions/{weekKey}`)을 붙이려면 둘을 잇는 값이 더 필요하다.
+
+## 알려진 제약
+
+- 상태 배지는 [Badge](?path=/docs/contents-badge--docs)의 스타일을 쓰지만 컴포넌트가 아니라 `badgeVariants()`를 span에 얹는다 — 카드 전체가 `<button>`이고 `Badge`는 `div`를 렌더해서 버튼 안에 넣을 수 없기 때문이다. 스타일 원본은 `ui/badge.tsx` 하나다. **variant 이름이 화면 문구와 다르다**: 참여(초록)는 `positive`가 아니라 `secondary`다.
+- 클릭 가능한 카드의 `active` 배경이 `hover`와 같은 `bg-brand-weak`다. pressed 전용 값(`brand-weak-pressed`, blue-200)은 본문 회색과 4.48:1로 AA 미달이라 일부러 안 쓴다 — [State](?path=/docs/foundations-state--docs)에 기록된 예외다.
+- 매치 행 우측의 라운드 표기는 `{weekNo}라운드`로, **주차 번호를 그대로 라운드 번호로 쓴다.** 그래서 더블 매치위크의 컵 경기에도 리그 라운드 번호가 붙는다(예: 카라바오컵 경기에 "39라운드"). 실데이터를 붙일 때 리그 라운드와 주차가 어긋나면 이 표기부터 손대야 한다.
+- 로고는 `next/image`가 아니라 `<img>`를 직접 쓴다. `alt=""`(장식)이고 팀 이름은 아래 텍스트로 읽힌다.
+- 목록에 오늘/이번 주 표시가 없다. 어느 주가 현재인지는 `status`로만 유추된다.

@@ -75,6 +75,74 @@
     --input:              214 30% 91%;
     --ring:               198 77% 58%;
     --radius:             12px;
+
+    /* ===== Palette (원시 색, OKLCH 생성) — 직접 쓰지 않는다. semantic 토큰을 통해서만 쓴다 =====
+       생성 근거: vault/10_gun/디자인시스템-스토리북-실행계획.md §3.5, §3.6
+       원본: frontend/src/storybook/_internal/palette-proposal.ts (Storybook Foundations/Palette 참고) */
+    --p-blue-50: #edfbff; --p-blue-100: #dcf4ff; --p-blue-200: #c1e9ff; --p-blue-300: #9bd6ff; --p-blue-400: #6ab4ff; --p-blue-500: #4795ff; --p-blue-600: #2f7aff; --p-blue-700: #115aff; --p-blue-800: #0d42c0; --p-blue-900: #022680; --p-blue-950: #00114e;
+    --p-red-50: #fff3ef; --p-red-100: #ffe7df; --p-red-200: #ffd3c6; --p-red-300: #ffb4a3; --p-red-400: #ff8875; --p-red-500: #ff6453; --p-red-600: #ef483a; --p-red-700: #cf231a; --p-red-800: #981b14; --p-red-900: #630705; --p-red-950: #3b0000;
+    --p-green-50: #f1fef2; --p-green-100: #e2fce5; --p-green-200: #caf7d1; --p-green-300: #a8edb4; --p-green-400: #79d68c; --p-green-500: #53be6d; --p-green-600: #37a555; --p-green-700: #008728; --p-green-800: #0a642a; --p-green-900: #003f16; --p-green-950: #002307;
+    --p-orange-50: #fff8ea; --p-orange-100: #fff0d5; --p-orange-200: #ffe3b4; --p-orange-300: #ffcf85; --p-orange-400: #f4af41; --p-orange-500: #de9300; --p-orange-600: #c37a00; --p-orange-700: #a65e00; --p-orange-800: #794500; --p-orange-900: #4e2900; --p-orange-950: #2d1300;
+    --p-cyan-50: #effdff; --p-cyan-100: #dff8ff; --p-cyan-200: #c6f2ff; --p-cyan-300: #a1e5fd; --p-cyan-400: #6eccec; --p-cyan-500: #43b4d6; --p-cyan-600: #209bbc; --p-cyan-700: #007f9f; --p-cyan-800: #005c74; --p-cyan-900: #003a4b; --p-cyan-950: #001f2b;
+    --p-violet-50: #fef5ff; --p-violet-100: #fceaff; --p-violet-200: #f8d8ff; --p-violet-300: #efbcff; --p-violet-400: #db92ff; --p-violet-500: #c56fff; --p-violet-600: #ac53ff; --p-violet-700: #9130e7; --p-violet-800: #6924a9; --p-violet-900: #430f70; --p-violet-950: #260244;
+    --p-neutral-50: #fafafb; --p-neutral-100: #f3f3f4; --p-neutral-200: #e9e9ea; --p-neutral-300: #d8d9da; --p-neutral-400: #bcbec0; --p-neutral-500: #a2a5a9; --p-neutral-600: #898c92; --p-neutral-700: #6e7277; --p-neutral-800: #4f5357; --p-neutral-900: #313335; --p-neutral-950: #1a1b1c;
+
+    /* ===== Semantic (역할 색) — 컴포넌트는 이 계층만 참조한다 =====
+       bg-disabled/fg-disabled/fg-positive는 아직 Tailwind 클래스로 안 노출했다.
+       기존 disabled/text-positive 클래스가 이미 실사용 중이라(값이 다름), 전체 이름
+       이전 시점에 한 번에 검토하며 교체한다 — CSS 변수만 먼저 준비해둔다. */
+    --sem-bg-page: var(--p-neutral-50);
+    --sem-bg-overlay: rgba(0, 0, 0, .45);
+    --sem-bg-disabled: var(--p-neutral-200);           /* tailwind.config.ts backgroundColor.disabled로 노출됨 (기존 --c-disabled #ebebeb → neutral-200) */
+    --sem-bg-neutral-weak: var(--p-neutral-200);
+    --sem-bg-neutral-weak-pressed: var(--p-neutral-300);
+    --sem-bg-neutral-strong: var(--p-neutral-900);      /* 신규: 어두운 중립 배경. 기존 bg-gray-1(#333333)과 같은 값(neutral-900) */
+    --sem-bg-brand-solid: var(--p-blue-700);
+    --sem-bg-brand-solid-pressed: var(--p-blue-800);
+    /* weak 배경 6종 재조정(2026-08-22) — text-{intent}(700, 고정)를 그 위에 올렸을 때
+       AA(4.5:1)를 만족하는 최소 밝기로 다시 잡았다. 원래 팔레트 100/200단계(--p-*-100/200)는
+       이 목적엔 전부 미달이었다(4.19~4.85, weak-pressed는 6개 전부 미달) — 대신 목표 대비
+       4.55(여유 포함)를 만족하는 값을 OKLCH에서 새로 뽑았다. green·cyan은 100% 채도로는
+       흰색(L=0.999)까지 가도 대비가 안 나와 채도를 절반(chromaMult 0.5)까지 낮췄다 —
+       그만큼 거의 흰색에 가까운 옅은 색이 됐다(#f4fff5, #f5ffff).
+       weak-pressed는 weak과 값이 같다 — weak 자체가 이미 대비 한계치까지 밝아진 상태라
+       그보다 더 어둡게 갈 여지가 없다(어두워지는 순간 6개 계열 전부 AA 미달). 눌림 피드백이
+       필요하면 이 배경들 위에서는 색 교체 대신 opacity를 쓴다. */
+    --sem-bg-brand-weak: #d8f1ff;
+    --sem-bg-brand-weak-pressed: var(--sem-bg-brand-weak);
+    --sem-bg-critical-solid: var(--p-red-700);
+    --sem-bg-critical-solid-pressed: var(--p-red-800);
+    --sem-bg-critical-weak: #ffe8e0;
+    --sem-bg-critical-weak-pressed: var(--sem-bg-critical-weak);
+    --sem-bg-positive-weak: #f4fff5;
+    --sem-bg-positive-weak-pressed: var(--sem-bg-positive-weak);
+    --sem-bg-warning-weak: #fff5d9;
+    --sem-bg-warning-weak-pressed: var(--sem-bg-warning-weak);
+    --sem-bg-informative-weak: #f5ffff;
+    --sem-bg-informative-weak-pressed: var(--sem-bg-informative-weak);
+    --sem-bg-magic-weak: #f4e3ff;
+    --sem-bg-magic-weak-pressed: var(--sem-bg-magic-weak);
+
+    --sem-fg-neutral: var(--p-neutral-950);
+    --sem-fg-neutral-strong: var(--p-neutral-900);      /* 신규: neutral과 muted 사이. 기존 text-gray-1(#333333)이 neutral-900(#313335)과 거의 동일값이라 그대로 대응 */
+    --sem-fg-neutral-muted: var(--p-neutral-700);
+    --sem-fg-neutral-subtle: var(--p-neutral-500);
+    --sem-fg-placeholder: var(--p-neutral-500);         /* subtle과 의도적으로 동일 */
+    --sem-fg-disabled: var(--p-neutral-400);            /* tailwind.config.ts textColor.disabled로 노출됨 (기존 #a8a8a8 → neutral-400) */
+    --sem-fg-on-solid: #ffffff;
+    --sem-fg-brand: var(--p-blue-700);
+    --sem-fg-critical: var(--p-red-700);
+    --sem-fg-positive: var(--p-green-700);              /* tailwind.config.ts textColor.positive로 노출됨 (기존 #2e9e4f, AA 미달 → green-700, AA 통과) */
+    --sem-fg-warning: var(--p-orange-700);
+    --sem-fg-informative: var(--p-cyan-700);
+    --sem-fg-magic: var(--p-violet-700);
+
+    --sem-stroke-neutral-weak: var(--p-neutral-200);
+    --sem-stroke-neutral-subtle: var(--p-neutral-100);
+    --sem-stroke-neutral-strong: var(--p-neutral-500);  /* 신규: hover 등 강조 테두리. 기존 border-gray-3(#a8a8a8)과 거의 동일값(neutral-500, #a2a5a9) */
+    --sem-stroke-brand-solid: var(--p-blue-700);
+    --sem-stroke-critical-weak: var(--p-red-200);
+    --sem-stroke-focus-ring: var(--p-blue-700);
   }
 
   * {
@@ -112,12 +180,37 @@
     );
   }
 
-  .shell-desktop-bg {
-    background: radial-gradient(120% 120% at 15% -10%, #1a9fd4 0%, #123a63 55%, #0c2340 100%);
+  /* 브랜드 스팟라이트 글로우. 지금은 특정 화면에 안 쓰고, 새 화면·카드용으로 준비만 해둔
+     재사용 유틸리티다 — Foundations/Gradient 참고. 카드에 쓸 때는 이 유틸리티가 배경을
+     통째로 정하므로 같은 요소에 bg-surface 등을 같이 주지 않는다. */
+  .spotlight-glow-brand {
+    background:
+      radial-gradient(250px at 0% 0%, color-mix(in srgb, var(--p-blue-700) 20%, transparent) 0%, transparent 70%),
+      radial-gradient(250px at 100% 0%, color-mix(in srgb, var(--p-blue-600) 20%, transparent) 0%, transparent 70%),
+      var(--c-bg);
+  }
+
+  /* spotlight-glow-brand의 다크 카드 변형 — 베이스를 bg-neutral-strong으로 쓰는 카드(MatchdayHero 등)용.
+     어두운 배경 위에서는 같은 opacity의 블루가 더 튀어 보여서 계수를 낮췄다(20% → 15%). */
+  .spotlight-glow-brand-strong {
+    background:
+      radial-gradient(250px at 0% 0%, color-mix(in srgb, var(--p-blue-700) 15%, transparent) 0%, transparent 70%),
+      radial-gradient(250px at 100% 0%, color-mix(in srgb, var(--p-blue-600) 15%, transparent) 0%, transparent 70%),
+      var(--sem-bg-neutral-strong);
   }
 
   .input-field {
-    @apply w-full rounded-sm border border-border bg-surface px-3 py-2 text-label-1-normal text-foreground outline-none focus:border-primary;
+    @apply w-full rounded-sm border border-border bg-surface px-3 py-2 text-label-1-normal text-foreground outline-none;
+  }
+
+  /* focus:border-brand-solid를 위 .input-field의 @apply 안에 넣으면 Storybook(Vite dev
+     서버)에서 "class does not exist"로 죽는다 — Vite의 Tailwind JIT가 이 커스텀 색
+     유틸리티를 @apply 처리 시점까지 아직 못 찾은 상태라 실패한다(Next.js webpack/
+     프로덕션 빌드·Storybook 프로덕션 빌드는 전체 콘텐츠를 미리 스캔해서 문제없이
+     통과했다 — dev 서버에서만 재현됨). @apply 대신 CSS 변수를 직접 참조해 피한다.
+     CSS 네스팅(&:focus)은 이 프로젝트 PostCSS 설정에 nesting 플러그인이 없어 안 쓴다. */
+  .input-field:focus {
+    border-color: var(--sem-stroke-brand-solid);
   }
 }
 

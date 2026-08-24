@@ -1,0 +1,37 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as PollCardStories from './PollCard.stories'
+
+<Meta of={PollCardStories} />
+
+# PollCard
+
+투표 목록(`/polls`)의 카드. `variant` prop으로 두 배치를 지원한다 — 여러 카드를 어떻게 늘어놓을지에 따라 카드 자체의 모양도 달라진다.
+
+- **horizontal**(기본, 모바일) — 카드가 세로로 한 줄씩 쌓이는 단일 컬럼 리스트용. 썸네일(14:11, `w-28`)이 왼쪽, 정보가 오른쪽. 부제(설명·후보 미리보기)는 생략하고 제목(최대 2줄)만 보여준다.
+- **vertical**(데스크탑) — 카드가 그리드로 가로 나열되는 용도(≥640px 2단, ≥1024px 3단). 썸네일이 카드 폭 전체를 채우고(높이만 168px 고정, 너비는 그리드 칸을 따라 가변) 정보가 아래. 제목 아래 부제(설명 또는 후보 미리보기)를 최대 2줄까지 보여준다.
+
+슬롯 순서: 상태 뱃지(썸네일 좌상단 오버레이) → 제목 → (데스크탑만) 부제 → 참여자 수(왼쪽) / 생성일(오른쪽).
+
+<Canvas of={PollCardStories.Active} />
+<Canvas of={PollCardStories.ClosingSoon} />
+<Canvas of={PollCardStories.Scheduled} />
+<Canvas of={PollCardStories.Closed} />
+
+## 상태 뱃지 톤
+
+새 색을 만들지 않고 `Badge` 컴포넌트의 기존 variant를 그대로 재사용한다.
+
+| 상태 | Badge variant | 톤 |
+|---|---|---|
+| 공개 예정 | `outline` | 중립 — "지금 참여 못 함" |
+| 진행중, 마감 1일 초과 | `default` | brand |
+| 진행중, 마감 1일 이하 | `destructive` | critical — 위 `ClosingSoon` 참고 |
+| 종료됨 | `outline` | 중립 — "지금 참여 못 함" |
+
+`closed`는 `opacity-70`으로 전체를 흐린다 — [State](?path=/docs/foundations-state--docs)의 "Closed/마감" 항목과 같은 값. 썸네일엔 `grayscale`(완전 흑백)도 더하는데, 이건 State 문서엔 없는 PollCard 전용 추가 처리다 — `opacity-70`만으로는 진행중/종료 구분이 잘 안 보인다는 피드백으로 흑백까지 얹었다.
+
+## 데스크탑 그리드 (≥1024px 3단)
+
+<Canvas of={PollCardStories.VerticalGrid} />
+
+이 컴포넌트는 `ui/`가 아니라 `polls/PollCard.tsx`에 있다 — `PollListItem` 도메인 타입과 분석 이벤트 트래킹(`trackEvent`)이 붙어 있어서 범용 프레젠테이션 컴포넌트로 분리하지 않았다. 여기 스토리는 실제 컴포넌트를 mock 데이터로 그대로 렌더한 것이다.

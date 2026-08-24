@@ -87,7 +87,7 @@ export function MyPageClient({
             <CardContent className="flex items-center gap-4 p-4">
               <Avatar className="h-16 w-16">
                 <AvatarImage src={avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary-dim text-primary-dark text-heading-2 font-black">
+                <AvatarFallback className="bg-brand-weak text-brand text-heading-2 font-black">
                   {initial}
                 </AvatarFallback>
               </Avatar>
@@ -102,26 +102,28 @@ export function MyPageClient({
                         if (e.key === 'Enter') handleSaveName()
                         if (e.key === 'Escape') cancelEdit()
                       }}
-                      className="text-body-1-normal font-black text-foreground bg-transparent border-b-2 border-primary outline-none w-32 pb-0.5"
+                      className="text-body-1-normal font-black text-foreground bg-transparent border-b-2 border-brand-solid outline-none w-32 pb-0.5"
                       autoFocus
                       maxLength={20}
                     />
                     <button
                       onClick={handleSaveName}
-                      className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0"
+                      className="w-6 h-6 rounded-full bg-brand-solid flex items-center justify-center flex-shrink-0"
+                      aria-label="닉네임 저장"
                     >
                       <Check className="h-3.5 w-3.5 text-white" />
                     </button>
                     <button
                       onClick={cancelEdit}
                       className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center flex-shrink-0"
+                      aria-label="닉네임 수정 취소"
                     >
                       <X className="h-3.5 w-3.5 text-muted-foreground" />
                     </button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <p className="text-headline-1 font-black text-foreground truncate">{nameValue}</p>
+                    <p className="text-headline-2 font-black text-foreground truncate">{nameValue}</p>
                       <button
                         onClick={startEdit}
                         className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
@@ -162,11 +164,11 @@ export function MyPageClient({
                     <Link href={`/polls/${item.pollId}`} className="block active:bg-disabled transition-colors">
                       <div className="flex items-center gap-3 px-4 py-3.5 hover:bg-secondary/50 transition-colors">
                         <div className="flex-1 min-w-0">
-                          <p className="text-label-1-reading font-semibold text-foreground line-clamp-1">
+                          <p className="text-label-1-normal font-semibold text-foreground line-clamp-1">
                             {item.pollTitle}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className={cn('text-caption-1 font-medium text-primary')}>
+                            <span className={cn('text-caption-1 font-medium text-brand')}>
                               {item.optionLabel}
                             </span>
                             <span className="text-caption-2 text-muted-foreground">
@@ -198,7 +200,7 @@ export function MyPageClient({
         <div className="flex flex-col gap-2">
           <Button
             variant="ghost"
-            className="w-full justify-start gap-2 h-12 text-negative hover:text-negative hover:bg-negative-dim"
+            className="w-full justify-start gap-2 h-12 text-critical hover:text-critical hover:bg-critical-weak"
             onClick={handleDelete}
           >
             <Trash2 className="h-4 w-4" />

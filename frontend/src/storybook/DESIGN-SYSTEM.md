@@ -1,0 +1,142 @@
+# NUFC Vote 디자인시스템 인덱스
+
+이 파일은 **라우팅 인덱스**다. 어떤 규칙이 어느 파일에 있는지만 알려준다.
+
+## 이 파일을 쓰는 규칙
+
+- **여기에 사용 규칙을 쓰지 않는다.** 규칙의 원본은 각 MDX 파일이다. 복사본은 원본보다 먼저 낡는다.
+- 이 표에는 **이름 · 한 줄 설명 · 원본 경로**만 둔다.
+- MDX 파일을 추가·삭제·이동하면 **같은 커밋에서 이 표를 갱신한다.**
+- 표에 있는 경로가 실재하지 않으면 그 자체가 결함이다 — 없는 문서를 있다고 안내하지 않는다.
+
+## 읽는 순서
+
+1. 이 인덱스에서 해당 항목의 원본 경로를 찾는다.
+2. 그 MDX를 열어 실제 규칙을 읽는다.
+3. 표에 항목이 없으면 **"아직 문서화되지 않았다"**고 판단한다. 기억이나 추측으로 규칙을 만들지 않는다.
+
+토큰의 실제 값은 MDX가 아니라 코드에 있다 — `frontend/tailwind.config.ts`, `frontend/src/app/globals.css`.
+
+---
+
+## Foundations
+
+| 항목 | 다루는 내용 | 원본 |
+|---|---|---|
+| Palette | 원시 색 7계열 × 11단계 전체 색상표(화면에 직접 안 씀) | `foundations/Palette.mdx` |
+| Semantic | bg/text/border 역할 색 토큰 전체 목록(사용법은 Color 참고) | `foundations/Semantic.mdx` |
+| Color | 브랜드·중립·표면·상태 색상과 선택 기준 | `foundations/Color.mdx` |
+| Typography | 역할 기반 타입 스케일 18종과 고르는 순서 | `foundations/Typography.mdx` |
+| Layout | 화면 기준폭, 컨테이너 폭 3종, 페이지 마진, 간격 스케일, 모바일 그리드 | `foundations/Layout.mdx` |
+| Radius | 5단계 radius와 컴포넌트별 적용 기준, 중첩 규칙 | `foundations/Radius.mdx` |
+| Elevation | 배경(on-white / on-gray)별 shadow 그룹 | `foundations/Elevation.mdx` |
+| **State** | 상호작용/옵션 상태 구분, opacity 스케일 4값, 상태 조합 규칙 | `foundations/State.mdx` |
+| **Motion** | duration 토큰 4종, enter>exit 규칙, easing 현황 | `foundations/Motion.mdx` |
+| **Icons** | `lucide-react` 아이콘 크기 3단계, 색 상속 규칙, 아이콘 전용 버튼 접근성 | `foundations/Icons.mdx` |
+| **Gradient** | 실사용 3곳(헤더 페이드/아바타 대체/텍스트 가독성 오버레이)과 그 근거 + 준비된 유틸리티 1개(`spotlight-glow-brand`) | `foundations/Gradient.mdx` |
+| **Design Token** | 토큰 3세대(레거시 flat/shadcn HSL/Palette→Semantic) 공존 현황과 이름 겹침 함정 | `foundations/DesignToken.mdx` |
+
+State와 Motion은 Phase 3에서 새로 만든 foundation이다. 코드에는 있었지만 문서화되지 않았던 규칙을 수렴시킨 결과다 — duration 7종 → 4종, opacity 6종 → 4종.
+
+Icons·Gradient·Design Token은 Montage/Seed Design 대비 Foundations 충분성을 점검하는 과정에서 새로 만들었다(2026-08-23). 셋 다 "이미 코드에 있었지만 문서화되지 않았던 규칙"을 수렴시킨 결과라는 점은 State·Motion과 같다.
+
+Palette와 Semantic은 한때 `PaletteProposal.mdx`/`SemanticProposal.mdx`("제안" 페이지)로 존재했다가, 결정이 끝난 뒤 서술(narrative)이 통째로 폐기되면서 원시 색상표·토큰 전체 목록까지 같이 사라졌던 걸 복원한 것이다 — "제안 서술 폐기"와 "현재값 참조 자료 삭제"를 같은 작업으로 묶어서 생긴 과잉 삭제였다. 지금 두 페이지는 "제안"이 아니라 현재 상태를 그대로 읽어오는 참조 문서다.
+
+---
+
+## Components
+
+Montage 분류(Actions / Contents / Feedback / Loading / Navigations / Presentation / Selection and Input)를 따른다. Phase 4(2026-08-22)에서 §5-1의 생존 패턴 14개를 전부 작성했다 — 원래 있던 이름과 달라진 것들의 이유는 각 MDX에 적어뒀다.
+
+2026-08-24에 "코드에는 있는데 Storybook에 없는 것"을 전수 점검해 16개를 추가했다(아래 표에서 Phase 4 항목 뒤에 붙은 행들). 그 결과 승부예측 3종·Skeleton처럼 §"아직 인덱스에 없는 컴포넌트"에 유예해뒀던 항목이 모두 문서화됐다.
+
+### Actions
+
+| 패턴 | 한 줄 | 코드 | 원본 |
+|---|---|---|---|
+| Button | 1차 CTA·보조 액션. `default`/`destructive`/`secondary`/`outline`/`ghost`/`link` 6개 variant | `components/ui/button.tsx` | `actions/Button.mdx` |
+| StickyActionBar | 투표 상세 하단 제출 버튼 바. 모바일은 fixed, 데스크탑은 흐름 안 static | `components/layout/StickyActionBar.tsx` | `actions/StickyActionBar.mdx` |
+| LoginButton | 로그아웃 상태 헤더 우측 "로그인" 버튼. Button `outline`+`sm`에 4개 클래스를 덮어쓴 헤더 전용 파생형 | `components/layout/LoginButton.tsx` | `actions/LoginButton.mdx` |
+
+### Contents
+
+| 패턴 | 한 줄 | 코드 | 원본 |
+|---|---|---|---|
+| Badge | 라벨·상태 배지. 4개 variant(이름과 실제 색이 하나 어긋남 — MDX 참고) | `components/ui/badge.tsx` | `contents/Badge.mdx` |
+| Avatar | 사용자·선수 원형 이미지 | `components/ui/avatar.tsx` | `contents/Avatar.mdx` |
+| PollCard | 투표 목록 한 줄(썸네일·상태·제목·참여자 수) | `components/polls/PollCard.tsx` | `contents/PollCard.mdx` |
+| PollCarouselCard | 투표 상세 캐러셀. 가운데 카드 확대 + 좌우 스와이프 | `components/polls/TypeBPollClient.tsx` | `contents/PollCarouselCard.mdx` |
+| ResultProgress | 투표 결과 한 줄(사진+이름+득표율 막대+퍼센트) | `components/ui/result-progress.tsx` | `contents/ResultProgress.mdx` |
+| ListGroup | `divide-y divide-border` 패턴. 행 내용은 사용처마다 다름(컴포넌트 아님) | 사용처 4곳 | `contents/ListGroup.mdx` |
+| MatchdayHero | 홈 히어로의 다음/직전 경기 카드(예정·진행중·종료 + 최우수 선수) | `components/predict/MatchdayHero.tsx` | `contents/MatchdayHero.mdx` |
+| Card | 정보 덩어리를 배경에서 띄우는 컨테이너. 실사용은 `Card`+`CardContent` 두 겹뿐(Header/Title/Description/Footer 사용처 0곳) | `components/ui/card.tsx` | `contents/Card.mdx` |
+| PollHeroCard | 홈 히어로 자리의 252px 고정높이 투표 배너. MatchdayHero가 없을 때의 폴백 | `components/polls/PollHeroCard.tsx` | `contents/PollHeroCard.mdx` |
+| PollHomeSection | 홈의 투표 섹션 하나(제목+링크+목록). 모바일 세로 리스트 / 데스크탑 한 줄 그리드+페이지 넘김 | `components/polls/PollHomeSection.tsx` | `contents/PollHomeSection.mdx` |
+| CommentsSection | 투표 결과 화면의 댓글 입력창+목록(투표 항목 칩·좋아요·내 댓글 수정/삭제) | `components/polls/CommentsSection.tsx` | `contents/CommentsSection.mdx` |
+| RankingCard | 승부예측 시즌 누적 랭킹 카드. `top3`/`mine` 2개 variant | `components/predict/RankingCard.tsx` | `contents/RankingCard.mdx` |
+| MatchWeekList | 승부예측 월별 주차 목록. 주차 1개 = 예측 세션 1개(진행중/결과/예정) | `components/predict/MatchWeekList.tsx` | `contents/MatchWeekList.mdx` |
+
+`ResultProgress`는 원래 `Progress`(Radix 기반, 실사용 0건)였다 — `ResultView.tsx`가 이 컴포넌트 없이 직접 만든 결과 막대를 쓰고 있어서, 실제 마크업 그대로 통합하며 이름을 바꿨다.
+
+### Feedback
+
+| 패턴 | 한 줄 | 코드 | 원본 |
+|---|---|---|---|
+| BottomSheet | 하단 바텀시트(드래그 핸들 + 자유 본문 + 액션 버튼) | `components/ui/sheet.tsx`, `components/ui/bottom-sheet.tsx` | `feedback/BottomSheet.mdx` |
+| ConfirmModal | 투표 제출 직전 선택 확인 — 제출 후 수정 불가라서 되돌릴 수 없는 행동을 한 번 확인받는다 | `components/polls/ConfirmModal.tsx` | `feedback/ConfirmModal.mdx` |
+| LoginModal | 비로그인 사용자의 로그인 유도 모달(`/login` 페이지 없이 이 모달이 유일한 로그인 경로) | `components/polls/LoginModal.tsx`, `components/auth/RequireAuthModal.tsx` | `feedback/LoginModal.mdx` |
+
+### Loading
+
+| 패턴 | 한 줄 | 코드 | 원본 |
+|---|---|---|---|
+| Skeleton | 로딩 플레이스홀더. 경로별 화면 스켈레톤 3종 + 그 외 경로용 상단 진행 바(컴포넌트 아님) | `components/layout/NavigationLoading.tsx`, `.animate-skeleton` | `loading/Skeleton.mdx` |
+
+### Navigations
+
+| 패턴 | 한 줄 | 코드 | 원본 |
+|---|---|---|---|
+| AppHeader | 서비스 공통 상단 헤더. 데스크탑은 화면 무관 동일 GNB, 모바일은 최상위/서브 화면 갈림 | `components/layout/AppHeader.tsx` | `navigations/AppHeader.mdx` |
+| BottomNav | 모바일 하단 내비게이션(4개 경로에서만 렌더) | `components/layout/BottomNav.tsx` | `navigations/BottomNav.mdx` |
+| DesktopNavLinks | 데스크탑(≥640px) 헤더 GNB 3항목. `usePathname()`으로 활성 항목 판정 | `components/layout/DesktopNavLinks.tsx` | `navigations/DesktopNavLinks.mdx` |
+| UserMenu | 로그인 상태 헤더 우측 아바타 + 드롭다운(마이페이지·피드백·로그아웃, 관리자면 1개 추가) | `components/layout/UserMenu.tsx` | `navigations/UserMenu.mdx` |
+
+### Presentation
+
+| 패턴 | 한 줄 | 코드 | 원본 |
+|---|---|---|---|
+| Separator | 단독으로 놓는 구분선(Radix 기반) | `components/ui/separator.tsx` | `presentation/Separator.mdx` |
+| PageContainer | 앱 최상위 셸. 폭을 제한하지 않고 통과시키며, 온보딩만 480px 카드 셸로 분기 | `components/layout/PageContainer.tsx` | `presentation/PageContainer.mdx` |
+
+### Selection and Input
+
+| 패턴 | 한 줄 | 코드 | 원본 |
+|---|---|---|---|
+| Radio | 투표 옵션 선택. `RadioIndicator`(시각) + `RadioOption`(전체 행 클릭) | `components/ui/radio.tsx` | `selection-and-input/Radio.mdx` |
+| TextInput | 텍스트 입력. CSS 유틸리티 클래스로 관리(컴포넌트 아님) | `.input-field` (globals.css) | `selection-and-input/TextInput.mdx` |
+| RatingMatrix | 전체 평가 투표의 F~S 6단계 점수 선택 그리드 | `components/polls/OverallRatingPollClient.tsx` | `selection-and-input/RatingMatrix.mdx` |
+| FormSection | 투표 생성 폼의 섹션 셸 + 선수 선택 picker | `components/polls/UserPollCreateForm.tsx` | `selection-and-input/FormSection.mdx` |
+| ImageInput | 브라우저에서 크롭·webp 변환해 제출하는 이미지 입력(`CroppedImageInput`) | `components/images/CroppedImageInput.tsx` | `selection-and-input/ImageInput.mdx` |
+| PlayerPickModal | 승부예측 포지션별 선수 선택(모바일 바텀시트 / sm+ 중앙 다이얼로그) | `components/predict/PlayerPickModal.tsx` | `selection-and-input/PlayerPickModal.mdx` |
+
+`Radio`는 원래 `ConfirmModal`/`PollListClient`/`TypeAPollClient` 3곳에 중복 구현됐다고 기록돼 있었는데, 재확인 결과 실제 라디오 패턴은 2곳(`ConfirmModal`·`TypeAPollClient`)뿐이었다(`PollListClient`는 로딩 스피너를 잘못 집계한 것). Phase 7에서 `ui/radio.tsx`로 통합했다.
+
+---
+
+## 이 시스템에 없는 것
+
+아래 패턴은 과거 스펙 문서에 정의되어 있었으나 **코드에 구현체가 없어 디자인시스템에서 제외했다** (2026-08-22 확인). 되살리려면 새로 설계한다 — 과거 스펙을 그대로 복원하지 않는다.
+
+`post-feed` / `post-card` / `post-fab` / `post-composer-sheet` / `post-reaction-chip` (소식 탭 계열) · `transfer-item` · `farewell-card` · `season-stat-card` · `club-status-card` · `squad-list` · `section-label`
+
+## 인덱스에 넣지 않은 코드
+
+2026-08-24 전수 점검 결과, `src/components/**`에서 위 표에 없는 것은 아래 세 부류뿐이다. 새로 만든 컴포넌트가 이 부류에 속하지 않으면 인덱스에 행을 추가한다.
+
+**1. 화면 단위 클라이언트** — 컴포넌트가 아니라 페이지 조립체다. 이 안의 재사용 패턴은 이미 PollCarouselCard·RatingMatrix·FormSection·CommentsSection으로 추출돼 있다.
+
+`polls/HomeClient.tsx` · `polls/PollListClient.tsx` · `polls/TypeAPollClient.tsx` · `polls/TypeBPollClient.tsx` · `polls/OverallRatingPollClient.tsx` · `polls/ResultView.tsx` · `polls/OverallRatingResultView.tsx` · `polls/UserPollCreateForm.tsx` · `my/MyPageClient.tsx` · `my/MyFeedbackForm.tsx` · `players/PlayersPageClient.tsx` · `polls/PollPageHeader.tsx`(AppHeader `mobileBack` 7줄 래퍼)
+
+**2. 렌더 결과가 없는 컴포넌트** — `analytics/AppAnalytics.tsx` · `auth/AuthCodeHandler.tsx` · `players/PlayerRatingChangesAnalytics.tsx` · `layout/HeaderAuthStatus.tsx`(LoginButton/UserMenu를 갈아 끼우는 컨테이너 — 갈림 규칙은 `navigations/UserMenu.mdx`에 있다)
+
+**3. import하는 곳이 없는 컴포넌트** — 현재 없다. 2026-08-24에 `polls/CountdownTimer.tsx`, `polls/PollCreateLink.tsx`, `images/BannerImageInput.tsx`의 `BannerImageInput` export(+ 그때 함께 죽은 `lib/utils.ts`의 `formatDeadline`)를 삭제했다. 남은 `CroppedImageInput`에 맞춰 파일 이름도 `images/CroppedImageInput.tsx`로 바꿨다. 사용처 없는 구현체는 과거 `ui/progress.tsx`처럼 디자인시스템에 넣지 않고, 되살릴 때는 새로 설계한다.

@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "node --no-warnings --experimental-strip-types --test \"src/**/*.test.mjs\"",
     "test:header-auth": "node --test src/components/layout/header-auth-status.test.mjs",
     "test:prefetch-policy": "node --test src/components/prefetch-policy.test.mjs",
     "test:middleware-auth": "node --test src/middleware-auth.test.mjs",
@@ -17,7 +18,9 @@
     "test:images": "node --no-warnings --experimental-strip-types --test src/lib/images/optimize.test.mjs",
     "test:rating": "node --test src/lib/polls/rating.test.mjs",
     "test:vote-eligibility": "node --test src/lib/polls/vote-eligibility.test.mjs",
-    "types:supabase": "supabase gen types typescript --linked --schema public > src/types/database.generated.ts"
+    "types:supabase": "supabase gen types typescript --linked --schema public > src/types/database.generated.ts",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",
@@ -29,7 +32,6 @@
     "@supabase/supabase-js": "^2.106.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "framer-motion": "^12.40.0",
     "lucide-react": "^1.16.0",
     "mixpanel-browser": "^2.79.0",
     "next": "14.2.35",
@@ -40,13 +42,20 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@storybook/addon-a11y": "^10.5.10",
+    "@storybook/addon-docs": "^10.5.10",
+    "@storybook/nextjs-vite": "^10.5.10",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
+    "eslint-plugin-storybook": "^10.5.10",
     "postcss": "^8",
+    "remark-gfm": "^4.0.1",
+    "storybook": "^10.5.10",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite": "latest"
   }
 }

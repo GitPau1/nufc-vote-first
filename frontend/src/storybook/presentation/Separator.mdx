@@ -1,0 +1,13 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as SeparatorStories from './Separator.stories'
+
+<Meta of={SeparatorStories} />
+
+# Separator
+
+Radix `@radix-ui/react-separator` 위에 얹었다. `decorative={true}`가 기본값이라 스크린리더가 이걸 콘텐츠 구분으로 읽지 않는다 — 실제로 의미 있는 구획 구분이면 `decorative={false}`를 준다.
+
+<Canvas of={SeparatorStories.Horizontal} />
+<Canvas of={SeparatorStories.Vertical} />
+
+목록 항목 사이 구분선(`divide-y divide-border`, 4곳)과는 별개다 — 그건 [ListGroup](?path=/docs/contents-listgroup--docs) 패턴이고, 이 컴포넌트는 단독으로 놓는 구분선이다.

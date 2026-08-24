@@ -86,14 +86,14 @@ export function CroppedImageInput({
   }
 
   return (
-    <div className="rounded-lg border border-dashed border-border px-3 py-2 text-caption-1 font-semibold text-muted-foreground">
-      <p>{label}</p>
+    <div className="rounded-lg border border-dashed border-border px-3 py-2">
+      <p className="text-label-1-normal font-semibold text-muted-foreground">{label}</p>
       <input type="file" accept="image/*" onChange={handleSourceChange} className="mt-2 block w-full text-caption-1" />
       <input ref={hiddenFileRef} name={name} type="file" accept="image/webp" className="hidden" tabIndex={-1} />
       {sourceUrl && (
         <div className="mt-3 space-y-2">
-          <canvas ref={previewRef} className={`${previewClassName} w-full rounded-lg bg-primary-dark object-cover`} />
-          <label className="block text-caption-2 font-bold text-foreground">
+          <canvas ref={previewRef} className={`${previewClassName} w-full rounded-lg bg-brand-solid object-cover`} />
+          <label className="block text-label-1-normal font-bold text-foreground">
             확대
             <input
               type="range"
@@ -105,7 +105,7 @@ export function CroppedImageInput({
               className="mt-1 w-full"
             />
           </label>
-          <label className="block text-caption-2 font-bold text-foreground">
+          <label className="block text-label-1-normal font-bold text-foreground">
             가로 위치
             <input
               type="range"
@@ -116,7 +116,7 @@ export function CroppedImageInput({
               className="mt-1 w-full"
             />
           </label>
-          <label className="block text-caption-2 font-bold text-foreground">
+          <label className="block text-label-1-normal font-bold text-foreground">
             세로 위치
             <input
               type="range"
@@ -130,18 +130,5 @@ export function CroppedImageInput({
         </div>
       )}
     </div>
-  )
-}
-
-export function BannerImageInput({ name, label }: Pick<Props, 'name' | 'label'>) {
-  return (
-    <CroppedImageInput
-      name={name}
-      label={label}
-      outputWidth={1400}
-      outputHeight={600}
-      previewClassName="aspect-[21/9]"
-      fileName="banner.webp"
-    />
   )
 }

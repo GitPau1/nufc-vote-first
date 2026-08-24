@@ -5,8 +5,9 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet'
-import { ActionSheet } from '@/components/ui/action-sheet'
+import { BottomSheet } from '@/components/ui/bottom-sheet'
 import { Button } from '@/components/ui/button'
+import { RadioIndicator } from '@/components/ui/radio'
 
 interface ConfirmModalProps {
   open: boolean
@@ -14,6 +15,10 @@ interface ConfirmModalProps {
   onCancel: () => void
   onConfirm: () => void
   isPending: boolean
+  /** 기본값은 선택형 투표 문구다. 전체 평가처럼 "선택"이 아닌 제출에서만 바꾼다. */
+  title?: string
+  summaryCaption?: string
+  confirmLabel?: string
 }
 
 export function ConfirmModal({
@@ -22,21 +27,22 @@ export function ConfirmModal({
   onCancel,
   onConfirm,
   isPending,
+  title = '이 선택으로 투표하시겠어요?',
+  summaryCaption = '내 선택',
+  confirmLabel = '최종 제출',
 }: ConfirmModalProps) {
   return (
-    <ActionSheet open={open} onOpenChange={open => { if (!open) onCancel() }}>
+    <BottomSheet open={open} onOpenChange={open => { if (!open) onCancel() }}>
       <SheetHeader className="text-left mb-5">
-        <SheetTitle className="text-body-1-normal">이 선택으로 투표하시겠어요?</SheetTitle>
+        <SheetTitle className="text-body-1-normal">{title}</SheetTitle>
         <SheetDescription>제출 후에는 변경할 수 없습니다</SheetDescription>
       </SheetHeader>
 
       {/* 선택 요약 */}
-      <div className="flex items-center gap-3 rounded-sm bg-primary-dim border border-primary px-4 py-3.5 mb-5">
-        <div className="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center flex-shrink-0">
-          <div className="w-2.5 h-2.5 rounded-full bg-primary" />
-        </div>
+      <div className="flex items-center gap-3 rounded-sm bg-brand-weak border border-brand-solid px-4 py-3.5 mb-5">
+        <RadioIndicator selected />
         <div>
-          <p className="text-caption-2 text-muted-foreground mb-0.5">내 선택</p>
+          <p className="text-caption-2 text-muted-foreground mb-0.5">{summaryCaption}</p>
           <p className="text-label-1-normal font-semibold text-foreground">{selectedLabel}</p>
         </div>
       </div>
@@ -56,9 +62,9 @@ export function ConfirmModal({
           onClick={onConfirm}
           disabled={isPending}
         >
-          {isPending ? '제출 중…' : '최종 제출'}
+          {isPending ? '제출 중…' : confirmLabel}
         </Button>
       </div>
-    </ActionSheet>
+    </BottomSheet>
   )
 }

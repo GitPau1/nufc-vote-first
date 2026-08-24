@@ -140,7 +140,7 @@ function PollsSkeleton() {
 
       <div className="mt-3 overflow-hidden rounded-lg border border-border bg-surface p-px">
         <div className="flex px-3 pt-4">
-          <div className="h-8 flex-1 border-b border-primary" />
+          <div className="h-8 flex-1 border-b border-brand-solid" />
           <div className="h-8 flex-1 border-b border-border" />
           <div className="h-8 flex-1 border-b border-border" />
         </div>
@@ -150,9 +150,9 @@ function PollsSkeleton() {
             <div key={index} className="flex h-32 items-center gap-4 py-4 pl-3 pr-5">
               <SkeletonBlock className="h-24 w-24 shrink-0 rounded-md" />
               <div className="flex min-w-0 flex-1 flex-col gap-3">
-                <SkeletonBlock className="h-5 w-16 rounded-pill" />
-                <SkeletonBlock className="h-4 w-4/5 rounded-pill" />
-                <SkeletonBlock className="h-3 w-3/5 rounded-pill" />
+                <SkeletonBlock className="h-5 w-16 rounded-xs" />
+                <SkeletonBlock className="h-4 w-4/5 rounded-xs" />
+                <SkeletonBlock className="h-3 w-3/5 rounded-xs" />
               </div>
             </div>
           ))}
@@ -167,46 +167,46 @@ function PlayersSkeleton() {
     <div aria-hidden="true" className="flex-1 px-5 pb-24 pt-4">
       <div className="overflow-hidden rounded-lg border border-border bg-surface">
         <div className="flex justify-center border-b border-border px-3.5 pb-[13px] pt-3">
-          <SkeletonBlock className="h-6 w-32 rounded-pill" />
+          <SkeletonBlock className="h-6 w-32 rounded-xs" />
         </div>
         <div className="flex justify-center px-4 pt-3">
-          <SkeletonBlock className="h-4 w-36 rounded-pill" />
+          <SkeletonBlock className="h-4 w-36 rounded-xs" />
         </div>
         <div className="relative h-[168px] px-4 pt-5">
           <div className="grid grid-cols-2 gap-5">
             <div className="flex h-32 flex-1 flex-col items-center justify-center gap-2.5 rounded-lg bg-disabled/70 p-3">
               <SkeletonBlock className="h-14 w-14 rounded-pill" />
-              <SkeletonBlock className="h-4 w-20 rounded-pill" />
-              <SkeletonBlock className="h-3 w-16 rounded-pill" />
+              <SkeletonBlock className="h-4 w-20 rounded-xs" />
+              <SkeletonBlock className="h-3 w-16 rounded-xs" />
             </div>
             <div className="flex h-32 flex-1 flex-col items-center justify-center gap-2.5 rounded-lg bg-disabled/70 p-3">
               <SkeletonBlock className="h-14 w-14 rounded-pill" />
-              <SkeletonBlock className="h-4 w-20 rounded-pill" />
-              <SkeletonBlock className="h-3 w-16 rounded-pill" />
+              <SkeletonBlock className="h-4 w-20 rounded-xs" />
+              <SkeletonBlock className="h-3 w-16 rounded-xs" />
             </div>
           </div>
         </div>
       </div>
 
       <div className="mb-3 mt-3 flex h-10 items-center gap-2 rounded-md border border-border bg-surface px-3">
-        <SkeletonBlock className="h-4 w-4 rounded-pill" />
-        <SkeletonBlock className="h-4 flex-1 rounded-pill" />
+        <SkeletonBlock className="h-4 w-4 rounded-xs" />
+        <SkeletonBlock className="h-4 flex-1 rounded-xs" />
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface">
         <div className="flex h-10 items-center justify-between border-b border-border px-3.5">
-          <SkeletonBlock className="h-3 w-20 rounded-pill" />
-          <SkeletonBlock className="h-3 w-12 rounded-pill" />
+          <SkeletonBlock className="h-3 w-20 rounded-xs" />
+          <SkeletonBlock className="h-3 w-12 rounded-xs" />
         </div>
         {[0, 1, 2, 3].map(index => (
           <div key={index} className="flex h-[68px] items-center gap-2.5 border-b border-border px-3.5 py-2.5 last:border-b-0">
-            <SkeletonBlock className="h-6 w-6 shrink-0 rounded-pill" />
+            <SkeletonBlock className="h-6 w-6 shrink-0 rounded-xs" />
             <SkeletonBlock className="h-[42px] w-[42px] shrink-0 rounded-pill" />
             <div className="min-w-0 flex-1">
-              <SkeletonBlock className="h-4 w-32 rounded-pill" />
-              <SkeletonBlock className="mt-2 h-3 w-24 rounded-pill" />
+              <SkeletonBlock className="h-4 w-32 rounded-xs" />
+              <SkeletonBlock className="mt-2 h-3 w-24 rounded-xs" />
             </div>
-            <SkeletonBlock className="h-5 w-8 shrink-0 rounded-pill" />
+            <SkeletonBlock className="h-5 w-8 shrink-0 rounded-xs" />
           </div>
         ))}
       </div>
@@ -218,16 +218,16 @@ function MenuSkeleton() {
   return (
     <div aria-hidden="true" className="flex-1 px-5 pb-24 pt-6">
       <div className="mb-5">
-        <SkeletonBlock className="h-7 w-16 rounded-pill" />
-        <SkeletonBlock className="mt-2 h-4 w-64 max-w-full rounded-pill" />
+        <SkeletonBlock className="h-7 w-16 rounded-xs" />
+        <SkeletonBlock className="mt-2 h-4 w-64 max-w-full rounded-xs" />
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface">
         {[0, 1, 2, 3, 4].map(index => (
           <div key={index} className="flex h-14 items-center gap-3 border-b border-border px-4 last:border-b-0">
             <SkeletonBlock className="h-8 w-8 shrink-0 rounded-md" />
-            <SkeletonBlock className="h-4 flex-1 rounded-pill" />
-            <SkeletonBlock className="h-4 w-4 shrink-0 rounded-pill" />
+            <SkeletonBlock className="h-4 flex-1 rounded-xs" />
+            <SkeletonBlock className="h-4 w-4 shrink-0 rounded-xs" />
           </div>
         ))}
       </div>
@@ -242,7 +242,7 @@ function TopBarOnly() {
       aria-label="페이지를 불러오는 중"
       className="pointer-events-none fixed inset-x-0 top-0 z-[100] mx-auto h-1 w-full max-w-shell overflow-hidden bg-disabled"
     >
-      <div className="h-full w-1/2 animate-[loading-bar_1s_ease-in-out_infinite] rounded-r-pill bg-primary" />
+      <div className="h-full w-1/2 animate-[loading-bar_1s_ease-in-out_infinite] rounded-r-pill bg-brand-solid" />
     </div>
   )
 }

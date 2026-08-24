@@ -2,10 +2,7 @@
 
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { cn } from '@/lib/utils'
-
-// 프로토타입 .badge / .badge-default 그대로 (선수 배당 표시용)
-const BADGE_DEFAULT_CLASS =
-  'inline-flex shrink-0 items-center rounded-pill bg-primary-dim px-[9px] py-[3px] text-caption-2 font-bold text-primary-dark'
+import { badgeVariants } from '@/components/ui/badge'
 
 export interface PlayerPickCandidate {
   id: string
@@ -60,8 +57,8 @@ export function PlayerPickModal({
         <DialogPrimitive.Overlay
           className={cn(
             'fixed inset-0 z-50 flex items-end justify-center bg-black/45 sm:items-center',
-            'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:duration-200',
-            'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:duration-150'
+            'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:duration-enter',
+            'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:duration-exit'
           )}
         >
           <DialogPrimitive.Content
@@ -69,20 +66,20 @@ export function PlayerPickModal({
               'relative w-full max-w-shell max-h-[78vh] overflow-y-auto rounded-t-lg bg-surface px-4 py-5',
               'sm:max-w-[420px] sm:max-h-[80vh] sm:rounded-lg',
               // 가벼운 페이드 + 살짝 위로(8px) 올라오는 모션 하나로 모바일/데스크탑 공통 처리.
-              'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-2 data-[state=open]:duration-200 data-[state=open]:ease-out',
-              'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-bottom-2 data-[state=closed]:duration-150'
+              'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-2 data-[state=open]:duration-enter data-[state=open]:ease-out',
+              'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-bottom-2 data-[state=closed]:duration-exit'
             )}
           >
             {/* 드래그 핸들 — 모바일 바텀시트 전용. 자리를 차지하지 않게 절대 위치(top:8px)로 띄워서
                 타이틀-상단 거리가 sheet padding(20px)만으로 결정되게 한다. */}
-            <div className="absolute left-1/2 top-2 h-[5px] w-10 -translate-x-1/2 rounded-pill bg-gray-4 sm:hidden" />
+            <div className="absolute left-1/2 top-2 h-[5px] w-10 -translate-x-1/2 rounded-pill bg-neutral-weak sm:hidden" />
 
-            <DialogPrimitive.Title className="m-0 mb-3 text-headline-2 font-extrabold">
+            <DialogPrimitive.Title className="m-0 mb-3 text-headline-2 sm:text-headline-1 font-extrabold">
               {positionLabel} 선택
             </DialogPrimitive.Title>
 
             {players.length === 0 ? (
-              <p className="py-8 text-center text-caption-1 text-gray-2">
+              <p className="py-8 text-center text-caption-1 text-neutral-muted">
                 선택할 수 있는 선수가 없어요
               </p>
             ) : (
@@ -119,12 +116,12 @@ function PlayerPickRow({
       onClick={onSelect}
       aria-pressed={selected}
       className={cn(
-        'flex w-full items-center justify-between gap-2.5 rounded-md border border-gray-4 bg-surface px-3.5 py-2.5 text-left transition-[border-color,background-color,transform]',
-        selected ? 'border-primary bg-primary-dim' : 'hover:-translate-y-px hover:border-gray-3'
+        'flex w-full items-center justify-between gap-2.5 rounded-md border border-neutral-weak bg-surface px-3.5 py-2.5 text-left transition-[border-color,background-color,transform]',
+        selected ? 'border-brand-solid bg-brand-weak' : 'hover:-translate-y-px hover:border-neutral-strong'
       )}
     >
       <span className="flex min-w-0 items-center gap-2.5">
-        <span className="w-5 shrink-0 text-center text-label-2 font-extrabold text-gray-3">
+        <span className="w-5 shrink-0 text-center text-label-2 font-extrabold text-neutral-subtle">
           {player.squadNumber}
         </span>
         <img
@@ -134,12 +131,14 @@ function PlayerPickRow({
         />
         <span className="min-w-0">
           <p className="m-0 truncate text-body-2-normal font-bold text-black">{player.name}</p>
-          <p className="m-0 mt-px text-caption-1 text-gray-3">
+          <p className="m-0 mt-px text-caption-1 text-neutral-subtle">
             {player.nationality} · {player.age}세
           </p>
         </span>
       </span>
-      <span className={BADGE_DEFAULT_CLASS}>×{player.multiplier.toFixed(1)}</span>
+      {/* Badge와 같은 스타일이지만 이 행 전체가 <button>이라 div를 넣을 수 없다 —
+          컴포넌트 대신 badgeVariants()로 span에 얹는다(스타일 원본은 ui/badge.tsx 하나). */}
+      <span className={cn(badgeVariants(), 'shrink-0')}>×{player.multiplier.toFixed(1)}</span>
     </button>
   )
 }

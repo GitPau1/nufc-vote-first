@@ -7,6 +7,7 @@ import { getEffectivePollStatus } from '@/lib/polls/status'
 import { getRatingGrade, sortPlayersForRating } from '@/lib/polls/rating'
 import {
   mockGetPollList,
+  mockGetPollHomeSections,
   mockGetPollById,
   mockGetVoteCounts,
   mockGetMyVote,
@@ -181,46 +182,25 @@ export async function getPollFormPlayers(): Promise<PollFormPlayer[]> {
   }))
 }
 
-async function getPollListUncached(page = 0): Promise<PollListItem[]> {
-  if (IS_MOCK) return mockGetPollList(page)
-  const supabase = createPublicClient()
-  const from = page * PAGE_SIZE
-  const to = from + PAGE_SIZE - 1
+const POLL_LIST_SELECT = `
+  id, type, title, description, status, thumbnail_url, closes_at, scheduled_at, created_at, player_id, created_by,
+  player:players(id, name, position, squad_number, photo_url, is_active, squad_status),
+  poll_options(id, poll_id, label, description, player_id, image_url, display_order, created_at),
+  vote_count:votes(count)
+`
+const POLL_LIST_SELECT_FALLBACK = `
+  id, type, title, description, status, closes_at, scheduled_at, created_at, player_id, created_by,
+  player:players(id, name, position, squad_number, photo_url, is_active),
+  poll_options(id, poll_id, label, player_id, display_order, created_at),
+  vote_count:votes(count)
+`
 
-  let { data, error } = await supabase
-    .from('polls')
-    .select(`
-      id, type, title, description, status, thumbnail_url, closes_at, scheduled_at, created_at, player_id, created_by,
-      player:players(id, name, position, squad_number, photo_url, is_active, squad_status),
-      poll_options(id, poll_id, label, description, player_id, image_url, display_order, created_at),
-      vote_count:votes(count)
-    `)
-    .order('created_at', { ascending: false })
-    .range(from, to) as { data: AnyRow[] | null; error: AnyRow }
-
-  if (error && isMissingColumnError(error)) {
-    const fallback = await supabase
-      .from('polls')
-      .select(`
-        id, type, title, description, status, closes_at, scheduled_at, created_at, player_id, created_by,
-        player:players(id, name, position, squad_number, photo_url, is_active),
-        poll_options(id, poll_id, label, player_id, display_order, created_at),
-        vote_count:votes(count)
-      `)
-      .order('created_at', { ascending: false })
-      .range(from, to) as { data: AnyRow[] | null; error: AnyRow }
-
-    data = fallback.data
-    error = fallback.error
-  }
-
-  if (error) {
-    console.error('getPollList error:', error)
-    return []
-  }
-
-  const now = new Date()
-  const rows = data ?? []
+/** poll row → PollListItem 매핑. creator_name·overall_rating 참여자 수 조회까지 여기서 같이 한다. */
+async function mapPollRows(
+  rows: AnyRow[],
+  supabase: ReturnType<typeof createPublicClient>,
+  now: Date,
+): Promise<PollListItem[]> {
   const overallRatingPollIds = rows
     .filter((row: AnyRow) => row.type === 'overall_rating')
     .map((row: AnyRow) => row.id as string)
@@ -254,7 +234,115 @@ async function getPollListUncached(page = 0): Promise<PollListItem[]> {
   }))
 }
 
+async function getPollListUncached(page = 0): Promise<PollListItem[]> {
+  if (IS_MOCK) return mockGetPollList(page)
+  const supabase = createPublicClient()
+  const from = page * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
+
+  let { data, error } = await supabase
+    .from('polls')
+    .select(POLL_LIST_SELECT)
+    .order('created_at', { ascending: false })
+    .range(from, to) as { data: AnyRow[] | null; error: AnyRow }
+
+  if (error && isMissingColumnError(error)) {
+    const fallback = await supabase
+      .from('polls')
+      .select(POLL_LIST_SELECT_FALLBACK)
+      .order('created_at', { ascending: false })
+      .range(from, to) as { data: AnyRow[] | null; error: AnyRow }
+
+    data = fallback.data
+    error = fallback.error
+  }
+
+  if (error) {
+    console.error('getPollList error:', error)
+    return []
+  }
+
+  return mapPollRows(data ?? [], supabase, new Date())
+}
+
 export const getPollList = unstable_cache(getPollListUncached, ['public-poll-list'], {
+  revalidate: 30,
+})
+
+export type PollHomeSections = {
+  active: PollListItem[]
+  scheduled: PollListItem[]
+  closed: PollListItem[]
+}
+
+// 홈 화면 캐러셀 3종(진행중/예정/종료) 당 최대로 보여줄 개수. 캐러셀은 "미리보기"라 전량을
+// 다 보여줄 필요가 없다 — 전체는 /polls의 전체보기로 간다.
+const HOME_SECTION_ITEM_LIMIT = 8
+// 위 3개 버킷을 나누기 위해 최근 생성된 투표를 얼마나 훑을지. 너무 오래된 종료 투표까지
+// 캐러셀에 실을 필요는 없어서 무제한 조회 대신 최근 N개로 제한한다.
+const HOME_SECTION_FETCH_LIMIT = 60
+
+async function getPollHomeSectionsUncached(): Promise<PollHomeSections> {
+  if (IS_MOCK) return mockGetPollHomeSections()
+  const supabase = createPublicClient()
+
+  let { data, error } = await supabase
+    .from('polls')
+    .select(POLL_LIST_SELECT)
+    .order('created_at', { ascending: false })
+    .limit(HOME_SECTION_FETCH_LIMIT) as { data: AnyRow[] | null; error: AnyRow }
+
+  if (error && isMissingColumnError(error)) {
+    const fallback = await supabase
+      .from('polls')
+      .select(POLL_LIST_SELECT_FALLBACK)
+      .order('created_at', { ascending: false })
+      .limit(HOME_SECTION_FETCH_LIMIT) as { data: AnyRow[] | null; error: AnyRow }
+
+    data = fallback.data
+    error = fallback.error
+  }
+
+  if (error) {
+    console.error('getPollHomeSections error:', error)
+    return { active: [], scheduled: [], closed: [] }
+  }
+
+  const polls = await mapPollRows(data ?? [], supabase, new Date())
+  return bucketPollsByStatus(polls)
+}
+
+/** effective status 기준으로 진행중/예정/종료로 나누고, 섹션별로 의미 있는 순서로 정렬·상한을 적용한다. */
+function bucketPollsByStatus(polls: PollListItem[]): PollHomeSections {
+  const active: PollListItem[] = []
+  const scheduled: PollListItem[] = []
+  const closed: PollListItem[] = []
+
+  for (const poll of polls) {
+    if (poll.status === 'active') active.push(poll)
+    else if (poll.status === 'scheduled') scheduled.push(poll)
+    else closed.push(poll)
+  }
+
+  // 진행중: 마감 임박한 것부터 — 지금 참여를 유도해야 하는 우선순위.
+  active.sort((a, b) => new Date(a.closes_at).getTime() - new Date(b.closes_at).getTime())
+  // 예정: 곧 공개될 것부터.
+  scheduled.sort((a, b) => {
+    const aAt = a.scheduled_at ? new Date(a.scheduled_at).getTime() : Infinity
+    const bAt = b.scheduled_at ? new Date(b.scheduled_at).getTime() : Infinity
+    return aAt - bAt
+  })
+  // 종료: 최근에 끝난 것부터.
+  closed.sort((a, b) => new Date(b.closes_at).getTime() - new Date(a.closes_at).getTime())
+
+  return {
+    active: active.slice(0, HOME_SECTION_ITEM_LIMIT),
+    scheduled: scheduled.slice(0, HOME_SECTION_ITEM_LIMIT),
+    closed: closed.slice(0, HOME_SECTION_ITEM_LIMIT),
+  }
+}
+
+export const getPollHomeSections = unstable_cache(getPollHomeSectionsUncached, ['public-poll-home-sections'], {
   revalidate: 30,
 })
 

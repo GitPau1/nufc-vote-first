@@ -1,0 +1,53 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as PollHeroCardStories from './PollHeroCard.stories'
+
+<Meta of={PollHeroCardStories} />
+
+# PollHeroCard
+
+`src/components/polls/PollHeroCard.tsx`. 홈 최상단 히어로 자리에 투표 하나를 크게 보여주는 배너 카드다. 높이는 `252px` 고정, 폭은 부모를 채우고, 썸네일 위에 그라데이션 오버레이(`banner-text-overlay`, `globals.css`)를 덮어 흰 텍스트를 얹는다. props는 `PollListItem` 하나뿐이라 목록에서 쓰던 데이터를 그대로 넘긴다.
+
+슬롯 순서: 상태 뱃지(brand 반투명 pill) + 참여자 수 → 제목 → (있으면) 설명. 전부 카드 하단 좌측에 모여 있고, 카드 전체가 `/polls/[id]`로 가는 링크다.
+
+<Canvas of={PollHeroCardStories.Active} />
+
+## MatchdayHero와의 관계
+
+홈(`src/components/polls/HomeClient.tsx`)에서 이 컴포넌트와 [MatchdayHero](?path=/docs/contents-matchdayhero--docs)는 **같은 한 자리를 나눠 쓴다** — 기본은 MatchdayHero(다음/최근 경기)이고, `fixture`가 `null`일 때(경기 데이터가 없을 때)만 PollHeroCard로 대체된다.
+
+```tsx
+{fixture ? <MatchdayHero fixture={fixture} /> : heroPoll && <PollHeroCard poll={heroPoll} />}
+```
+
+`fixture`는 `lib/queries/fixtures.ts`의 `getHomeMatchdayFixture()`가 만드는데, 킥오프 임박 경기가 없으면 **가장 최근 종료 경기**로 대체하므로 `null`이 되는 건 fixtures 데이터가 아예 없을 때(또는 쿼리 에러)뿐이다. 즉 이 카드는 상시 노출되는 히어로가 아니라 그 상황의 폴백이다. 그래도 히어로 디자인을 바꿀 때 둘 중 하나만 고치면 fixture 유무에 따라 홈 첫 화면이 서로 다른 얼굴이 된다.
+
+넘기는 투표는 "지금 가장 급한 것" 하나(`active[0] ?? scheduled[0] ?? closed[0]`)라, 아래 네 상태가 전부 실제로 나타날 수 있다.
+
+참고로 컴포넌트 소스의 JSDoc은 "`/polls`(PollListClient)와 `/`(HomeClient) 둘 다 재사용한다"고 적혀 있지만, 현재 `PollHeroCard`를 import하는 파일은 `HomeClient.tsx` 하나다(`/polls`는 이 배너를 쓰지 않는다).
+
+## 상태별 뱃지 문구
+
+뱃지 문구는 `PollCard.tsx`의 `formatTimeLeft` / `getStatusLabel`을 그대로 재사용한다.
+
+| 상태 | 문구 |
+|---|---|
+| `active` | `formatTimeLeft(closes_at)` — `D-3`, `D-Day`, 마감 지났으면 `마감 임박` |
+| `scheduled` | `formatScheduled(scheduled_at)` (없으면 `공개 예정`) |
+| `closed` | `종료됨` |
+
+<Canvas of={PollHeroCardStories.ClosingSoon} />
+<Canvas of={PollHeroCardStories.Scheduled} />
+<Canvas of={PollHeroCardStories.Closed} />
+
+[PollCard](?path=/docs/contents-pollcard--docs)와 달리 **톤 변화가 없다** — 뱃지 배경은 어떤 상태든 `bg-brand-solid/55`이고, `closed`에 `opacity-70`/`grayscale`도 걸지 않는다. 상태는 문구로만 구분된다. 마감 1일 이하를 긴급색으로 올리는 `getStatusTone`도 여기선 쓰지 않는다.
+
+## 텍스트·이미지 함정
+
+<Canvas of={PollHeroCardStories.WithDescription} />
+<Canvas of={PollHeroCardStories.LongTitle} />
+<Canvas of={PollHeroCardStories.NoThumbnail} />
+
+- 제목과 설명 모두 `truncate`(한 줄 말줄임)다. 카드가 큰데도 두 줄을 안 쓰기 때문에 긴 제목은 히어로에서 뒷부분이 보이지 않는다 — 히어로에 올릴 투표 제목은 짧게 쓰는 게 전제다.
+- `thumbnail_url`이 없으면 `getThumbnailUrl`이 선수 사진 → 선택지 이미지 → `placehold.co/96x96` 순으로 대체한다. 마지막 폴백은 목록 썸네일용 96px 이미지라, 252px 히어로에서 확대돼 흐릿하게 나온다.
+- `<img>`에 `alt=""`를 준다(장식 이미지 처리). 정보는 전부 옆의 텍스트가 담고 있으므로 의도된 값이다.
+- 클릭 시 `trackEvent('poll_card_clicked')`를 보낸다. `NEXT_PUBLIC_MIXPANEL_TOKEN`이 없으면 `trackEvent`가 그대로 return하므로 Storybook에서는 no-op이고, 라우터도 mock이라 실제 페이지 이동은 일어나지 않는다.

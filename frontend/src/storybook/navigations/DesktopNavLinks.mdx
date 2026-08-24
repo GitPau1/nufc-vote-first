@@ -1,0 +1,45 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as DesktopNavLinksStories from './DesktopNavLinks.stories'
+
+<Meta of={DesktopNavLinksStories} />
+
+# DesktopNavLinks
+
+데스크탑 헤더의 GNB(투표 · 예측 · 역대 선수)다. [AppHeader](?path=/docs/navigations-appheader--docs)의 데스크탑 레이어 안에서만 쓰이고(`src/components/layout/AppHeader.tsx`가 유일한 사용처), 페이지에서 직접 배치하지 않는다.
+
+`className` 하나만 받는다. 현재 경로는 props가 아니라 `usePathname()`으로 직접 읽는다 — 아래 스토리들은 Storybook의 Next.js 라우터 mock(`parameters.nextjs.navigation.pathname`)으로 경로를 바꿔 보여준 것이다.
+
+## 경로별 활성 상태
+
+활성 항목은 brand 색 + 하단 2px brand 보더, 나머지는 `muted-foreground`(hover 시 `foreground`)다. 링크 높이는 헤더와 같은 56px이라 보더가 헤더 아래선에 정확히 맞는다.
+
+<Canvas of={DesktopNavLinksStories.VoteActive} />
+<Canvas of={DesktopNavLinksStories.PollDetailKeepsVoteActive} />
+<Canvas of={DesktopNavLinksStories.PredictionsActive} />
+<Canvas of={DesktopNavLinksStories.PlayersActive} />
+
+판정 규칙은 두 가지다.
+
+- `/`(투표)는 **정확히 `/`** 이거나 **`/polls`로 시작**할 때 활성 — 투표 상세로 들어가도 '투표'가 켜진 채로 남는다.
+- 나머지 항목은 `href`로 시작하면 활성(`/predictions`, `/players`).
+
+GNB에 없는 경로에서는 활성 항목이 하나도 없다.
+
+<Canvas of={DesktopNavLinksStories.NoneActive} />
+
+## BottomNav와의 역할 분담
+
+같은 내비게이션을 폭에 따라 나눠 맡는다. 둘은 항목 배열과 활성 판정 로직이 **각자 복사돼 있으므로, 탭을 추가·수정할 때 반드시 함께 고쳐야 한다.**
+
+| | DesktopNavLinks | [BottomNav](?path=/docs/navigations-bottomnav--docs) |
+|---|---|---|
+| 보이는 폭 | `hidden sm:flex` → **640px 이상에서만** | 모바일 상시, GNB로 대체되는 5개 경로에서는 `sm:hidden` |
+| 위치 | 헤더 안(sticky top) | `fixed bottom-0` |
+| 항목 | 투표 · 예측 · 역대 선수 (3개) | 위 3개 + **메뉴**(`/menu`) |
+| 렌더 조건 | 헤더가 있는 모든 화면 | `/`, `/polls`, `/predictions`, `/players`, `/menu` 외에는 `return null` |
+
+'메뉴' 탭이 데스크탑 GNB에 없는 것은 의도다 — 피드백·관리자 진입은 [UserMenu](?path=/docs/navigations-usermenu--docs) 드롭다운으로 옮겼다.
+
+## Docs에서의 렌더 방식
+
+이 컴포넌트는 `sm:flex`(640px 이상)라서 좁은 프리뷰에서는 아예 보이지 않는다. 또 Docs 인라인 렌더에서는 스토리별 `pathname` mock이 갈리지 않아 활성 상태가 전부 같아진다 — 그래서 `docs.story.inline: false`로 각 스토리를 iframe에 담았다(BottomNav와 같은 처리).

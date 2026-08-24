@@ -1,0 +1,28 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as TextInputStories from './TextInput.stories'
+
+<Meta of={TextInputStories} />
+
+# TextInput
+
+컴포넌트가 아니라 `globals.css`의 `.input-field` CSS 클래스다. `input`·`textarea` 9곳 전부 이 클래스 하나만 쓴다 — 컴포넌트로 추출할 만큼 variant가 갈리지 않아서 CSS 클래스로 유지했다.
+
+<Canvas of={TextInputStories.Default} />
+
+```css
+.input-field {
+  @apply w-full rounded-sm border border-border bg-surface px-3 py-2 text-label-1-normal text-foreground outline-none focus:border-brand-solid;
+}
+```
+
+## Textarea
+
+<Canvas of={TextInputStories.Textarea} />
+
+`resize-none`을 추가로 붙인다 — 기본은 리사이즈 가능이라 레이아웃이 깨질 수 있다.
+
+## Disabled — 정의돼 있지 않다
+
+<Canvas of={TextInputStories.Disabled} />
+
+`.input-field`엔 `disabled:` 스타일이 없다 — 브라우저 기본 회색 처리에 맡기고 있다. `Button`·`Badge`의 `disabled:bg-disabled disabled:text-disabled` 패턴과 다르다. 입력 필드가 비활성화되는 실제 화면(수정 불가 필드 등)이 생기면 그때 맞춰 넣는다.

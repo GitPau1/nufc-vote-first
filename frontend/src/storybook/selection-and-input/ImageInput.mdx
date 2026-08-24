@@ -1,0 +1,41 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as ImageInputStories from './ImageInput.stories'
+
+<Meta of={ImageInputStories} />
+
+# ImageInput
+
+`components/images/CroppedImageInput.tsx`의 이미지 입력이다. 사용자가 고른 이미지를 브라우저에서 지정한 크기로 크롭·리사이즈해 webp로 만든 뒤, 숨겨진 `<input type="file">`에 그 파일을 넣어 폼과 함께 제출한다. 서버에 원본을 올리고 자르는 게 아니라 **제출 전에 클라이언트에서 이미 잘려 있다는 점**이 이 컴포넌트의 핵심이다.
+
+`outputWidth`/`outputHeight`/`previewClassName`/`fileName`으로 출력 규격을 정한다. 사용처는 `components/polls/UserPollCreateForm.tsx` 두 곳 — 대표 이미지(1200×400)와 자유 선택지 카드 이미지(1000×1300)다.
+
+한때 21:9 preset 래퍼(`BannerImageInput`)가 같은 파일에 있었지만 호출부가 없어 2026-08-24에 삭제했고, 파일 이름도 남은 export에 맞춰 바꿨다.
+
+<Canvas of={ImageInputStories.Default} />
+
+파일을 고르기 전에는 라벨 + 파일 선택 줄뿐이다. 점선 테두리(`border-dashed`)는 [FormSection](?path=/docs/selection-and-input-formsection--docs)의 빈 선택 안내와 같은 "아직 채워지지 않은 자리" 표시다.
+
+## Preset
+
+<Canvas of={ImageInputStories.PollThumbnailPreset} />
+<Canvas of={ImageInputStories.OptionCardPreset} />
+
+`previewClassName`의 aspect와 `outputWidth`/`outputHeight` 비율은 서로 연동되지 않는다 — 손으로 맞춰야 하고, 어긋나면 미리보기와 실제 출력 비율이 달라진다. 사용처 두 곳은 맞춰져 있다(1200×400 ↔ `aspect-[3/1]`, 1000×1300 ↔ `aspect-[10/13]`).
+
+## 크롭 UI
+
+<Canvas of={ImageInputStories.CropControlsMarkup} />
+
+파일이 선택되면 미리보기 `<canvas>`와 슬라이더 3개가 나타난다. 확대는 1~2.2배(step 0.05), 가로/세로 위치는 0~100%다. 슬라이더를 움직일 때마다 캔버스를 다시 그리고 `canvas.toBlob(..., 'image/webp', 0.72)`로 숨은 입력의 파일을 교체한다.
+
+## 실제로 걸려 있는 제약
+
+코드를 읽고 확인한 것만 적는다.
+
+- **용량 상한은 어디에도 없다.** 클라이언트·서버 모두 파일 크기를 검사하지 않는다. 대신 캔버스가 항상 지정된 출력 크기(예: 1200×400)로 다시 그려지므로, 제출되는 파일 크기는 원본과 무관하게 그 크기의 webp(품질 0.72)로 수렴한다.
+- **파일 타입**: 보이는 입력은 `accept="image/*"`(다이얼로그 필터일 뿐 강제는 아니다). 실제 거부는 서버의 `optimizeImageForUpload`(`lib/images/optimize.ts`)에서 `file.type`이 `image/`로 시작하지 않으면 "이미지 파일만 업로드할 수 있습니다."로 던진다.
+- **원본이 작아도 확대된다.** 그리기 배율이 `max(outputWidth/naturalWidth, outputHeight/naturalHeight) * zoom`이라 축소 방지가 없다 — 작은 이미지를 넣으면 늘어난 채로 크롭된다.
+- **서버가 preset 상한으로 한 번 더 리사이즈한다.** `lib/actions/images.ts`의 `uploadPollImage` → `lib/images/optimize.ts`: `poll-thumbnail` = 가로 1280, `poll-option` = 가로 1000, 둘 다 `fit: inside` + 확대 금지다. 지금 사용처 두 곳(1200×400, 1000×1300)은 상한 이하라 **크롭한 해상도가 그대로 저장된다.** 크롭 출력을 이 상한보다 크게 잡으면 조용히 줄어드니, `outputWidth`를 올릴 때 preset도 함께 올린다(2026-08-24: `poll-option`이 720이라 1000×1300이 720×936으로 줄던 문제를 이렇게 맞췄다).
+- **되돌리기가 없다.** 한번 파일을 고르면 선택을 비우는 버튼이 없다. 다른 파일로 바꾸는 것만 가능하다.
+- **숨은 입력이 실제 제출 필드다.** `name` prop은 보이는 입력이 아니라 숨겨진 `<input accept="image/webp">`에 붙는다. 크롭이 한 번이라도 그려지기 전에는 이 필드가 비어 있다.
+- 업로드는 서버 액션(`lib/actions/images.ts`)이고 로그인이 필요하다 — **Storybook에서는 업로드가 동작하지 않는다.** 여기 스토리는 렌더링과 크롭 UI만 확인하는 용도이고, 크롭 결과가 실제로 어떻게 나오는지는 앱에서 직접 파일을 골라야 확인된다.

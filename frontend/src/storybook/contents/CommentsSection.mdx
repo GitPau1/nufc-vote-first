@@ -1,0 +1,51 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as CommentsSectionStories from './CommentsSection.stories'
+
+<Meta of={CommentsSectionStories} />
+
+# CommentsSection
+
+투표 결과 화면 하단의 댓글 블록. 소스는 `src/components/polls/CommentsSection.tsx`이고, 쓰이는 곳은 `src/components/polls/ResultView.tsx` 한 곳뿐이다(→ `src/app/polls/[id]/page.tsx`가 결과를 보여줄 때만 렌더). 입력창 + 목록이 한 컴포넌트에 붙어 있고, 목록 데이터는 `initialComments`로 서버에서 받아 그 뒤부터는 내부 state로 관리한다.
+
+<Canvas of={CommentsSectionStories.Default} />
+
+구조: 입력 textarea(300자 제한, 200자를 넘으면 우측에 카운터) + 투표 항목 힌트 → "댓글" 제목이 붙은 surface 카드 → 항목마다 아바타 / 이름 · 투표 항목 칩 · 상대 시간 / 본문 / 좋아요 버튼. 항목 사이 구분선은 [ListGroup](?path=/docs/contents-listgroup--docs)의 `divide-y`가 아니라 마지막 항목만 빼고 넣는 `mx-4 h-px` 라인이다(좌우로 4 만큼 들여쓴 선).
+
+## Storybook에서 되는 것과 안 되는 것
+
+댓글 작성·수정·삭제는 서버 액션(`lib/actions/comments.ts`)을 호출하므로 Storybook에서는 동작하지 않는다. 렌더링 상태 확인용으로만 쓴다. 예외로 좋아요는 `isMockMode`가 true면 서버 액션을 건너뛰고 로컬 상태만 토글하므로 스토리에서도 눌러볼 수 있고, 모든 스토리가 `isMockMode: true`로 맞춰져 있다.
+
+## 입력창은 투표 참여자에게만 보인다
+
+"댓글은 투표 참여자만 작성 가능"은 이 서비스의 핵심 제약이고, 이제 세 겹으로 지켜진다.
+
+1. 배치 — 이 컴포넌트는 `ResultView`에만 있고, 결과 화면은 `showResult = isClosed || hasVoted`일 때만 열린다.
+2. UI — `canComment`가 false면 입력창 자체를 렌더하지 않고, "댓글" 제목 아래에 이유 한 줄만 남긴다. `ResultView`가 `canComment={!!myOptionId}`로 넘긴다.
+3. DB — `comments: insert for voters` RLS 정책이 `votes`에 해당 유저 행이 있는지 확인한다.
+
+**판정 기준은 마감이 아니라 참여다.** RLS도 `votes` 존재만 확인하고 `polls.status`는 보지 않으므로, 마감된 투표에도 참여자는 계속 댓글을 쓸 수 있다. 비참여자가 이 UI를 보는 경로는 "마감된 투표를 참여 없이 열었을 때"뿐이고, 그 경우 앞으로 참여할 방법도 없으니 안내 문구가 달라진다.
+
+| 상태 | 입력창 | 안내 문구 |
+|---|---|---|
+| 참여함 (진행중·마감 무관) | 보인다 | 없음 |
+| 미참여 + 진행중 | 없음 | 투표에 참여하면 댓글을 남길 수 있어요 |
+| 미참여 + 마감 | 없음 | 투표에 참여하지 않아 댓글을 남길 수 없어요 |
+
+<Canvas of={CommentsSectionStories.WithoutMyVote} />
+<Canvas of={CommentsSectionStories.ClosedPollWithoutVote} />
+<Canvas of={CommentsSectionStories.ClosedPollAsVoter} />
+
+`canComment`를 UI에서 막기 전에는 비참여자에게도 입력창이 활성 상태로 보였고, 제출하면 RLS가 거부한 뒤 서버 액션이 `{ error: 'failed' }`만 돌려주는데 컴포넌트가 그 에러를 렌더하지 않아 **아무 일도 일어나지 않은 것처럼 보였다**(2026-08-24 수정). 서버 액션 `submitComment`는 여전히 투표 여부를 검사하지 않으므로, UI를 우회한 호출은 같은 침묵으로 끝난다.
+
+`myVotedOptionLabel`은 입력창 아래 "댓글에 OO 항목이 함께 표시됩니다" 힌트에만 쓰인다. 목록에 붙는 칩은 각 댓글의 `voted_option_label`을 따르고, 이 값이 null이면 칩 없이 이름 + 시간만 나온다(위 Default의 마지막 항목 — `display_name`이 null이면 이름도 '익명', 이니셜은 '?'로 떨어진다).
+
+## 내 댓글 / 남의 댓글
+
+`is_mine`이 true인 항목에만 수정·삭제 버튼이 붙는다. 수정은 인라인 textarea로 바뀌고 그 동안 좋아요 버튼은 비활성(`opacity-50`)이 된다. 삭제는 `window.confirm`으로 한 번 물어본다.
+
+<Canvas of={CommentsSectionStories.MineAndOthers} />
+
+## 언제 쓰고 언제 쓰지 않는지
+
+- 투표 결과 화면의 댓글에만 쓴다. `pollId`·`pollType`·`pollStatus`·`creatorType`을 받는 이유는 분석 이벤트(`comment_submitted`, `comment_liked`) 속성 때문이고, 투표 도메인에서 떼어내 쓸 수 있는 범용 컴포넌트가 아니다.
+- 목록은 서버에서 최신순 50개까지만 온다(`getComments`). 더보기·페이지네이션은 없다.

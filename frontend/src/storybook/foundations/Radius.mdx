@@ -1,0 +1,40 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import { TokenList, Box, BoxValue } from '../_internal/TokenList'
+
+<Meta title="Foundations/Radius" />
+
+# Radius
+
+5단계다. **컴포넌트의 종류로 고른다** — 크기나 취향으로 고르지 않는다.
+
+<TokenList
+  items={[
+    { name: 'rounded-xs', sample: <Box className="rounded-xs border border-border" />, value: <BoxValue className="rounded-xs" readProperty="borderRadius" />, usage: '스켈레톤 플레이스홀더, 작은 배지' },
+    { name: 'rounded-sm', sample: <Box className="rounded-sm border border-border" />, value: <BoxValue className="rounded-sm" readProperty="borderRadius" />, usage: '버튼, 입력창, 투표 옵션 버튼' },
+    { name: 'rounded-md', sample: <Box className="rounded-md border border-border" />, value: <BoxValue className="rounded-md" readProperty="borderRadius" />, usage: '카드 내부 그룹, 보조 컨테이너, 썸네일' },
+    { name: 'rounded-lg', sample: <Box className="rounded-lg border border-border" />, value: <BoxValue className="rounded-lg" readProperty="borderRadius" />, usage: '카드 기본값, Bottom Sheet 상단, 모달' },
+    { name: 'rounded-pill', sample: <Box className="rounded-pill border border-border" />, value: <BoxValue className="rounded-pill" readProperty="borderRadius" />, usage: 'chip, dot 인디케이터, 아바타, FAB' },
+  ]}
+/>
+
+## 고르는 기준
+
+| 무엇을 만드는가 | 쓸 것 |
+|---|---|
+| 화면에 떠 있는 카드·시트·모달 | `rounded-lg` |
+| 카드 **안에** 들어가는 그룹·패널 | `rounded-md` |
+| 누르는 것 (버튼·옵션) 또는 입력하는 것 | `rounded-sm` |
+| 완전히 둥근 것 (태그·아바타·점) | `rounded-pill` |
+| 로딩 자리표시자 | `rounded-xs` |
+
+중첩될 때는 **바깥이 안쪽보다 크다.** `rounded-lg` 카드 안에 `rounded-md` 그룹, 그 안에 `rounded-sm` 버튼 순서다. 안쪽이 더 둥글면 시각적으로 어긋난다.
+
+## 예외 — full-bleed
+
+화면 최하단에 붙는 고정 CTA는 `radius: 0`이다. 화면 가장자리에 닿는 요소는 둥글게 하지 않는다.
+
+## 하지 말 것
+
+`rounded-[12px]` 같은 임의값을 쓰지 않는다. `design-foundation.test.mjs`가 막는다.
+
+Tailwind 기본값(`rounded`, `rounded-full`, `rounded-2xl` 등)도 쓰지 않는다 — `rounded-full`이 필요해 보이면 `rounded-pill`이다.

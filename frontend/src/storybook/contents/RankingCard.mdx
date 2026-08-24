@@ -1,0 +1,73 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as RankingCardStories from './RankingCard.stories'
+
+<Meta of={RankingCardStories} />
+
+# RankingCard
+
+승부예측 시즌 누적 랭킹 카드. `src/components/predict/RankingCard.tsx`이고, 지금 유일한 사용처는 임시 프리뷰 페이지 `src/app/dev/predict-preview/page.tsx`다. **승부예측 기능과 함께 들어왔지만 디자인시스템에 문서화된 적이 없던 컴포넌트**라, 이 페이지가 첫 문서다 — 여기 적힌 규칙은 새로 정한 게 아니라 소스에 이미 있던 동작을 읽어 적은 것이다.
+
+`RankingEntry[]`를 받아 렌더만 하는 프레젠테이션 컴포넌트다. 순위·점수·변동(`delta`)을 **계산하지 않는다** — 전부 부모가 넣어준 값을 그대로 그린다.
+
+## 데이터 출처가 아직 없다
+
+`lib/queries/`에 랭킹 쿼리가 없고, `RankingEntry`를 만드는 코드는 프리뷰 페이지의 `buildLeaderboard()`(하드코딩 10명) 하나뿐이다. 즉 이 컴포넌트는 아직 실데이터에 연결되지 않았다.
+
+같은 예측 기능의 [MatchdayHero](?path=/docs/contents-matchdayhero--docs)와는 **데이터를 공유하지 않는다.** MatchdayHero는 `lib/queries/fixtures.ts`가 만든 `MatchdayFixture`(실제 `fixtures` 테이블)를 받는 반면, RankingCard의 `RankingEntry`는 컴포넌트 파일이 직접 들고 있는 손으로 만든 타입이다. fixture 한 건과 랭킹은 애초에 다른 축의 데이터라, 나중에 실데이터가 붙어도 둘이 같은 쿼리를 쓸 일은 없다.
+
+## variant 2종 — 같은 배열을 그대로 두 번 넘긴다
+
+<Canvas of={RankingCardStories.Top3} />
+<Canvas of={RankingCardStories.Mine} />
+
+| variant | 뽑는 행 | 제목 | 컬럼 헤더 | 비었을 때 문구 |
+|---|---|---|---|---|
+| `top3` | `entries.slice(0, limit)` | `전체 랭킹 TOP {limit}` | 있음(순위/총점) | `아직 랭킹 데이터가 없어요` |
+| `mine` | `entries.find(e => e.isMe)` 한 건 | `내 순위` | 없음 | `아직 참여 기록이 없어요` |
+
+`mine`은 `limit`과 무관하게 `isMe` 항목을 찾는다. 그래서 부모는 랭킹 배열 하나만 들고 **같은 배열을 두 카드에 그대로 넘기면 된다** — "내 순위만 따로 조회"가 필요 없다. 내가 8위여도 `mine` 카드는 정상적으로 뜬다.
+
+<Canvas of={RankingCardStories.StackedPair} />
+
+두 카드를 위아래로 붙이는 게 실제 배치다. 헤더가 위 카드에만 있는데도 줄이 맞는 건 컬럼 폭이 두 variant에서 동일하기 때문이다(순위 `w-8` / 아바타 `h-7 w-7` / 이름 `flex-1` / 총점 `w-12`). **컬럼 폭을 고치면 이 정렬이 먼저 깨진다** — 한쪽 variant만 보고 값을 바꾸지 않는다.
+
+## limit — 제목까지 같이 바뀐다
+
+<Canvas of={RankingCardStories.Top10} />
+
+제목은 `limit`에서 파생된다(`TOP ${limit}`). `limit`을 키우면 그대로 "전체 랭킹 TOP 10"이 되고, 내가 그 범위 안에 들어오면 `top3` variant에서도 내 행이 강조된다 — 강조는 variant가 아니라 **`entry.isMe`**가 결정한다(`bg-brand-weak` + 순위 숫자 `text-brand`).
+
+<Canvas of={RankingCardStories.FewerThanLimit} />
+
+반대로 참여자가 `limit`보다 적으면 제목은 "TOP 3"인데 줄은 2개다. 제목이 실제 행 수를 안 보기 때문이고, 시즌 초반에 실제로 보게 되는 상태다.
+
+카드 하나에 목록을 다 담는 구조라 스크롤·페이지네이션·헤더 고정이 없다. 전체 랭킹 화면이 필요하면 `limit`을 키워 그대로 쓸 수는 있지만, 긴 목록에 필요한 처리는 이 컴포넌트에 없다는 걸 전제로 한다.
+
+## 비어 있는 상태 2가지
+
+<Canvas of={RankingCardStories.EmptyTop3} />
+<Canvas of={RankingCardStories.EmptyMine} />
+
+문구가 다르고, 판정 조건도 다르다. `mine`의 "미참여"는 **배열이 비어서가 아니라 `isMe`가 붙은 항목이 없어서** 뜬다 — 랭킹 10명이 다 있어도 로그인 사용자가 예측을 안 했으면 이 상태다. 어느 쪽이든 헤더 행조차 렌더하지 않는다.
+
+## 순위 변동(`delta`)
+
+<Canvas of={RankingCardStories.RankDeltaCases} />
+
+- `null`/`undefined` → 아무것도 안 붙는다
+- 양수 → `▲N`, 음수 → `▼N`(절댓값)
+- **`0`은 `delta >= 0` 분기에 걸려 `▲0`이 된다.** "변동 없음"을 표현하려면 부모가 `0` 대신 `null`을 넘긴다
+
+색은 한국식 관용 표기를 따른다 — 상승이 적색(`text-critical`), 하락이 회색(`text-neutral-subtle`). 즉 **`critical`(경고/위험용 적색 토큰)이 "좋은 일"에 쓰이는 유일한 자리**다. 소스 주석은 이 토큰을 `--c-negative`라 부르는데 실제 값은 `--sem-fg-critical`(red-700)이니, 색을 따라갈 때 주석이 아니라 클래스를 본다. 화살표 글자 크기는 타이포 스케일 밖의 임의값(`text-[10px]`)이다 — 스케일 최소값이 `caption-2`(11px)라 그보다 작은 값을 토큰으로는 못 만든다.
+
+## 아바타와 이름
+
+<Canvas of={RankingCardStories.AvatarsAndLongName} />
+
+`avatarUrl`이 없으면 회색 원 + `User` 아이콘으로 대체된다(빈 자리로 무너지지 않는다). 이미지는 `next/image`가 아니라 `<img>`를 직접 쓰고, 이름이 옆에 있으므로 `alt=""`(장식)이 맞다. 이름은 `truncate`라 길어져도 순위·총점 컬럼을 밀지 않는다.
+
+## 알려진 제약
+
+- **동점 처리는 부모 책임이고, 공동 순위는 지금 구조에서 안전하지 않다.** 행의 React key가 `entry.rank`라서, 동점자에게 같은 순위를 주면(2위 두 명) key가 중복된다. 컴포넌트는 순위를 계산하지 않으니 동점을 어떻게 부여할지도 부모가 정한다 — 공동 순위를 쓰려면 컴포넌트의 key를 고쳐야 한다.
+- `mine` variant는 `isMe` 항목이 여러 개일 때를 고려하지 않는다(`find`로 첫 항목만).
+- 카드 셸을 [Card](?path=/docs/contents-card--docs)로 만들지 않고 `rounded-lg border border-neutral-weak bg-surface p-4`를 직접 쓴다. `Card`와 차이는 두 가지다 — 테두리 토큰이 다르고(`border-neutral-weak`=neutral-200 vs `Card`의 `border-border`=#e1e7ef, 세대가 다른 두 토큰), 그림자(`shadow-g200`)가 없다. 예측 화면 전체를 `Card`로 통일하려면 그림자 유무를 먼저 정해야 한다.

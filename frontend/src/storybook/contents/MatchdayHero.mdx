@@ -1,0 +1,62 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as MatchdayHeroStories from './MatchdayHero.stories'
+
+<Meta of={MatchdayHeroStories} />
+
+# MatchdayHero
+
+홈(`/`) 화면 최상단 히어로. `fixtures` 테이블(FotMob 동기화) 한 건을 받아 다음/최근 경기를 보여주고 "승부예측 하러 가기"로 유도한다. 기존 `PollHeroCard`(투표 배너)를 완전히 대체하는 자리다 — `HomeClient`는 `fixture`가 있으면 이 컴포넌트를, 없으면(아래 "노출 조건" 참고) 예전처럼 가장 급한 투표 배너를 보여준다.
+
+데이터는 `lib/queries/fixtures.ts`의 `getHomeMatchdayFixture()`가 만든다. 이 컴포넌트는 그 결과(`MatchdayFixture`)를 그대로 받아 렌더만 하는 프레젠테이션 컴포넌트다 — 쿼리 로직은 없다.
+
+## 노출 조건 — 킥오프 24시간 전부터
+
+경기가 24시간 이상 남았으면 `getHomeMatchdayFixture()`가 `null`을 돌려주고, 홈 화면은 예전 방식(투표 배너)으로 대체된다. 24시간 이내로 들어오면 그 경기가, 없으면(다음 경기가 아직 24시간 전이 아니거나 아예 없으면) **가장 최근 종료된 경기**가 대신 뜬다 — 그래서 평상시엔 "지난 경기 결과"가, 경기 임박 시에만 카운트다운이 뜨는 식이다.
+
+## 상태 3가지
+
+<Canvas of={MatchdayHeroStories.Upcoming} />
+<Canvas of={MatchdayHeroStories.Live} />
+<Canvas of={MatchdayHeroStories.Finished} />
+
+| 상태 | 판정 | 카운트다운 | 상태 표시 | 최우수 선수 | CTA 버튼 |
+|---|---|---|---|---|---|
+| 예정(Upcoming) | `!started && !finished` | 초 단위로 째깍임 | — | — | 있음(`승부예측 하러 가기`) |
+| 진행중(Live) | `started && !finished` | — | `Badge variant="destructive"`(빨강) | — | **없음** |
+| 종료(Finished) | `finished` | — | — | 있으면 표시 | **없음** |
+
+CTA는 예정 상태에서만 뜬다 — 예측 제출은 킥오프 전까지만 가능해서(`predictions` 테이블 RLS), 진행중·종료는 이미 잠긴 상태라 버튼 자체를 없앴다. `Badge`는 새 색을 만들지 않고 `PollCard`(`ClosingSoon`)와 같은 `destructive` variant를 재사용한다 — "긴급/지금 액션 창이 닫힘" 톤이 라이브 상태에 그대로 맞는다.
+
+## 경기 결과 표기 — `score_str` 우선, 승부차기 예외
+
+<Canvas of={MatchdayHeroStories.Draw0to0} />
+<Canvas of={MatchdayHeroStories.PenaltyShootout} />
+
+메인 스코어는 `home_score`–`away_score` 조합이 아니라 **`fixtures.score_str`**(FotMob 표시용 문자열)을 그대로 쓴다. `score_str`이 없을 때만(동기화 지연 등) `home_score`/`away_score` 조합으로 대체하고, 그마저 없으면 "종료"라는 텍스트만 보여준다.
+
+`0-0` 무승부(`Draw0to0`)는 "스코어가 없는 것"과 다르다 — `home_score`/`away_score`가 둘 다 `0`이면 정상적으로 "0–0"과 최우수 선수가 함께 뜬다.
+
+**승부차기 예외(`PenaltyShootout`):** FotMob 동기화가 승부차기로 끝난 경기의 승부차기 스코어를 `home_score`/`away_score`에 넣어버리는 경우가 있다(`score_str`은 정규시간 스코어를 그대로 유지). `lib/queries/fixtures.ts`의 `detectShootoutScore()`가 `score_str`에서 뽑은 "N-N"과 `home_score`/`away_score`를 비교해서 서로 다르면 승부차기로 판단하고, `home_score`–`away_score`를 메인 스코어 **위의 캡션**으로 `승부차기(N-N)` 형태로 올린다. 메인 스코어 자리는 여전히 `score_str`(정규시간 결과)이다.
+
+## 최우수 선수
+
+`finished` 상태에서만, `fixture_player_ratings`에 평점이 있으면 카드 하단에 사진·이름·평점을 보여준다. 이 테이블은 승부예측 선수 픽 후보(`season_squads`, **뉴캐슬 스쿼드만**)만 참조하므로 별도 팀 필터 없이도 항상 뉴캐슬 선수만 나온다. 평점이 아직 안 들어왔으면(동기화 전) 이 블록 자체가 안 뜬다.
+
+카드 폭이 넓어져도 이 블록은 `w-64` 고정폭으로 가운데 배치된다 — 화면 폭에 맞춰 늘어나지 않는다(버튼과 같은 원칙).
+
+## 레이아웃 — VS/스코어가 항상 정중앙
+
+<Canvas of={MatchdayHeroStories.LongTeamName} />
+<Canvas of={MatchdayHeroStories.LongTeamNameWide} />
+
+팀명 길이가 서로 크게 다를 때(`뉴캐슬` vs `웨스트브롬위치`) 두 가지가 동시에 필요하다:
+
+1. **좌우 컬럼을 `grid-cols-[1fr_auto_1fr]`로 고정** — `flex justify-center`는 좌우 콘텐츠 "블록 전체"를 가운데 정렬할 뿐이라, 좌우 폭이 다르면 중앙 마커(VS/스코어)가 한쪽으로 쏠린다. 좌우를 동일 폭(1fr) 컬럼으로 만들어야 중앙 컬럼(`auto`)이 항상 카드 정중앙에 남는다.
+2. **팀 배지 자체도 고정폭(`w-[88px]`)** — 컬럼을 고정해도 배지 박스 너비를 콘텐츠에 맡기면(hug), 짧은 이름은 엠블럼 폭(44px)만큼만, 긴 이름은 truncate 한도(88px)까지 차지해서 박스 너비가 서로 달라진다. 그 안에서 `items-center`로 가운데 정렬된 엠블럼이 VS로부터 서로 다른 거리에 놓이는 문제(시각적 무게 비대칭)가 생긴다. 두 박스를 같은 너비로 고정해야 엠블럼이 항상 VS로부터 같은 거리에 온다.
+
+이 두 가지를 합쳐야 카드가 아무리 넓어져도(`LongTeamNameWide` — 폭 제한 없이 렌더) 팀 배지가 VS 근처에 그대로 붙어 있고, 좌우 무게도 대칭이다.
+
+## 알려진 제약
+
+- `/predictions/[weekKey]` 라우트는 origin/main의 승부예측 백엔드 PR에 이미 있지만, 이 브랜치(`gun/design-system`)엔 아직 머지되지 않았다 — CTA는 `prefetch={false}`로 링크만 걸어두고 실제 라우트 연결은 다음 단계다.
+- `home_name`/`away_name`은 FotMob 원본(영문)이라 `lib/predict/team-names.ts`가 실제로 마주친 팀 ID만 한글로 매핑한다. 매핑에 없는 팀은 원본 영문 그대로 노출된다.

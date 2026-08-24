@@ -1,0 +1,61 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import { ColorSwatch, TextSwatch, SwatchGrid } from '../_internal/ColorSwatch'
+
+<Meta title="Foundations/Semantic" />
+
+# Semantic
+
+역할 색 전체 목록이다. 실제 사용 방법·조합은 [Color](?path=/docs/foundations-color--docs)를 본다 — 여기는 존재하는 토큰을 빠짐없이 확인하는 용도다.
+
+브라우저가 실제로 칠하는 색을 읽어서 표시한다 — 값이 바뀌면 이 페이지도 따라간다.
+
+## Background
+
+<SwatchGrid>
+  <ColorSwatch className="bg-page" name="bg-page" bordered />
+  <ColorSwatch className="bg-overlay" name="bg-overlay" />
+  <ColorSwatch className="bg-disabled" name="bg-disabled" bordered />
+  <ColorSwatch className="bg-neutral-weak" name="bg-neutral-weak" bordered />
+  <ColorSwatch className="bg-neutral-weak-pressed" name="bg-neutral-weak-pressed" bordered />
+  <ColorSwatch className="bg-neutral-strong" name="bg-neutral-strong" />
+  <ColorSwatch className="bg-brand-solid" name="bg-brand-solid" />
+  <ColorSwatch className="bg-brand-solid-pressed" name="bg-brand-solid-pressed" />
+  <ColorSwatch className="bg-brand-weak" name="bg-brand-weak" bordered />
+  <ColorSwatch className="bg-critical-solid" name="bg-critical-solid" note="미사용, 준비만" />
+  <ColorSwatch className="bg-critical-solid-pressed" name="bg-critical-solid-pressed" note="미사용, 준비만" />
+  <ColorSwatch className="bg-critical-weak" name="bg-critical-weak" bordered />
+  <ColorSwatch className="bg-positive-weak" name="bg-positive-weak" bordered />
+  <ColorSwatch className="bg-warning-weak" name="bg-warning-weak" bordered note="미사용" />
+  <ColorSwatch className="bg-informative-weak" name="bg-informative-weak" bordered note="미사용" />
+  <ColorSwatch className="bg-magic-weak" name="bg-magic-weak" bordered note="미사용" />
+</SwatchGrid>
+
+`-weak-pressed`는 별도로 나열하지 않았다 — `neutral-weak-pressed`를 뺀 나머지 전부(`brand`·`critical`·`positive`·`warning`·`informative`·`magic`)는 `-weak`과 값이 같다. 이 색들의 자기 텍스트(700단계)가 `-weak` 배경 위에서 이미 대비 여유가 거의 없어서, 더 어둡게 만들 여지가 없기 때문이다.
+
+## Text
+
+<SwatchGrid>
+  <TextSwatch className="text-neutral" name="text-neutral" />
+  <TextSwatch className="text-neutral-strong" name="text-neutral-strong" />
+  <TextSwatch className="text-neutral-muted" name="text-neutral-muted" />
+  <TextSwatch className="text-neutral-subtle" name="text-neutral-subtle" />
+  <TextSwatch className="text-disabled" name="text-disabled" />
+  <TextSwatch className="text-brand" name="text-brand" />
+  <TextSwatch className="text-critical" name="text-critical" />
+  <TextSwatch className="text-positive" name="text-positive" />
+  <TextSwatch className="text-warning" name="text-warning" note="미사용" />
+  <TextSwatch className="text-informative" name="text-informative" note="미사용" />
+  <TextSwatch className="text-magic" name="text-magic" note="미사용" />
+</SwatchGrid>
+
+`text-placeholder`·`text-on-solid`는 각각 `placeholder:` variant·색 있는 배경 위에서만 의미가 있어 위 그리드 방식(흰 배경 위 텍스트)으로는 못 보여준다 — [Color](?path=/docs/foundations-color--docs)의 실제 조합에서 확인한다.
+
+## Border
+
+<SwatchGrid>
+  <ColorSwatch className="border-4 border-neutral-weak" name="border-neutral-weak" readProperty="borderColor" />
+  <ColorSwatch className="border-4 border-neutral-subtle" name="border-neutral-subtle" readProperty="borderColor" />
+  <ColorSwatch className="border-4 border-neutral-strong" name="border-neutral-strong" readProperty="borderColor" />
+  <ColorSwatch className="border-4 border-brand-solid" name="border-brand-solid" readProperty="borderColor" />
+  <ColorSwatch className="border-4 border-critical-weak" name="border-critical-weak" readProperty="borderColor" />
+</SwatchGrid>

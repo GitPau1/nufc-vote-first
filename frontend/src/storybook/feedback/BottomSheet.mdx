@@ -1,0 +1,20 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as BottomSheetStories from './BottomSheet.stories'
+
+<Meta of={BottomSheetStories} />
+
+# BottomSheet
+
+`ui/sheet.tsx`(Radix Dialog) 위의 하단 바텀시트 셸. "드래그 핸들 + 자유 형식 본문 + 액션 버튼" 구조를 `ConfirmModal`·`LoginModal`이 공유한다.
+
+<Canvas of={BottomSheetStories.Default} />
+
+## 헤더는 통일하지 않는다
+
+`ConfirmModal`은 좌측 정렬, `LoginModal`은 중앙 정렬 + 아이콘을 쓴다 — 실제로 레이아웃이 달라서 여기서 억지로 하나의 헤더 API로 묶지 않는다. `children`으로 자유롭게 구성한다.
+
+## side variant
+
+`ui/sheet.tsx`(더 아래 레벨 primitive)는 `top`·`bottom`·`left`·`right` 4방향을 지원하지만, **실사용은 `bottom`(`BottomSheet`을 통해서)뿐이다.** 나머지 3방향은 준비만 돼 있고 화면 어디서도 안 쓴다.
+
+열림/닫힘 duration은 [Motion](?path=/docs/foundations-motion--docs)의 `enter`(300ms)/`exit`(200ms) 토큰을 쓴다.

@@ -1,0 +1,33 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as LoginButtonStories from './LoginButton.stories'
+
+<Meta of={LoginButtonStories} />
+
+# LoginButton
+
+로그아웃 상태에서 [AppHeader](?path=/docs/navigations-appheader--docs) 우측 끝에 들어가는 "로그인" 버튼이다. props가 없고, 사용처는 `src/components/layout/HeaderAuthStatus.tsx` 한 곳뿐이다 — **헤더 밖에서 로그인 진입점이 필요하면 이 컴포넌트를 재사용하지 말고 [LoginModal](?path=/docs/feedback-loginmodal--docs)을 직접 띄운다.** 화면 안 로그인 유도(투표·댓글 시도 등)는 이미 그렇게 되어 있다.
+
+<Canvas of={LoginButtonStories.Default} />
+
+## 헤더 우측 자리를 나눠 쓰는 세 가지 상태
+
+`HeaderAuthStatus`는 로그인 상태에 따라 이 자리를 갈아 끼우는 얇은 컨테이너다. 서버에서 `auth`를 넘기지 않으면(`undefined`) 클라이언트에서 `getHeaderAuth()`를 불러오는 동안 **32px 회색 원형 placeholder**를 먼저 보여주고, 결과가 `null`이면 `LoginButton`, 값이 있으면 [UserMenu](?path=/docs/navigations-usermenu--docs)를 렌더한다. 이 3단 분기는 헤더가 인증 조회를 기다리며 서버 렌더를 막지 않게 하려는 것이고(`src/components/layout/header-auth-status.test.mjs`가 이 구조를 고정한다), 그래서 로그인 여부와 무관하게 헤더의 아바타 자리 폭은 항상 32px로 유지된다.
+
+## Button variant
+
+[Button](?path=/docs/actions-button--docs)의 **`outline` + `size="sm"`** 위에 헤더 전용 override를 얹었다.
+
+| 얹은 것 | 이유 |
+|---|---|
+| `h-8` (sm 기본 `h-9` 대신) | 56px 헤더 행에서 아바타(32px)와 같은 높이를 맞춘다 |
+| `rounded-pill` (기본 `rounded-sm` 대신) | 옆자리 원형 아바타와 같은 계열로 보이게 |
+| `border-brand-solid text-brand` (기본 `border-neutral-weak text-foreground` 대신) | 헤더에서 유일한 액션이라 brand로 강조 |
+| `font-semibold` (기본 `font-bold` 대신) | 로고(`font-black`)보다 약하게 |
+
+즉 **순수한 `outline` variant가 아니다.** 다른 화면에서 비슷한 버튼이 필요하다고 이 클래스 묶음을 복사하지 말고, 그 화면에 맞는 variant를 [Button](?path=/docs/actions-button--docs)에서 고른다.
+
+## 클릭하면 LoginModal이 뜬다
+
+내부 `useState`로 [LoginModal](?path=/docs/feedback-loginmodal--docs)을 `triggerAction="login"`으로 열 뿐이다 — 실제 로그인 처리는 전부 모달 쪽에 있다. `triggerAction`은 `auth_prompt_viewed` 이벤트에 실려 나가는 값이라, "헤더에서 시작한 로그인"과 "투표하다 막혀서 뜬 로그인"을 구분하는 유일한 표식이다.
+
+Storybook에서 버튼을 눌러 모달을 여는 것까지는 되지만, 그 안의 로그인은 서버 액션(mock) 또는 Supabase OAuth 리다이렉트라 **동작하지 않는다.**

@@ -2,6 +2,7 @@
 
 import { ChevronLeft, ChevronRight, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { badgeVariants } from '@/components/ui/badge'
 
 /**
  * 클릭/예측의 단위는 "주(week)"다 — 더블 매치위크(경기 2개)도 하나의 예측 세션으로 묶여서
@@ -59,19 +60,15 @@ interface MatchWeekListProps {
 
 const DEFAULT_TEAM_LOGO = 'https://placehold.co/48x48/e1e7ef/a8a8a8?text=%20'
 
-// 프로토타입 .badge / .badge-default / .badge-positive / .badge-outline 그대로
-const BADGE_BASE = 'inline-flex items-center rounded-pill px-[9px] py-[3px] text-caption-2 font-bold'
-const BADGE_VARIANT = {
-  default: 'bg-primary-dim text-primary-dark',
-  positive: 'bg-positive-dim text-positive',
-  outline: 'bg-disabled text-gray-2',
-} as const
+// 상태 배지는 ui/badge.tsx를 쓴다. variant 이름이 프로토타입과 다르다 —
+// 참여(초록)는 badge의 `secondary`다(`positive`라는 variant는 없다).
+type StatusBadgeVariant = 'default' | 'secondary' | 'outline'
 
-function statusMeta(week: PredictWeek): { label: string; variant: keyof typeof BADGE_VARIANT } {
+function statusMeta(week: PredictWeek): { label: string; variant: StatusBadgeVariant } {
   if (week.status === 'open') return { label: '진행중', variant: 'default' }
   if (week.status === 'result') {
     return week.myResult
-      ? { label: '참여', variant: 'positive' }
+      ? { label: '참여', variant: 'secondary' }
       : { label: '미참여', variant: 'outline' }
   }
   return { label: '예정', variant: 'outline' }
@@ -95,13 +92,13 @@ export function MatchWeekList({
   return (
     <div className={className}>
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-title-3 font-black text-black">{monthLabel}</span>
+        <span className="text-heading-2 font-black text-black">{monthLabel}</span>
         <div className="flex gap-0.5">
           <button
             type="button"
             aria-label="이전 달"
             onClick={onPrevMonth}
-            className="flex h-8 w-8 items-center justify-center rounded-pill border border-gray-4 bg-surface text-gray-2 hover:border-primary hover:text-primary"
+            className="flex h-8 w-8 items-center justify-center rounded-pill border border-neutral-weak bg-surface text-neutral-muted hover:border-brand-solid hover:text-brand"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -109,7 +106,7 @@ export function MatchWeekList({
             type="button"
             aria-label="다음 달"
             onClick={onNextMonth}
-            className="flex h-8 w-8 items-center justify-center rounded-pill border border-gray-4 bg-surface text-gray-2 hover:border-primary hover:text-primary"
+            className="flex h-8 w-8 items-center justify-center rounded-pill border border-neutral-weak bg-surface text-neutral-muted hover:border-brand-solid hover:text-brand"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -126,7 +123,7 @@ export function MatchWeekList({
             {week.matches.length === 0 ? (
               <div
                 style={{ animationDelay: `${i * 55}ms` }}
-                className="animate-enter rounded-lg border border-gray-4 bg-surface p-5 text-center text-caption-1 text-gray-3"
+                className="animate-enter rounded-lg border border-neutral-weak bg-surface p-5 text-center text-caption-1 text-neutral-subtle"
               >
                 이번 주는 예정된 경기가 없어요
               </div>
@@ -177,9 +174,11 @@ function WeekSessionRow({
       onClick={clickable ? () => onSelect?.(week) : undefined}
       style={{ animationDelay: `${delayMs}ms` }}
       className={cn(
-        'animate-enter block w-full overflow-hidden rounded-lg border border-gray-4 bg-surface text-left',
+        'animate-enter block w-full overflow-hidden rounded-lg border border-neutral-weak bg-surface text-left',
         clickable
-          ? 'cursor-pointer transition-colors hover:bg-primary-dim active:bg-disabled'
+          ? // brand-weak-pressed(blue-200)는 text-muted-foreground와 4.48:1로 AA 미달이라 안 쓴다.
+            // hover와 같은 톤(brand-weak)을 유지해 파란 계열에서 안 벗어나면서 대비를 지킨다.
+            'cursor-pointer transition-colors hover:bg-brand-weak active:bg-brand-weak'
           : 'cursor-not-allowed bg-[var(--c-bg)]'
       )}
     >
@@ -195,18 +194,19 @@ function WeekSessionRow({
         />
       ))}
 
-      <div className="flex items-center justify-between gap-2 border-t border-gray-4 p-3.5 pt-3">
-        <span className={cn(BADGE_BASE, BADGE_VARIANT[meta.variant])}>{meta.label}</span>
+      <div className="flex items-center justify-between gap-2 border-t border-neutral-weak p-3.5 pt-3">
+        {/* 이 카드 전체가 <button>이라 Badge(div)를 못 넣는다 — 스타일만 span에 얹는다. */}
+        <span className={badgeVariants({ variant: meta.variant })}>{meta.label}</span>
 
         {participated ? (
           <p className="m-0 text-label-2 font-extrabold text-black">
             예측 {formatPredicted(week.myResult!.predicted)}
-            {hasScore && <span className="text-primary-dark"> +{week.myResult!.totalPoints}점</span>}
+            {hasScore && <span className="text-brand"> +{week.myResult!.totalPoints}점</span>}
           </p>
         ) : week.status === 'open' ? (
-          <span className="flex items-center gap-0.5 text-label-2 font-bold text-primary">예측하기 ›</span>
+          <span className="flex items-center gap-0.5 text-label-2 font-bold text-brand">예측하기 ›</span>
         ) : week.status === 'upcoming' ? (
-          <Lock className="h-4 w-4 text-gray-3" aria-label="예측 오픈 전" />
+          <Lock className="h-4 w-4 text-neutral-subtle" aria-label="예측 오픈 전" />
         ) : null}
       </div>
     </button>
@@ -235,18 +235,18 @@ function MatchInfoRow({
   const [leftSide, rightSide] = match.isHome ? [us, them] : [them, us]
 
   return (
-    <div className={cn('p-3.5', withDivider && 'border-b border-gray-4')}>
+    <div className={cn('p-3.5', withDivider && 'border-b border-neutral-weak')}>
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-caption-1 font-bold text-gray-3">{match.competition ?? '프리미어리그'}</span>
-        <span className="text-caption-1 font-bold text-gray-3">{weekNo}라운드</span>
+        <span className="text-caption-1 font-bold text-neutral-subtle">{match.competition ?? '프리미어리그'}</span>
+        <span className="text-caption-1 font-bold text-neutral-subtle">{weekNo}라운드</span>
       </div>
 
       <div className="flex items-center justify-center gap-4 py-1.5">
         <TeamSide name={leftSide.name} logoUrl={leftSide.logoUrl} />
         <div className="flex min-w-16 flex-col items-center gap-0.5">
-          <span className="text-caption-2 font-bold text-gray-3">{match.kickoff}</span>
+          <span className="text-caption-2 font-bold text-neutral-subtle">{match.kickoff}</span>
           {finished ? (
-            <span className="text-heading-1 font-black text-black">
+            <span className="text-body-2-normal font-black text-black">
               {match.actual?.[0]} – {match.actual?.[1]}
             </span>
           ) : (

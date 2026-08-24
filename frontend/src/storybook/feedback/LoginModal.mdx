@@ -1,0 +1,53 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as LoginModalStories from './LoginModal.stories'
+
+<Meta of={LoginModalStories} />
+
+# LoginModal
+
+`components/polls/LoginModal.tsx`. 로그인이 필요한 행동을 비로그인 사용자가 시도했을 때 그 화면 위에 띄우는 로그인 유도 모달이다.
+
+이 서비스에는 `/login` 페이지가 없다. 로그인은 언제나 이 모달로만 일어난다 — 그래서 "로그인 화면으로 보낸다"는 선택지 자체가 없고, 어디서 막혔든 그 자리에서 모달을 띄운다.
+
+<Canvas of={LoginModalStories.Default} />
+
+## 트리거 지점 (실제 호출부 전체)
+
+| 파일 | `triggerAction` |
+| --- | --- |
+| `components/layout/LoginButton.tsx` (헤더 로그인 버튼) | `login` |
+| `app/menu/MenuActions.tsx` (메뉴 화면) | `login` |
+| `components/auth/RequireAuthModal.tsx` (보호된 화면 게이트) | `login` |
+| `components/polls/TypeAPollClient.tsx` | `vote` |
+| `components/polls/TypeBPollClient.tsx` | `vote` |
+| `components/polls/OverallRatingPollClient.tsx` | `vote` |
+
+## triggerAction은 문구를 바꾸지 않는다
+
+`triggerAction`이 받는 값은 `'vote' | 'comment' | 'create_poll' | 'login'`이고 기본값은 `'vote'`다. 이름만 보면 유도 문구가 갈릴 것 같지만, 소스에서 이 값은 **`auth_prompt_viewed` 이벤트의 `trigger_action` 속성으로만 쓰인다.** 화면에 보이는 문구·아이콘·버튼은 네 값 모두 동일하다. `TriggerVote`/`TriggerComment`/`TriggerCreatePoll`/`TriggerLogin` 스토리가 서로 똑같이 보이는 건 버그가 아니라 이 사실의 기록이다.
+
+값별로 문구를 다르게 하려면 이 컴포넌트를 고쳐야 한다 — prop만 바꿔서 되는 일이 아니다.
+
+`'comment'`와 `'create_poll'`은 타입에만 있고 넘기는 곳이 없다. 댓글 작성은 투표 참여자만 가능해서 비로그인 사용자가 도달하지 못하고, 투표 생성 페이지는 `RequireAuthModal`(`login`)을 쓴다.
+
+## RequireAuthModal — 유일한 래퍼
+
+`components/auth/RequireAuthModal.tsx`(24줄)는 이 모달을 `open` 고정 + `onClose={() => router.push('/')}` + `triggerAction="login"`으로 감싼 것뿐이다. 로그인 없이는 볼 내용이 없는 화면에서 `redirect('/login')` 대신 쓴다: `app/admin/page.tsx`, `app/polls/create/page.tsx`, `app/my/page.tsx`, `app/my/feedback/page.tsx`, `app/onboarding/page.tsx`.
+
+닫기 = 홈으로 이탈이라 "닫고 그 화면에 머무르기"가 없다. 그게 유일한 차이라서 별도 컴포넌트 문서로 나누지 않고 여기 스토리 하나로 둔다.
+
+<Canvas of={LoginModalStories.RequireAuthGate} />
+
+## 실제 로그인은 Storybook에서 동작하지 않는다
+
+`Google로 로그인`은 `supabase.auth.signInWithOAuth`로 실제 OAuth 리다이렉트를 시도하므로 Storybook에서는 정상적으로 안 된다. mock 모드 버튼(`데모로 바로 로그인`)은 서버 액션 `mockLogin`을 호출해서 역시 동작하지 않는다. 여기서는 렌더링과 열림/닫힘까지만 확인한다.
+
+버튼 문구와 아이콘은 `triggerAction`이 아니라 `lib/config.ts`의 `IS_MOCK`으로 갈린다 — Supabase 환경 변수가 있으면 `Google로 로그인`(+ Google 아이콘), 없으면 `데모로 바로 로그인`(⚡). **Storybook을 실행한 환경의 `.env.local`이 그대로 반영되므로 스토리에서 어느 쪽이 보이는지는 고정이 아니다.**
+
+모달이 열릴 때 `auth_prompt_viewed`를 전송하는데, Mixpanel 토큰(`NEXT_PUBLIC_MIXPANEL_TOKEN`)이 없으면 no-op이다.
+
+## 구조
+
+[BottomSheet](?path=/docs/feedback-bottomsheet--docs) 위에 얹혀 있어 모바일(`<768px`)은 바텀시트, 데스크톱은 중앙 모달로 뜬다. 예전엔 "메뉴에서는 항상 중앙 모달" 같은 `intent` prop 분기가 있었는데 없앴다 — 화면 폭이 유일한 기준이다. `components/polls/login-modal.test.mjs`가 이 규칙(그리고 CTA가 `outline`이 아닌 채움 버튼이라는 점, `MenuActions`의 호출 형태 문자열까지)을 소스 문자열로 검사하므로, 문구나 호출부를 고칠 때 그 테스트를 함께 본다.
+
+<Canvas of={LoginModalStories.Interactive} />

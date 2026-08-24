@@ -1,0 +1,70 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="개요" />
+
+# NUFC Vote 디자인시스템
+
+Newcastle United 팬 투표 플랫폼의 디자인시스템이다. 한국어 · 모바일 퍼스트 · 라이트 테마 전용.
+
+## 이 Storybook의 역할
+
+**사용 규칙의 원본은 각 컴포넌트의 MDX 파일이다.** 값(색상 코드, px)은 코드에 있고, "언제 어떻게 쓰는가"는 MDX에 있다.
+
+| 찾는 것 | 어디에 있는가 |
+|---|---|
+| 토큰의 실제 값 | `frontend/tailwind.config.ts`, `frontend/src/app/globals.css` |
+| 언제 어떤 걸 쓰는가 | 이 Storybook의 각 MDX 페이지 |
+| 무엇이 어느 문서에 있는가 | `frontend/src/storybook/DESIGN-SYSTEM.md` (라우팅 인덱스) |
+
+## 카테고리
+
+사이드바 분류는 원티드 Montage 체계를 따른다.
+
+- **Foundations** — Color, Typography, Layout, Radius, Elevation, State, Motion
+- **Actions** — 누르는 것 (Button, Chip)
+- **Contents** — 보여주는 것 (Card, Avatar, Separator, Progress, ListGroup, PollCarouselCard)
+- **Loading** — 기다리는 것 (Skeleton)
+- **Navigations** — 이동하는 것 (AppHeader, BottomNav)
+- **Presentation** — 덮는 것 (Sheet, BottomSheet)
+- **Selection and Input** — 입력하는 것 (Radio, TextInput, RatingMatrix, FormSection)
+
+## 설명을 쓰는 기준
+
+모든 항목에 설명을 달지 않는다. **제약이나 판단이 있는 곳에만** 쓴다.
+
+| 대상 | 설명을 쓰는가 |
+|---|---|
+| 이름만으로 자명한 슬롯 (root, label, title) | 안 쓴다 |
+| 제약이 있는 슬롯 (상호배제, 조건부 사용, 접근성 경고) | 쓴다 |
+| 이름이 곧 의미인 variant | 안 쓴다 |
+| 선택에 판단이 필요한 variant (어느 게 CTA인가) | 쓴다 |
+
+---
+
+## 환경 확인
+
+아래가 정상으로 보이면 토큰과 폰트가 제대로 로드된 것이다.
+
+`font-sans`를 명시적으로 붙여둔다 — Storybook docs 컨테이너가 자체 폰트를 상속시키므로,
+Tailwind 클래스만으로는 서비스 폰트가 적용되지 않는다.
+
+<div className="space-y-4 rounded-lg border border-border bg-surface p-5 font-sans shadow-g200">
+  <p className="text-heading-2 text-foreground">Pretendard Variable — 제목 (heading-2)</p>
+  <p className="text-body-1-reading text-muted-foreground">
+    본문입니다. 이 문장이 Pretendard로 보이고 자간이 자연스러우면 폰트가 로드된 것입니다. 가나다라마바사 0123456789
+  </p>
+  <div className="flex flex-wrap gap-2">
+    <span className="rounded-pill bg-brand-solid px-3 py-1 text-caption-2 font-bold text-white">brand</span>
+    <span className="rounded-pill bg-brand-weak px-3 py-1 text-caption-2 font-bold text-brand">brand-weak</span>
+    <span className="rounded-pill bg-positive-weak px-3 py-1 text-caption-2 font-bold text-positive">positive</span>
+    <span className="rounded-pill bg-critical-weak px-3 py-1 text-caption-2 font-bold text-critical">critical</span>
+    <span className="rounded-pill bg-disabled px-3 py-1 text-caption-2 font-bold text-disabled">disabled</span>
+  </div>
+  <div className="flex flex-wrap gap-3">
+    <div className="h-12 w-12 rounded-xs bg-neutral-weak" title="radius xs 8px" />
+    <div className="h-12 w-12 rounded-sm bg-neutral-weak" title="radius sm 10px" />
+    <div className="h-12 w-12 rounded-md bg-neutral-weak" title="radius md 12px" />
+    <div className="h-12 w-12 rounded-lg bg-neutral-weak" title="radius lg 16px" />
+    <div className="h-12 w-12 rounded-pill bg-neutral-weak" title="radius pill" />
+  </div>
+</div>

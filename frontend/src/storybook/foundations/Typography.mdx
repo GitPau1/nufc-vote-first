@@ -1,0 +1,102 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import { TokenList, TypeSample, TypeMetric } from '../_internal/TokenList'
+
+<Meta title="Foundations/Typography" />
+
+export function metrics(cls) {
+  return [
+    <TypeMetric className={cls} metric="size" />,
+    <TypeMetric className={cls} metric="lineHeight" />,
+    <TypeMetric className={cls} metric="letterSpacing" />,
+  ]
+}
+
+export const VALUE_COLUMNS = ['크기', '행간', '자간']
+
+# Typography
+
+폰트는 **Pretendard Variable**이다. 타입 스케일은 Wanted Design Library의 역할 기반 스케일을 그대로 쓴다 — 크기가 아니라 **역할**로 고른다.
+
+크기와 굵기는 독립된 축이다. `text-body-1-normal`로 크기를 정하고 `font-bold`로 굵기를 따로 정한다.
+
+**`1`/`2` 접미사는 화면 단위(데스크탑/모바일)를 뜻하는 경우가 많다** — 위계가 다른 별개의 역할이 아니라, **같은 역할을 어떤 화면 크기에서 쓰느냐**의 구분이다.
+- `heading-1`(데스크탑) ↔ `heading-2`(모바일) — 둘 다 "섹션 제목" 역할, 화면 크기만 다르다.
+- `headline-1`(데스크탑) ↔ `headline-2`(모바일) — 둘 다 "카드·모달 제목" 역할.
+- Display·Title은 **연쇄적으로** 대응한다 — 한 단계 큰 화면(데스크탑)의 토큰이 한 단계 작은 화면(모바일)에서는 그다음 토큰으로 내려간다:
+
+| 역할(크기 단계) | 데스크탑 | 모바일 |
+|---|---|---|
+| 최상위 히어로 | `display-1` | `title-1` |
+| 그다음 단계 | `title-1` | `title-2` |
+| 그다음 단계 | `title-2` | `title-3` |
+
+그래서 `title-1`은 **이중 역할**이다 — 모바일에서는 `display-1`(데스크탑)과 같은 최상위 히어로, 데스크탑에서는 `title-2`(모바일)와 같은 한 단계 작은 역할이다. `title-2`도 마찬가지로 이중 역할.
+
+## Display · Title
+
+일반 앱 화면의 반복 UI에 쓰지 않는다. 온보딩, 강한 상태 강조, 마케팅 성격의 화면에만 쓴다.
+
+<TokenList
+  valueColumns={VALUE_COLUMNS}
+  items={[
+    { name: 'text-display-1', sample: <TypeSample className="text-display-1" />, value: metrics('text-display-1'), usage: '가장 강한 시각 강조, 히어로 전용 — 데스크탑용. 모바일에서 같은 역할은 title-1 (위 표 참고)' },
+    { name: 'text-display-2', sample: <TypeSample className="text-display-2" />, value: metrics('text-display-2') },
+    { name: 'text-title-1', sample: <TypeSample className="text-title-1" />, value: metrics('text-title-1'), usage: '이중 역할 — 모바일에서는 display-1(데스크탑)과 같은 최상위 히어로, 데스크탑에서는 title-2(모바일)와 같은 한 단계 작은 역할. 투표 상세 캐러셀 카드 제목' },
+    { name: 'text-title-2', sample: <TypeSample className="text-title-2" />, value: metrics('text-title-2'), usage: '이중 역할 — 모바일에서는 title-1(데스크탑)과, 데스크탑에서는 title-3(모바일)과 같은 역할' },
+    { name: 'text-title-3', sample: <TypeSample className="text-title-3" />, value: metrics('text-title-3'), usage: '모바일에서 title-2(데스크탑)와 같은 역할. 앱 헤더 서비스명(이건 화면 크기 구분 없이 공통으로 씀)' },
+  ]}
+/>
+
+## Heading · Headline
+
+카드 제목, 모달 제목, 섹션 제목은 **여기서 먼저 고른다.** title 계열로 올리지 않는다.
+
+<TokenList
+  valueColumns={VALUE_COLUMNS}
+  items={[
+    { name: 'text-heading-1', sample: <TypeSample className="text-heading-1" />, value: metrics('text-heading-1'), usage: '섹션의 주요 제목 — 데스크탑용. 모바일에서 같은 역할은 heading-2' },
+    { name: 'text-heading-2', sample: <TypeSample className="text-heading-2" />, value: metrics('text-heading-2'), usage: '섹션의 주요 제목 — 모바일용(데스크탑의 heading-1과 같은 역할)' },
+    { name: 'text-headline-1', sample: <TypeSample className="text-headline-1" />, value: metrics('text-headline-1'), usage: '카드 제목, 시트 제목 — 데스크탑용. 모바일에서 같은 역할은 headline-2' },
+    { name: 'text-headline-2', sample: <TypeSample className="text-headline-2" />, value: metrics('text-headline-2'), usage: '카드 제목, 시트 제목 — 모바일용(데스크탑의 headline-1과 같은 역할)' },
+  ]}
+/>
+
+## Body
+
+`normal`과 `reading`은 크기가 같고 **줄간격만 다르다.** 여러 줄로 흐르는 텍스트에는 `reading`을 쓴다.
+
+<TokenList
+  valueColumns={VALUE_COLUMNS}
+  items={[
+    { name: 'text-body-1-normal', sample: <TypeSample className="text-body-1-normal" />, value: metrics('text-body-1-normal'), usage: '일반 본문, 설정 항목, 짧은 설명' },
+    { name: 'text-body-1-reading', sample: <TypeSample className="text-body-1-reading" />, value: metrics('text-body-1-reading'), usage: '댓글 본문처럼 줄이 길어지는 텍스트' },
+    { name: 'text-body-2-normal', sample: <TypeSample className="text-body-2-normal" />, value: metrics('text-body-2-normal'), usage: '버튼 라벨, 투표 옵션 — 짧고 조작 가능한 텍스트의 기본값' },
+    { name: 'text-body-2-reading', sample: <TypeSample className="text-body-2-reading" />, value: metrics('text-body-2-reading'), usage: '작은 크기의 긴 설명 문단' },
+  ]}
+/>
+
+## Label · Caption
+
+<TokenList
+  valueColumns={VALUE_COLUMNS}
+  items={[
+    { name: 'text-label-1-normal', sample: <TypeSample className="text-label-1-normal" />, value: metrics('text-label-1-normal'), usage: '폼 라벨, 리스트 보조 제목' },
+    { name: 'text-label-1-reading', sample: <TypeSample className="text-label-1-reading" />, value: metrics('text-label-1-reading'), usage: '라벨 크기의 긴 안내 문구' },
+    { name: 'text-label-2', sample: <TypeSample className="text-label-2" />, value: metrics('text-label-2'), usage: '낮은 위계의 라벨, 작은 버튼' },
+    { name: 'text-caption-1', sample: <TypeSample className="text-caption-1" />, value: metrics('text-caption-1'), usage: '메타 정보, 보조 설명' },
+    { name: 'text-caption-2', sample: <TypeSample className="text-caption-2" />, value: metrics('text-caption-2'), usage: '뱃지, 가장 낮은 위계의 메타' },
+  ]}
+/>
+
+## 고르는 순서
+
+1. 이 텍스트의 **역할**이 무엇인가 — 제목인가, 본문인가, 라벨인가, 메타인가
+2. 그 역할이 **데스크탑용인가 모바일용인가** — `heading-1`/`heading-2`, `headline-1`/`headline-2`, `display-1`/`title-1`처럼 같은 역할의 화면 단위별 짝이 있으면 그중에서 고른다
+3. 여러 줄로 흐르는가? → `reading` 변형이 있으면 그걸 쓴다
+4. 강조가 필요하면 **크기를 올리지 말고** `font-bold`를 쓴다
+
+## 하지 말 것
+
+- `text-[15px]`, `leading-[22px]`, `tracking-[-0.5px]` 같은 임의값을 만들지 않는다.
+- Tailwind 기본 크기(`text-sm`, `text-lg` 등)를 쓰지 않는다 — 우리 스케일과 값이 다르다.
+- 위 두 항목은 `design-foundation.test.mjs`가 막는다.

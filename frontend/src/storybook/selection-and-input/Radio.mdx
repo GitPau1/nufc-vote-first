@@ -1,0 +1,24 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as RadioStories from './Radio.stories'
+
+<Meta of={RadioStories} />
+
+# Radio
+
+`ui/radio.tsx`. 두 조각으로 나뉜다 — 시각 요소만 있는 `RadioIndicator`와, 행 전체가 클릭 대상인 `RadioOption`.
+
+<Canvas of={RadioStories.IndicatorOnly} />
+
+## 옵션 목록
+
+<Canvas of={RadioStories.OptionGroup} />
+
+`RadioOption`은 `role="radio"` `aria-checked`를 갖는다. 다만 여러 개를 감싸는 `role="radiogroup"` 컨테이너는 아직 없다 — 지금 사용처(`TypeAPollClient`)가 `<div>`로만 감싸고 있어서, 목록 전체를 감싸는 그룹 컴포넌트가 필요해지면 그때 추가한다.
+
+## RadioIndicator만 쓰는 경우
+
+클릭할 수 없는 요약 화면(`ConfirmModal`의 "내 선택")처럼, 상태를 보여주기만 하고 상호작용은 없는 곳에 쓴다. `selected`는 항상 `true`로 고정해서 쓴다 — 이 컴포넌트 자체엔 미선택 상태를 보여줄 이유가 없다.
+
+## 하지 말 것
+
+- 미선택 링 색(`border-muted-foreground/40`)은 아직 semantic stroke 토큰으로 옮기지 않았다 — 임의로 `border-neutral-weak` 등으로 바꾸지 않는다. 값이 다르다.

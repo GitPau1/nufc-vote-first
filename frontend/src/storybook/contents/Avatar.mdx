@@ -1,0 +1,13 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as AvatarStories from './Avatar.stories'
+
+<Meta of={AvatarStories} />
+
+# Avatar
+
+Radix `@radix-ui/react-avatar` 위에 얹었다 — 이미지 로드 실패 시 `AvatarFallback`으로 자동 전환된다(별도 에러 핸들링 코드 불필요).
+
+<Canvas of={AvatarStories.WithImage} />
+<Canvas of={AvatarStories.FallbackOnly} />
+
+크기는 고정이다(기본 `h-10 w-10`) — 더 큰 자리가 필요하면 `className`으로 덮어쓴다. `TypeAPollClient`의 선수 사진(`w-11 h-11`)처럼 아바타 컴포넌트를 쓰지 않고 `img` + `rounded-full`을 직접 쓴 곳도 있다 — 아직 통합 전이다.

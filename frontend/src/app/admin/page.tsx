@@ -24,10 +24,10 @@ export default async function AdminPage() {
   return (
     <>
       <AppHeader auth={auth} />
-      <main className="mx-auto min-h-[calc(100vh-62px)] max-w-shell bg-background px-4 pt-6 pb-24">
+      <main className="mx-auto min-h-[calc(100vh-56px)] max-w-shell bg-background px-4 pt-6 pb-24">
         <div className="mb-5">
           <p className="text-heading-2 font-black text-foreground">관리자 페이지</p>
-          <p className="mt-1 text-label-2 text-muted-foreground">
+          <p className="mt-1 text-label-1-reading text-muted-foreground">
             투표 생성과 공개된 투표 목록을 관리할 수 있어요.
           </p>
         </div>

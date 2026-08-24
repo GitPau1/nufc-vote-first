@@ -12,7 +12,7 @@ export function LoginButton() {
       <Button
         variant="outline"
         size="sm"
-        className="h-8 rounded-pill text-caption-1 font-semibold border-primary text-primary hover:text-primary"
+        className="h-8 rounded-pill font-semibold border-brand-solid text-brand hover:text-brand"
         onClick={() => setOpen(true)}
       >
         로그인
@@ -21,7 +21,6 @@ export function LoginButton() {
       <LoginModal
         open={open}
         onClose={() => setOpen(false)}
-        intent="direct"
         triggerAction="login"
       />
     </>

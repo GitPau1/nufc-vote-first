@@ -1,0 +1,22 @@
+import { Meta, Canvas, Controls } from '@storybook/addon-docs/blocks'
+import * as BadgeStories from './Badge.stories'
+
+<Meta of={BadgeStories} />
+
+# Badge
+
+<Canvas of={BadgeStories.Default} />
+<Controls of={BadgeStories.Default} />
+
+## 4개 variant
+
+<Canvas of={BadgeStories.AllVariants} />
+
+| variant | 실제 색 | 쓸 곳 |
+|---|---|---|
+| `default` | brand(파랑) | 일반 라벨·카테고리 |
+| `secondary` | **positive(초록)** | 완료·성공·적중 결과 |
+| `destructive` | critical(빨강) | 마감 임박, 삭제 관련 안내 |
+| `outline` | disabled(회색) | 비활성·미확정 상태 |
+
+**이름과 색이 안 맞는 게 하나 있다** — `secondary`가 초록(positive)이다. "보조"라는 이름만 보고 회색 계열로 짐작하지 않는다. 이건 shadcn/ui 기본 이름을 그대로 쓰면서 색만 우리 토큰으로 바꿔 넣은 결과다 — variant 이름 자체를 `positive`로 바꾸는 건 [Color](?path=/docs/foundations-color--docs) 쪽 이름 체계와 맞출지 별도 논의가 필요해 지금은 안 건드렸다.

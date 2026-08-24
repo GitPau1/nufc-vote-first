@@ -28,7 +28,7 @@ export default async function PlayerRatingChangesPage() {
         changedPlayerCount={week?.changes.length ?? 0}
       />
       <AppHeader showAuth={false} />
-      <main className="mx-auto min-h-[calc(100vh-62px)] max-w-shell bg-background px-4 pb-24 pt-4">
+      <main className="mx-auto min-h-[calc(100vh-56px)] max-w-shell bg-background px-4 pb-24 pt-4">
         <div className="mb-3">
           <Link href="/players" className="inline-flex items-center gap-1.5 text-label-1-normal font-semibold text-muted-foreground">
             <ChevronLeft className="h-4 w-4" />
@@ -38,7 +38,7 @@ export default async function PlayerRatingChangesPage() {
 
         <section className="overflow-hidden rounded-lg border border-border bg-surface">
           <div className="border-b border-border px-4 py-4">
-            <h1 className="text-headline-1 font-bold text-foreground">이번주 변경 내역</h1>
+            <h1 className="text-heading-2 font-bold text-foreground">이번주 변경 내역</h1>
             <p className="mt-1 text-caption-1 text-muted-foreground">
               {week
                 ? `${formatDate(week.weekStartAt)} - ${formatDate(week.weekEndAt)} 반영 결과`
@@ -48,7 +48,7 @@ export default async function PlayerRatingChangesPage() {
 
           {week && week.changes.length > 0 ? (
             <div>
-              <div className="grid grid-cols-[minmax(0,1fr)_54px_54px_44px] border-b border-border px-4 py-3 text-caption-2 font-medium text-gray-3">
+              <div className="grid grid-cols-[minmax(0,1fr)_54px_54px_44px] border-b border-border px-4 py-3 text-caption-2 font-medium text-neutral-subtle">
                 <span>선수</span>
                 <span className="text-center">이전 오버롤</span>
                 <span className="text-center">이후 오버롤</span>
@@ -74,7 +74,7 @@ export default async function PlayerRatingChangesPage() {
                     <span className="text-center text-label-1-normal font-semibold text-foreground">
                       {change.newOverall}
                     </span>
-                    <span className={`text-right text-label-1-normal font-bold ${change.delta > 0 ? 'text-positive' : change.delta < 0 ? 'text-negative' : 'text-muted-foreground'}`}>
+                    <span className={`text-right text-label-1-normal font-bold ${change.delta > 0 ? 'text-positive' : change.delta < 0 ? 'text-critical' : 'text-muted-foreground'}`}>
                       {formatDelta(change.delta)}
                     </span>
                   </div>

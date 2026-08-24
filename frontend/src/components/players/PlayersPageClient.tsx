@@ -22,10 +22,10 @@ type PlayersPageClientProps = {
 }
 
 const positionTone: Record<string, string> = {
-  GK: 'bg-primary-dim text-primary',
-  DEF: 'bg-positive-dim text-positive',
-  MID: 'bg-primary-dim text-primary-dark',
-  FWD: 'bg-negative-dim text-negative',
+  GK: 'bg-brand-weak text-brand',
+  DEF: 'bg-positive-weak text-positive',
+  MID: 'bg-brand-weak text-brand',
+  FWD: 'bg-critical-weak text-critical',
   MGR: 'bg-disabled text-muted-foreground',
 }
 
@@ -50,12 +50,12 @@ export function PlayersPageClient({ players }: PlayersPageClientProps) {
           value={query}
           onChange={event => setQuery(event.target.value)}
           placeholder="선수 검색"
-          className="h-full min-w-0 flex-1 bg-transparent text-label-2 font-medium text-foreground outline-none placeholder:text-gray-3"
+          className="h-full min-w-0 flex-1 bg-transparent text-label-1-normal font-medium text-foreground outline-none placeholder:text-placeholder"
         />
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface">
-        <div className="flex items-center justify-between border-b border-border px-3.5 pb-2 pt-3 text-caption-2 font-medium text-gray-3">
+        <div className="flex items-center justify-between border-b border-border px-3.5 pb-2 pt-3 text-caption-2 font-medium text-neutral-subtle">
           <div className="flex items-center gap-[66px]">
             <span>순위</span>
             <span>이름</span>
@@ -102,6 +102,20 @@ const slotClass: Record<PickOneSlot, string> = {
 const PICK_ONE_TARGET_OVERALL = 80
 const PICK_ONE_PREFERRED_MIN = 78
 const PICK_ONE_PREFERRED_MAX = 83
+
+// 아래 세 값은 CSS 클래스가 아니라 JS 타이머라 tailwind.config.ts의 duration
+// 토큰(micro/enter/exit/slow)을 클래스명으로 못 쓴다. design-foundation.test.mjs의
+// duration 가드는 Tailwind 클래스만 검사해서 이 숫자들은 검사 대상 밖이다 — 그래서
+// 각 값의 정체를 여기 주석으로 남긴다 (디자인시스템 실행계획 §3.18).
+/** 승자를 보여준 채로 대기하는 시간. 애니메이션 토큰과 무관한 별개의 UX 대기값. */
+const PICK_ONE_CONFIRM_HOLD_MS = 1000
+/** 새 매치업 진입 애니메이션이 자리잡을 시간을 준 뒤 퇴장 애니메이션을 시작하는 간격.
+ *  duration 토큰 4개(150/300/200/700) 중 어디에도 안 맞는 stagger 값 — State.mdx의
+ *  opacity-[0.34] 예외와 같은 성격으로 Motion.mdx에 예외로 기록해뒀다. */
+const PICK_ONE_EXIT_STAGGER_MS = 120
+/** 퇴장 카드가 화면에서 완전히 사라지기까지의 시간. `duration-slow`(700ms)와 같은
+ *  값을 써야 한다 — 아래 JSX의 `duration-slow` 클래스와 반드시 같이 바꿀 것. */
+const PICK_ONE_EXIT_FADE_MS = 700
 
 function PickOneSection({ players }: { players: PlayerListItem[] }) {
   const initialPlayers = useMemo(() => getInitialMatchup(players), [players])
@@ -166,7 +180,7 @@ function PickOneSection({ players }: { players: PlayerListItem[] }) {
         [otherKey]: { player: loser, slot: loserSlot === 'left' ? 'out-left' : 'out-right' },
       } as Record<PickOneCardKey, PickOneCardState>)
       setPhase('centered')
-    }, 1000)
+    }, PICK_ONE_CONFIRM_HOLD_MS)
   }
 
   function selectCard(cardKey: PickOneCardKey) {
@@ -264,15 +278,15 @@ function PickOneSection({ players }: { players: PlayerListItem[] }) {
           [selectedCardKey]: { ...current[selectedCardKey], slot: 'left' },
           [otherKey]: { ...current[otherKey], slot: 'right' },
         }))
-        window.setTimeout(() => setExitingCard(null), 700)
-      }, 120)
+        window.setTimeout(() => setExitingCard(null), PICK_ONE_EXIT_FADE_MS)
+      }, PICK_ONE_EXIT_STAGGER_MS)
     })
   }
 
   return (
     <section className="mb-3 overflow-hidden rounded-lg border border-border bg-surface">
       <div className="flex justify-center border-b border-border px-3.5 pb-3 pt-3">
-        <p className="whitespace-nowrap text-body-1-normal font-bold text-gray-1">
+        <p className="whitespace-nowrap text-body-1-normal font-bold text-neutral-strong">
           여러분의 선택은?
         </p>
       </div>
@@ -297,7 +311,7 @@ function PickOneSection({ players }: { players: PlayerListItem[] }) {
           isDimmed={(phase === 'confirming' && selectedCardKey === 'rightCard') || isPending}
           onClick={() => phase === 'centered' ? showNextMatchup() : selectCard('leftCard')}
         />
-        <div className={`absolute left-1/2 top-[72px] flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-pill bg-disabled text-label-1-normal font-medium text-gray-3 transition-opacity duration-300 ${phase === 'centered' ? 'pointer-events-none opacity-0' : 'opacity-100'}`}>
+        <div className={`absolute left-1/2 top-[72px] flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-pill bg-disabled text-caption-2 font-medium text-neutral-subtle transition-opacity duration-enter ${phase === 'centered' ? 'pointer-events-none opacity-0' : 'opacity-100'}`}>
           vs
         </div>
         <PickOneCard
@@ -318,7 +332,7 @@ function PickOneSection({ players }: { players: PlayerListItem[] }) {
       <Link
         href="/players/changes"
         onClick={() => trackEvent('player_rating_changes_clicked', { source_page: 'players' })}
-        className="mx-4 mb-4 flex h-10 items-center justify-center rounded-md bg-disabled text-label-2 font-bold text-gray-1 active:bg-disabled"
+        className="mx-4 mb-4 flex h-10 items-center justify-center rounded-md bg-disabled text-body-2-normal font-bold text-neutral-strong active:bg-disabled"
       >
         이번주 변경 내역
       </Link>
@@ -411,18 +425,18 @@ function PickOneCard({
     <button
       type="button"
       onClick={onClick}
-      className={`absolute left-0 top-5 flex h-32 w-[calc((100%_-_49px)/2)] flex-col items-center justify-center gap-2.5 rounded-lg bg-gray-1 p-3 text-left transition-[transform,opacity,filter,box-shadow] duration-700 ease-in-out will-change-transform ${slotClass[card.slot]} ${isPicked ? 'ring-4 ring-inset ring-primary' : ''} ${isDimmed ? 'opacity-[0.34] saturate-[0.35] duration-1000' : ''}`}
+      className={`absolute left-0 top-5 flex h-32 w-[calc((100%_-_49px)/2)] flex-col items-center justify-center gap-2.5 rounded-lg bg-neutral-strong p-3 text-left transition-[transform,opacity,filter,box-shadow] duration-slow ease-in-out will-change-transform ${slotClass[card.slot]} ${isPicked ? 'ring-4 ring-inset ring-brand-solid' : ''} ${isDimmed ? 'opacity-[0.34] saturate-[0.35] duration-slow' : ''}`}
       aria-label={`${player.name} 선택`}
     >
       <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-pill border border-border bg-background">
         {player.photoUrl ? (
           <img src={player.photoUrl} alt="" className="h-full w-full object-cover" />
         ) : (
-          <span className="text-caption-1 font-semibold text-primary">{player.position}</span>
+          <span className="text-caption-1 font-semibold text-brand">{player.position}</span>
         )}
       </div>
       <div className="w-full text-center">
-        <p className="truncate text-label-1-reading font-semibold text-white">
+        <p className="truncate text-label-1-normal font-semibold text-white">
           {player.name}
         </p>
         <div className="flex items-center justify-center gap-3 text-caption-2 text-disabled">
@@ -454,7 +468,7 @@ function PlayerRow({ player }: { player: PlayerListItem }) {
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-label-1-reading font-semibold text-foreground">
+        <p className="truncate text-label-1-normal font-semibold text-foreground">
           {player.name}
         </p>
         <div className="flex items-center gap-3 text-caption-2 text-muted-foreground">

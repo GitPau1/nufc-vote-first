@@ -122,7 +122,7 @@ export default function PredictPreviewPage() {
   return (
     <div className="mx-auto max-w-content px-4 py-8">
       <h1 className="mb-1 text-title-3 font-black">승부예측 컴포넌트 프리뷰</h1>
-      <p className="mb-8 text-caption-1 text-gray-2">
+      <p className="mb-8 text-caption-1 text-neutral-muted">
         실데이터 연동 전 임시 확인용 페이지 — /dev/predict-preview
       </p>
 
@@ -136,13 +136,13 @@ export default function PredictPreviewPage() {
         </div>
       </div>
 
-      <hr className="my-10 border-gray-4" />
+      <hr className="my-10 border-neutral-weak" />
 
       <h2 className="mb-3 text-headline-1 font-bold">선수 픽 모달</h2>
       <button
         type="button"
         onClick={() => setModalOpen(true)}
-        className="rounded-sm bg-primary px-4 py-3 text-body-2-normal font-bold text-white"
+        className="rounded-sm bg-brand-solid px-4 py-3 text-body-2-normal font-bold text-white"
       >
         미드필더 선택 모달 열기
       </button>
