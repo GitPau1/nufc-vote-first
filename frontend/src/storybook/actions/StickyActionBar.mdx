@@ -5,9 +5,9 @@ import * as StickyActionBarStories from './StickyActionBar.stories'
 
 # StickyActionBar
 
-투표 상세 화면(`/polls/[id]`)의 하단 제출 버튼 바. 세 화면(`TypeAPollClient`·`TypeBPollClient`·`OverallRatingPollClient`)에 거의 동일하게 복붙되어 있던 마크업을 하나로 합친 것이다.
+화면 하단 제출 버튼 바. 투표 상세(`/polls/[id]`)의 세 화면(`TypeAPollClient`·`TypeBPollClient`·`OverallRatingPollClient`)과 승부예측 제출(`/predictions/[weekKey]`의 `PredictionFlowClient`)에 거의 동일하게 복붙돼 있던 마크업을 하나로 합친 것이다.
 
-코드: `src/components/layout/StickyActionBar.tsx`. props는 `children`과 `className`뿐이고, **위치·반응형 분기·배경은 전부 컴포넌트가 소유한다** — 호출부는 버튼만 넘긴다. 새 화면에서 하단 고정 CTA가 필요하면 `fixed bottom-0`를 직접 쓰지 말고 이걸 쓴다.
+코드: `src/components/layout/StickyActionBar.tsx`. props는 `children`과 `className`뿐이다. **공유하는 건 "모바일 fixed → 데스크탑 static" 전환 로직**이고, 화면마다 다른 부분(폭·데스크탑 정렬)은 `className`으로 넘긴다 — `cn()`이 `twMerge`라 `max-w-*` 같은 충돌 유틸리티는 넘긴 쪽이 이긴다. 예측 플로우는 `max-w-shell sm:max-w-[560px] sm:flex sm:justify-center`로 더 좁은 폭 + 가운데 고정폭 버튼을 만든다. 새 화면에서 하단 고정 CTA가 필요하면 `fixed bottom-0`를 직접 쓰지 말고 이걸 쓴다.
 
 <Canvas of={StickyActionBarStories.VoteSubmit} />
 
@@ -19,7 +19,7 @@ import * as StickyActionBarStories from './StickyActionBar.stories'
 |---|---|---|
 | 위치 | `fixed bottom-0`, `left-1/2 -translate-x-1/2`로 중앙 정렬 | `sm:static` — 컨텐츠 흐름 맨 아래 |
 | 폭 | `w-full max-w-detail`(680px) | 동일 + `sm:mx-auto` |
-| 배경 | `bg-white/95` + `backdrop-blur` + `border-t` | 전부 제거(투명, 보더 없음) |
+| 배경 | `bg-surface-translucent`(뒤가 비치는 흰색) + `backdrop-blur` + `border-t` | 전부 제거(투명, 보더 없음) |
 | 여백 | `p-4` | `sm:p-0 sm:pb-10` |
 | z-index | `z-30` | `sm:z-auto` |
 
@@ -29,7 +29,7 @@ import * as StickyActionBarStories from './StickyActionBar.stories'
 
 ## 안에 들어가는 버튼
 
-세 사용처 모두 [Button](?path=/docs/actions-button--docs)의 **`variant="default"`(1차 CTA) 1개**를 `className="h-12 w-full"`로 꽉 채워 넣는다. 버튼 2개를 나란히 두거나 부가 텍스트를 함께 넣는 사용처는 현재 없다 — 새로 그런 형태가 필요하면 이 문서에 형태를 추가하고 나서 쓴다.
+투표 3곳은 [Button](?path=/docs/actions-button--docs)의 **`variant="default"`(1차 CTA) 1개**를 `className="h-12 w-full"`로 꽉 채워 넣는다. 예측 플로우는 같은 버튼을 모바일에선 `w-full`, 데스크탑에선 `sm:w-[200px]` 고정폭으로 두는 차이만 있다. 버튼 2개를 나란히 두거나 부가 텍스트를 함께 넣는 사용처는 현재 없다 — 새로 그런 형태가 필요하면 이 문서에 형태를 추가하고 나서 쓴다.
 
 <Canvas of={StickyActionBarStories.RatingStepNext} />
 
@@ -48,7 +48,7 @@ import * as StickyActionBarStories from './StickyActionBar.stories'
 
 ## BottomNav와는 동시에 뜨지 않는다
 
-[BottomNav](?path=/docs/navigations-bottomnav--docs)는 `/`, `/polls`, `/predictions`, `/players`, `/menu` 5개 경로에서만 렌더되고(그 외에는 `return null`), StickyActionBar는 투표 상세(`/polls/[id]`)에서만 쓰이므로 실제로 겹치는 화면이 없다.
+[BottomNav](?path=/docs/navigations-bottomnav--docs)는 `/`, `/polls`, `/predictions`, `/players`, `/menu` 5개 경로에서만 렌더되고(그 외에는 `return null`), StickyActionBar는 투표 상세(`/polls/[id]`)와 예측 제출(`/predictions/[weekKey]`)에서만 쓰인다 — 둘 다 BottomNav가 `return null`인 경로라 실제로 겹치는 화면이 없다.
 
 겹칠 경우 BottomNav가 위에 온다 — `z-40` 대 액션바 `z-30`이고 둘 다 `bottom-0`이라 액션바가 가려진다. 폭도 달라서(`max-w-shell` 480px 대 `max-w-detail` 680px) 어긋난 두 겹으로 보인다. **BottomNav가 보이는 5개 경로에는 StickyActionBar를 쓰지 않는다.** 참고로 `NavigationLoading` 오버레이는 `z-[100]`이라 로딩 중에는 둘 다 덮는다.
 

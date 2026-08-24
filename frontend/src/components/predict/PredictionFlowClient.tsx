@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import { useLoadingRouter } from '@/components/layout/NavigationLoading'
 import { trackEvent } from '@/lib/analytics/mixpanel'
 import { Button } from '@/components/ui/button'
+import { StickyActionBar } from '@/components/layout/StickyActionBar'
 import { LoginModal } from '@/components/polls/LoginModal'
 import { PlayerPickModal } from './PlayerPickModal'
 import { PredictionDone } from './PredictionDone'
@@ -310,7 +311,9 @@ export function PredictionFlowClient({
             </p>
           )}
 
-          <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-shell -translate-x-1/2 border-t border-neutral-weak bg-surface-translucent p-4 backdrop-blur sm:static sm:mx-auto sm:mt-8 sm:flex sm:max-w-[560px] sm:translate-x-0 sm:justify-center sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
+          {/* 하단 제출 바는 투표 화면과 같은 StickyActionBar를 쓴다 — 예측 플로우는 폭이 더 좁고
+              (모바일 shell / 데스크탑 560) 데스크탑에서 버튼을 가운데 고정폭으로 두는 차이만 override. */}
+          <StickyActionBar className="max-w-shell border-neutral-weak sm:mt-8 sm:flex sm:max-w-[560px] sm:justify-center sm:pb-0">
             {step === 'score' && (
               <Button
                 size="lg"
@@ -336,7 +339,7 @@ export function PredictionFlowClient({
                 {submitting ? '제출 중…' : '이대로 제출하기'}
               </Button>
             )}
-          </div>
+          </StickyActionBar>
         </div>
       </div>
 
