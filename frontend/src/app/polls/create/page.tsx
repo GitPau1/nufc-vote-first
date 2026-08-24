@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
-import { PollPageHeader } from '@/components/polls/PollPageHeader'
-import { UserPollCreateForm } from '@/components/polls/UserPollCreateForm'
-import { RequireAuthModal } from '@/components/auth/RequireAuthModal'
+import { PollPageHeader } from '@/components/composition/polls/PollPageHeader'
+import { UserPollCreateForm } from '@/components/composition/polls/UserPollCreateForm'
+import { RequireAuthModal } from '@/components/composition/auth/RequireAuthModal'
 import { IS_MOCK } from '@/lib/config'
 import { getPollFormPlayers } from '@/lib/queries/polls'
 

@@ -5,15 +5,15 @@ import path from 'node:path'
 
 const __dirname = import.meta.dirname
 // LoginModal은 껍데기(Modal) + 내용(LoginContent)으로 분리됐다.
-const contentSource = fs.readFileSync(path.join(__dirname, '../primitives/modal/contents/Login.tsx'), 'utf8')
-const sheetSource = fs.readFileSync(path.join(__dirname, '../primitives/modal/sheet.tsx'), 'utf8')
-const modalSource = fs.readFileSync(path.join(__dirname, '../primitives/modal/Modal.tsx'), 'utf8')
-const menuActionsSource = fs.readFileSync(path.join(__dirname, '../../app/menu/MenuActions.tsx'), 'utf8')
+const contentSource = fs.readFileSync(path.join(__dirname, '../../primitives/modal/contents/Login.tsx'), 'utf8')
+const sheetSource = fs.readFileSync(path.join(__dirname, '../../primitives/modal/sheet.tsx'), 'utf8')
+const modalSource = fs.readFileSync(path.join(__dirname, '../../primitives/modal/Modal.tsx'), 'utf8')
+const menuActionsSource = fs.readFileSync(path.join(__dirname, '../../../app/menu/MenuActions.tsx'), 'utf8')
 
 /** LoginContent를 띄우는 모든 호출부 → 그 화면의 진입 맥락. */
 const CALLSITES = [
-  ['../composition/common/LoginButton.tsx', 'login'],
-  ['../../app/menu/MenuActions.tsx', 'login'],
+  ['../common/LoginButton.tsx', 'login'],
+  ['../../../app/menu/MenuActions.tsx', 'login'],
   ['../auth/RequireAuthModal.tsx', 'login'],
   ['./TypeAPollClient.tsx', 'vote'],
   ['./TypeBPollClient.tsx', 'vote'],

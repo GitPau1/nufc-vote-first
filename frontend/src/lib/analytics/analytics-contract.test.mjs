@@ -65,7 +65,7 @@ test('app analytics separates session starts from primary tab views', () => {
 
 test('poll tab analytics does not duplicate tab_viewed with poll_feed_viewed', () => {
   const file = source('components/composition/common/AppAnalytics.tsx')
-  const pollList = source('components/polls/PollListClient.tsx')
+  const pollList = source('components/composition/polls/PollListClient.tsx')
 
   assert.doesNotMatch(file, /PollFeedAnalytics/)
   assert.doesNotMatch(file, /trackEvent\('poll_feed_viewed'/)
@@ -73,7 +73,7 @@ test('poll tab analytics does not duplicate tab_viewed with poll_feed_viewed', (
 })
 
 test('players page tracks the Pick One participation and reward loop', () => {
-  const file = source('components/players/PlayersPageClient.tsx')
+  const file = source('components/composition/players/PlayersPageClient.tsx')
 
   assert.doesNotMatch(file, /trackEvent\('players_viewed'/)
   assert.match(file, /trackEvent\('pick_one_viewed'/)
@@ -106,7 +106,7 @@ test('prediction submit is tracked server side so the retention metric survives 
 })
 
 test('prediction result view closes the return-visit funnel with the submit week key', () => {
-  const file = source('components/predict/PredictionResult.tsx')
+  const file = source('components/composition/predict/PredictionResult.tsx')
 
   assert.match(file, /trackEvent\('prediction_result_viewed'/)
   assert.match(file, /week_key: week\.weekKey/)
@@ -115,7 +115,7 @@ test('prediction result view closes the return-visit funnel with the submit week
 })
 
 test('prediction week click carries the screen-routing basis, not the copied CTA text', () => {
-  const file = source('components/predict/PredictListClient.tsx')
+  const file = source('components/composition/predict/PredictListClient.tsx')
 
   assert.match(file, /trackEvent\('prediction_week_clicked'/)
   assert.match(file, /week_status: week\.status/)
@@ -125,7 +125,7 @@ test('prediction week click carries the screen-routing basis, not the copied CTA
 })
 
 test('prediction flow tracks the funnel entry and per-step completion', () => {
-  const file = source('components/predict/PredictionFlowClient.tsx')
+  const file = source('components/composition/predict/PredictionFlowClient.tsx')
 
   assert.match(file, /trackEvent\('prediction_flow_viewed'/)
   assert.match(file, /if \(submitted\) return/)
@@ -138,7 +138,7 @@ test('prediction flow tracks the funnel entry and per-step completion', () => {
 })
 
 test('prediction submit failures split the login wall from real errors', () => {
-  const file = source('components/predict/PredictionFlowClient.tsx')
+  const file = source('components/composition/predict/PredictionFlowClient.tsx')
 
   assert.match(file, /trackEvent\('prediction_auth_required'/)
   assert.match(file, /trackEvent\('prediction_submit_failed'[\s\S]{0,120}error: result\.error/)
@@ -147,7 +147,7 @@ test('prediction submit failures split the login wall from real errors', () => {
 })
 
 test('prediction done view closes the client funnel without duplicating the server metric', () => {
-  const file = source('components/predict/PredictionDone.tsx')
+  const file = source('components/composition/predict/PredictionDone.tsx')
 
   assert.match(file, /trackEvent\('prediction_done_viewed'/)
   assert.match(file, /submitted_match_count: submittedMatches\.length/)
@@ -156,8 +156,8 @@ test('prediction done view closes the client funnel without duplicating the serv
 })
 
 test('player rating changes and feedback pages track community reward and high-intent feedback', () => {
-  const changesAnalytics = source('components/players/PlayerRatingChangesAnalytics.tsx')
-  const feedbackForm = source('components/my/MyFeedbackForm.tsx')
+  const changesAnalytics = source('components/composition/players/PlayerRatingChangesAnalytics.tsx')
+  const feedbackForm = source('components/composition/my/MyFeedbackForm.tsx')
 
   assert.match(changesAnalytics, /trackEvent\('player_rating_changes_viewed'/)
   assert.match(feedbackForm, /trackEvent\('feedback_submitted'/)

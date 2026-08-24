@@ -4,7 +4,7 @@ import { INITIAL_VIEWPORTS } from 'storybook/viewport'
 
 import { Modal } from '@/components/primitives/modal/Modal'
 import { LoginContent, type LoginTrigger } from '@/components/primitives/modal/contents/Login'
-import { RequireAuthModal } from '@/components/auth/RequireAuthModal'
+import { RequireAuthModal } from '@/components/composition/auth/RequireAuthModal'
 import { Button } from '@/components/primitives/button'
 
 // 로그인 내용(LoginContent)을 공용 껍데기(Modal)에 끼워 보여준다. 로그인은 form="default"라

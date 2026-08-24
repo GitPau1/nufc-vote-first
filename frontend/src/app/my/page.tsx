@@ -2,8 +2,8 @@ import { IS_MOCK } from '@/lib/config'
 import { MOCK_PARTICIPATED } from '@/lib/mock/data'
 import { getEffectivePollStatus } from '@/lib/polls/status'
 import { AppHeader } from '@/components/composition/common/AppHeader'
-import { MyPageClient } from '@/components/my/MyPageClient'
-import { RequireAuthModal } from '@/components/auth/RequireAuthModal'
+import { MyPageClient } from '@/components/composition/my/MyPageClient'
+import { RequireAuthModal } from '@/components/composition/auth/RequireAuthModal'
 
 type PollStatusForMy = 'scheduled' | 'active' | 'closed'
 

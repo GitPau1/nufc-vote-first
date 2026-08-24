@@ -3,7 +3,7 @@ import test from 'node:test'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const root = path.resolve(import.meta.dirname, '../..')
+const root = path.resolve(import.meta.dirname, '../../..')
 
 function source(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), 'utf8')
@@ -13,7 +13,7 @@ function source(relativePath) {
 // 예전엔 `fixed bottom-0 ... sm:static` 위치 로직을 이 파일에 통째로 복붙해뒀는데(2026-08-24
 // 통합), 그 복제가 다시 생기면 하단 바 스타일을 두 곳에서 따로 고쳐야 하는 상태로 돌아간다.
 test('prediction flow reuses StickyActionBar instead of duplicating the fixed bottom bar', () => {
-  const flow = source('components/predict/PredictionFlowClient.tsx')
+  const flow = source('components/composition/predict/PredictionFlowClient.tsx')
 
   assert.match(flow, /import \{ StickyActionBar \} from '@\/components\/primitives\/sticky-action-bar'/)
   assert.match(flow, /<StickyActionBar/)

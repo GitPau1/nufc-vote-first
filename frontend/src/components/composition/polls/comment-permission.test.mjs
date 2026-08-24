@@ -5,10 +5,10 @@ import { test } from 'node:test'
 // "댓글은 투표 참여자만 작성 가능"은 이 서비스의 핵심 제약이고 네 겹(배치 / UI / 서버 액션 / RLS)으로
 // 지켜진다. 이 파일은 그중 코드로 지키는 두 겹 — 서버 액션의 투표 여부 검사와, 실패를 사용자에게
 // 보여주는 UI — 이 사라지지 않게 소스 문자열로 고정한다.
-const action = readFileSync(new URL('../../lib/actions/comments.ts', import.meta.url), 'utf8')
+const action = readFileSync(new URL('../../../lib/actions/comments.ts', import.meta.url), 'utf8')
 const ui = readFileSync(new URL('./CommentsSection.tsx', import.meta.url), 'utf8')
 const rls = readFileSync(
-  new URL('../../../../supabase/migrations/20260527155049_initial_schema.sql', import.meta.url),
+  new URL('../../../../../supabase/migrations/20260527155049_initial_schema.sql', import.meta.url),
   'utf8',
 )
 
@@ -42,7 +42,7 @@ test('submitComment rejects non-voters with a dedicated error code, not a generi
   assert.match(mockBranch, /mockGetMyVote/)
   assert.match(mockBranch, /return { error: 'not_voted' }/)
   assert.match(
-    readFileSync(new URL('../../lib/mock/queries.ts', import.meta.url), 'utf8'),
+    readFileSync(new URL('../../../lib/mock/queries.ts', import.meta.url), 'utf8'),
     /mock-vote-\$\{pollId\}/,
   )
 })

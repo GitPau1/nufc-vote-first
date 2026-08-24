@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { userEvent, within } from 'storybook/test'
 
-import { ShareButton } from '@/components/predict/shared'
+import { ShareButton } from '@/components/composition/predict/shared'
 
 const meta = {
   title: 'Actions/ShareButton',

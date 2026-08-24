@@ -3,7 +3,7 @@
 // 사용 도메인: predict (승부예측 포지션별 선수 선택 — Modal 껍데기에 끼워 쓴다)
 // 참고: predict 도메인의 PlayerPhoto를 쓰므로 이 content는 composition/predict에 의존한다(사용자 결정 b안).
 
-import { PlayerPhoto } from '@/components/predict/shared'
+import { PlayerPhoto } from '@/components/composition/predict/shared'
 import { cn } from '@/lib/utils'
 import { badgeVariants } from '@/components/primitives/badge'
 import { SheetTitle } from '../sheet'

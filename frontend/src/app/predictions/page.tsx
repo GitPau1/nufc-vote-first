@@ -1,5 +1,5 @@
 import { AppHeader } from '@/components/composition/common/AppHeader'
-import { PredictListClient } from '@/components/predict/PredictListClient'
+import { PredictListClient } from '@/components/composition/predict/PredictListClient'
 import { getFixtureWeeks } from '@/lib/queries/fixtures'
 import { getMyPredictions, getSeasonRanking } from '@/lib/queries/predictions'
 

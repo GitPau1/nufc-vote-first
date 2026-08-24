@@ -48,7 +48,7 @@ test('shared UI primitives use foundation radius and typography tokens', () => {
 
 test('app and poll headers use color and typography foundations', () => {
   const appHeader = source('components/composition/common/AppHeader.tsx')
-  const pollHeader = source('components/polls/PollPageHeader.tsx')
+  const pollHeader = source('components/composition/polls/PollPageHeader.tsx')
 
   assert.match(appHeader, /border-b border-neutral-weak/)
   assert.match(appHeader, /text-title-3/)
@@ -73,8 +73,8 @@ test('loading skeletons mirror the mobile layout foundation', () => {
 })
 
 test('poll form and carousel surfaces use card radius foundation', () => {
-  const form = source('components/polls/UserPollCreateForm.tsx')
-  const carousel = source('components/polls/TypeBPollClient.tsx')
+  const form = source('components/composition/polls/UserPollCreateForm.tsx')
+  const carousel = source('components/composition/polls/TypeBPollClient.tsx')
 
   assert.match(form, /rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200/)
   assert.doesNotMatch(form, /<section className="[^"]*rounded-md border border-neutral-weak bg-surface p-4 shadow-g200/)
@@ -94,11 +94,11 @@ test('image banners use a readable dark overlay for white text', () => {
   const globals = source('app/globals.css')
   const files = [
     // PollHeroCard는 원래 PollListClient.tsx 안에 있던 걸 /(홈)과 /polls가 같이 쓰도록 뽑아낸 것.
-    'components/polls/PollHeroCard.tsx',
-    'components/polls/TypeAPollClient.tsx',
-    'components/polls/TypeBPollClient.tsx',
-    'components/polls/OverallRatingPollClient.tsx',
-    'components/polls/OverallRatingResultView.tsx',
+    'components/composition/polls/PollHeroCard.tsx',
+    'components/composition/polls/TypeAPollClient.tsx',
+    'components/composition/polls/TypeBPollClient.tsx',
+    'components/composition/polls/OverallRatingPollClient.tsx',
+    'components/composition/polls/OverallRatingResultView.tsx',
   ]
 
   assert.match(globals, /\.banner-text-overlay/)
@@ -169,11 +169,11 @@ test('primary tab surfaces do not use arbitrary typography classes', () => {
   const files = [
     'app/menu/page.tsx',
     'components/composition/common/BottomNav.tsx',
-    'components/players/PlayersPageClient.tsx',
-    'components/polls/PollListClient.tsx',
-    'components/polls/PollCard.tsx',
-    'components/polls/PollHeroCard.tsx',
-    'components/polls/PollHomeSection.tsx',
+    'components/composition/players/PlayersPageClient.tsx',
+    'components/composition/polls/PollListClient.tsx',
+    'components/composition/polls/PollCard.tsx',
+    'components/composition/polls/PollHeroCard.tsx',
+    'components/composition/polls/PollHomeSection.tsx',
     'components/composition/common/HomeClient.tsx',
   ]
 
@@ -193,17 +193,17 @@ test('primary tab surfaces do not use arbitrary typography classes', () => {
 const PREDICT_FILES = [
   'app/predictions/page.tsx',
   'app/predictions/[weekKey]/page.tsx',
-  'components/predict/MatchWeekList.tsx',
-  'components/predict/MatchdayHero.tsx',
+  'components/composition/predict/MatchWeekList.tsx',
+  'components/composition/predict/MatchdayHero.tsx',
   'components/primitives/modal/contents/PlayerPick.tsx',
-  'components/predict/PredictListClient.tsx',
-  'components/predict/PredictionDone.tsx',
-  'components/predict/PredictionFlowClient.tsx',
-  'components/predict/PredictionResult.tsx',
-  'components/predict/RankingCard.tsx',
-  'components/predict/WeekRankCard.tsx',
-  'components/predict/shared.tsx',
-  'components/predict/steps.tsx',
+  'components/composition/predict/PredictListClient.tsx',
+  'components/composition/predict/PredictionDone.tsx',
+  'components/composition/predict/PredictionFlowClient.tsx',
+  'components/composition/predict/PredictionResult.tsx',
+  'components/composition/predict/RankingCard.tsx',
+  'components/composition/predict/WeekRankCard.tsx',
+  'components/composition/predict/shared.tsx',
+  'components/composition/predict/steps.tsx',
 ]
 
 test('application source does not use arbitrary typography or hardcoded visual colors', () => {
@@ -213,27 +213,27 @@ test('application source does not use arbitrary typography or hardcoded visual c
     'app/onboarding/OnboardingForm.tsx',
     'app/players/changes/page.tsx',
     'app/polls/create/page.tsx',
-    'components/auth/RequireAuthModal.tsx',
+    'components/composition/auth/RequireAuthModal.tsx',
     'components/composition/common/CroppedImageInput.tsx',
     'components/composition/common/UserMenu.tsx',
     'components/composition/common/LoginButton.tsx',
-    'components/my/MyFeedbackForm.tsx',
-    'components/my/MyPageClient.tsx',
-    'components/players/PlayersPageClient.tsx',
-    'components/polls/CommentsSection.tsx',
+    'components/composition/my/MyFeedbackForm.tsx',
+    'components/composition/my/MyPageClient.tsx',
+    'components/composition/players/PlayersPageClient.tsx',
+    'components/composition/polls/CommentsSection.tsx',
     'components/primitives/modal/contents/Confirm.tsx',
     'components/primitives/modal/contents/Login.tsx',
     'components/primitives/modal/contents/PollPicker.tsx',
-    'components/polls/OverallRatingPollClient.tsx',
-    'components/polls/OverallRatingResultView.tsx',
-    'components/polls/PollCard.tsx',
-    'components/polls/PollHeroCard.tsx',
-    'components/polls/PollHomeSection.tsx',
+    'components/composition/polls/OverallRatingPollClient.tsx',
+    'components/composition/polls/OverallRatingResultView.tsx',
+    'components/composition/polls/PollCard.tsx',
+    'components/composition/polls/PollHeroCard.tsx',
+    'components/composition/polls/PollHomeSection.tsx',
     'components/composition/common/HomeClient.tsx',
-    'components/polls/PollListClient.tsx',
-    'components/polls/ResultView.tsx',
-    'components/polls/TypeAPollClient.tsx',
-    'components/polls/TypeBPollClient.tsx',
+    'components/composition/polls/PollListClient.tsx',
+    'components/composition/polls/ResultView.tsx',
+    'components/composition/polls/TypeAPollClient.tsx',
+    'components/composition/polls/TypeBPollClient.tsx',
     ...PREDICT_FILES,
   ]
 

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { INITIAL_VIEWPORTS } from 'storybook/viewport'
 
-import { PollHomeSection } from '@/components/polls/PollHomeSection'
+import { PollHomeSection } from '@/components/composition/polls/PollHomeSection'
 import type { PollListItem } from '@/lib/queries/polls'
 
 function mockPoll(overrides: Partial<PollListItem>): PollListItem {

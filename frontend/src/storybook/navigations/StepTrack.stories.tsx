@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { STEP_META, StepHero, StepTrack, StepTrackVertical, type StepKey } from '@/components/predict/steps'
+import { STEP_META, StepHero, StepTrack, StepTrackVertical, type StepKey } from '@/components/composition/predict/steps'
 
 const STEP_KEYS: StepKey[] = STEP_META.map(s => s.key)
 

@@ -4,7 +4,7 @@ import './globals.css'
 import { BottomNav } from '@/components/composition/common/BottomNav'
 import { NavigationLoading } from '@/components/primitives/navigation-loading'
 import { PageContainer } from '@/components/primitives/page-container'
-import { AuthCodeHandler } from '@/components/auth/AuthCodeHandler'
+import { AuthCodeHandler } from '@/components/composition/auth/AuthCodeHandler'
 import { AppAnalytics } from '@/components/composition/common/AppAnalytics'
 
 export const metadata: Metadata = {

@@ -22,7 +22,7 @@ test('players page reads applied pick one ratings before falling back to base ra
 })
 
 test('players Pick One submits weekly choices and links to weekly changes', () => {
-  const file = source('components/players/PlayersPageClient.tsx')
+  const file = source('components/composition/players/PlayersPageClient.tsx')
 
   assert.match(file, /submitPickOneChoice/)
   assert.match(file, /이번주 변경 내역/)

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { TeamBadge } from '@/components/predict/shared'
+import { TeamBadge } from '@/components/composition/predict/shared'
 
 // 실제 logoUrl은 lib/predictions/week.ts의 teamLogoUrl(teamId)이 FotMob CDN 주소
 // (images.fotmob.com/image_resources/logo/teamlogo/{teamId}.png)로 조립한다. 스토리에서 그 주소를

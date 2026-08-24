@@ -3,7 +3,7 @@ import test from 'node:test'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const root = path.resolve(import.meta.dirname, '../..')
+const root = path.resolve(import.meta.dirname, '../../..')
 
 function source(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), 'utf8')
@@ -14,7 +14,7 @@ function source(relativePath) {
 // 바뀌었다. 아래 테스트는 그 이후 구조를 기준으로 한다.
 
 test('poll list has no hero banner — the hero belongs to the home screen', () => {
-  const list = source('components/polls/PollListClient.tsx')
+  const list = source('components/composition/polls/PollListClient.tsx')
 
   // 목록 화면은 탭 + 카드 리스트뿐이다. 히어로 마크업이나 선정 로직이 여기로 돌아오면
   // 탭을 바꿀 때 배너가 같이 흔들리는 예전 문제가 재발한다.
@@ -43,8 +43,8 @@ test('home hero prefers the fixture and otherwise picks the most urgent poll det
 
 test('poll list and home hero apply the mobile layout foundation', () => {
   const listPage = source('app/polls/page.tsx')
-  const list = source('components/polls/PollListClient.tsx')
-  const hero = source('components/polls/PollHeroCard.tsx')
+  const list = source('components/composition/polls/PollListClient.tsx')
+  const hero = source('components/composition/polls/PollHeroCard.tsx')
 
   assert.match(listPage, /bg-page/)
   assert.doesNotMatch(listPage, /bg-\[#f4f4f5\]/)

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { TypeBPollClient } from '@/components/polls/TypeBPollClient'
+import { TypeBPollClient } from '@/components/composition/polls/TypeBPollClient'
 import type { PollDetail } from '@/lib/queries/polls'
 
 const poll: PollDetail = {

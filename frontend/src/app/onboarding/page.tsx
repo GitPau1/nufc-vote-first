@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers'
 import { IS_MOCK } from '@/lib/config'
-import { RequireAuthModal } from '@/components/auth/RequireAuthModal'
+import { RequireAuthModal } from '@/components/composition/auth/RequireAuthModal'
 import { OnboardingForm } from './OnboardingForm'
 
 export default async function OnboardingPage() {

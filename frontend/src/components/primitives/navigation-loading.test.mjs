@@ -79,10 +79,10 @@ test('already-arrived navigations skip the skeleton', () => {
 test('programmatic navigation call sites use the loading-aware router', () => {
   for (const file of [
     '../../app/menu/MenuLogoutButton.tsx',
-    '../auth/RequireAuthModal.tsx',
-    '../polls/UserPollCreateForm.tsx',
-    '../predict/PredictionFlowClient.tsx',
-    '../predict/PredictListClient.tsx',
+    '../composition/auth/RequireAuthModal.tsx',
+    '../composition/polls/UserPollCreateForm.tsx',
+    '../composition/predict/PredictionFlowClient.tsx',
+    '../composition/predict/PredictListClient.tsx',
   ]) {
     const source = readFileSync(new URL(file, import.meta.url), 'utf8')
     assert.match(source, /useLoadingRouter\(\)/, file)

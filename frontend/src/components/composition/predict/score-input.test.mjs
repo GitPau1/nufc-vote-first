@@ -3,7 +3,7 @@ import test from 'node:test'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const root = path.resolve(import.meta.dirname, '../..')
+const root = path.resolve(import.meta.dirname, '../../..')
 
 function source(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), 'utf8')
@@ -18,7 +18,7 @@ function source(relativePath) {
  */
 
 test('score stepper guards both bounds, not just the lower one', () => {
-  const file = source('components/predict/PredictionFlowClient.tsx')
+  const file = source('components/composition/predict/PredictionFlowClient.tsx')
 
   // 서버 검증과 같은 상수를 공유한다 — 20을 하드코딩하지 않는다
   assert.match(file, /import \{ MAX_SCORE \} from '@\/lib\/predictions\/submit'/)
@@ -33,7 +33,7 @@ test('score stepper guards both bounds, not just the lower one', () => {
 })
 
 test('out-of-range score surfaces an error and blocks advancing instead of failing on the server', () => {
-  const file = source('components/predict/PredictionFlowClient.tsx')
+  const file = source('components/composition/predict/PredictionFlowClient.tsx')
 
   assert.match(file, /const scoreRangeError =/)
   assert.match(file, /value >= 0 && value <= MAX_SCORE/)

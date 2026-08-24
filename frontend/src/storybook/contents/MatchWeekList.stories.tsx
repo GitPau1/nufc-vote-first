@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { MatchWeekList, type PredictWeek, type PredictWeekMatch } from '@/components/predict/MatchWeekList'
+import { MatchWeekList, type PredictWeek, type PredictWeekMatch } from '@/components/composition/predict/MatchWeekList'
 
 // 로고는 URL을 그대로 받는다(팀 ID가 아니다) — 안 넘기면 실루엣으로 떨어져서 양 팀이 똑같이
 // 보이므로, 우리 팀 로고만 색을 달리해 좌우 배치를 눈으로 구분할 수 있게 한다.

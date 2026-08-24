@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { PollHeroCard } from '@/components/polls/PollHeroCard'
+import { PollHeroCard } from '@/components/composition/polls/PollHeroCard'
 import type { PollListItem } from '@/lib/queries/polls'
 
 const HERO_IMAGE = 'https://placehold.co/716x504/0c2340/41b6e6?text=St+James+Park'

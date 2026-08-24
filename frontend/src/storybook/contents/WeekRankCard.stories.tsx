@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { userEvent, within } from 'storybook/test'
 import { INITIAL_VIEWPORTS } from 'storybook/viewport'
 
-import { WeekRankCard } from '@/components/predict/WeekRankCard'
+import { WeekRankCard } from '@/components/composition/predict/WeekRankCard'
 import type { RankingRow } from '@/lib/queries/predictions'
 
 // 실제로는 프로필 이미지 URL이 들어온다(없으면 컴포넌트가 User 아이콘으로 대체) —

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { CommentsSection } from '@/components/polls/CommentsSection'
+import { CommentsSection } from '@/components/composition/polls/CommentsSection'
 import type { CommentItem } from '@/lib/queries/comments'
 
 function mockComment(overrides: Partial<CommentItem>): CommentItem {

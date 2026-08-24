@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers'
 import { IS_MOCK } from '@/lib/config'
-import { PollPageHeader } from '@/components/polls/PollPageHeader'
-import { MyFeedbackForm } from '@/components/my/MyFeedbackForm'
-import { RequireAuthModal } from '@/components/auth/RequireAuthModal'
+import { PollPageHeader } from '@/components/composition/polls/PollPageHeader'
+import { MyFeedbackForm } from '@/components/composition/my/MyFeedbackForm'
+import { RequireAuthModal } from '@/components/composition/auth/RequireAuthModal'
 
 export default async function MyFeedbackPage() {
   let isLoggedIn = false

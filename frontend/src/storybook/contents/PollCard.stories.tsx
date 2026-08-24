@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { PollCard } from '@/components/polls/PollCard'
+import { PollCard } from '@/components/composition/polls/PollCard'
 import type { PollListItem } from '@/lib/queries/polls'
 
 function mockPoll(overrides: Partial<PollListItem>): PollListItem {

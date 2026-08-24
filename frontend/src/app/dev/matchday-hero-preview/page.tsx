@@ -1,6 +1,6 @@
 'use client'
 
-import { MatchdayHero, type MatchdayFixture } from '@/components/predict/MatchdayHero'
+import { MatchdayHero, type MatchdayFixture } from '@/components/composition/predict/MatchdayHero'
 import { toKst, weekKey } from '@/lib/predictions/week'
 
 // 실제 선수 photoUrl은 lib/predictions/candidates.ts의 playerPhotoUrl(fotmobPlayerId)로 조립되는데,

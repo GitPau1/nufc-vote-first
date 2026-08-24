@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { PlayerPhoto } from '@/components/predict/shared'
+import { PlayerPhoto } from '@/components/composition/predict/shared'
 
 // 실제 photoUrl은 lib/predictions/candidates.ts의 playerPhotoUrl(fotmobPlayerId)이 FotMob CDN 주소
 // (images.fotmob.com/image_resources/playerimages/{id}.png)로 조립한다. 진짜 시즌 스쿼드의 FotMob

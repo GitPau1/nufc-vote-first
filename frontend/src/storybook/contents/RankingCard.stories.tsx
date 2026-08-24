@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { RankingCard, type RankingEntry } from '@/components/predict/RankingCard'
+import { RankingCard, type RankingEntry } from '@/components/composition/predict/RankingCard'
 
 // 아바타 자리엔 실제로 프로필 이미지 URL이 들어오는데(없으면 컴포넌트가 User 아이콘으로 대체),
 // 다른 예측 mock과 같은 placehold.co를 쓴다.

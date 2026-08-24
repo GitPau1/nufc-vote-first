@@ -1,6 +1,6 @@
 /**
  * 결과 화면이 쓰는 순수 계산 (DB 접근 없음).
- * 조회는 lib/queries/predictions.ts(`getMyResults`, `getWeekRanking`), 화면은 components/predict/PredictionResult.tsx.
+ * 조회는 lib/queries/predictions.ts(`getMyResults`, `getWeekRanking`), 화면은 components/composition/predict/PredictionResult.tsx.
  */
 
 import type { MyResult, MyResultMap, RankingRow } from '@/lib/queries/predictions'

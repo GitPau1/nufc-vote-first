@@ -1,9 +1,9 @@
 /**
  * fixtures 행 → 승부예측 목록 화면용 주차 그룹 변환 (순수 함수, DB 접근 없음).
- * 조회는 lib/queries/fixtures.ts, 화면은 components/predict/*.
+ * 조회는 lib/queries/fixtures.ts, 화면은 components/composition/predict/*.
  */
 
-import type { PredictWeek } from '@/components/predict/MatchWeekList'
+import type { PredictWeek } from '@/components/composition/predict/MatchWeekList'
 import type { MyPredictionMap } from '@/lib/queries/predictions'
 import type { Position } from '@/lib/predictions/candidates'
 

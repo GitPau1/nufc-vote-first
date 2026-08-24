@@ -3,14 +3,14 @@ import test from 'node:test'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const root = path.resolve(import.meta.dirname, '../..')
+const root = path.resolve(import.meta.dirname, '../../..')
 
 function source(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), 'utf8')
 }
 
 test('players page keeps the Figma Pick One section above search', () => {
-  const file = source('components/players/PlayersPageClient.tsx')
+  const file = source('components/composition/players/PlayersPageClient.tsx')
 
   assert.match(file, /여러분의 선택은\?/)
   assert.match(file, /여러분의 선택이 이번주 오버롤에 반영됩니다\./)
@@ -18,7 +18,7 @@ test('players page keeps the Figma Pick One section above search', () => {
 })
 
 test('players Pick One uses the approved card transition states', () => {
-  const file = source('components/players/PlayersPageClient.tsx')
+  const file = source('components/composition/players/PlayersPageClient.tsx')
 
   assert.match(file, /phase.*'idle'.*'confirming'.*'centered'/s)
   // 1000/120/700이던 setTimeout 인자는 디자인시스템 실행계획 §3.18에서 이름 있는
@@ -38,7 +38,7 @@ test('players Pick One uses the approved card transition states', () => {
 })
 
 test('players page keeps original rank while filtering', () => {
-  const file = source('components/players/PlayersPageClient.tsx')
+  const file = source('components/composition/players/PlayersPageClient.tsx')
 
   assert.match(file, /rank: number/)
   assert.match(file, /<PlayerRow key=\{player\.id\} player=\{player\} \/>/)
@@ -47,7 +47,7 @@ test('players page keeps original rank while filtering', () => {
 })
 
 test('players list shows seasons instead of squad status metadata', () => {
-  const file = source('components/players/PlayersPageClient.tsx')
+  const file = source('components/composition/players/PlayersPageClient.tsx')
   const playerRow = file.slice(file.indexOf('function PlayerRow'))
 
   assert.match(playerRow, /\{player\.seasons\}/)
@@ -55,7 +55,7 @@ test('players list shows seasons instead of squad status metadata', () => {
 })
 
 test('players Pick One starts from a weighted overall band around high-70s and low-80s', () => {
-  const file = source('components/players/PlayersPageClient.tsx')
+  const file = source('components/composition/players/PlayersPageClient.tsx')
 
   assert.match(file, /PICK_ONE_TARGET_OVERALL = 80/)
   assert.match(file, /PICK_ONE_PREFERRED_MIN = 78/)
@@ -68,7 +68,7 @@ test('players Pick One starts from a weighted overall band around high-70s and l
 })
 
 test('players Pick One keeps the clicked matchup while the choice is saved', () => {
-  const file = source('components/players/PlayersPageClient.tsx')
+  const file = source('components/composition/players/PlayersPageClient.tsx')
 
   assert.match(file, /proceedSelection\(cardKey, winner, loser, winnerSlot, loserSlot\)/)
   assert.match(file, /function proceedSelection\(\s*cardKey: PickOneCardKey,\s*winner: PlayerListItem,\s*loser: PlayerListItem/s)
@@ -79,7 +79,7 @@ test('players Pick One keeps the clicked matchup while the choice is saved', () 
 })
 
 test('players Pick One uses the current visual slots when the winner stays on screen', () => {
-  const file = source('components/players/PlayersPageClient.tsx')
+  const file = source('components/composition/players/PlayersPageClient.tsx')
 
   assert.match(file, /const winnerSlot = cards\[cardKey\]\.slot/)
   assert.match(file, /const loserSlot = cards\[otherKey\]\.slot/)
@@ -89,14 +89,14 @@ test('players Pick One uses the current visual slots when the winner stays on sc
 })
 
 test('players Pick One success feedback tells users to tap again', () => {
-  const file = source('components/players/PlayersPageClient.tsx')
+  const file = source('components/composition/players/PlayersPageClient.tsx')
 
   assert.match(file, /이번 주 선택에 저장됐습니다\. 한 번 더 누르면 다음 선택으로 넘어갑니다\./)
   assert.match(file, /이번 주 이미 반영된 매치업입니다\. 한 번 더 누르면 다음 선택으로 넘어갑니다\./)
 })
 
 test('players Pick One starts a fresh matchup after each completed choice', () => {
-  const file = source('components/players/PlayersPageClient.tsx')
+  const file = source('components/composition/players/PlayersPageClient.tsx')
 
   assert.match(file, /const nextPlayers = getNextMatchup\(players, \[winner\.id, cards\[otherKey\]\.player\.id\]\)/)
   assert.match(file, /setExitingCard\(\{ player: winner, slot: 'out-down' \}\)/)
@@ -106,7 +106,7 @@ test('players Pick One starts a fresh matchup after each completed choice', () =
 })
 
 test('players Pick One shows remaining daily participation count', () => {
-  const file = source('components/players/PlayersPageClient.tsx')
+  const file = source('components/composition/players/PlayersPageClient.tsx')
 
   assert.match(file, /getPickOneDailyChoiceStatus/)
   assert.match(file, /remainingChoices/)
@@ -118,7 +118,7 @@ test('players Pick One shows remaining daily participation count', () => {
 })
 
 test('players page applies the mobile layout foundation', () => {
-  const file = source('components/players/PlayersPageClient.tsx')
+  const file = source('components/composition/players/PlayersPageClient.tsx')
 
   // 데스크탑 GNB 헤더 도입으로 mx-auto max-w-shell가 앞에 붙었다(모바일 여백 자체는 그대로).
   assert.match(file, /className="mx-auto max-w-shell px-5 pt-4 pb-10 animate-enter"/)
@@ -128,7 +128,7 @@ test('players page applies the mobile layout foundation', () => {
 })
 
 test('players page uses foundation typography and color tokens', () => {
-  const file = source('components/players/PlayersPageClient.tsx')
+  const file = source('components/composition/players/PlayersPageClient.tsx')
 
   assert.doesNotMatch(file, /text-\[[^\]]+\]|leading-\[[^\]]+\]|tracking-\[[^\]]+\]/)
   assert.doesNotMatch(file, /bg-\[#|text-\[#|shadow-\[|ring-\[/)

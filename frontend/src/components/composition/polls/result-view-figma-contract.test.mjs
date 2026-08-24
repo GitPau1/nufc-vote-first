@@ -6,7 +6,7 @@ const resultView = readFileSync(new URL('./ResultView.tsx', import.meta.url), 'u
 const commentsSection = readFileSync(new URL('./CommentsSection.tsx', import.meta.url), 'utf8')
 // 결과 막대(퍼센트 바 + 썸네일)는 ResultView.tsx에서 primitives/result-progress.tsx(ResultProgress)로
 // 추출됐다 — 관련 리터럴은 이제 그쪽 파일에 있다. 아래 두 테스트가 이 파일을 같이 읽는다.
-const resultProgress = readFileSync(new URL('../primitives/result-progress.tsx', import.meta.url), 'utf8')
+const resultProgress = readFileSync(new URL('../../primitives/result-progress.tsx', import.meta.url), 'utf8')
 
 test('result page keeps the Figma-sized cover image', () => {
   assert.match(resultView, /h-\[252px\]/)

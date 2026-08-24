@@ -1,5 +1,5 @@
 import { AppHeader } from '@/components/composition/common/AppHeader'
-import { PollListClient } from '@/components/polls/PollListClient'
+import { PollListClient } from '@/components/composition/polls/PollListClient'
 import { getPollList } from '@/lib/queries/polls'
 
 export default async function PollsPage() {

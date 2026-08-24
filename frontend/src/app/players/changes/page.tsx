@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { AppHeader } from '@/components/composition/common/AppHeader'
-import { PlayerRatingChangesAnalytics } from '@/components/players/PlayerRatingChangesAnalytics'
+import { PlayerRatingChangesAnalytics } from '@/components/composition/players/PlayerRatingChangesAnalytics'
 import { getLatestPickOneRatingChanges } from '@/lib/queries/player-pick-one'
 
 export const revalidate = 3600
