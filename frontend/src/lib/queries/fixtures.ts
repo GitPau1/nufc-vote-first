@@ -32,4 +32,6 @@ async function getFixtureWeeksUncached(): Promise<WeekGroup[]> {
 
 export const getFixtureWeeks = unstable_cache(getFixtureWeeksUncached, ['fixture-weeks'], {
   revalidate: 300,
+  // 관리자 동기화 버튼(lib/actions/sync-fixtures.ts)이 이 태그로 캐시를 즉시 비운다.
+  tags: ['fixture-weeks'],
 })

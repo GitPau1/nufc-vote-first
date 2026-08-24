@@ -12,7 +12,14 @@ export default async function PredictionFlowPage({ params }: { params: { weekKey
   const week = findWeekSession(weeks, decodeURIComponent(params.weekKey))
 
   // 아직 열리지 않은(예정) 주차는 보여줄 게 없다 — 오픈된 주차는 예측 플로우, 끝난 주차는 결과 화면.
-  if (!week || week.status === 'upcoming') notFound()
+  //
+  // 'upcoming'에는 두 가지가 섞여 있다(week.ts의 weekStatus): 아직 안 열린 주차와, 킥오프이
+  // 지났지만 fixtures.finished가 아직 적재되지 않은 주차. 후자를 막으면 경기가 끝난 새벽부터
+  // 크론이 도는 아침까지 페이지가 사라진다 — 제출 내역을 확인하러 오는 시간대가 정확히 거기다.
+  // 잠긴 경기가 하나도 없는 주차(= 정말 안 열린 주차)만 막는다.
+  if (!week || (week.status === 'upcoming' && week.matches.every(match => !match.locked))) {
+    notFound()
+  }
 
   const [candidates, myPredictions] = await Promise.all([getPickCandidates(), getMyPredictions()])
 
