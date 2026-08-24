@@ -5,11 +5,23 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 
 # MatchWeekList
 
-승부예측 월별 주차 목록. `src/components/predict/MatchWeekList.tsx`이고, 지금 유일한 사용처는 임시 프리뷰 페이지 `src/app/dev/predict-preview/page.tsx`다. [RankingCard](?path=/docs/contents-rankingcard--docs)와 마찬가지로 **승부예측 기능과 함께 들어왔지만 디자인시스템에 문서화된 적이 없던 컴포넌트**다 — 아래 규칙은 새로 정한 게 아니라 소스에 이미 있던 동작이다.
+승부예측 월별 주차 목록. `src/components/predict/MatchWeekList.tsx`이고, 사용처는 `components/predict/PredictListClient.tsx`(예측 탭)다. [RankingCard](?path=/docs/contents-rankingcard--docs)와 마찬가지로 **승부예측 기능과 함께 들어왔지만 디자인시스템에 문서화된 적이 없던 컴포넌트**다 — 아래 규칙은 새로 정한 게 아니라 소스에 이미 있던 동작이다.
 
-## 핵심 규칙 — 예측의 단위는 "주"다
+## 핵심 규칙 — 세션은 주 단위, 제출과 배지는 경기 단위
 
-**주차 하나 = 버튼 하나 = 예측 세션 하나.** 경기가 2개인 주(더블 매치위크)도 카드 하나로 묶여서 같이 열리고 닫히고 제출된다. 그래서 `status`·`myResult`는 `PredictWeek`(주 레벨)에만 있고, `PredictWeekMatch`는 팀·킥오프·실제 스코어 같은 표시용 정보만 갖는다. 매치를 개별로 클릭하거나 매치별 상태를 갖게 하려면 이 컴포넌트가 아니라 데이터 모델을 먼저 바꿔야 한다.
+**주차 하나 = 버튼 하나 = 예측 세션 하나.** 경기가 2개인 주(더블 매치위크)도 카드 하나로 묶여서 함께 열린다. 세션은 그 주 **첫 경기 킥오프 7일 전**에 열리고 **마지막 경기 킥오프**에 닫힌다.
+
+그런데 **제출과 상태 배지는 경기 단위다.** `myResult`는 `PredictWeekMatch`(경기)에 붙고, 주 레벨에는 그걸 요약한 두 플래그만 있다.
+
+| 필드 | 위치 | 뜻 |
+|---|---|---|
+| `myResult` | 경기 | 이 경기에 제출한 예측(+ 채점되면 `totalPoints`) |
+| `locked` | 경기 | 킥오프가 지나 더 이상 제출할 수 없는 경기 |
+| `finished` | 경기 | 경기 종료(스코어 표시를 가른다 — `locked`와 별개다) |
+| `submitted` | 주 | 이 주에 제출한 경기가 하나라도 있는지 |
+| `hasPending` | 주 | 아직 제출할 수 있는 경기가 남았는지 |
+
+이미 시작된 경기는 제출 대상에서 빠지므로 **남은 경기만 예측하는 부분 제출**이 성립한다(아래 `PartiallySubmitted`).
 
 이 컴포넌트는 **데이터를 소유하지 않는다.** `monthLabel`(문자열)과 `weeks`를 받고, 달 이동은 `onPrevMonth`/`onNextMonth` 콜백만 부른다 — 그 달의 `weeks`를 다시 채워 넣는 건 부모 몫이다(아래 스토리에서 달을 넘겨도 목록이 그대로인 이유).
 
@@ -19,17 +31,25 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 <Canvas of={MatchWeekListStories.Result} />
 <Canvas of={MatchWeekListStories.Upcoming} />
 
-| `status` | 배지 | 우측 | 클릭 | 중앙 표시 |
-|---|---|---|---|---|
-| `open` | `진행중`(brand) | `예측하기 ›` | 가능 | `kickoffTime` |
-| `result` | `참여`(secondary, 초록) / `미참여`(outline) | 예측 스코어 + 점수 | 가능 | `actual` 스코어 |
-| `upcoming` | `예정`(outline) | 자물쇠 아이콘 | **disabled** | `kickoffTime` |
+| `status` | 우측 CTA | 클릭 | 중앙 표시 |
+|---|---|---|---|
+| `open` + `hasPending` | `예측하기 ›` (이미 일부 제출했으면 `남은 경기 예측하기 ›`) | 가능 | `kickoffTime` |
+| `open` + 남은 경기 없음 | `제출완료 ›` | 가능 | `kickoffTime` |
+| `result` | `결과보기 ›` | 가능 | `actual` 스코어 |
+| `upcoming` | 자물쇠 아이콘 | **disabled** | `kickoffTime` |
 
-`result`는 같은 status 안에서 `myResult`에 따라 세 갈래로 갈린다.
+배지는 status가 아니라 **경기별로** 판정된다(`matchStatusMeta`).
 
-1. `myResult` 없음 → `미참여` 배지만, 우측 텍스트 없음
-2. `myResult.predicted`만 있음 → `참여` + `예측 1-0` (점수 집계 전)
-3. `totalPoints`까지 있음 → 뒤에 `+7점`이 브랜드 색으로 붙는다
+| 경기 상태 | 배지 |
+|---|---|
+| 주차가 `upcoming` | `예정`(outline) |
+| 제출함 | `참여`(secondary, 초록) — 경기가 안 끝났어도 `진행중`이 아니다 |
+| 미제출 + 종료됨 | `미참여`(outline) |
+| 미제출 + 진행 전/중 | `진행중`(brand) |
+
+<Canvas of={MatchWeekListStories.Submitted} />
+
+예측 줄(`예측 1-0`)은 해당 경기의 `myResult`가 있을 때만 붙고, 채점이 끝나면 뒤에 `+7점`이 따라온다.
 
 **미참여 주차도 클릭된다** — "예측을 안 했다"는 안내 자체가 결과 화면의 내용이라서다. 클릭이 막히는 건 `upcoming`뿐이고, 이때는 `disabled`라 hover·active도 전부 죽고 배경이 `--c-bg`로 가라앉는다.
 
@@ -37,7 +57,11 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 
 <Canvas of={MatchWeekListStories.DoubleMatchWeek} />
 
-매치 행이 구분선으로 쌓이고, 배지·예측 표기는 카드 하단에 **하나**만 붙는다. 예측 스코어는 `1-0 / 2-0`으로 이어 붙고(`formatPredicted`), 점수는 경기별이 아니라 **세션 합산 하나**다. `myResult.predicted`는 `matches`와 같은 순서·개수여야 한다 — 컴포넌트가 검증하지 않으니 어긋나면 그대로 잘못된 스코어가 표시된다.
+매치 행이 구분선으로 쌓이고, 카드 맨 위에 `더블 매치위크 · 경기 2개` 라벨이 붙는다. **배지 위치가 단일 경기 주차와 다르다** — 단일 경기는 카드 하단에 배지 하나, 더블 매치위크는 **경기 행마다** 배지가 붙는다(한 경기는 끝났는데 다른 경기는 진행 중일 수 있어서다). 점수도 세션 합산이 아니라 경기별로 각각 표시된다.
+
+<Canvas of={MatchWeekListStories.PartiallySubmitted} />
+
+첫 경기만 제출하고 킥오프가 지나 잠긴 상태 — `submitted`와 `hasPending`이 동시에 참이라 CTA가 `남은 경기 예측하기 ›`가 된다.
 
 <Canvas of={MatchWeekListStories.NoMatches} />
 
@@ -63,18 +87,18 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 
 | | MatchdayHero | MatchWeekList |
 |---|---|---|
-| 데이터 출처 | `lib/queries/fixtures.ts`(실제 `fixtures` 테이블) | 없음 — 프리뷰 페이지의 하드코딩 배열뿐 |
+| 데이터 출처 | `lib/queries/fixtures.ts`의 `getHomeMatchdayFixture` | 같은 파일의 `getFixtureWeeks` → `lib/predictions/week.ts`의 `groupFixturesByWeek` |
 | 시각 | ISO 문자열을 받아 컴포넌트가 포맷 | 이미 포맷된 문자열(`"8/2"`, `"오후 8:00"`)을 받는다 |
 | 팀 표기 | FotMob 팀 ID → `images.fotmob.com` 크레스트 URL 조립 | 팀 이름 문자열 + 로고 URL을 그대로 받는다 |
 
 실데이터를 붙일 때 부모가 메워야 할 간극이 여기서 나온다 — `fixtures.home_name`은 FotMob 원본(영문)이라 `lib/predict/team-names.ts`의 `koreanTeamName(teamId, fallbackName)`을 먼저 통과시켜야 하고(매핑에 없는 팀은 영문 그대로), 로고도 팀 ID에서 URL을 만들어 넘겨야 한다(안 넘기면 회색 placeholder로 떨어진다).
 
-주차 식별자도 아직 다르다. MatchdayHero는 `lib/predictions/week.ts`의 `weekKey`(`"2026-35"` = ISO 연도-주차, KST)로 예측 세션을 가리키는데, `PredictWeek`엔 `weekNo`(숫자)만 있고 `weekKey`가 없다. `onSelectWeek`로 실제 라우팅(`/predictions/{weekKey}`)을 붙이려면 둘을 잇는 값이 더 필요하다.
+주차 식별자는 이제 같다 — `PredictWeek.weekKey`가 MatchdayHero와 동일한 `lib/predictions/week.ts`의 `weekKey`(`"2026-35"` = ISO 연도-주차, KST)이므로, `onSelectWeek`에서 `/predictions/{week.weekKey}`로 바로 보낼 수 있다.
 
 ## 알려진 제약
 
 - 상태 배지는 [Badge](?path=/docs/contents-badge--docs)의 스타일을 쓰지만 컴포넌트가 아니라 `badgeVariants()`를 span에 얹는다 — 카드 전체가 `<button>`이고 `Badge`는 `div`를 렌더해서 버튼 안에 넣을 수 없기 때문이다. 스타일 원본은 `ui/badge.tsx` 하나다. **variant 이름이 화면 문구와 다르다**: 참여(초록)는 `positive`가 아니라 `secondary`다.
 - 클릭 가능한 카드의 `active` 배경이 `hover`와 같은 `bg-brand-weak`다. pressed 전용 값(`brand-weak-pressed`, blue-200)은 본문 회색과 4.48:1로 AA 미달이라 일부러 안 쓴다 — [State](?path=/docs/foundations-state--docs)에 기록된 예외다.
-- 매치 행 우측의 라운드 표기는 `{weekNo}라운드`로, **주차 번호를 그대로 라운드 번호로 쓴다.** 그래서 더블 매치위크의 컵 경기에도 리그 라운드 번호가 붙는다(예: 카라바오컵 경기에 "39라운드"). 실데이터를 붙일 때 리그 라운드와 주차가 어긋나면 이 표기부터 손대야 한다.
+- 매치 행 우측의 라운드 표기는 `{weekNo}라운드`로, **주차 번호를 그대로 라운드 번호로 쓴다.** 리그 라운드와 ISO 주차는 같은 값이 아니라, 컵 경기나 연기된 경기가 끼면 어긋난다. 더블 매치위크에서는 이 자리가 경기별 배지로 대체되어 라운드 표기가 아예 사라진다.
 - 로고는 `next/image`가 아니라 `<img>`를 직접 쓴다. `alt=""`(장식)이고 팀 이름은 아래 텍스트로 읽힌다.
 - 목록에 오늘/이번 주 표시가 없다. 어느 주가 현재인지는 `status`로만 유추된다.

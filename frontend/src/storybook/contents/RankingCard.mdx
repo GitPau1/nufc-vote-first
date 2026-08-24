@@ -5,7 +5,7 @@ import * as RankingCardStories from './RankingCard.stories'
 
 # RankingCard
 
-승부예측 시즌 누적 랭킹 카드. `src/components/predict/RankingCard.tsx`이고, 지금 유일한 사용처는 임시 프리뷰 페이지 `src/app/dev/predict-preview/page.tsx`다. **승부예측 기능과 함께 들어왔지만 디자인시스템에 문서화된 적이 없던 컴포넌트**라, 이 페이지가 첫 문서다 — 여기 적힌 규칙은 새로 정한 게 아니라 소스에 이미 있던 동작을 읽어 적은 것이다.
+승부예측 시즌 누적 랭킹 카드. `src/components/predict/RankingCard.tsx`이고, 사용처는 `components/predict/PredictListClient.tsx`(예측 탭 데스크탑 사이드)에서 `top3`·`mine` 두 개를 나란히 놓는 것이다. 주차 단위 랭킹은 별개 컴포넌트(`predict/WeekRankCard.tsx`, 아직 미문서화)다. **승부예측 기능과 함께 들어왔지만 디자인시스템에 문서화된 적이 없던 컴포넌트**라, 이 페이지가 첫 문서다 — 여기 적힌 규칙은 새로 정한 게 아니라 소스에 이미 있던 동작을 읽어 적은 것이다.
 
 `RankingEntry[]`를 받아 렌더만 하는 프레젠테이션 컴포넌트다. 순위·점수·변동(`delta`)을 **계산하지 않는다** — 전부 부모가 넣어준 값을 그대로 그린다.
 

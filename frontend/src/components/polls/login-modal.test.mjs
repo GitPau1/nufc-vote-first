@@ -3,7 +3,7 @@ import test from 'node:test'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname)
+const __dirname = import.meta.dirname
 const modalSource = fs.readFileSync(path.join(__dirname, 'LoginModal.tsx'), 'utf8')
 const sheetSource = fs.readFileSync(path.join(__dirname, '../ui/sheet.tsx'), 'utf8')
 const bottomSheetSource = fs.readFileSync(path.join(__dirname, '../ui/bottom-sheet.tsx'), 'utf8')

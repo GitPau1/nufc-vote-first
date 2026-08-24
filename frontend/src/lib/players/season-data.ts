@@ -3,7 +3,6 @@ import path from 'node:path'
 
 const SQUAD_CSV_PATH = path.join(
   process.cwd(),
-  '..',
   'player-data',
   'newcastle_squads_from_screenshots_players_positions.csv'
 )

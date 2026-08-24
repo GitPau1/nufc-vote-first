@@ -6,6 +6,13 @@ import { koreanTeamName } from '@/lib/predict/team-names'
 import { toKst, weekKey } from '@/lib/predictions/week'
 import { playerPhotoUrl } from '@/lib/predictions/candidates'
 import { mockGetHomeMatchdayFixture } from '@/lib/mock/queries'
+// 예측 목록(주차 그룹)은 승부예측 기능에서 쓰는 별개 경로다 — 같은 fixtures 테이블을 읽지만
+// 컬럼·가공 방식이 달라서 FixtureRow도 서로 다른 타입이라 별칭으로 구분한다.
+import {
+  groupFixturesByWeek,
+  type FixtureRow as WeekFixtureRow,
+  type WeekGroup,
+} from '@/lib/predictions/week'
 
 export type MatchdayPlayerOfMatch = {
   playerId: number
@@ -188,4 +195,35 @@ async function getHomeMatchdayFixtureUncached(): Promise<MatchdayFixture | null>
 
 export const getHomeMatchdayFixture = unstable_cache(getHomeMatchdayFixtureUncached, ['home-matchday-fixture'], {
   revalidate: 30,
+})
+
+export type { WeekGroup }
+
+const WEEK_FIXTURE_COLUMNS =
+  'fixture_id, competition_name, kickoff_at, home_id, home_name, home_score, away_id, away_name, away_score, started, finished, cancelled'
+
+async function getFixtureWeeksUncached(): Promise<WeekGroup[]> {
+  const now = Date.now()
+
+  if (IS_MOCK) {
+    const { MOCK_FIXTURES } = await import('@/lib/mock/data')
+    return groupFixturesByWeek(MOCK_FIXTURES, now)
+  }
+
+  const supabase = createPublicClient()
+  const { data, error } = await supabase
+    .from('fixtures')
+    .select(WEEK_FIXTURE_COLUMNS)
+    .order('kickoff_at', { ascending: true })
+
+  if (error) {
+    console.error('getFixtureWeeks error:', error)
+    return []
+  }
+
+  return groupFixturesByWeek((data ?? []) as unknown as WeekFixtureRow[], now)
+}
+
+export const getFixtureWeeks = unstable_cache(getFixtureWeeksUncached, ['fixture-weeks'], {
+  revalidate: 300,
 })

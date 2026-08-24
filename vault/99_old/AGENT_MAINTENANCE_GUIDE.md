@@ -17,6 +17,7 @@
 - 기능을 바꾸기 전에 실제 데이터 흐름을 먼저 확인합니다.
 - DB 스키마를 바꾸면 migration, `frontend/src/types/database.ts`, query `select(...)`, server action payload, RLS 정책을 함께 확인합니다.
 - mock mode에서만 확인하지 않습니다. Supabase 연동 기능은 실제 Supabase mode에서 깨질 수 있습니다.
+- `getFixtureWeeks`처럼 `unstable_cache`로 감싼 query는 IS_MOCK 분기까지 캐시 안에 들어갑니다. `.next/cache`는 실행 간에 공유되므로, 실 모드로 띄운 적이 있는 프로젝트를 mock 모드로 다시 띄우면 **실 데이터가 그대로 나옵니다**(반대도 마찬가지). mock 모드로 확인하려면 `rm -rf .next/cache/fetch-cache` 후에 띄우고, 끝나면 다시 지웁니다.
 - 기존 fallback query가 있으면 본 query와 fallback query를 함께 수정합니다.
 - 관리자 기능은 앱 코드의 `ADMIN_EMAILS` 확인과 service-role DB 쓰기가 같이 작동한다는 점을 전제로 봅니다.
 - 기존 변경사항이 많은 저장소이므로, 요청과 직접 관련 없는 파일은 건드리지 않습니다.
@@ -72,12 +73,20 @@ DB나 Supabase 연동을 건드릴 때:
 
 승부예측:
 
-- 조회: `frontend/src/lib/queries/fixtures.ts`
+- 조회: `frontend/src/lib/queries/fixtures.ts`(경기), `frontend/src/lib/queries/predictions.ts`(내 제출), `frontend/src/lib/queries/squads.ts`(픽 후보/배당)
 - 주차 그룹핑/주 세션 상태 파생/`toPredictWeeks` 어댑터: `frontend/src/lib/predictions/week.ts` (+ `week.test.mjs`)
-- 선수 후보 더미: `frontend/src/lib/predictions/candidates.ts`
-- 화면: `frontend/src/app/predictions/page.tsx`, `frontend/src/app/predictions/week/[weekKey]/page.tsx`, `frontend/src/components/predict/*`
-- 예측/제출 단위는 경기가 아니라 **주(week)**다. 상태(`open`/`result`/`upcoming`)도 주 레벨에만 있고, 더블 매치위크는 경기 2개가 한 세션이다.
-- 아직 없는 것: 예측 제출 action, 완료/결과 화면, 랭킹 데이터(`RankingCard`는 빈 배열로 렌더), predictions 테이블
+- 제출 검증/insert 행 생성: `frontend/src/lib/predictions/submit.ts` (+ `submit.test.mjs`), action은 `frontend/src/lib/actions/predictions.ts`
+- 포지션 정의/표시 헬퍼: `frontend/src/lib/predictions/candidates.ts`
+- 화면: `frontend/src/app/predictions/page.tsx`, `frontend/src/app/predictions/[weekKey]/page.tsx`(오픈 주차=예측 플로우 / 종료 주차=결과 화면 분기), `frontend/src/components/predict/*`
+- 결과 화면은 `PredictionResult.tsx` + 주차 랭킹 `WeekRankCard.tsx`, 순수 계산은 `lib/predictions/result.ts`(+ `result.test.mjs`). 채점 결과 조회는 `getMyResults()`(`prediction_results` view, 종료 경기만).
+- 예측/제출 단위는 경기가 아니라 **주(week)**다. 상태(`open`/`result`/`upcoming`)도 주 레벨에만 있고, 더블 매치위크는 경기 2개가 한 세션이다. 다만 목록 카드의 **배지는 경기 단위**(`matchStatusMeta`)다 — 한 경기가 끝났는데 다른 경기는 아직 열려 있을 수 있어서 두 상태를 병기한다.
+- 세션은 **그 주 첫 경기 킥오프 7일 전**에 열리고 **그 주 마지막 경기 킥오프**에 닫힌다. 마감 판정은 실제로는 경기별(`isMatchLocked`)이고, 잠기지 않은 경기가 하나도 없으면 주차가 닫히는 구조다.
+- 그래서 **부분 제출이 정상 상태**다: 첫 경기가 끝난 뒤 처음 들어온 사용자는 남은 경기만 예측한다(`submittableMatches`). 페이지가 미제출·미잠김 경기를 `pending`으로 넘기고, 비어 있으면 완료 화면을 띄운다.
+- 프론트는 `week.ts`의 `isMatchLocked`/`weekStatus`, DB는 `20260823130000_predictions_weekly_window.sql`의 insert 정책(`kickoff_at > now()` + `prediction_week_first_kickoff < now() + 7 days`) — 둘이 같은 기준이라 한쪽만 고치면 안 된다.
+- `predictions` 테이블은 **경기당 1행**이고 제출은 주 단위 1회다: 그 주 경기 전부를 한 번의 insert로 넣는다. 스코어도 **선수 픽도 경기별**이다(2026-08-23 확정 — 더블 매치위크는 경기마다 다른 선수를 고를 수 있고, 화면에 첫 경기 픽을 복사하는 "그대로 적용" 버튼이 있다). 포지션 간 중복 금지(`predictions_distinct_picks`)는 행 단위라 경기끼리 같은 선수를 고르는 건 허용된다. 점수는 그 주 행들을 합해 주차 성적이 된다(FR-017 = 픽 점수 주 단위 합산).
+- 랭킹 조회는 `lib/queries/predictions.ts`의 `getWeekRanking(weekKey)`(주차, `week_leaderboard` view) / `getSeasonRanking(limit)`(시즌 누적, `season_leaderboard` view). `week_leaderboard.week_key`는 `week.ts`의 `weekKey()`와 같은 ISO 주차 문자열이라 둘을 같이 고쳐야 한다.
+- 경기별 선수 평점 입력은 `/admin/ratings`(`app/admin/ratings/page.tsx` + `components/admin/AdminRatingsForm.tsx`), 쓰기는 `lib/actions/fixture-ratings.ts`의 `saveFixtureRatings`. `fixture_player_ratings`에 insert 정책이 없어 service-role(`requireAdminClient`)로만 쓴다. 평점 행이 없는 선수는 픽 점수가 0으로 계산되므로, 경기가 끝나면 여기서 평점을 넣어야 결과·랭킹이 의미를 갖는다. 이름이 `actions/ratings.ts`가 아닌 이유: 그 파일은 선수 평점 **투표**(rating_votes)가 이미 쓰고 있다.
+- 아직 없는 것: 평점 자동 주입(sofascore 스크래핑 → `fixture_player_ratings`), 순위 변동(▲/▼) 표시용 지난 주차 순위 보관
 
 인증/온보딩/마이페이지:
 
@@ -101,8 +110,8 @@ DB나 Supabase 연동을 건드릴 때:
 
 관리자:
 
-- 화면: `frontend/src/app/admin/page.tsx`, `frontend/src/app/admin/AdminDashboard.tsx`
-- action: `frontend/src/lib/actions/admin.ts`, `frontend/src/lib/actions/farewells.ts`
+- 화면: `frontend/src/app/admin/page.tsx`(링크 허브), `frontend/src/app/admin/ratings/page.tsx`(경기별 선수 평점)
+- action: `frontend/src/lib/actions/admin.ts`, `frontend/src/lib/actions/farewells.ts`, `frontend/src/lib/actions/fixture-ratings.ts`
 - 권한 판정: `frontend/src/lib/admin.ts`
 - service-role client: `frontend/src/lib/supabase/admin.ts`
 

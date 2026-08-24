@@ -1,5 +1,6 @@
-import type { PlayerRow, PollOptionRow } from '@/types/database'
+import type { PlayerRow, PollOptionRow, SeasonSquadRow } from '@/types/database'
 import type { PollDetail, PollListItem, VoteCountMap } from '@/lib/queries/polls'
+import type { FixtureRow } from '@/lib/predictions/week'
 
 // ── 선수 ────────────────────────────────────────────────────
 const isak: PlayerRow = {
@@ -293,3 +294,137 @@ export const MOCK_PARTICIPATED: ParticipatedPoll[] = [
     pollStatus: 'closed',
   },
 ]
+
+// ── 승부예측: fixtures (mock 모드용) ─────────────────────────
+// 실 스키마와 같은 모양의 행. 날짜는 오늘 기준 상대값이라 목록의 종료/진행중/예정이 항상 다 나온다.
+const daysFromNow = (days: number, hour = 20) => {
+  const d = new Date(Date.now() + days * 86400_000)
+  d.setHours(hour, 0, 0, 0)
+  return d.toISOString()
+}
+
+const NUFC = { id: 10261, name: 'Newcastle' }
+
+function mockFixture(
+  fixtureId: number,
+  opponent: { id: number; name: string },
+  { days, isHome, competition, score }: { days: number; isHome: boolean; competition: string; score?: [number, number] },
+): FixtureRow {
+  const finished = score !== undefined
+  const home = isHome ? NUFC : opponent
+  const away = isHome ? opponent : NUFC
+  const [ourScore, theirScore] = score ?? [null, null]
+
+  return {
+    fixture_id: fixtureId,
+    competition_name: competition,
+    kickoff_at: daysFromNow(days),
+    home_id: home.id,
+    home_name: home.name,
+    home_score: isHome ? ourScore : theirScore,
+    away_id: away.id,
+    away_name: away.name,
+    away_score: isHome ? theirScore : ourScore,
+    started: finished,
+    finished,
+    cancelled: false,
+  }
+}
+
+export const MOCK_FIXTURES: FixtureRow[] = [
+  mockFixture(9001, { id: 8602, name: 'Wolves' },     { days: -19, isHome: true,  competition: 'Premier League', score: [1, 1] }),
+  mockFixture(9002, { id: 8456, name: 'Man City' },   { days: -12, isHome: false, competition: 'Premier League', score: [0, 2] }),
+  mockFixture(9003, { id: 8650, name: 'Liverpool' },  { days: -5,  isHome: true,  competition: 'Premier League', score: [2, 0] }),
+  mockFixture(9004, { id: 9825, name: 'Arsenal' },    { days: 2,   isHome: false, competition: 'Premier League' }),
+  // 9004와 같은 주 — 더블 매치위크(경기 2개 = 한 예측 세션) 확인용.
+  // 오픈된 주차에 둬야 목 모드에서 주 단위 제출 플로우까지 밟을 수 있다.
+  mockFixture(9006, { id: 9937, name: 'Brentford' },  { days: 3,   isHome: false, competition: 'EFL Cup' }),
+  mockFixture(9005, { id: 8455, name: 'Chelsea' },    { days: 9,   isHome: true,  competition: 'Premier League' }),
+  mockFixture(9007, { id: 8668, name: 'Everton' },    { days: 30,  isHome: true,  competition: 'Premier League' }),
+]
+
+// ── 승부예측 선수 픽 후보 (season_squads 행과 같은 모양) ─────────────────────
+// FotMob player id는 실제 값 — 목 모드에서도 선수 사진이 CDN에서 그대로 뜬다.
+const squadMember = (
+  fotmobPlayerId: number,
+  name: string,
+  nameKo: string,
+  position: SeasonSquadRow['position'],
+  shirtNumber: number,
+  nationality: string,
+  dateOfBirth: string,
+  multiplier: number,
+): SeasonSquadRow => ({
+  season_id: 'mock-season',
+  fotmob_player_id: fotmobPlayerId,
+  player_id: null,
+  name,
+  name_ko: nameKo,
+  shirt_number: shirtNumber,
+  position,
+  position_ids_desc: null,
+  nationality_code: null,
+  nationality_name: nationality,
+  date_of_birth: dateOfBirth,
+  transfer_value: null,
+  prediction_multiplier: multiplier,
+  synced_at: new Date().toISOString(),
+})
+
+export const MOCK_SQUAD: SeasonSquadRow[] = [
+  squadMember(577175, 'Sven Botman',        '보트만',     'DEF', 4,  '네덜란드', '2000-01-12', 2.1),
+  squadMember(180254, 'Kieran Trippier',    '트리피어',   'DEF', 2,  '잉글랜드', '1990-09-19', 1.4),
+  squadMember(184644, 'Fabian Schär',       '스카르',     'DEF', 5,  '스위스',   '1991-12-20', 1.9),
+  squadMember(1140067, 'Tino Livramento',   '리브라멘투', 'DEF', 21, '잉글랜드', '2002-11-12', 2.6),
+  squadMember(869678, 'Bruno Guimarães',    '기마랑이스', 'MID', 39, '브라질',   '1997-11-16', 1.7),
+  squadMember(1088651, 'Sandro Tonali',     '토날리',     'MID', 8,  '이탈리아', '2000-05-08', 1.5),
+  squadMember(586826, 'Joe Willock',        '윌록',       'MID', 28, '잉글랜드', '1999-08-20', 1.9),
+  squadMember(725364, 'Alexander Isak',     '이사크',     'FWD', 14, '스웨덴',   '1999-09-21', 1.3),
+  squadMember(1146398, 'Anthony Gordon',    '고든',       'FWD', 10, '잉글랜드', '2001-02-24', 1.6),
+  squadMember(487126, 'Harvey Barnes',      '반스',       'FWD', 15, '잉글랜드', '1997-12-09', 2.0),
+  // GK는 픽 후보에서 걸러지는지 확인용
+  squadMember(233450, 'Nick Pope',          '포프',       'GK',  22, '잉글랜드', '1992-04-19', 1.1),
+]
+
+// ── 승부예측 랭킹 (week_leaderboard / season_leaderboard 결과와 같은 모양) ─────
+// 목 모드는 로그인 사용자가 고정이라 isMe도 고정이다. 실제 view는 순위 변동을 내려주지 않으므로
+// 여기에도 delta는 없다.
+export const MOCK_RANKING = [
+  { userId: 'mock-1', rank: 1, name: '김민준', avatarUrl: null, matchPoints: 3, pickPoints: 12, totalPoints: 15, isMe: false },
+  { userId: 'mock-2', rank: 2, name: '이서연', avatarUrl: null, matchPoints: 2, pickPoints: 11, totalPoints: 13, isMe: false },
+  { userId: 'mock-3', rank: 3, name: '정하윤', avatarUrl: null, matchPoints: 3, pickPoints: 9, totalPoints: 12, isMe: false },
+  { userId: 'mock-me', rank: 4, name: '나', avatarUrl: null, matchPoints: 3, pickPoints: 5, totalPoints: 8, isMe: true },
+  { userId: 'mock-5', rank: 5, name: '박지훈', avatarUrl: null, matchPoints: 0, pickPoints: 8, totalPoints: 8, isMe: false },
+  { userId: 'mock-6', rank: 6, name: '최유진', avatarUrl: null, matchPoints: 2, pickPoints: 3, totalPoints: 5, isMe: false },
+  { userId: 'mock-7', rank: 7, name: '강태양', avatarUrl: null, matchPoints: 0, pickPoints: 2, totalPoints: 2, isMe: false },
+  { userId: 'mock-8', rank: 8, name: '윤소율', avatarUrl: null, matchPoints: 0, pickPoints: 0, totalPoints: 0, isMe: false },
+]
+
+// ── 승부예측 채점 결과 (prediction_results view 행과 같은 모양) ─────────────
+// 목 모드에서 결과 화면의 "참여" 경로를 눌러볼 수 있게 종료된 경기 두 건에만 결과를 심는다.
+// 9002(맨시티 원정)는 일부러 비워서 "마감돼서 참여하지 못한 경기" 경로도 같이 확인된다.
+// 배당(×2.1 등)은 제출 스냅샷에서 오므로 여기 없다 — 목 모드에선 제출 쿠키가 없으면 배당 줄이 빠진다.
+export const MOCK_RESULTS = {
+  '9001': {
+    predicted: [1, 1] as [number, number],
+    matchPoints: 3,
+    pickPoints: 5,
+    totalPoints: 8,
+    picks: {
+      DEF: { playerId: 577175, rating: 7.8, points: 5 },
+      MID: { playerId: 869678, rating: 6.3, points: 0 },
+      FWD: { playerId: 725364, rating: 5.4, points: 0 },
+    },
+  },
+  '9003': {
+    predicted: [2, 1] as [number, number],
+    matchPoints: 2,
+    pickPoints: 8,
+    totalPoints: 10,
+    picks: {
+      DEF: { playerId: 184644, rating: 6.2, points: 0 },
+      MID: { playerId: 869678, rating: 7.4, points: 4 },
+      FWD: { playerId: 725364, rating: 8.1, points: 4 },
+    },
+  },
+}

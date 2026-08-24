@@ -6,7 +6,7 @@ export interface RankingEntry {
   name: string
   totalPoints: number
   isMe?: boolean
-  avatarUrl?: string
+  avatarUrl?: string | null
   /** null/undefined = 변동 표시 안 함. 양수 = ▲(상승), 음수 = ▼(하락) */
   delta?: number | null
 }

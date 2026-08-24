@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useLoadingRouter } from '@/components/layout/NavigationLoading'
 import { LoginModal } from '@/components/polls/LoginModal'
 
 /**
@@ -12,7 +12,7 @@ import { LoginModal } from '@/components/polls/LoginModal'
  * 사용자가 그냥 닫아도 동일하게 홈으로 — 로그인 없이는 볼 컨텐츠가 없기 때문이다.
  */
 export function RequireAuthModal() {
-  const router = useRouter()
+  const router = useLoadingRouter()
 
   return (
     <LoginModal

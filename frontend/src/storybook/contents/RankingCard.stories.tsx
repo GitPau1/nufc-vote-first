@@ -13,7 +13,7 @@ function mockEntry(overrides: Partial<RankingEntry>): RankingEntry {
 }
 
 /**
- * `/dev/predict-preview`의 `buildLeaderboard()`와 같은 모양(10명, 6점 간격, 홀/짝으로 ▲▼ 교대).
+ * 예측 탭 사이드에 실제로 들어오는 모양(10명, 6점 간격, 홀/짝으로 ▲▼ 교대).
  * 내 순위만 인자로 바꿀 수 있게 해서 "TOP N 안/밖" 두 경우를 같은 데이터로 비교한다.
  * myRank에 없는 값(0 등)을 주면 isMe가 아무 항목에도 안 붙어 "미참여" 상태가 된다.
  */
@@ -32,7 +32,7 @@ function mockLeaderboard(myRank: number): RankingEntry[] {
   })
 }
 
-// 실사용처(`/dev/predict-preview`)에서 본문 옆 사이드 카드로 놓이는 폭 — 데스크탑 캔버스 그대로
+// 실사용처(`PredictListClient`)에서 본문 옆 사이드 카드로 놓이는 폭 — 데스크탑 캔버스 그대로
 // 두면 이름 컬럼(flex-1)만 늘어나서 실제 밀도와 달라진다.
 const cardWidth = { decorators: [(Story: () => React.JSX.Element) => <div style={{ maxWidth: 358 }}><Story /></div>] }
 

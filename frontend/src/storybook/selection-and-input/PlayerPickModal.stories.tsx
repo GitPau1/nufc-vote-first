@@ -6,11 +6,12 @@ import { PlayerPickModal, type PlayerPickCandidate } from '@/components/predict/
 
 // 실제 photoUrl은 lib/predictions/candidates.ts의 playerPhotoUrl(fotmobPlayerId)로 조립되는데,
 // 진짜 FotMob 선수 ID가 아니면 403이라 사진 자리가 깨진다 — 다른 mock 사진과 같은 placehold.co를 쓴다.
+// (id도 실제로는 season_squads.fotmob_player_id라 number다.)
 const PLACEHOLDER_PHOTO = 'https://placehold.co/88x88/2a2f36/8a929c?text=%20'
 
 function mockCandidate(overrides: Partial<PlayerPickCandidate>): PlayerPickCandidate {
   return {
-    id: 'mid-guimaraes',
+    id: 1001,
     name: '기마랑이스',
     squadNumber: 39,
     photoUrl: PLACEHOLDER_PHOTO,
@@ -21,13 +22,12 @@ function mockCandidate(overrides: Partial<PlayerPickCandidate>): PlayerPickCandi
   }
 }
 
-// /dev/predict-preview의 미드필더 후보와 같은 구성.
 const MID_CANDIDATES: PlayerPickCandidate[] = [
   mockCandidate({}),
-  mockCandidate({ id: 'mid-bruno', name: '브루노', squadNumber: 7, nationality: '포르투갈', age: 24, multiplier: 1.3 }),
-  mockCandidate({ id: 'mid-willock', name: '윌록', squadNumber: 28, nationality: '잉글랜드', age: 26, multiplier: 1.5 }),
-  mockCandidate({ id: 'mid-tonali', name: '토날리', squadNumber: 8, nationality: '이탈리아', age: 25, multiplier: 1.4 }),
-  mockCandidate({ id: 'mid-joelinton', name: '조엘린톤', squadNumber: 7, nationality: '브라질', age: 29, multiplier: 1.9 }),
+  mockCandidate({ id: 1002, name: '브루노', squadNumber: 7, nationality: '포르투갈', age: 24, multiplier: 1.3 }),
+  mockCandidate({ id: 1003, name: '윌록', squadNumber: 28, nationality: '잉글랜드', age: 26, multiplier: 1.5 }),
+  mockCandidate({ id: 1004, name: '토날리', squadNumber: 8, nationality: '이탈리아', age: 25, multiplier: 1.4 }),
+  mockCandidate({ id: 1005, name: '조엘린톤', squadNumber: 24, nationality: '브라질', age: 29, multiplier: 1.9 }),
 ]
 
 const meta = {
@@ -58,7 +58,7 @@ type Story = StoryObj<typeof meta>
  */
 export const Default: Story = {
   render: function Render(args) {
-    const [selectedId, setSelectedId] = useState<string | null>(null)
+    const [selectedId, setSelectedId] = useState<number | null>(null)
     return <PlayerPickModal {...args} selectedPlayerId={selectedId} onSelect={player => setSelectedId(player.id)} />
   },
 }
@@ -74,7 +74,7 @@ export const Mobile: Story = {
  * 처음부터 하이라이트되어 있어야 한다(`aria-pressed`도 함께 켜진다).
  */
 export const PreSelected: Story = {
-  args: { selectedPlayerId: 'mid-bruno' },
+  args: { selectedPlayerId: 1002 },
 }
 
 /**
@@ -93,7 +93,7 @@ export const ManyCandidates: Story = {
   args: {
     players: Array.from({ length: 14 }, (_, i) =>
       mockCandidate({
-        id: `mid-${i}`,
+        id: 2000 + i,
         name: `후보 선수 ${i + 1}`,
         squadNumber: i + 2,
         multiplier: 1 + (i % 9) / 10,
@@ -109,7 +109,7 @@ export const ManyCandidates: Story = {
 export const LongPlayerName: Story = {
   args: {
     players: [
-      mockCandidate({ id: 'long', name: '알렉산더 이사크 세바스티안', nationality: '스웨덴', age: 26 }),
+      mockCandidate({ id: 3001, name: '알렉산더 이사크 세바스티안', nationality: '스웨덴', age: 26 }),
       ...MID_CANDIDATES.slice(1, 3),
     ],
   },
@@ -117,7 +117,7 @@ export const LongPlayerName: Story = {
 }
 
 /**
- * 실제 사용처(`app/dev/predict-preview/page.tsx`)의 흐름 재현 — 버튼으로 열고,
+ * 실제 사용처(`components/predict/PredictionFlowClient.tsx`)의 흐름 재현 — 버튼으로 열고,
  * 선수를 고르면 상태 반영 + `onOpenChange(false)`까지 호출부가 직접 해야 닫힌다
  * (컴포넌트는 선택만 알리고 스스로 닫지 않는다). 배경 클릭·ESC로도 닫히는지 여기서 확인한다.
  */
@@ -150,5 +150,22 @@ export const SelectAndClose: Story = {
         />
       </div>
     )
+  },
+}
+
+/**
+ * 스쿼드 데이터가 덜 채워진 후보 — main에서 `squadNumber`·`photoUrl`·`nationality`·`age`가
+ * 전부 nullable이 됐다. 등번호가 없으면 `–`, 사진이 없으면 실루엣 원형(`shared.tsx`의
+ * `PlayerPhoto`), 국적·나이는 있는 값만 ` · `로 이어 붙는다(둘 다 없으면 줄 자체가 빈다).
+ * 시즌 초 신입·임대 복귀 선수에서 실제로 나오는 상태다.
+ */
+export const MissingSquadData: Story = {
+  args: {
+    players: [
+      mockCandidate({ id: 4001, name: '신입 선수', squadNumber: null, photoUrl: null }),
+      mockCandidate({ id: 4002, name: '국적 미정', nationality: null, age: 22 }),
+      mockCandidate({ id: 4003, name: '나이 미정', nationality: '잉글랜드', age: null }),
+      mockCandidate({ id: 4004, name: '정보 없음', squadNumber: null, photoUrl: null, nationality: null, age: null }),
+    ],
   },
 }
