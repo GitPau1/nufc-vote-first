@@ -20,12 +20,15 @@ const meta = {
   args: {
     open: true,
     onClose: () => {},
+    // triggerAction은 기본값이 없다 — 문구를 가르는 값이라 호출부가 늘 명시한다.
+    triggerAction: 'login',
   },
 } satisfies Meta<typeof LoginModal>
 
 export default meta
 type Story = StoryObj<typeof meta>
 
+/** 기본 스토리는 일반 로그인(`triggerAction="login"`) 상태다 — 문구 비교는 아래 trigger 스토리에서. */
 export const Default: Story = {}
 
 /** 모바일 폭 — 중앙 모달이 아니라 바텀시트(드래그 핸들 포함)로 뜨는지 확인. */
@@ -34,42 +37,33 @@ export const Mobile: Story = {
 }
 
 /**
- * `triggerAction="vote"` (기본값) — 투표 참여를 시도한 비로그인 사용자.
+ * **케이스 1 — 일반 로그인.** `triggerAction="login"`. 특정 행동이 아니라 "로그인" 자체가
+ * 시작점인 경우: 헤더 로그인 버튼(`layout/LoginButton.tsx`), 메뉴 화면(`app/menu/MenuActions.tsx`),
+ * 보호된 화면 게이트(`auth/RequireAuthModal.tsx`). 문구는 "필요"를 말하지 않고 로그인해서
+ * 얻는 것(참여·내 기록)을 말한다.
+ */
+export const TriggerLogin: Story = {
+  args: { triggerAction: 'login' },
+  parameters: { nextjs: { navigation: { pathname: '/menu' } } },
+}
+
+/**
+ * **케이스 2 — 행동 유도(투표).** `triggerAction="vote"`. 투표하려다 막힌 비로그인 사용자.
  * `TypeAPollClient`·`TypeBPollClient`·`OverallRatingPollClient`가 이 값을 넘긴다.
- *
- * 아래 네 개의 trigger 스토리는 **화면이 서로 같다.** `triggerAction`은 화면 문구가 아니라
- * `auth_prompt_viewed` 이벤트의 `trigger_action` 속성만 바꾼다(소스 확인). 값마다 스토리를
- * 둔 건 "문구가 갈린다"가 아니라 "갈리지 않는다"를 기록해두기 위한 것이다.
+ * 아래 `TriggerLogin`과 나란히 두고 보면 설명문이 실제로 갈리는 게 보인다.
  */
 export const TriggerVote: Story = {
   args: { triggerAction: 'vote' },
 }
 
 /**
- * `triggerAction="comment"` — 타입에는 있지만 **코드 어디서도 이 값을 넘기지 않는다.**
- * 댓글 작성은 투표 참여자만 가능해서, 비로그인 사용자가 댓글 입력에 도달하는 경로가 아직 없다.
+ * **케이스 2 — 행동 유도(승부예측).** `triggerAction="predict"`.
+ * `predict/PredictionFlowClient.tsx`가 제출 시 `unauthenticated`를 받았을 때 띄운다 —
+ * 3스텝을 다 채운 뒤 만나는 로그인 벽이라 "투표"가 아니라 "승부예측"이라고 말해야 한다.
  */
-export const TriggerComment: Story = {
-  args: { triggerAction: 'comment' },
-  parameters: { nextjs: { navigation: { pathname: '/polls/1' } } },
-}
-
-/**
- * `triggerAction="create_poll"` — 타입에만 있고 실제 호출부는 없다.
- * 투표 생성 페이지는 이 값 대신 `RequireAuthModal`(= `triggerAction="login"`)을 쓴다.
- */
-export const TriggerCreatePoll: Story = {
-  args: { triggerAction: 'create_poll' },
-  parameters: { nextjs: { navigation: { pathname: '/polls/create' } } },
-}
-
-/**
- * `triggerAction="login"` — 특정 행동이 아니라 "로그인" 자체가 시작점인 경우.
- * `layout/LoginButton.tsx`, `app/menu/MenuActions.tsx`, `auth/RequireAuthModal.tsx`가 쓴다.
- */
-export const TriggerLogin: Story = {
-  args: { triggerAction: 'login' },
-  parameters: { nextjs: { navigation: { pathname: '/menu' } } },
+export const TriggerPredict: Story = {
+  args: { triggerAction: 'predict' },
+  parameters: { nextjs: { navigation: { pathname: '/predictions/2026-35' } } },
 }
 
 /**

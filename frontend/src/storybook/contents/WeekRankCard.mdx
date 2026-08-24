@@ -1,0 +1,100 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as WeekRankCardStories from './WeekRankCard.stories'
+
+<Meta of={WeekRankCardStories} />
+
+# WeekRankCard
+
+승부예측 **한 주차** 랭킹 카드. `src/components/predict/WeekRankCard.tsx`이고, 사용처는 `components/predict/PredictionResult.tsx`(주차 결과 화면의 "전체 결과" 탭) 하나다. 데이터는 `lib/queries/predictions.ts`의 `getWeekRanking(weekKey)`가 `week_leaderboard` view에서 읽은 `RankingRow[]`를 그대로 받는다.
+
+받은 값을 그리기만 한다 — 순위·점수를 계산하지 않는다. 유일한 자체 상태는 "전체보기"로 펼쳤는지(`expanded`)뿐이다.
+
+<Canvas of={WeekRankCardStories.Mobile} />
+
+## [RankingCard](?path=/docs/contents-rankingcard--docs)와 무엇이 다른가
+
+이름이 비슷하고 행 모양도 닮았지만 **다른 카드다.** 둘을 헷갈리면 컬럼과 데이터가 어긋난다.
+
+| | WeekRankCard | [RankingCard](?path=/docs/contents-rankingcard--docs) |
+|---|---|---|
+| 범위 | 한 주차 랭킹 | 시즌 누적 랭킹 |
+| 점수 컬럼 | **예측 / 선수픽 / 종합** 3개 | 종합(총점) 1개, `N점` 표기 |
+| 인원 | 참여자 전체(펼쳐볼 수 있다) | `entries.slice(0, limit)` 고정 |
+| 자르기 | `capped` prop으로 데스크탑/모바일 두 방식 | 없음 |
+| variant | 없다(카드 하나) | `top3` / `mine` 2종 |
+| 순위 변동 | 없다 | `delta`로 ▲▼ 표기 |
+| 쓰이는 곳 | `PredictionResult.tsx`(주차 결과 화면) | `PredictListClient.tsx`(예측 목록 데스크탑 사이드) |
+| 데이터 | `getWeekRanking()` — 실 데이터 연결됨 | 쿼리 없음(프리뷰 하드코딩) |
+| 렌더 | `'use client'`(펼침 상태를 들고 있다) | 상태 없는 프레젠테이션 |
+
+행의 React key도 다르다 — 여기는 `entry.userId`, RankingCard는 `entry.rank`다. 그래서 동점(공동 순위)이 이 카드에서는 안전하고 RankingCard에서는 key 중복이 된다.
+
+## 자르는 방식이 두 가지 — `capped`가 그걸 가른다
+
+실사용처는 같은 배열로 카드를 **두 개** 렌더하고 CSS로 하나만 보여준다(`className="sm:hidden"` / `capped className="hidden sm:block"`). 즉 `capped`는 "데스크탑용"이라는 뜻이다.
+
+<Canvas of={WeekRankCardStories.DesktopCapped} />
+
+| | `capped` 없음 (모바일) | `capped` (데스크탑) |
+|---|---|---|
+| 자르는 지점 | `max-h-[46vh]` — 기기 화면 높이 기준 | 10명(`DESKTOP_CAP`, 상수라 prop이 아니다) |
+| 잘린 행 | DOM에 있고 가려진다 | DOM에 없다 |
+| 하단 처리 | 그라디언트 페이드로 "더 있음" 암시 | 페이드 없음 |
+| 내 순위가 밖일 때 | 별도 처리 없음 | `⋯` 뒤에 내 행을 따로 붙인다 |
+
+<Canvas of={WeekRankCardStories.DesktopMyRankBelowCap} />
+
+`⋯` + 내 행 보강은 **`capped`에서만** 동작한다. 붙인 행의 순위 숫자는 실제 순위(14) 그대로다.
+
+모바일 쪽은 `overflow-hidden`이라 잘린 영역을 **스크롤로 볼 수 없다** — 페이드는 "여기서 끝이 아니다"라는 신호일 뿐이고, 더 보려면 "전체보기"를 눌러야 한다.
+
+## 펼침은 한 방향
+
+<Canvas of={WeekRankCardStories.MobileExpanded} />
+
+"전체보기 · N명"을 누르면 자르기·페이드·버튼이 한꺼번에 사라진다(세 개가 같은 `expanded` 상태에 묶여 있다). **접기는 없다** — 다시 접으려면 카드를 리마운트해야 한다. 버튼은 `capped` 여부와 무관하게 참여자가 10명을 넘을 때만 뜬다.
+
+<Canvas of={WeekRankCardStories.DesktopExpanded} />
+
+펼친 뒤에는 `⋯`와 따로 붙였던 내 행도 없어지고, 내 행이 목록 안에 한 번만 남는다.
+
+<Canvas of={WeekRankCardStories.FewParticipants} />
+
+참여자가 10명 이하면 버튼도 페이드도 없어서 `capped`가 켜져 있든 없든 결과가 같다. 주차 초반에 실제로 보는 상태다.
+
+## 내 행 강조
+
+강조는 prop이 아니라 **`entry.isMe`**가 결정한다. 행 배경 `bg-brand-weak` + 순위 숫자 `text-brand`이고, 배경이 깔린 행만 좌우 패딩이 `px-1 → px-2`로 늘고 하단 구분선이 빠진다.
+
+<Canvas of={WeekRankCardStories.NoMyRow} />
+
+`isMe`가 붙은 행이 없으면(미로그인·미참여) 강조도 `⋯` 보강도 전부 사라지고 목록만 남는다. 여기에 "너는 참여하지 않았다"는 안내는 없다 — RankingCard의 `mine` variant가 갖고 있는 미참여 문구에 해당하는 게 이 카드에는 없다.
+
+## 점수 3컬럼과 비어 있는 상태
+
+<Canvas of={WeekRankCardStories.MissingColumnPoints} />
+
+`RankingRow`에서 `matchPoints`·`pickPoints`는 **주차 랭킹 전용 옵셔널**이다. 시즌 누적 행(`getSeasonRanking()`)에는 없고, 그런 행을 이 카드에 넘기면 빈칸이 아니라 `?? 0`으로 **0**이 찍혀 "0점을 받았다"처럼 읽힌다. 이 카드에는 `getWeekRanking()` 결과만 넘긴다.
+
+점수 칸에 [Badge](?path=/docs/contents-badge--docs)는 쓰지 않는다. 세 컬럼 모두 그냥 텍스트이고, 값에 따라 색이 바뀌는 tier도 없다 — 예측/선수픽은 `text-neutral-muted`, 종합은 `text-brand` 고정이다. 적중/근접 같은 tier 배지(`PointsBadge`·`RatingBadge`)는 같은 화면의 `PredictionResult.tsx`에 따로 있고, 이 카드와 공유하지 않는다.
+
+<Canvas of={WeekRankCardStories.Empty} />
+
+`entries`가 비면 컬럼 헤더조차 그리지 않고 "아직 이 주차에 채점된 예측이 없어요" 한 줄만 남는다. 채점 전 주차가 이 상태다.
+
+<Canvas of={WeekRankCardStories.TiedRanks} />
+
+동점 처리는 이 카드의 일이 아니라 view의 일이다 — 공동 2위 두 명 뒤 4위로 건너뛰는 것도 받은 값을 그대로 그린 결과다.
+
+<Canvas of={WeekRankCardStories.LongNamesAndAvatars} />
+
+`avatarUrl`이 없으면 회색 원 + `User` 아이콘으로 대체된다. 이름만 `truncate`로 줄고 순위(`w-8`)·점수 3컬럼(`w-[42px]`/`w-[42px]`/`w-12`)은 고정폭이라 긴 닉네임에 밀리지 않는다.
+
+## 알려진 제약
+
+- **종합 점수 컬럼에서 내 점수와 남의 점수가 색으로 구분되지 않는다.** 옛 토큰 시절에는 남의 종합 점수가 어두운 값, 내 것이 한 단계 밝은 값이었는데, 새 [Color](?path=/docs/foundations-color--docs) 앵커에서 그 두 값이 하나로 합쳐져 두 분기가 같은 `text-brand`가 됐고 분기 자체를 지웠다(소스에 주석으로 남아 있다). 내 행은 여전히 배경 + 순위 숫자로 식별되니 "구분이 아예 없다"는 아니지만, **가장 오른쪽 숫자만 눈으로 훑을 때 내 점수를 못 짚는다.** 여기에 강조를 되살릴지는 아직 결정된 사항이 아니고, 되살린다면 밝기 차가 아닌 다른 수단(굵기·배경·크기)을 새로 정해야 한다 — 같은 앵커의 밝기 변형은 더 없다.
+- 같은 마이그레이션에서 "전체보기" 버튼의 hover도 줄었다. 예전에는 테두리와 글자가 함께 브랜드 색으로 바뀌었지만, 지금은 테두리만 진해지고 글자는 그대로다(`hover:border-neutral-strong`).
+- 컬럼 헤더가 `sticky top-0`인데, 모바일 카드는 `overflow-hidden`이라 안에서 스크롤이 일어나지 않아 접힌 상태에서는 sticky가 아무 일도 하지 않는다. 펼친 뒤 페이지 스크롤에서만 효과가 있다.
+- 실사용처가 카드를 두 번 렌더하므로 랭킹 목록이 DOM에 **두 벌** 존재한다(하나는 CSS로 숨김). 펼침 상태도 인스턴스마다 따로다 — 화면 폭이 `sm` 경계를 넘나들면 펼쳤던 게 접힌 것처럼 보인다.
+- `max-h-[46vh]`는 스케일 밖 임의값이고, 뷰포트 높이에 직접 의존한다. Storybook docs 프레임에서는 46vh가 실제 기기보다 커서 잘리는 위치가 달라진다 — 그래서 모바일 스토리는 `iphone12` 뷰포트를 고정해 둔다.
+- 카드 셸을 [Card](?path=/docs/contents-card--docs)로 만들지 않고 `rounded-lg border border-neutral-weak bg-surface p-4`를 직접 쓴다(RankingCard와 동일). 남은 차이는 그림자(`shadow-g200`)뿐이라, 예측 화면을 `Card`로 통일하려면 그림자 유무를 먼저 정해야 한다.

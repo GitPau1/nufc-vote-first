@@ -5,7 +5,8 @@ import { INITIAL_VIEWPORTS } from 'storybook/viewport'
 import { PlayerPickModal, type PlayerPickCandidate } from '@/components/predict/PlayerPickModal'
 
 // 실제 photoUrl은 lib/predictions/candidates.ts의 playerPhotoUrl(fotmobPlayerId)로 조립되는데,
-// 진짜 FotMob 선수 ID가 아니면 403이라 사진 자리가 깨진다 — 다른 mock 사진과 같은 placehold.co를 쓴다.
+// 진짜 FotMob 선수 ID가 아니면 403이다 — 그러면 PlayerPhoto(Avatar)가 실루엣으로 떨어져서
+// "사진 있는 행"을 보여줄 수 없으니, 다른 mock 사진과 같은 placehold.co를 쓴다.
 // (id도 실제로는 season_squads.fotmob_player_id라 number다.)
 const PLACEHOLDER_PHOTO = 'https://placehold.co/88x88/2a2f36/8a929c?text=%20'
 
@@ -131,7 +132,7 @@ export const SelectAndClose: Story = {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="rounded-sm bg-brand-solid px-4 py-3 text-body-2-normal font-bold text-white"
+          className="rounded-sm bg-brand-solid px-4 py-3 text-body-2-normal font-bold text-on-solid"
         >
           미드필더 선택 모달 열기
         </button>

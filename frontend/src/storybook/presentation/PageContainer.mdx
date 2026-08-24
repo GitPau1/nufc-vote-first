@@ -11,7 +11,7 @@ import * as PageContainerStories from './PageContainer.stories'
 
 | 경로 | 렌더 |
 |---|---|
-| `SHELL_PATHS`(`/onboarding`)를 제외한 전부 | `min-h-screen w-full bg-background` — 폭을 건드리지 않고 통과 |
+| `SHELL_PATHS`(`/onboarding`)를 제외한 전부 | `min-h-screen w-full bg-page` — 폭을 건드리지 않고 통과 |
 | `/onboarding` | `max-w-shell`(480px) 카드를 중앙 정렬 + `sm:border-x` |
 
 ## 기본(패스스루)
@@ -31,7 +31,7 @@ import * as PageContainerStories from './PageContainer.stories'
 <Canvas of={PageContainerStories.ShellDesktop} />
 <Canvas of={PageContainerStories.ShellMobile} />
 
-헤더 자체가 없는 독립 화면만 예외로 카드형 셸이 된다. 데스크탑(≥640px)에서는 480px 카드 좌우에 `border-border/60` 세로선이 생기고 바깥은 body 배경이 그대로 드러난다. 모바일에서는 `sm:` 접두사가 꺼져 세로선 없이 화면 폭을 다 쓴다.
+헤더 자체가 없는 독립 화면만 예외로 카드형 셸이 된다. 데스크탑(≥640px)에서는 480px 카드 좌우에 `border-neutral-weak/60` 세로선이 생기고 바깥은 body 배경이 그대로 드러난다. 모바일에서는 `sm:` 접두사가 꺼져 세로선 없이 화면 폭을 다 쓴다.
 
 위 두 캔버스가 똑같이 보인다면 정상이다 — Docs 페이지의 인라인 스토리는 Docs 본문 폭을 그대로 물려받아서 `sm:` 미디어 쿼리가 항상 데스크탑으로 평가된다. `ShellMobile`의 뷰포트 설정은 사이드바에서 스토리를 단독으로 열었을 때만 반영된다.
 

@@ -122,7 +122,7 @@ const LONG_NAME: MatchdayFixture = {
 
 export default function MatchdayHeroPreviewPage() {
   return (
-    <div className="min-h-screen bg-background px-4 py-8">
+    <div className="min-h-screen bg-page px-4 py-8">
       <h1 className="mb-1 text-title-3 font-black">홈 히어로(승부예측) 프리뷰</h1>
       <p className="mb-8 text-caption-1 text-neutral-muted">
         실데이터 연동 전 임시 확인용 페이지 — /dev/matchday-hero-preview.

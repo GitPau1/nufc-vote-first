@@ -77,7 +77,7 @@ export const Interactive: Story = {
           투표하기
         </Button>
         {submitted && (
-          <p className="text-caption-1 text-muted-foreground">제출됨: {submitted}</p>
+          <p className="text-caption-1 text-neutral-muted">제출됨: {submitted}</p>
         )}
         <ConfirmModal
           open={open}

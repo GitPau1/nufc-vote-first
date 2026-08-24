@@ -23,6 +23,6 @@ test('app header uses the home header treatment by default', () => {
   assert.match(appHeaderSource, /from-white/)
   assert.match(appHeaderSource, /justify-center/)
   assert.match(appHeaderSource, /text-title-3/)
-  assert.match(appHeaderSource, /border-border/)
+  assert.match(appHeaderSource, /border-neutral-weak/)
   assert.match(appHeaderSource, /NUFCVOTE/)
 })

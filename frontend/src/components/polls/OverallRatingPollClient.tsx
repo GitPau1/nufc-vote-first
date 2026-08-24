@@ -154,7 +154,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
 
         <div className="space-y-4 px-4 py-4">
           {poll.description && (
-            <p className="text-label-1-reading text-muted-foreground">{poll.description}</p>
+            <p className="text-label-1-reading text-neutral-muted">{poll.description}</p>
           )}
           {errorMsg && (
             <p className="text-label-1-normal font-medium text-destructive">{errorMsg}</p>
@@ -168,7 +168,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
                 onClick={() => index <= stepIndex && setStepIndex(index)}
                 className={cn(
                   'rounded-full px-3 py-1.5 text-label-2 font-bold whitespace-nowrap',
-                  index === stepIndex ? 'bg-brand-solid text-white' : 'bg-secondary text-muted-foreground'
+                  index === stepIndex ? 'bg-brand-solid text-white' : 'bg-disabled text-neutral-muted'
                 )}
               >
                 {POSITION_LABELS[group.position]}
@@ -182,7 +182,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
                 <p className="text-caption-2 font-bold uppercase text-brand">
                   {POSITION_LABELS[currentGroup.position]}
                 </p>
-                <p className="mt-0.5 text-label-1-reading text-muted-foreground">
+                <p className="mt-0.5 text-label-1-reading text-neutral-muted">
                   각 선수에게 0~5점 등급을 선택해주세요. 코멘트는 선택입니다.
                 </p>
               </div>
@@ -200,9 +200,9 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
                           className="h-12 w-12 rounded-md object-cover"
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-label-1-normal font-black text-foreground">{player.name}</p>
-                          <p className="text-caption-1 text-muted-foreground">{player.position} · #{player.squad_number ?? '-'}</p>
-                          <p className="mt-1 text-caption-2 font-semibold text-muted-foreground">
+                          <p className="truncate text-label-1-normal font-black text-neutral">{player.name}</p>
+                          <p className="text-caption-1 text-neutral-muted">{player.position} · #{player.squad_number ?? '-'}</p>
+                          <p className="mt-1 text-caption-2 font-semibold text-neutral-muted">
                             출장 {stats?.appearances ?? 0} · 득점 {stats?.goals ?? 0} · 어시스트 {stats?.assists ?? 0}
                           </p>
                         </div>
@@ -218,7 +218,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
                               onClick={() => setScore(player.id, option.score)}
                               className={cn(
                                 'rounded-lg border py-2 text-center text-caption-1 font-black transition-colors',
-                                selected ? 'border-brand-solid bg-brand-solid text-white' : 'border-border bg-surface text-foreground'
+                                selected ? 'border-brand-solid bg-brand-solid text-white' : 'border-neutral-weak bg-surface text-neutral'
                               )}
                             >
                               <span className="block text-label-2">{option.grade}</span>

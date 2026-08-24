@@ -22,10 +22,10 @@ test('shared UI primitives use foundation radius and typography tokens', () => {
   assert.match(tailwind, /"caption-2": \["11px", \{ lineHeight: "14px", letterSpacing: "0\.0311em" \}\]/)
   assert.doesNotMatch(tailwind, /"caption-3"/)
 
-  assert.match(card, /rounded-lg border border-border bg-surface/)
+  assert.match(card, /rounded-lg border border-neutral-weak bg-surface/)
   assert.match(card, /text-headline-1/)
   assert.match(card, /text-label-1-reading/)
-  assert.doesNotMatch(card, /rounded-md border border-border bg-surface text-card-foreground/)
+  assert.doesNotMatch(card, /rounded-md border border-neutral-weak bg-surface text-neutral/)
   assert.doesNotMatch(card, /text-\[16px\]|text-\[14px\]|leading-\[1\.3\]/)
 
   assert.match(button, /text-body-2-normal/)
@@ -50,9 +50,9 @@ test('app and poll headers use color and typography foundations', () => {
   const appHeader = source('components/layout/AppHeader.tsx')
   const pollHeader = source('components/polls/PollPageHeader.tsx')
 
-  assert.match(appHeader, /border-b border-border/)
+  assert.match(appHeader, /border-b border-neutral-weak/)
   assert.match(appHeader, /text-title-3/)
-  assert.match(appHeader, /text-foreground/)
+  assert.match(appHeader, /text-neutral/)
   assert.match(appHeader, /text-label-1-normal/) // 모바일 돌아가기 버튼
   assert.doesNotMatch(appHeader, /border-\[#e1e7ef\]|text-\[#2b2b2b\]|text-\[24px\]|leading-\[22\.5px\]/)
 
@@ -67,7 +67,7 @@ test('loading skeletons mirror the mobile layout foundation', () => {
 
   assert.match(loading, /className="flex-1 px-5 pt-4 pb-24 sm:pb-10"/)
   assert.match(loading, /className="flex-1 px-5 pt-6 pb-24 sm:pb-10"/)
-  assert.match(loading, /overflow-hidden rounded-lg border border-border bg-surface/)
+  assert.match(loading, /overflow-hidden rounded-lg border border-neutral-weak bg-surface/)
   assert.match(loading, /hidden sm:grid sm:grid-cols-2 sm:gap-4 sm:pt-4 lg:grid-cols-3/)
   assert.doesNotMatch(loading, /gap-\[49px\]/)
 })
@@ -76,18 +76,18 @@ test('poll form and carousel surfaces use card radius foundation', () => {
   const form = source('components/polls/UserPollCreateForm.tsx')
   const carousel = source('components/polls/TypeBPollClient.tsx')
 
-  assert.match(form, /rounded-lg border border-border bg-surface p-4 shadow-g200/)
-  assert.doesNotMatch(form, /<section className="[^"]*rounded-md border border-border bg-surface p-4 shadow-g200/)
+  assert.match(form, /rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200/)
+  assert.doesNotMatch(form, /<section className="[^"]*rounded-md border border-neutral-weak bg-surface p-4 shadow-g200/)
   assert.match(form, /text-label-2/)
   assert.match(form, /text-caption-1/)
 
-  assert.match(carousel, /rounded-lg border border-border bg-surface text-left shadow-g200/)
+  assert.match(carousel, /rounded-lg border border-neutral-weak bg-surface text-left shadow-g200/)
   assert.match(carousel, /absolute inset-0 rounded-lg/)
   // bg-primary-dark → bg-brand-solid: semantic 토큰 이전(primary→brand)으로 이름이 바뀜.
   // 새 brand 앵커는 배경·텍스트 대비를 둘 다 통과해 -dark 변형이 필요 없어져 흡수됨.
   assert.match(carousel, /bg-brand-solid/)
   assert.match(carousel, /text-title-1/)
-  assert.doesNotMatch(carousel, /rounded-md border border-border bg-surface text-left shadow-g200|rounded-md ring-inset|#0c2340|text-\[38px\]/)
+  assert.doesNotMatch(carousel, /rounded-md border border-neutral-weak bg-surface text-left shadow-g200|rounded-md ring-inset|#0c2340|text-\[38px\]/)
 })
 
 test('image banners use a readable dark overlay for white text', () => {
@@ -187,6 +187,25 @@ test('primary tab surfaces do not use arbitrary typography classes', () => {
   }
 })
 
+// 승부예측(predict) 화면 — main에서 병합돼 들어올 때 구세대 flat 토큰(--c-*)을 쓰고 있어서
+// 이 화면만 옛 하늘색(#41b6e6)으로 튀었다. semantic 토큰으로 옮긴 뒤 되돌아가지 않게
+// 아래 두 검사(임의값 금지 + 구세대 토큰 금지)에 이 목록을 함께 건다.
+const PREDICT_FILES = [
+  'app/predictions/page.tsx',
+  'app/predictions/[weekKey]/page.tsx',
+  'components/predict/MatchWeekList.tsx',
+  'components/predict/MatchdayHero.tsx',
+  'components/predict/PlayerPickModal.tsx',
+  'components/predict/PredictListClient.tsx',
+  'components/predict/PredictionDone.tsx',
+  'components/predict/PredictionFlowClient.tsx',
+  'components/predict/PredictionResult.tsx',
+  'components/predict/RankingCard.tsx',
+  'components/predict/WeekRankCard.tsx',
+  'components/predict/shared.tsx',
+  'components/predict/steps.tsx',
+]
+
 test('application source does not use arbitrary typography or hardcoded visual colors', () => {
   const files = [
     'app/admin/page.tsx',
@@ -214,6 +233,7 @@ test('application source does not use arbitrary typography or hardcoded visual c
     'components/polls/ResultView.tsx',
     'components/polls/TypeAPollClient.tsx',
     'components/polls/TypeBPollClient.tsx',
+    ...PREDICT_FILES,
   ]
 
   for (const file of files) {
@@ -225,8 +245,164 @@ test('application source does not use arbitrary typography or hardcoded visual c
     )
     assert.doesNotMatch(
       content,
-      /bg-\[#|bg-\[rgba|text-\[#|border-\[#|from-\[#|to-\[#|shadow-\[|ring-\[|rounded-\[/,
+      // bg-[var(--c-*)]는 임의 hex가 아니라 CSS 변수 직접 참조라 위 hex 패턴에 안 걸렸다 —
+      // MatchWeekList의 disabled 카드 배경이 실제로 이 형태였다. 변수 참조도 함께 막는다.
+      /bg-\[#|bg-\[rgba|bg-\[var\(|text-\[#|border-\[#|from-\[#|to-\[#|shadow-\[|ring-\[|rounded-\[/,
       `${file} should use foundation visual tokens`
+    )
+  }
+})
+
+test('retired legacy color tokens stay deleted', () => {
+  // 색 토큰은 이제 Palette → Semantic 한 계층뿐이다. 구세대 두 세대(--c-* flat hex,
+  // shadcn HSL)의 색 토큰은 사용처를 전부 옮긴 뒤 정의까지 삭제했다.
+  // 정의가 되살아나면 Tailwind가 다시 유효한 클래스로 노출해서(bg-primary / text-gray-2 /
+  // border-neutral-weak …) 아무 경고 없이 재유입된다 — 정의가 없는 상태 자체를 고정한다.
+  //
+  // 어느 쪽이 신버전인지는 git이 답한다: --sem-*는 디자인시스템 커밋(4602c15, origin/main에
+  // 없음)에서 생겼고 --c-*·shadcn HSL은 그보다 앞선 a72b7b8(origin/main에 있음)에서 왔다.
+  const globals = source('app/globals.css')
+  const tailwind = fs.readFileSync(path.join(root, '../tailwind.config.ts'), 'utf8')
+
+  const retiredVars = [
+    // ① LDSG 이전 세대 flat hex
+    '--c-primary', '--c-primary-dim', '--c-primary-dark', '--c-primary-on',
+    '--c-gray-1', '--c-gray-2', '--c-gray-3', '--c-gray-4',
+    '--c-positive', '--c-positive-dim', '--c-negative', '--c-negative-dim',
+    '--c-warning', '--c-warning-dim', '--c-bg', '--c-surface', '--c-disabled',
+    // ② shadcn/ui 세대 HSL
+    '--background', '--foreground', '--card', '--card-foreground',
+    '--popover', '--popover-foreground', '--primary', '--primary-foreground',
+    '--secondary', '--secondary-foreground', '--muted', '--muted-foreground',
+    '--accent', '--accent-foreground', '--destructive', '--destructive-foreground',
+    '--border', '--input', '--ring', '--radius',
+  ]
+  for (const token of retiredVars) {
+    assert.doesNotMatch(globals, new RegExp(`^\\s*\\${token}:`, 'm'), `${token} 정의가 되살아났다`)
+  }
+
+  // --c-black만 남는다: 이미지 위 스크림(from-black/35)이 `/알파` 수정자를 쓰려면
+  // rgb 채널값 형태가 필요하고, 대응하는 sem 토큰이 아직 없다.
+  assert.match(globals, /--c-black:/)
+
+  // tailwind의 `colors` 블록(모든 색 유틸리티에 퍼지는 블록)에는 그 하나만 남아야 한다.
+  const colorsBlock = tailwind.match(/colors: \{([\s\S]*?)\n {6}\}/)[1]
+  assert.deepEqual(
+    [...colorsBlock.matchAll(/^\s{8}"?([a-z-]+)"?:/gm)].map((m) => m[1]),
+    ['black'],
+    'colors 블록에는 알파 수정자가 필요한 black만 남는다 — 색은 역할별 블록에서만 정의한다',
+  )
+
+  // 포커스 링이 옛 하늘색(--ring)에서 신버전 토큰으로 넘어간 상태를 고정한다.
+  assert.match(tailwind, /"focus-ring": "var\(--sem-stroke-focus-ring\)"/)
+  // bg-surface는 이름을 유지하되 값이 ③ 계층으로 옮겨졌다.
+  assert.match(tailwind, /surface: "var\(--sem-bg-surface\)"/)
+
+  // 임의 알파 유틸리티를 대체한 신규 semantic 토큰 + 다크 면 2차 텍스트 토큰.
+  for (const added of [
+    '--sem-bg-surface', '--sem-bg-on-solid-weak', '--sem-bg-on-solid-strong',
+    '--sem-bg-surface-translucent', '--sem-fg-on-solid-muted',
+  ]) {
+    assert.match(globals, new RegExp(`\\${added}:`), `${added} 정의가 없다`)
+  }
+
+  // text-neutral-muted는 팔레트 단계(neutral-700)가 아니라 손으로 맞춘 값이어야 한다 —
+  // neutral-700은 bg-disabled(3.99:1) / bg-brand-weak(4.14:1) / bg-critical-weak(4.12:1)
+  // 위에서 AA 미달이고, 이 토큰이 실제로 얹히는 자리가 바로 그 배경들이다.
+  assert.match(globals, /--sem-fg-neutral-muted: #666666;/)
+})
+
+test('retired legacy color class names are gone repo-wide', () => {
+  // 위 정의 삭제로 이 이름들은 이제 "존재하지 않는 클래스"다 — Tailwind는 알 수 없는
+  // 클래스를 조용히 무시하므로, 남아 있으면 에러 없이 스타일만 사라진다. 그래서 소스도 훑는다.
+  // 파일 목록을 하드코딩하지 않고 src 전체를 본다(duration/opacity 검사와 같은 방식).
+  // 키는 폐기된 이름, 값은 대체 이름. 이 맵의 키를 일괄 치환 스크립트로 건드리지 마라 —
+  // 키가 새 이름으로 바뀌면 검사가 자기 자신을 고발하면서 의미를 잃는다(실제로 한 번 그랬다).
+  const renamed = {
+    // ② shadcn/ui 세대
+    'bg-background': 'bg-page',
+    'text-foreground': 'text-neutral',
+    'text-muted-foreground': 'text-neutral-muted',
+    'text-card-foreground': 'text-neutral',
+    'text-secondary-foreground': 'text-neutral-strong',
+    'border-border': 'border-neutral-weak',
+    'border-input': 'border-neutral-weak',
+    'bg-border': 'bg-neutral-weak',
+    'bg-secondary': 'bg-disabled',
+    'bg-muted': 'bg-disabled',
+    'ring-ring': 'ring-brand-solid',
+    'bg-accent': 'bg-brand-weak',
+    'bg-popover': 'bg-surface',
+    'bg-destructive': 'bg-critical-solid',
+    // ① LDSG 이전 세대
+    'bg-primary': 'bg-brand-solid',
+    'text-primary': 'text-brand',
+    'text-primary-dark': 'text-brand',
+    'bg-primary-dim': 'bg-brand-weak',
+    'text-gray-1': 'text-neutral-strong',
+    'text-gray-2': 'text-neutral-muted',
+    'text-gray-3': 'text-neutral-subtle',
+    'border-gray-4': 'border-neutral-weak',
+    'bg-gray-1': 'bg-neutral-strong',
+    'bg-gray-4': 'bg-neutral-weak',
+    'text-negative': 'text-critical',
+    'bg-negative-dim': 'bg-critical-weak',
+    'bg-positive-dim': 'bg-positive-weak',
+    'bg-warning-dim': 'bg-warning-weak',
+  }
+  const pattern = new RegExp(`\\b(${Object.keys(renamed).join('|')})\\b`, 'g')
+  const entries = fs.readdirSync(root, { recursive: true })
+  const offenders = []
+
+  for (const entry of entries) {
+    if (typeof entry !== 'string' || !/\.(tsx|ts|css|mdx)$/.test(entry)) continue
+    const full = path.join(root, entry)
+    if (!fs.statSync(full).isFile()) continue
+    if (entry.endsWith('design-foundation.test.mjs')) continue
+    // 이 페이지의 존재 이유가 "무엇을 왜 걷어냈는지" 설명하는 것이라, 폐기된 이름을
+    // 본문에서 인용하는 게 정상이다. 유일한 예외.
+    if (entry.endsWith('foundations/DesignToken.mdx')) continue
+
+    const hits = fs.readFileSync(full, 'utf8').match(pattern)
+    if (hits) {
+      const uniq = [...new Set(hits)]
+      offenders.push(`${entry} → ${uniq.map((h) => `${h} (→ ${renamed[h]})`).join(', ')}`)
+    }
+  }
+
+  assert.deepEqual(offenders, [], `삭제된 구세대 색 클래스가 남아 있다:\n${offenders.join('\n')}`)
+})
+
+test('prediction screens do not fall back to legacy color tokens', () => {
+  // 구세대 flat 토큰(globals.css :root 상단의 --c-*)을 Tailwind가 유효한 클래스로 노출하기
+  // 때문에(bg-primary / text-gray-2 …) 임의값 검사로는 못 잡힌다 — Foundations/Design Token의
+  // "이름이 겹치는 함정" 항목이 지적하는 그 문제다. 그래서 이름을 직접 금지한다.
+  //
+  // **리포 전체가 아니라 predict 파일로 범위를 한정한다.** 다른 화면(app/admin/ratings/page.tsx,
+  // components/admin/AdminRatingsForm.tsx, components/layout/NavigationLoading.tsx)이 아직
+  // border-gray-4 / text-gray-2 / bg-primary를 쓰고 있어서, 전체 금지는 지금 깨진다.
+  // 그 파일들을 옮기는 작업이 끝나면 이 검사를 리포 전체 글롭 스캔으로 넓힌다.
+  //
+  // `bg-surface`만 예외로 남는다 — 이름은 그대로지만 값이 --sem-bg-surface로 옮겨져
+  // 이제 ③ 계층 토큰이다. 나머지 구세대 이름(bg-page / text-neutral /
+  // text-neutral-muted / border-neutral-weak …)은 아래 `retired legacy color tokens…`가
+  // 리포 전체에서 막는다.
+  //
+  // Tailwind 기본 팔레트의 white/black도 함께 막는다. 예전엔 대응 토큰이 없어 남겨뒀지만
+  // 지금은 다 있다: text-white→text-on-solid / 다크 면 위 2차 텍스트→text-on-solid-muted /
+  // bg-white/5·/10→bg-on-solid-weak·-strong / bg-white/95→bg-surface-translucent /
+  // bg-black/45→bg-overlay.
+  const legacyToken =
+    /\b(?:bg|text|border|ring|divide|from|to|fill|stroke)-(?:primary(?:-dark|-dim|-on)?|gray-[1-4]|positive-dim|negative(?:-dim)?|warning-dim|black|white)\b/
+
+  for (const file of PREDICT_FILES) {
+    const hits = source(file).match(new RegExp(legacyToken.source, 'g'))
+    assert.equal(
+      hits,
+      null,
+      `${file}은 구세대 색 토큰을 쓴다(${[...new Set(hits ?? [])].join(', ')}). ` +
+        'Foundations/Color·Semantic의 semantic 토큰으로 바꿔라 ' +
+        '(예: bg-primary→bg-brand-solid, text-primary-dark→text-brand, text-gray-2→text-neutral-muted, text-white→text-on-solid).'
     )
   }
 })

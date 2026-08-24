@@ -116,7 +116,7 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
 
           {/* 설명 */}
           {poll.description && (
-            <p className="text-label-1-reading text-muted-foreground">{poll.description}</p>
+            <p className="text-label-1-reading text-neutral-muted">{poll.description}</p>
           )}
 
           {/* 에러 */}
@@ -136,7 +136,7 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
                 >
                   <span className={cn(
                     'text-body-2-normal font-semibold',
-                    selected ? 'text-brand' : 'text-foreground'
+                    selected ? 'text-brand' : 'text-neutral'
                   )}>
                     {option.label}
                   </span>
@@ -149,7 +149,7 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
           {poll.player && (
             <Card className="mt-1">
               <CardContent className="p-4">
-                <p className="text-caption-1 font-semibold text-muted-foreground uppercase mb-3">
+                <p className="text-caption-1 font-semibold text-neutral-muted uppercase mb-3">
                   선수 정보
                 </p>
                 <div className="flex items-center gap-3">
@@ -160,8 +160,8 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
                     className="w-11 h-11 rounded-full object-cover flex-shrink-0 ring-2 ring-border"
                   />
                   <div>
-                    <p className="text-label-1-normal font-bold text-foreground">{poll.player.name}</p>
-                    <p className="text-caption-1 text-muted-foreground mt-0.5">
+                    <p className="text-label-1-normal font-bold text-neutral">{poll.player.name}</p>
+                    <p className="text-caption-1 text-neutral-muted mt-0.5">
                       {poll.player.position}
                       <span className="mx-1.5">·</span>
                       <span className="font-semibold text-brand">#{poll.player.squad_number}</span>

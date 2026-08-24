@@ -1,0 +1,66 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as TeamBadgeStories from './TeamBadge.stories'
+
+<Meta of={TeamBadgeStories} />
+
+# TeamBadge
+
+승부예측 화면의 팀 엠블럼 한 칸. `src/components/predict/shared.tsx`에 있고, 승부예측 안에서만 쓰인다.
+`logoUrl` / `name` / `size`(기본 48) 세 개만 받는 표시 전용 컴포넌트다 — 팀 ID를 모르고, URL을 만들지도 않는다.
+
+<Canvas of={TeamBadgeStories.Default} />
+
+## 로고 URL은 이 컴포넌트가 만들지 않는다
+
+주소는 `lib/predictions/week.ts`의 `teamLogoUrl(teamId)`이 조립한다.
+
+```ts
+`https://images.fotmob.com/image_resources/logo/teamlogo/${teamId}.png`
+```
+
+fixtures 데이터 자체가 FotMob 동기화 결과라 엠블럼도 같은 CDN을 쓴다. 그래서 **팀 ID → URL 변환은 항상 호출하는 쪽 책임**이다.
+
+| 만드는 곳 | 넘기는 값 |
+|---|---|
+| `lib/predictions/week.ts` (`groupFixturesByWeek`) | `MatchView.opponentLogoUrl`에 미리 담아 내려보낸다 |
+| `components/predict/PredictListClient.tsx` | 우리 팀 로고는 `teamLogoUrl(NUFC_TEAM_ID)`을 `MatchWeekList`의 `homeTeamLogoUrl` prop으로 |
+| `PredictionFlowClient` / `PredictionResult` / `PredictionDone` | 렌더 시점에 `teamLogoUrl(NUFC_TEAM_ID)`, `teamLogoUrl(match.opponentId)`를 직접 호출 |
+
+## 폴백 — 이 컴포넌트의 존재 이유
+
+<Canvas of={TeamBadgeStories.NoLogo} />
+<Canvas of={TeamBadgeStories.LoadFailed} />
+
+폴백으로 떨어지는 경로가 둘이고 **결과는 같다**(`bg-disabled` 원 + 팀명 첫 글자).
+
+1. `logoUrl`이 없음 — `MatchWeekList`의 `opponentLogoUrl`·`homeTeamLogoUrl`이 optional이라 실제로 도달한다.
+2. `logoUrl`은 있는데 **로드 실패** — `onError`에서 내부 `failed` 상태를 세운다. FotMob에 그 팀 엠블럼이 없거나 CDN이 죽으면 여기로 온다.
+
+2번이 없으면 깨진 이미지 아이콘이 그대로 남는다. 새 상대 팀·컵 대회 하위 리그 팀에서 실제로 나는 경우라, 스토리에서도 해석되지 않는 호스트(`.invalid`)로 이 경로를 강제로 보여준다.
+
+폴백 원은 `aria-hidden`이라 **첫 글자가 스크린리더에 읽히지 않는다.** 실사용처 전부가 배지 바로 아래에 팀 이름 텍스트를 두고 있어서 그렇게 설계된 것이다 — 이름 없이 배지만 두는 자리에는 쓰지 않는다.
+
+## 사용처와 size
+
+5곳에서 쓰이고, **`size`를 넘기는 곳은 한 곳도 없다**(모두 기본값 48).
+
+| 파일 | 감싸는 컴포넌트 | 컨테이너 |
+|---|---|---|
+| `components/predict/MatchWeekList.tsx:307` | `TeamSide` | `w-[84px]` 고정 |
+| `components/predict/PredictionFlowClient.tsx:394` | `TeamColumn` (스코어 입력 단계) | `w-[88px]` |
+| `components/predict/PredictionFlowClient.tsx:403` | `ConfirmTeam` (제출 확인) | `w-[88px]` |
+| `components/predict/PredictionResult.tsx:420` | `MatchupTeam` | `w-[88px]` |
+| `components/predict/PredictionDone.tsx:280` | `MatchupTeam` | `w-[88px]` |
+
+즉 실제 화면에 나오는 크기는 48 하나뿐이고, `size`는 아직 쓰이지 않는 확장 지점이다.
+
+<Canvas of={TeamBadgeStories.Sizes} />
+<Canvas of={TeamBadgeStories.LongTeamName} />
+
+## 알려진 제약
+
+- **`MatchdayHero`에 같은 이름의 다른 구현이 있다.** `components/predict/MatchdayHero.tsx:70`의 로컬 `TeamBadge`는 `id`/`name`/`align`을 받고 URL도 파일 안의 `crestUrl(teamId)`로 따로 만든다(`teamLogoUrl`과 문자열은 같다). 크기는 `h-11 w-11` 고정이고 **폴백이 없어서 로드 실패 시 깨진 이미지가 남는다.** 이름만 같은 별개 컴포넌트이므로 [MatchdayHero](?path=/docs/contents-matchdayhero--docs)를 고칠 때 이 문서의 동작을 가정하면 안 된다.
+- **같은 파일의 [PlayerPhoto](?path=/docs/contents-playerphoto--docs)는 [Avatar](?path=/docs/contents-avatar--docs)로 옮겼는데 이쪽은 아직 생 `<img>` + 직접 `onError`다.** 그대로 옮길 수 없어서다 — `Avatar` 루트가 `rounded-full overflow-hidden`이라 세로/가로가 긴 엠블럼이 원형으로 잘린다. 지금은 `object-contain`으로 비율을 유지한다.
+- 폴백 글자 크기는 `text-label-1-normal` 고정이라 `size`를 키워도 함께 커지지 않는다(위 Sizes 참고).
+- `next/image`가 아니라 `<img>`를 직접 쓴다(`alt=""`, eslint-disable 주석 포함). FotMob CDN은 `next.config.mjs`의 이미지 도메인 설정 대상이 아니다.
+- 폴백 마크업 중복은 정리됐다 — 예측 화면 세 곳이 복제하던 실루엣 원은 모두 `<PlayerPhoto url={null} size={40} />`로 모였고, `Silhouette`은 `PlayerPhoto` 폴백 전용이 됐다. 남은 중복은 위의 `MatchdayHero` 로컬 `TeamBadge` 하나뿐이다.

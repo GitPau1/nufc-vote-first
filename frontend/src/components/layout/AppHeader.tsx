@@ -27,22 +27,22 @@ export function AppHeader({ auth, showAuth = true, mobileBack = false }: AppHead
   const router = useRouter()
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-gradient-to-b from-white to-white/75 backdrop-blur">
+    <header className="sticky top-0 z-50 w-full border-b border-neutral-weak bg-gradient-to-b from-white to-white/75 backdrop-blur">
       <div className="relative mx-auto flex h-[56px] max-w-content items-center px-4">
         {/* 모바일 전용 레이어 */}
         <div className="flex w-full items-center justify-center sm:hidden">
           {mobileBack ? (
             <button
               onClick={() => router.back()}
-              className="absolute left-4 flex items-center gap-1.5 text-label-1-normal font-semibold text-muted-foreground
-                         hover:text-foreground active:opacity-50 transition-all duration-micro focus:outline-none"
+              className="absolute left-4 flex items-center gap-1.5 text-label-1-normal font-semibold text-neutral-muted
+                         hover:text-neutral active:opacity-50 transition-all duration-micro focus:outline-none"
             >
               <ChevronLeft className="h-4 w-4" />
               돌아가기
             </button>
           ) : (
             <Link href="/" className="flex items-center">
-              <span className="text-title-3 font-black text-foreground">NUFCVOTE</span>
+              <span className="text-title-3 font-black text-neutral">NUFCVOTE</span>
             </Link>
           )}
 
@@ -56,7 +56,7 @@ export function AppHeader({ auth, showAuth = true, mobileBack = false }: AppHead
         {/* 데스크탑 전용 레이어 — 화면과 무관하게 항상 동일 */}
         <div className="hidden w-full items-center sm:flex">
           <Link href="/" className="flex items-center">
-            <span className="text-title-3 font-black text-foreground">NUFCVOTE</span>
+            <span className="text-title-3 font-black text-neutral">NUFCVOTE</span>
           </Link>
           <DesktopNavLinks className="ml-14" />
           <div className="ml-auto">

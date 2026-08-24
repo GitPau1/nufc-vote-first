@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { LoginModal } from '@/components/polls/LoginModal'
 import { PlayerPickModal } from './PlayerPickModal'
 import { PredictionDone } from './PredictionDone'
-import { PlayerPhoto, Silhouette, TeamBadge } from './shared'
+import { PlayerPhoto, TeamBadge } from './shared'
 import { StepHero, StepTrack, StepTrackVertical, type StepKey } from './steps'
 import { POSITIONS, POSITION_LABEL, type Candidate, type Position } from '@/lib/predictions/candidates'
 import { MAX_SCORE } from '@/lib/predictions/submit'
@@ -200,7 +200,7 @@ export function PredictionFlowClient({
       <button
         type="button"
         onClick={goBackToList}
-        className="hidden text-label-1-normal font-bold text-gray-2 sm:mb-7 sm:inline-flex sm:items-center sm:gap-1.5"
+        className="hidden text-label-1-normal font-bold text-neutral-muted sm:mb-7 sm:inline-flex sm:items-center sm:gap-1.5"
       >
         ‹ 목록으로
       </button>
@@ -218,7 +218,7 @@ export function PredictionFlowClient({
 
         <div>
           {step !== 'confirm' && (
-          <div className="rounded-lg border border-border bg-surface px-4 py-5">
+          <div className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
             {step === 'score' && (
               // 더블 매치위크는 경기별 입력 블록이 세로로 쌓인다 — 픽은 주 단위라 다음 스텝에서 한 번만.
               <div className="flex flex-col gap-7">
@@ -254,7 +254,7 @@ export function PredictionFlowClient({
                         <button
                           type="button"
                           onClick={() => copyPicks(pending[0].id, match.id)}
-                          className="text-label-2 font-bold text-primary"
+                          className="text-label-2 font-bold text-brand"
                         >
                           그대로 적용
                         </button>
@@ -277,7 +277,7 @@ export function PredictionFlowClient({
                 {pending.map((match, i) => (
                   <div key={match.id} className={cn(i > 0 && 'mt-5')}>
                     {isMulti && <MatchLabel index={i} opponent={match.opponent} />}
-                    <div className="rounded-lg border border-border bg-surface px-4 py-5">
+                    <div className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
                       <SectionHead title="경기 예측" onEdit={() => setStep('score')} />
                       <div className="flex items-center justify-center gap-2 sm:gap-6">
                         <ConfirmTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
@@ -298,19 +298,19 @@ export function PredictionFlowClient({
                   </div>
                 ))}
 
-                <p className="mt-4 text-center text-caption-1 text-gray-3">
+                <p className="mt-4 text-center text-caption-1 text-neutral-muted">
                   제출한 예측은 수정할 수 없어요
                 </p>
               </>
           )}
 
           {visibleError && (
-            <p role="alert" className="mt-3 text-center text-label-2 font-bold text-negative">
+            <p role="alert" className="mt-3 text-center text-label-2 font-bold text-critical">
               {visibleError}
             </p>
           )}
 
-          <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-shell -translate-x-1/2 border-t border-border bg-white/95 p-4 backdrop-blur sm:static sm:mx-auto sm:mt-8 sm:flex sm:max-w-[560px] sm:translate-x-0 sm:justify-center sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
+          <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-shell -translate-x-1/2 border-t border-neutral-weak bg-surface-translucent p-4 backdrop-blur sm:static sm:mx-auto sm:mt-8 sm:flex sm:max-w-[560px] sm:translate-x-0 sm:justify-center sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
             {step === 'score' && (
               <Button
                 size="lg"
@@ -360,7 +360,7 @@ export function PredictionFlowClient({
       <LoginModal
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
-        triggerAction="vote"
+        triggerAction="predict"
       />
     </div>
   )
@@ -369,7 +369,7 @@ export function PredictionFlowClient({
 /** 더블 매치위크에서 이 블록이 어느 경기인지 — 예측/확인/완료/결과 화면이 같은 모양을 쓴다. */
 function MatchLabel({ index, opponent }: { index: number; opponent: string }) {
   return (
-    <p className="mb-2 text-label-2 font-extrabold text-gray-2">
+    <p className="mb-2 text-label-2 font-extrabold text-neutral-muted">
       경기 {index + 1} · {NUFC_LABEL} vs {opponent}
     </p>
   )
@@ -378,10 +378,10 @@ function MatchLabel({ index, opponent }: { index: number; opponent: string }) {
 function MatchMeta({ weekNo, match }: { weekNo: number; match: MatchView }) {
   return (
     <div className="text-center">
-      <p className="mb-1 text-label-2 font-extrabold text-gray-2">
+      <p className="mb-1 text-label-2 font-extrabold text-neutral-muted">
         {match.competition} · {weekNo}라운드
       </p>
-      <p className="text-label-2 text-gray-3">
+      <p className="text-label-2 text-neutral-muted">
         {match.kickoff} ({match.isHome ? '홈' : '원정'}) {match.kickoffTime}
       </p>
     </div>
@@ -401,24 +401,24 @@ function ConfirmTeam({ logoUrl, name }: { logoUrl: string; name: string }) {
   return (
     <div className="flex w-[88px] shrink-0 flex-col items-center gap-1.5">
       <TeamBadge logoUrl={logoUrl} name={name} />
-      <span className="text-label-2 font-bold text-gray-2">{name}</span>
+      <span className="text-label-2 font-bold text-neutral-muted">{name}</span>
     </div>
   )
 }
 
 function ScoreStepper({ value, onChange }: { value: number; onChange: (delta: number) => void }) {
   return (
-    <div className="w-16 overflow-hidden rounded-md border border-border bg-surface">
+    <div className="w-16 overflow-hidden rounded-md border border-neutral-weak bg-surface">
       <button
         type="button"
         aria-label="점수 증가"
         disabled={value >= MAX_SCORE}
         onClick={() => onChange(1)}
-        className="flex h-[34px] w-full items-center justify-center bg-primary text-body-1-normal text-white transition-colors hover:bg-primary-dark disabled:bg-surface disabled:text-gray-3"
+        className="flex h-[34px] w-full items-center justify-center bg-brand-solid text-body-1-normal text-on-solid transition-[opacity,background-color] duration-micro hover:opacity-70 active:bg-brand-solid-pressed disabled:pointer-events-none disabled:bg-disabled disabled:text-disabled disabled:opacity-100"
       >
         +
       </button>
-      <div className="flex h-[52px] items-center justify-center border-y border-border text-title-3 font-black">
+      <div className="flex h-[52px] items-center justify-center border-y border-neutral-weak text-title-3 font-black">
         {value}
       </div>
       <button
@@ -426,7 +426,7 @@ function ScoreStepper({ value, onChange }: { value: number; onChange: (delta: nu
         aria-label="점수 감소"
         disabled={value <= 0}
         onClick={() => onChange(-1)}
-        className="flex h-[34px] w-full items-center justify-center bg-primary text-body-1-normal text-white transition-colors hover:bg-primary-dark disabled:bg-surface disabled:text-gray-3"
+        className="flex h-[34px] w-full items-center justify-center bg-brand-solid text-body-1-normal text-on-solid transition-[opacity,background-color] duration-micro hover:opacity-70 active:bg-brand-solid-pressed disabled:pointer-events-none disabled:bg-disabled disabled:text-disabled disabled:opacity-100"
       >
         −
       </button>
@@ -438,7 +438,7 @@ function SectionHead({ title, onEdit }: { title: string; onEdit: () => void }) {
   return (
     <div className="mb-2.5 flex items-center justify-between">
       <span className="text-body-2-normal font-bold">{title}</span>
-      <button type="button" onClick={onEdit} className="text-label-2 font-bold text-primary">
+      <button type="button" onClick={onEdit} className="text-label-2 font-bold text-brand">
         수정
       </button>
     </div>
@@ -463,24 +463,23 @@ function PositionRow({
             type="button"
             onClick={() => onOpen(position)}
             className={cn(
-              'flex min-h-[196px] min-w-0 flex-1 flex-col rounded-lg border border-border p-3 text-left transition-colors hover:border-primary',
-              picked ? 'bg-surface' : 'bg-background',
+              'flex min-h-[196px] min-w-0 flex-1 flex-col rounded-lg border border-neutral-weak p-3 text-left transition-colors duration-micro hover:border-neutral-strong',
+              picked ? 'bg-surface' : 'bg-page',
             )}
           >
-            <span className="text-caption-1 font-extrabold text-gray-2">{POSITION_LABEL[position]}</span>
-            <div className="my-2.5 h-px bg-border" />
+            <span className="text-caption-1 font-extrabold text-neutral-muted">{POSITION_LABEL[position]}</span>
+            <div className="my-2.5 h-px bg-neutral-weak" />
             {picked ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-1">
                 <PlayerPhoto url={picked.photoUrl} />
                 <p className="mt-0.5 text-center text-label-2 font-extrabold">{picked.name}</p>
-                <span className="text-caption-1 font-bold text-primary-dark">×{picked.multiplier.toFixed(1)}</span>
+                <span className="text-caption-1 font-bold text-brand">×{picked.multiplier.toFixed(1)}</span>
               </div>
             ) : (
               <div className="flex flex-1 flex-col items-center justify-center gap-2">
-                <span className="flex h-10 w-10 items-center justify-center rounded-pill bg-disabled text-gray-3">
-                  <Silhouette />
-                </span>
-                <span className="text-center text-caption-2 font-bold text-gray-3">
+                {/* 손으로 조립한 실루엣 원 대신 PlayerPhoto의 폴백을 그대로 쓴다 — 폴백 톤이 한 곳에서만 정해진다. */}
+                <PlayerPhoto url={null} size={40} />
+                <span className="text-center text-caption-2 font-bold text-neutral-muted">
                   선수를
                   <br />
                   선택해요

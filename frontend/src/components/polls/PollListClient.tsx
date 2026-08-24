@@ -83,8 +83,8 @@ export function PollListClient({ initialPolls, headerRight }: PollListClientProp
           {headerRight}
         </div>
         <div className="flex flex-col items-center justify-center py-24 gap-2">
-          <p className="text-label-1-normal font-semibold text-foreground">투표가 없습니다</p>
-          <p className="text-caption-1 text-muted-foreground">곧 새로운 투표가 공개될 예정입니다</p>
+          <p className="text-label-1-normal font-semibold text-neutral">투표가 없습니다</p>
+          <p className="text-caption-1 text-neutral-muted">곧 새로운 투표가 공개될 예정입니다</p>
         </div>
       </div>
     )
@@ -93,7 +93,7 @@ export function PollListClient({ initialPolls, headerRight }: PollListClientProp
   return (
     <div className="mx-auto max-w-content px-5 pt-4 pb-10 animate-enter">
       {listPolls.length > 0 ? (
-        <div className="overflow-hidden rounded-lg border border-border bg-surface p-px sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0">
+        <div className="overflow-hidden rounded-lg border border-neutral-weak bg-surface p-px sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0">
           <div className="px-3 pt-4 sm:px-0 sm:pt-0">
             <PollTabs activeTab={activeTab} {...tabCounts} onChange={setActiveTab} />
           </div>
@@ -107,12 +107,12 @@ export function PollListClient({ initialPolls, headerRight }: PollListClientProp
           </div>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border bg-surface p-px">
+        <div className="overflow-hidden rounded-lg border border-neutral-weak bg-surface p-px">
           <div className="px-3 pt-4">
             <PollTabs activeTab={activeTab} {...tabCounts} onChange={setActiveTab} />
           </div>
           <div className="flex flex-col items-center justify-center gap-2 py-20">
-            <p className="text-label-1-normal font-semibold text-foreground">
+            <p className="text-label-1-normal font-semibold text-neutral">
               {activeTab === 'all' ? '투표가 없습니다'
                 : activeTab === 'active' ? '진행 중인 투표가 없습니다'
                 : activeTab === 'scheduled' ? '예정된 투표가 없습니다'
@@ -157,7 +157,7 @@ function PollTabs({
             key={tab.id}
             type="button"
             onClick={() => onChange(tab.id)}
-            className={`h-8 flex-1 border-b px-2.5 pb-3 text-center text-label-2 font-bold transition-colors ${selected ? 'border-brand-solid text-brand' : 'border-border text-neutral-subtle hover:text-muted-foreground'}`}
+            className={`h-8 flex-1 border-b px-2.5 pb-3 text-center text-label-2 font-bold transition-colors ${selected ? 'border-brand-solid text-brand' : 'border-neutral-weak text-neutral-subtle hover:text-neutral-muted'}`}
           >
             {tab.label}
           </button>

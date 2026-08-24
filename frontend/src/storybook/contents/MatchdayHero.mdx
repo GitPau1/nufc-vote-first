@@ -58,5 +58,5 @@ CTA는 예정 상태에서만 뜬다 — 예측 제출은 킥오프 전까지만
 
 ## 알려진 제약
 
-- `/predictions/[weekKey]` 라우트는 origin/main의 승부예측 백엔드 PR에 이미 있지만, 이 브랜치(`gun/design-system`)엔 아직 머지되지 않았다 — CTA는 `prefetch={false}`로 링크만 걸어두고 실제 라우트 연결은 다음 단계다.
+- CTA(`승부예측 하러 가기`)는 `/predictions/{weekKey}`로 연결된다. main 병합으로 이 라우트가 실제로 존재하므로 `prefetch`를 켜뒀다 — 홈 히어로에 하나뿐인 주 CTA라 클릭 확률이 높다(목록 반복 링크·상시 네비만 `prefetch={false}`로 끈다).
 - `home_name`/`away_name`은 FotMob 원본(영문)이라 `lib/predict/team-names.ts`가 실제로 마주친 팀 ID만 한글로 매핑한다. 매핑에 없는 팀은 원본 영문 그대로 노출된다.

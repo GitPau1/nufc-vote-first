@@ -27,9 +27,9 @@ function PollDetailFrame({ children }: { children: React.ReactNode }) {
 
         <div className="flex flex-col gap-2 p-4">
           {Array.from({ length: 7 }, (_, i) => (
-            <div key={i} className="rounded-lg border border-border bg-surface p-4">
-              <p className="text-label-1-normal font-semibold text-foreground">보기 {i + 1}</p>
-              <p className="text-caption-1 text-muted-foreground">
+            <div key={i} className="rounded-lg border border-neutral-weak bg-surface p-4">
+              <p className="text-label-1-normal font-semibold text-neutral">보기 {i + 1}</p>
+              <p className="text-caption-1 text-neutral-muted">
                 액션바가 이 목록 위에 떠 있는지 확인하기 위한 더미 콘텐츠
               </p>
             </div>

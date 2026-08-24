@@ -58,7 +58,7 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
 
         <div className="space-y-4 px-4 py-4">
           {poll.description && (
-            <p className="text-label-1-reading text-muted-foreground">{poll.description}</p>
+            <p className="text-label-1-reading text-neutral-muted">{poll.description}</p>
           )}
 
           {groupedResults.map(group => (
@@ -68,9 +68,9 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
                   <p className="text-caption-2 font-bold uppercase text-brand">
                     {group.value}
                   </p>
-                  <h2 className="text-body-1-normal font-black text-foreground">{group.label}</h2>
+                  <h2 className="text-body-1-normal font-black text-neutral">{group.label}</h2>
                 </div>
-                <p className="text-caption-1 font-semibold text-muted-foreground">
+                <p className="text-caption-1 font-semibold text-neutral-muted">
                   {group.results.length}명
                 </p>
               </div>
@@ -91,12 +91,12 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
                             className="h-[52px] w-[52px] rounded-md object-cover"
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-label-1-normal font-black text-foreground">{result.player.name}</p>
-                            <p className="text-caption-1 text-muted-foreground">{result.player.position} · #{result.player.squad_number ?? '-'}</p>
+                            <p className="truncate text-label-1-normal font-black text-neutral">{result.player.name}</p>
+                            <p className="text-caption-1 text-neutral-muted">{result.player.position} · #{result.player.squad_number ?? '-'}</p>
                           </div>
                           <div className="text-right">
                             <p className="text-body-1-normal font-black text-brand">{result.grade}</p>
-                            <p className="text-caption-2 font-semibold text-muted-foreground">
+                            <p className="text-caption-2 font-semibold text-neutral-muted">
                               평균 {result.average_score.toFixed(1)} · {result.vote_count}명
                             </p>
                           </div>
@@ -106,9 +106,9 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
                           <div className="space-y-2">
                             <p className="text-caption-2 font-bold uppercase text-brand">팬 코멘트</p>
                             {visibleComments.map(comment => (
-                              <div key={comment.id} className="rounded-md bg-secondary/70 px-3 py-2.5">
+                              <div key={comment.id} className="rounded-md bg-disabled/70 px-3 py-2.5">
                                 <div className="mb-1 flex items-center justify-between gap-2">
-                                  <span className="text-caption-2 font-bold text-muted-foreground">
+                                  <span className="text-caption-2 font-bold text-neutral-muted">
                                     {comment.user.display_name ?? '뉴캐슬 팬'} · {comment.grade}
                                   </span>
                                   <button
@@ -119,14 +119,14 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
                                     })}
                                     className={cn(
                                       'flex items-center gap-1 text-caption-2 font-bold',
-                                      comment.is_liked ? 'text-brand' : 'text-muted-foreground'
+                                      comment.is_liked ? 'text-brand' : 'text-neutral-muted'
                                     )}
                                   >
                                     <Heart className={cn('h-3.5 w-3.5', comment.is_liked && 'fill-current')} />
                                     {comment.like_count}
                                   </button>
                                 </div>
-                                <p className="text-label-1-reading text-foreground">{comment.comment}</p>
+                                <p className="text-label-1-reading text-neutral">{comment.comment}</p>
                               </div>
                             ))}
                             {result.top_comments.length > 3 && expandedPlayerId !== result.player.id && (

@@ -12,7 +12,7 @@ export default async function HomePage() {
   return (
     <>
       <AppHeader showAuth={false} />
-      <main className="min-h-[calc(100vh-56px)] bg-background pb-24">
+      <main className="min-h-[calc(100vh-56px)] bg-page pb-24">
         <HomeClient sections={sections} fixture={fixture} />
       </main>
     </>

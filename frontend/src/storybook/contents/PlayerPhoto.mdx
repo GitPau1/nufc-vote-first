@@ -1,0 +1,66 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as PlayerPhotoStories from './PlayerPhoto.stories'
+
+<Meta of={PlayerPhotoStories} />
+
+# PlayerPhoto
+
+승부예측에서 선수 사진이 들어가는 원형 자리. `src/components/predict/shared.tsx`에 있고 `url`(nullable)과 `size`(기본 64)만 받는다.
+[Avatar](?path=/docs/contents-avatar--docs) 위에 얹은 **선수 사진 전용 래퍼**다 — 폴백이 이니셜이 아니라 실루엣이라는 것 하나가 차이의 전부다.
+
+<Canvas of={PlayerPhotoStories.Default} />
+
+## Avatar로 옮긴 이유 (변경 기록)
+
+원래는 생 `<img src={url} className="rounded-pill object-cover">`였고, `url`이 없을 때만 직접 만든 실루엣 원을 렌더했다.
+그래서 **`url`이 null인 경우만 폴백이 걸리고, URL은 있는데 요청이 실패하는 경우는 폴백이 없었다** — `playerPhotoUrl(fotmobPlayerId)`이 만든 FotMob 주소가 404/403인 선수(사진이 아직 올라오지 않은 신입·유스)는 깨진 이미지 아이콘으로 남았다.
+`onError` 상태를 하나 더 들고 있는 대신 [Avatar](?path=/docs/contents-avatar--docs)(Radix `@radix-ui/react-avatar`)로 갈아탔다. Radix가 로드 실패를 스스로 fallback으로 넘기므로 에러 핸들링 코드 없이 두 경우가 한 경로로 합쳐진다.
+
+<Canvas of={PlayerPhotoStories.NoPhoto} />
+<Canvas of={PlayerPhotoStories.LoadFailed} />
+
+두 스토리 결과가 같아야 정상이다. `url`이 null이면 `AvatarImage`를 아예 렌더하지 않고, URL이 있으면 렌더한 뒤 실패 시 Radix가 fallback으로 바꾼다.
+
+## 사용자 프로필 아바타와 뭐가 다른가
+
+같은 `ui/avatar.tsx` 프리미티브를 쓰지만 **폴백이 다르다.**
+
+| | 폴백 | 쓰는 곳 |
+|---|---|---|
+| 사용자 프로필 | 이름 **이니셜** (`bg-brand-weak`/`bg-disabled`) | `components/layout/UserMenu.tsx`, `components/my/MyPageClient.tsx`, `components/polls/CommentsSection.tsx` |
+| `PlayerPhoto` | **실루엣 아이콘** (`bg-disabled`) | 승부예측 화면 (아래 표) |
+
+선수 자리는 사진 옆·아래에 이름이 이미 붙어 있어서 이니셜이 정보를 더하지 않는다. 반대로 사용자 아바타는 목록에서 단독으로 서는 경우가 있어 이니셜이 식별에 쓰인다. 새 자리를 만들 때 이 기준으로 고른다 — 이름이 옆에 있으면 실루엣, 아바타만 서면 이니셜.
+
+## 사진 URL은 이 컴포넌트가 만들지 않는다
+
+`lib/predictions/candidates.ts`의 `playerPhotoUrl(fotmobPlayerId)`이 조립한다.
+
+```ts
+`https://images.fotmob.com/image_resources/playerimages/${fotmobPlayerId}.png`
+```
+
+`Candidate.photoUrl`에 담겨 내려오고, 없으면 `null`이다. 실제 시즌 스쿼드에 있는 진짜 FotMob 선수 ID여야 200이 오고 **임의 숫자는 403**이라, 스토리에서는 다른 예측 mock과 같은 `placehold.co`를 쓴다(스토리 파일 주석에도 같은 이유를 적어뒀다).
+
+## 사용처와 size
+
+| 파일 | 자리 | size |
+|---|---|---|
+| `components/predict/PlayerPickModal.tsx:132` | 선수 선택 목록의 행 | 기본(64) |
+| `components/predict/PredictionFlowClient.tsx:474` | 선수 선택 단계의 선택된 카드 | 기본(64) |
+| `components/predict/PredictionResult.tsx:395` | 결과 화면 포지션별 카드 | 기본(64) |
+| `components/predict/PredictionResult.tsx:368` | 결과 요약 줄 | 48 |
+| `components/predict/PredictionDone.tsx:260` | 제출 완료 화면 카드 | 기본(64) |
+| `components/predict/PredictionDone.tsx:235` | 제출 완료 요약 줄 | 48 |
+
+실제로 쓰이는 값은 40·48·64 세 개다. `size`는 `Avatar` 기본 `h-10 w-10`을 인라인 `style`로 덮어쓰는 방식이라 임의 px이 그대로 들어간다.
+
+**"선수를 아직/아예 선택하지 않음"을 그리는 자리도 이 컴포넌트다** — `url={null} size={40}`. 예전에는 예측 플로우·결과·완료 세 화면이 실루엣 원(`h-10 w-10 rounded-pill bg-disabled`)을 각자 손으로 조립해서 폴백 톤을 바꾸려면 네 곳을 함께 고쳐야 했는데, 지금은 전부 `PlayerPhoto`로 모았다. `Silhouette`은 이 컴포넌트의 폴백 전용이니 직접 감싸 쓰지 않는다.
+
+<Canvas of={PlayerPhotoStories.Sizes} />
+
+## 알려진 제약
+
+- **실루엣 아이콘은 20×20 고정이다.** `Silhouette`이 SVG의 `width`/`height`를 하드코딩해서, `size`를 키우면 원만 커지고 아이콘은 그대로 작게 남는다(위 Sizes 참고). 40/48/64에서는 문제 없지만 큰 자리에 쓰기 전에 확인할 것.
+- `alt=""`(장식)이다. 선수 이름은 항상 사진 바로 옆·아래 텍스트로 읽히는 걸 전제한다.
+- `next/image`가 아니라 Radix의 `<img>`다. FotMob CDN은 `next.config.mjs` 이미지 도메인 설정 대상이 아니다.

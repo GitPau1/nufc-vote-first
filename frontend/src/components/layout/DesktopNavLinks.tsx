@@ -26,7 +26,7 @@ export function DesktopNavLinks({ className }: { className?: string }) {
             href={href}
             className={cn(
               'flex h-[56px] items-center gap-1.5 border-b-2 text-body-2-normal font-bold transition-colors',
-              isActive ? 'border-brand-solid text-brand' : 'border-transparent text-muted-foreground hover:text-foreground'
+              isActive ? 'border-brand-solid text-brand' : 'border-transparent text-neutral-muted hover:text-neutral'
             )}
           >
             <Icon className="h-4 w-4" />

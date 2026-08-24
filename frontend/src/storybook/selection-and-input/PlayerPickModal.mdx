@@ -18,6 +18,8 @@ import * as PlayerPickModalStories from './PlayerPickModal.stories'
 
 `id`는 `season_squads.fotmob_player_id`(number)이고, `squadNumber`·`photoUrl`·`nationality`·`age`는 **모두 nullable**이다 — 스쿼드 동기화가 덜 채워진 선수가 실제로 들어온다.
 
+사진은 `shared.tsx`의 `PlayerPhoto`가 그리고, 그 안은 [Avatar](?path=/docs/contents-avatar--docs)다. 그래서 `photoUrl`이 **null인 경우와 URL은 있는데 요청이 실패하는 경우**(`lib/predictions/candidates.ts`의 `playerPhotoUrl`이 조립한 FotMob CDN 주소가 404/403 — 사진이 아직 없는 선수) 둘 다 실루엣 원형으로 떨어진다. Radix Avatar가 로드 실패를 스스로 fallback으로 넘기므로 `onError` 핸들러는 없다. fallback은 이니셜이 아니라 실루엣 아이콘이다 — 이 자리에서는 이름이 사진 오른쪽에 이미 있어서 이니셜이 정보를 더하지 않는다.
+
 ## 선택 상태
 
 <Canvas of={PlayerPickModalStories.PreSelected} />
@@ -42,5 +44,4 @@ import * as PlayerPickModalStories from './PlayerPickModal.stories'
 ## 알려진 어긋남
 
 - 배당 배지는 [Badge](?path=/docs/contents-badge--docs)의 스타일을 쓰지만 컴포넌트가 아니라 `badgeVariants()`를 span에 얹는다 — 행 전체가 `<button>`이고 `Badge`는 `div`를 렌더해서 버튼 안에 넣을 수 없다. 스타일 원본은 `ui/badge.tsx` 하나이므로 색·타이포를 이 파일에서 따로 바꾸지 않는다.
-- 선수 사진은 `shared.tsx`의 `PlayerPhoto`가 그린다. `photoUrl`이 **null이면** 실루엣 원형으로 떨어지지만, URL이 있고 그 요청이 실패하는 경우(`lib/predictions/candidates.ts`의 `playerPhotoUrl`이 조립한 FotMob CDN 주소가 404/403)엔 `onError` 폴백이 없어 사진 자리가 깨진 채 남는다 — 같은 파일의 `TeamBadge`는 `onError` 폴백이 있는데 `PlayerPhoto`만 없다. 스토리는 placehold.co로 우회했다.
 - 모션이 열림에만 `ease-out`이고 닫힘은 기본값이다 — [Motion](?path=/docs/foundations-motion--docs)에 적힌 규칙과 어긋나는 부분이다.

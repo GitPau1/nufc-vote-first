@@ -29,7 +29,7 @@ const ResultProgress = React.forwardRef<
     ref={ref}
     value={percent}
     className={cn(
-      "relative min-h-[50px] overflow-hidden rounded-pill border border-border bg-surface",
+      "relative min-h-[50px] overflow-hidden rounded-pill border border-neutral-weak bg-surface",
       className
     )}
     {...props}
@@ -61,7 +61,7 @@ const ResultProgress = React.forwardRef<
         <p
           className={cn(
             "min-w-0 truncate break-keep text-body-2-normal",
-            highlighted ? "font-semibold text-brand" : "font-medium text-muted-foreground"
+            highlighted ? "font-semibold text-brand" : "font-medium text-neutral-muted"
           )}
         >
           {optionLabel}
@@ -70,7 +70,7 @@ const ResultProgress = React.forwardRef<
       <span
         className={cn(
           "shrink-0 text-body-2-normal tabular-nums",
-          highlighted ? "font-semibold text-brand" : "font-medium text-muted-foreground"
+          highlighted ? "font-semibold text-brand" : "font-medium text-neutral-muted"
         )}
       >
         {percent}%

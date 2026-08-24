@@ -41,61 +41,20 @@ const config = {
   safelist: Object.keys(FONT_SIZE_SCALE).map((key) => `!text-${key}`),
   theme: {
     extend: {
+      // `colors`는 모든 색 유틸리티(bg-/text-/border-/ring-/fill-/…)에 한꺼번에 퍼지는
+      // 블록이다. 구세대 두 세대가 여기 얹혀 있어서 `bg-primary`·`text-gray-2`·`border-border`
+      // 같은 이름이 "정의돼 있으니 써도 되는 토큰"처럼 보였다 — 지금은 아래 역할별 블록
+      // (backgroundColor / textColor / borderColor / ringColor)만 색을 정의하고,
+      // 여기엔 알파 수정자가 필요해 sem 계층으로 못 옮긴 하나만 남는다.
       colors: {
-        border:     "hsl(var(--border))",
-        input:      "hsl(var(--input))",
-        ring:       "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        black:      "rgb(var(--c-black) / <alpha-value>)",
-        "gray-1":   "var(--c-gray-1)",
-        "gray-2":   "var(--c-gray-2)",
-        "gray-3":   "var(--c-gray-3)",
-        "gray-4":   "var(--c-gray-4)",
-        // disabled는 여기서 뺐다 — bg/text가 서로 다른 값을 써야 해서
-        // (아래 backgroundColor/textColor extend 블록으로 분리, border-disabled는 미사용 확인됨)
-        surface:    "var(--c-surface)",
-        "primary-dim":  "var(--c-primary-dim)",
-        "primary-dark": "var(--c-primary-dark)",
-        // positive도 마찬가지로 여기서 뺐다 — text-positive만 새 값을 쓰고
-        // bg-positive/border-positive는 미사용이라 아래 textColor로만 옮김
-        "positive-dim": "var(--c-positive-dim)",
-        negative:       "var(--c-negative)",
-        "negative-dim": "var(--c-negative-dim)",
-        warning:        "var(--c-warning)",
-        "warning-dim":  "var(--c-warning-dim)",
-        primary: {
-          DEFAULT:    "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT:    "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        destructive: {
-          DEFAULT:    "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT:    "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT:    "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        card: {
-          DEFAULT:    "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-        popover: {
-          DEFAULT:    "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
+        // 이미지 위 스크림(from-black/35)이 `/알파` 수정자를 써야 해서 rgb 채널값이 필요하다.
+        black: "rgb(var(--c-black) / <alpha-value>)",
       },
-      // Semantic 색상.
+      // Semantic 색상. 여기가 색의 유일한 정의 지점이다.
       backgroundColor: {
         page: "var(--sem-bg-page)",
+        // 카드·헤더·시트의 흰 표면. 이름은 그대로 두고 값만 --c-surface에서 sem 계층으로 옮겼다.
+        surface: "var(--sem-bg-surface)",
         overlay: "var(--sem-bg-overlay)",
         // bg-disabled 값 교체 확정(#ebebeb → neutral-200). 실사용 49건 전부 색이
         // 아주 살짝(거의 인지 불가) 바뀐다 — 사용자 승인됨.
@@ -120,6 +79,11 @@ const config = {
         "informative-weak-pressed": "var(--sem-bg-informative-weak-pressed)",
         "magic-weak": "var(--sem-bg-magic-weak)",
         "magic-weak-pressed": "var(--sem-bg-magic-weak-pressed)",
+        // 색·다크 면 위에 얹는 표면(흰색 알파) + 컨텐츠 위 반투명 흰 면.
+        // 임의값 bg-white/5 · bg-white/10 · bg-white/95를 대체한다.
+        "on-solid-weak": "var(--sem-bg-on-solid-weak)",
+        "on-solid-strong": "var(--sem-bg-on-solid-strong)",
+        "surface-translucent": "var(--sem-bg-surface-translucent)",
       },
       textColor: {
         neutral: "var(--sem-fg-neutral)",
@@ -132,6 +96,8 @@ const config = {
         // text-disabled 값 교체 확정(#a8a8a8 → neutral-400, subtle보다 한 단계 밝음). 실사용 1건.
         disabled: "var(--sem-fg-disabled)",
         "on-solid": "var(--sem-fg-on-solid)",
+        // 어두운·색 있는 면 위의 2차 텍스트. 이 자리에 text-disabled를 전용해 쓰던 걸 대체한다.
+        "on-solid-muted": "var(--sem-fg-on-solid-muted)",
         brand: "var(--sem-fg-brand)",
         critical: "var(--sem-fg-critical)",
         // text-positive 값 교체 확정(#2e9e4f → green-700). 기존 값은 AA 미달(3.43:1)이었고
@@ -150,10 +116,16 @@ const config = {
         "critical-weak": "var(--sem-stroke-critical-weak)",
         "focus-ring": "var(--sem-stroke-focus-ring)",
       },
-      // ring-primary(선택 카드 강조 표시)가 실사용 중이라 ringColor도 노출한다.
+      // ring-brand-solid(선택 카드 강조 표시)가 실사용 중이라 ringColor도 노출한다.
       // Tailwind는 ring을 border와 별도 테마 키로 다룬다.
+      //
+      // 포커스 링은 원래 shadcn의 `ring-ring`(= --ring, 옛 하늘색 #41b6e6)이었다. 앱 전체가
+      // brand로 넘어간 뒤에도 포커스 링만 구세대 색으로 남아 있던 자리라, 사용처 5곳을
+      // ring-brand-solid로 바꾸고 --ring과 함께 걷어냈다. focus-ring 토큰은 값이 같다
+      // (--sem-stroke-focus-ring = --sem-stroke-brand-solid = blue-700).
       ringColor: {
         "brand-solid": "var(--sem-stroke-brand-solid)",
+        "focus-ring": "var(--sem-stroke-focus-ring)",
       },
       borderRadius: {
         xs:   "var(--r-xs)",

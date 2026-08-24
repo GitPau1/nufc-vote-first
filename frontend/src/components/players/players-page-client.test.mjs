@@ -122,9 +122,9 @@ test('players page applies the mobile layout foundation', () => {
 
   // 데스크탑 GNB 헤더 도입으로 mx-auto max-w-shell가 앞에 붙었다(모바일 여백 자체는 그대로).
   assert.match(file, /className="mx-auto max-w-shell px-5 pt-4 pb-10 animate-enter"/)
-  assert.match(file, /mb-3 overflow-hidden rounded-lg border border-border bg-surface/)
-  assert.match(file, /overflow-hidden rounded-lg border border-border bg-surface/)
-  assert.doesNotMatch(file, /<div className="overflow-hidden rounded-md border border-border bg-surface">/)
+  assert.match(file, /mb-3 overflow-hidden rounded-lg border border-neutral-weak bg-surface/)
+  assert.match(file, /overflow-hidden rounded-lg border border-neutral-weak bg-surface/)
+  assert.doesNotMatch(file, /<div className="overflow-hidden rounded-md border border-neutral-weak bg-surface">/)
 })
 
 test('players page uses foundation typography and color tokens', () => {

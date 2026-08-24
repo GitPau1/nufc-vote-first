@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-body-2-normal font-bold transition-[opacity,background-color] duration-micro hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:bg-disabled disabled:text-disabled disabled:opacity-100 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-body-2-normal font-bold transition-[opacity,background-color] duration-micro hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-solid disabled:pointer-events-none disabled:bg-disabled disabled:text-disabled disabled:opacity-100 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -17,11 +17,11 @@ const buttonVariants = cva(
         destructive:
           "border border-critical-weak bg-critical-weak text-critical shadow-none active:opacity-50",
         secondary:
-          "bg-disabled text-foreground shadow-none active:bg-neutral-weak-pressed",
+          "bg-disabled text-neutral shadow-none active:bg-neutral-weak-pressed",
         // 투명 배경 variant는 스왑할 배경색이 없어 기존 opacity 방식을 유지한다.
         outline:
-          "border border-neutral-weak bg-transparent text-foreground shadow-none active:opacity-50",
-        ghost: "bg-transparent text-muted-foreground shadow-none active:opacity-50",
+          "border border-neutral-weak bg-transparent text-neutral shadow-none active:opacity-50",
+        ghost: "bg-transparent text-neutral-muted shadow-none active:opacity-50",
         link: "text-brand underline-offset-4 hover:underline active:opacity-50",
       },
       size: {

@@ -51,7 +51,7 @@ export function UserMenu({ avatarUrl, displayName, isAdmin }: UserMenuProps) {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((prev) => !prev)}
-        className="rounded-pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="rounded-pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-solid"
         aria-label="user menu"
         aria-expanded={open}
       >
@@ -64,11 +64,11 @@ export function UserMenu({ avatarUrl, displayName, isAdmin }: UserMenuProps) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-10 z-50 min-w-[144px] bg-surface border border-border rounded-md shadow-w300 overflow-hidden">
+        <div className="absolute right-0 top-10 z-50 min-w-[144px] bg-surface border border-neutral-weak rounded-md shadow-w300 overflow-hidden">
           <Link
             href="/my"
             onClick={() => setOpen(false)}
-            className="block px-4 py-2.5 text-label-2 font-medium text-foreground border-b border-border hover:bg-secondary"
+            className="block px-4 py-2.5 text-label-2 font-medium text-neutral border-b border-neutral-weak hover:bg-disabled"
           >
             마이페이지
           </Link>
@@ -76,7 +76,7 @@ export function UserMenu({ avatarUrl, displayName, isAdmin }: UserMenuProps) {
           <Link
             href="/my/feedback"
             onClick={() => setOpen(false)}
-            className="block px-4 py-2.5 text-label-2 font-medium text-foreground border-b border-border hover:bg-secondary"
+            className="block px-4 py-2.5 text-label-2 font-medium text-neutral border-b border-neutral-weak hover:bg-disabled"
           >
             피드백 남기기
           </Link>
@@ -85,7 +85,7 @@ export function UserMenu({ avatarUrl, displayName, isAdmin }: UserMenuProps) {
             <Link
               href="/admin"
               onClick={() => setOpen(false)}
-              className="block px-4 py-2.5 text-label-2 font-medium text-foreground border-b border-border hover:bg-secondary"
+              className="block px-4 py-2.5 text-label-2 font-medium text-neutral border-b border-neutral-weak hover:bg-disabled"
             >
               관리자 페이지
             </Link>

@@ -50,7 +50,7 @@ placeholder 한 칸은 `SkeletonBlock` 하나다 — 겉면이 `bg-disabled`로 
 
 ```
 fixed inset-x-0 bottom-[64px] top-0 z-[100] mx-auto flex w-full max-w-shell
-flex-col bg-background/95 backdrop-blur-sm
+flex-col bg-page/95 backdrop-blur-sm
 ```
 
 로 뷰포트 전체를 덮는데, 그대로 두면 Storybook 캔버스가 아니라 Storybook UI 전체를 덮어버린다. 대신 375px 박스로 감싸 폭만 맞췄다. `bottom-[64px]`는 BottomNav가 차지하는 높이를 비워두는 값이다 — 스켈레톤이 하단 내비게이션을 덮지 않아야 로딩 중에도 탭 이동이 가능하다. `navigation-loading.test.mjs`가 이 값을 감시한다. (BottomNav 자체는 고정 높이가 아니라 `pt-2 + 아이콘 + 라벨 + pb-4`로 계산되는 콘텐츠 높이라, BottomNav 내부 간격을 바꾸면 이 64px도 같이 맞춰야 한다.)

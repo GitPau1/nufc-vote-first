@@ -22,7 +22,7 @@ export default async function PredictionFlowPage({ params }: { params: { weekKey
     return (
       <>
         <AppHeader mobileBack />
-        <main className="min-h-[calc(100vh-62px)] bg-background">
+        <main className="min-h-[calc(100vh-62px)] bg-page">
           <PredictionResult
             week={week}
             results={results}
@@ -41,7 +41,7 @@ export default async function PredictionFlowPage({ params }: { params: { weekKey
   return (
     <>
       <AppHeader mobileBack />
-      <main className="min-h-[calc(100vh-62px)] bg-background">
+      <main className="min-h-[calc(100vh-62px)] bg-page">
         <PredictionFlowClient
           week={week}
           pending={pending}

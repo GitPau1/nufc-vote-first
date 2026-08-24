@@ -25,7 +25,7 @@ function RatingRow({ initial }: { initial: number | null }) {
             onClick={() => setScore(option.score)}
             className={cn(
               'rounded-lg border py-2 text-center text-caption-1 font-black transition-colors',
-              selected ? 'border-brand-solid bg-brand-solid text-white' : 'border-border bg-surface text-foreground'
+              selected ? 'border-brand-solid bg-brand-solid text-white' : 'border-neutral-weak bg-surface text-neutral'
             )}
           >
             <span className="block text-label-2">{option.grade}</span>

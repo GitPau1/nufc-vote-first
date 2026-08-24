@@ -63,13 +63,13 @@ export function PollHomeSection({ title, polls, action }: PollHomeSectionProps) 
   return (
     <section>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-heading-2 font-bold text-foreground">{title}</h2>
+        <h2 className="text-heading-2 font-bold text-neutral">{title}</h2>
         <div className="flex items-center gap-3">
           {action && (
             <Link
               href={action.href}
               prefetch={false}
-              className="text-label-2 font-semibold text-muted-foreground transition-opacity hover:opacity-70"
+              className="text-label-2 font-semibold text-neutral-muted transition-opacity hover:opacity-70"
             >
               {action.label}
             </Link>
@@ -81,7 +81,7 @@ export function PollHomeSection({ title, polls, action }: PollHomeSectionProps) 
                 aria-label="이전 페이지"
                 disabled={!canGoPrev}
                 onClick={() => setDesktopPage(p => p - 1)}
-                className="flex h-7 w-7 items-center justify-center rounded-pill border border-border text-muted-foreground transition-opacity hover:opacity-70 disabled:opacity-70"
+                className="flex h-7 w-7 items-center justify-center rounded-pill border border-neutral-weak text-neutral-muted transition-opacity hover:opacity-70 disabled:opacity-70"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -90,7 +90,7 @@ export function PollHomeSection({ title, polls, action }: PollHomeSectionProps) 
                 aria-label="다음 페이지"
                 disabled={!canGoNext}
                 onClick={() => setDesktopPage(p => p + 1)}
-                className="flex h-7 w-7 items-center justify-center rounded-pill border border-border text-muted-foreground transition-opacity hover:opacity-70 disabled:opacity-70"
+                className="flex h-7 w-7 items-center justify-center rounded-pill border border-neutral-weak text-neutral-muted transition-opacity hover:opacity-70 disabled:opacity-70"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -102,7 +102,7 @@ export function PollHomeSection({ title, polls, action }: PollHomeSectionProps) 
       {/* 모바일: 세로 리스트(horizontal 카드) — 리스트 전체를 하나의 surface 카드로 감싸
           바깥 테두리+radius를 준다. `/polls`(PollListClient)의 리스트 래핑과 같은 처리 —
           이 컴포넌트를 새로 만들 때 빠뜨렸던 부분. */}
-      <div className="overflow-hidden rounded-lg border border-border bg-surface sm:hidden">
+      <div className="overflow-hidden rounded-lg border border-neutral-weak bg-surface sm:hidden">
         <div className="divide-y divide-border">
           {mobileItems.map(poll => <PollCard key={poll.id} poll={poll} />)}
         </div>
@@ -111,7 +111,7 @@ export function PollHomeSection({ title, polls, action }: PollHomeSectionProps) 
         <button
           type="button"
           onClick={() => setMobileVisible(v => v + MOBILE_STEP)}
-          className="mt-3 w-full rounded-md border border-border py-2.5 text-label-2 font-semibold text-muted-foreground transition-opacity hover:opacity-70 sm:hidden"
+          className="mt-3 w-full rounded-md border border-neutral-weak py-2.5 text-label-2 font-semibold text-neutral-muted transition-opacity hover:opacity-70 sm:hidden"
         >
           더보기
         </button>

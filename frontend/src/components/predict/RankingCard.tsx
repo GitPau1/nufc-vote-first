@@ -35,7 +35,7 @@ export function RankingCard({ variant, entries, limit = 3, className }: RankingC
 
   return (
     <div className={cn('rounded-lg border border-neutral-weak bg-surface p-4 text-left', className)}>
-      <p className="m-0 mb-3 text-body-2-normal font-bold text-black">{title}</p>
+      <p className="m-0 mb-3 text-body-2-normal font-bold text-neutral">{title}</p>
 
       {rows.length === 0 ? (
         <p className="m-0 text-caption-1 text-neutral-muted">{emptyMessage}</p>
@@ -58,10 +58,10 @@ function entriesOf(entry: RankingEntry | undefined): RankingEntry[] {
 function RankHeaderRow() {
   return (
     <div className="flex items-center gap-2 px-1 pb-2.5">
-      <span className="w-8 shrink-0 text-center text-caption-2 font-bold text-neutral-subtle">순위</span>
+      <span className="w-8 shrink-0 text-center text-caption-2 font-bold text-neutral-muted">순위</span>
       <span className="h-7 w-7 shrink-0" />
       <span className="min-w-0 flex-1" />
-      <span className="w-12 shrink-0 text-center text-caption-2 font-bold text-neutral-subtle">총점</span>
+      <span className="w-12 shrink-0 text-center text-caption-2 font-bold text-neutral-muted">총점</span>
     </div>
   )
 }
@@ -74,8 +74,8 @@ function RankRow({ entry }: { entry: RankingEntry }) {
         entry.isMe && 'rounded-md border-b-0 bg-brand-weak px-2'
       )}
     >
-      <span className="flex w-8 shrink-0 flex-col items-center leading-tight">
-        <span className={cn('text-body-1-normal font-black text-black', entry.isMe && 'text-brand')}>
+      <span className="flex w-8 shrink-0 flex-col items-center">
+        <span className={cn('text-body-1-normal font-black text-neutral', entry.isMe && 'text-brand')}>
           {entry.rank}
         </span>
         <RankDelta delta={entry.delta} />
@@ -89,9 +89,9 @@ function RankRow({ entry }: { entry: RankingEntry }) {
         )}
       </span>
 
-      <span className="min-w-0 flex-1 truncate text-label-2 font-bold text-black">{entry.name}</span>
+      <span className="min-w-0 flex-1 truncate text-label-2 font-bold text-neutral">{entry.name}</span>
 
-      <span className={cn('w-12 shrink-0 text-center text-body-2-normal font-black text-brand', entry.isMe && 'text-brand')}>
+      <span className="w-12 shrink-0 text-center text-body-2-normal font-black text-brand">
         {entry.totalPoints}점
       </span>
     </div>
@@ -101,10 +101,11 @@ function RankRow({ entry }: { entry: RankingEntry }) {
 function RankDelta({ delta }: { delta: RankingEntry['delta'] }) {
   if (delta === null || delta === undefined) return null
   // 한국식 상승/하락 관용 표기(▲ 상승=적색, ▼ 하락=회색) — 프로토타입 그대로 유지.
-  // --c-negative 토큰이 "안 좋음"이 아니라 "상승"에 쓰이는 점은 이름과 용법이 어긋나 보일 수 있어 그대로 남겨둔다.
+  // text-critical("되돌릴 수 없는 동작·위험"용 적색)이 "상승"에 쓰이는 점은 이름과 용법이
+  // 어긋나 보일 수 있어 그대로 남겨둔다(Foundations/Color의 유일한 예외 사용처).
   return delta >= 0 ? (
-    <span className="text-[10px] font-bold text-critical">▲{delta}</span>
+    <span className="text-caption-2 font-bold text-critical">▲{delta}</span>
   ) : (
-    <span className="text-[10px] font-bold text-neutral-subtle">▼{Math.abs(delta)}</span>
+    <span className="text-caption-2 font-bold text-neutral-subtle">▼{Math.abs(delta)}</span>
   )
 }

@@ -87,9 +87,9 @@ export const Empty: Story = {
   args: { title: '예정된 투표', polls: [] },
   render: (args) => (
     <div className="flex flex-col gap-2">
-      <p className="text-caption-1 text-muted-foreground">--- 위쪽 섹션 ---</p>
+      <p className="text-caption-1 text-neutral-muted">--- 위쪽 섹션 ---</p>
       <PollHomeSection {...args} />
-      <p className="text-caption-1 text-muted-foreground">--- 아래쪽 섹션 ---</p>
+      <p className="text-caption-1 text-neutral-muted">--- 아래쪽 섹션 ---</p>
     </div>
   ),
 }

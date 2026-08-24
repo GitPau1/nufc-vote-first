@@ -42,8 +42,8 @@ export function ConfirmModal({
       <div className="flex items-center gap-3 rounded-sm bg-brand-weak border border-brand-solid px-4 py-3.5 mb-5">
         <RadioIndicator selected />
         <div>
-          <p className="text-caption-2 text-muted-foreground mb-0.5">{summaryCaption}</p>
-          <p className="text-label-1-normal font-semibold text-foreground">{selectedLabel}</p>
+          <p className="text-caption-2 text-neutral-muted mb-0.5">{summaryCaption}</p>
+          <p className="text-label-1-normal font-semibold text-neutral">{selectedLabel}</p>
         </div>
       </div>
 

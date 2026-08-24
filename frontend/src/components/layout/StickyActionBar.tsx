@@ -22,7 +22,7 @@ export function StickyActionBar({ className, children }: StickyActionBarProps) {
   return (
     <div
       className={cn(
-        'fixed bottom-0 left-1/2 z-30 w-full max-w-detail -translate-x-1/2 border-t bg-white/95 p-4 backdrop-blur',
+        'fixed bottom-0 left-1/2 z-30 w-full max-w-detail -translate-x-1/2 border-t bg-surface-translucent p-4 backdrop-blur',
         'sm:static sm:left-0 sm:z-auto sm:mx-auto sm:w-full sm:max-w-detail sm:translate-x-0 sm:border-t-0 sm:bg-transparent sm:p-0 sm:pb-10 sm:backdrop-blur-none',
         className
       )}

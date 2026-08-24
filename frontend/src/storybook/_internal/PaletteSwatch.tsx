@@ -27,8 +27,8 @@ function Step({ family, step }: { family: string; step: number }) {
   return (
     <div className="w-16 font-sans">
       <div ref={ref} className="h-12 w-full rounded-sm" style={{ backgroundColor: `var(${varName})` }} />
-      <div className="mt-1 text-center text-caption-2 text-muted-foreground">{step}</div>
-      <div className="text-center font-mono text-caption-2 text-muted-foreground">{value || '—'}</div>
+      <div className="mt-1 text-center text-caption-2 text-neutral-muted">{step}</div>
+      <div className="text-center font-mono text-caption-2 text-neutral-muted">{value || '—'}</div>
     </div>
   )
 }
@@ -39,7 +39,7 @@ const STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]
 export function PaletteRow({ family, label }: { family: string; label: string }) {
   return (
     <div className="my-4 font-sans">
-      <div className="mb-1.5 text-label-2 font-bold text-foreground">{label}</div>
+      <div className="mb-1.5 text-label-2 font-bold text-neutral">{label}</div>
       <div className="flex gap-1.5">
         {STEPS.map((step) => (
           <Step key={step} family={family} step={step} />

@@ -58,7 +58,7 @@ import * as RankingCardStories from './RankingCard.stories'
 - 양수 → `▲N`, 음수 → `▼N`(절댓값)
 - **`0`은 `delta >= 0` 분기에 걸려 `▲0`이 된다.** "변동 없음"을 표현하려면 부모가 `0` 대신 `null`을 넘긴다
 
-색은 한국식 관용 표기를 따른다 — 상승이 적색(`text-critical`), 하락이 회색(`text-neutral-subtle`). 즉 **`critical`(경고/위험용 적색 토큰)이 "좋은 일"에 쓰이는 유일한 자리**다. 소스 주석은 이 토큰을 `--c-negative`라 부르는데 실제 값은 `--sem-fg-critical`(red-700)이니, 색을 따라갈 때 주석이 아니라 클래스를 본다. 화살표 글자 크기는 타이포 스케일 밖의 임의값(`text-[10px]`)이다 — 스케일 최소값이 `caption-2`(11px)라 그보다 작은 값을 토큰으로는 못 만든다.
+색은 한국식 관용 표기를 따른다 — 상승이 적색(`text-critical`), 하락이 회색(`text-neutral-subtle`). 즉 **`critical`(경고/위험용 적색 토큰)이 "좋은 일"에 쓰이는 유일한 자리**다. 화살표 글자 크기는 스케일 최소값인 `text-caption-2`(11px)다 — 원래는 그보다 1px 작은 임의값(`text-[10px]`)이었는데, 스케일 밖 값을 남겨둘 이유가 없어 최소 토큰으로 올렸다.
 
 ## 아바타와 이름
 
@@ -70,4 +70,4 @@ import * as RankingCardStories from './RankingCard.stories'
 
 - **동점 처리는 부모 책임이고, 공동 순위는 지금 구조에서 안전하지 않다.** 행의 React key가 `entry.rank`라서, 동점자에게 같은 순위를 주면(2위 두 명) key가 중복된다. 컴포넌트는 순위를 계산하지 않으니 동점을 어떻게 부여할지도 부모가 정한다 — 공동 순위를 쓰려면 컴포넌트의 key를 고쳐야 한다.
 - `mine` variant는 `isMe` 항목이 여러 개일 때를 고려하지 않는다(`find`로 첫 항목만).
-- 카드 셸을 [Card](?path=/docs/contents-card--docs)로 만들지 않고 `rounded-lg border border-neutral-weak bg-surface p-4`를 직접 쓴다. `Card`와 차이는 두 가지다 — 테두리 토큰이 다르고(`border-neutral-weak`=neutral-200 vs `Card`의 `border-border`=#e1e7ef, 세대가 다른 두 토큰), 그림자(`shadow-g200`)가 없다. 예측 화면 전체를 `Card`로 통일하려면 그림자 유무를 먼저 정해야 한다.
+- 카드 셸을 [Card](?path=/docs/contents-card--docs)로 만들지 않고 `rounded-lg border border-neutral-weak bg-surface p-4`를 직접 쓴다. 남은 차이는 그림자(`shadow-g200`)뿐이다 — 테두리는 예측 화면 전체를 `border-neutral-weak`로 맞추면서 `Card`와 같아졌다(같은 예측 탭의 `WeekRankCard`도 동일). 예측 화면을 `Card`로 통일하려면 그림자 유무를 먼저 정해야 한다.

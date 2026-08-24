@@ -15,11 +15,11 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   render: () => (
-    <div className="w-96 divide-y divide-border rounded-lg border border-border bg-surface">
+    <div className="w-96 divide-y divide-border rounded-lg border border-neutral-weak bg-surface">
       {ITEMS.map((item) => (
         <div key={item.title} className="px-4 py-3">
-          <p className="text-label-1-normal font-semibold text-foreground">{item.title}</p>
-          <p className="mt-0.5 text-caption-2 text-muted-foreground">{item.subtitle}</p>
+          <p className="text-label-1-normal font-semibold text-neutral">{item.title}</p>
+          <p className="mt-0.5 text-caption-2 text-neutral-muted">{item.subtitle}</p>
         </div>
       ))}
     </div>

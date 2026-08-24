@@ -14,15 +14,37 @@ import {
 import { BottomSheet } from '@/components/ui/bottom-sheet'
 import { Button } from '@/components/ui/button'
 
+/**
+ * 이 모달이 뜬 맥락. 실제로 넘기는 값만 둔다 —
+ * 예전엔 'comment'·'create_poll'도 있었지만 넘기는 호출부가 없어서 없앴다
+ * (댓글은 투표 참여자만 쓸 수 있어 비로그인 사용자가 도달하지 못하고,
+ *  투표 생성 화면은 RequireAuthModal = 'login'을 쓴다).
+ * 이제 이 값이 설명 문구까지 가르므로, 안 쓰는 값을 남겨두면 죽은 문구가 같이 생긴다.
+ */
+export type LoginTrigger = 'login' | 'vote' | 'predict'
+
+/**
+ * 진입 맥락별 설명 문구.
+ * - 'login': 특정 행동을 전제하지 않은 일반 로그인(헤더 버튼·메뉴·보호된 화면 게이트).
+ *   "필요"를 강조하는 대신 로그인해서 얻는 것을 말한다.
+ * - 그 외: 하려던 행동이 막혀서 뜬 경우 — 그 행동을 그대로 문구에 담는다.
+ */
+const TRIGGER_DESCRIPTION: Record<LoginTrigger, string> = {
+  login: '로그인하면 투표에 참여하고 내 기록을 볼 수 있어요',
+  vote: '투표에 참여하려면 로그인해주세요',
+  predict: '승부예측에 참여하려면 로그인해주세요',
+}
+
 interface LoginModalProps {
   open: boolean
   onClose: () => void
-  triggerAction?: 'vote' | 'comment' | 'create_poll' | 'login'
+  /** 문구를 가르는 값이라 기본값을 두지 않는다 — 호출부가 자기 맥락을 명시해야 한다. */
+  triggerAction: LoginTrigger
 }
 
 // 모바일에서는 BottomSheet가 바텀시트로, 데스크톱에서는 중앙 모달로 뜬다 —
 // intent로 "항상 중앙 모달"을 강제하던 예전 분기는 없앴다. 화면 폭이 유일한 기준이다.
-export function LoginModal({ open, onClose, triggerAction = 'vote' }: LoginModalProps) {
+export function LoginModal({ open, onClose, triggerAction }: LoginModalProps) {
   const pathname = usePathname()
 
   useEffect(() => {
@@ -61,9 +83,9 @@ export function LoginModal({ open, onClose, triggerAction = 'vote' }: LoginModal
         </div>
         <SheetHeader>
           <SheetTitle className="text-body-1-normal">로그인이 필요해요</SheetTitle>
-          <SheetDescription>
-            {IS_MOCK ? '데모 로그인으로 바로 참여할 수 있어요' : '투표에 참여하려면 로그인이 필요합니다'}
-          </SheetDescription>
+          {/* 문구는 IS_MOCK이 아니라 진입 맥락으로 갈린다 — 데모 모드라는 사실은
+              아래 CTA 라벨("데모로 바로 로그인")이 이미 말해준다. */}
+          <SheetDescription>{TRIGGER_DESCRIPTION[triggerAction]}</SheetDescription>
         </SheetHeader>
       </div>
 
@@ -88,7 +110,7 @@ export function LoginModal({ open, onClose, triggerAction = 'vote' }: LoginModal
 
       <Button
         variant="ghost"
-        className="w-full text-muted-foreground"
+        className="w-full text-neutral-muted"
         onClick={onClose}
       >
         닫기

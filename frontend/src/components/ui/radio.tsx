@@ -43,7 +43,7 @@ const RadioOption = React.forwardRef<HTMLButtonElement, RadioOptionProps>(
       className={cn(
         "flex w-full items-center gap-3 rounded-sm border px-4 py-4 text-left",
         "transition-opacity duration-micro hover:opacity-70 focus:outline-none focus-visible:outline-none active:scale-[0.98]",
-        selected ? "border-brand-solid bg-brand-weak" : "border-border bg-surface",
+        selected ? "border-brand-solid bg-brand-weak" : "border-neutral-weak bg-surface",
         className
       )}
       {...props}

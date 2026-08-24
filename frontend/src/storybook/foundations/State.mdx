@@ -45,8 +45,8 @@ import { TokenList, Box } from '../_internal/TokenList'
 | 케이스 | 시도한 값 | 대비 | 처리 |
 |---|---|---|---|
 | destructive 버튼(`text-critical` on `bg-critical-weak-pressed`) | red-700 on red-200 | 3.94:1 (미달, 평상시도 4.54:1로 턱걸이) | `active:opacity-50` 유지 |
-| `MatchWeekList`(`text-muted-foreground` on `bg-brand-weak-pressed`) | #666666 on blue-200 | 4.48:1 (미달) | pressed 전용 값 대신 hover와 같은 톤(`bg-brand-weak`) 유지 |
-| `PollCard`(`text-muted-foreground` on `bg-neutral-weak-pressed`) | #666666 on neutral-300 | 4.06:1 (미달) | pressed 전용 값 대신 `bg-neutral-weak`(기존 `bg-disabled`와 같은 값) 유지 |
+| `MatchWeekList`(`text-neutral-muted` on `bg-brand-weak-pressed`) | #666666 on blue-200 | 4.48:1 (미달) | pressed 전용 값 대신 hover와 같은 톤(`bg-brand-weak`) 유지 |
+| `PollCard`(`text-neutral-muted` on `bg-neutral-weak-pressed`) | #666666 on neutral-300 | 4.06:1 (미달) | pressed 전용 값 대신 `bg-neutral-weak`(기존 `bg-disabled`와 같은 값) 유지 |
 
 세 경우 다 "한 단계 더 진하게"가 대비를 깨서, 대신 **이미 검증된 톤을 재사용**하는 쪽으로 처리했다.
 
@@ -82,7 +82,7 @@ disabled:bg-disabled disabled:text-disabled disabled:opacity-100 disabled:pointe
 
 전용 컴포넌트가 아직 없다. 현재는 각 화면이 개별적으로 안내 문구를 렌더한다.
 
-빈 상태 문구는 `text-muted-foreground`, 에러 문구는 `text-critical`을 쓴다. 반복 패턴으로 굳으면 컴포넌트로 승격할지 논의한다.
+빈 상태 문구는 `text-neutral-muted`, 에러 문구는 `text-critical`을 쓴다. 반복 패턴으로 굳으면 컴포넌트로 승격할지 논의한다.
 
 ## opacity 스케일
 

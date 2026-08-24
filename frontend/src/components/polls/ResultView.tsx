@@ -83,11 +83,11 @@ export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultVie
     : null
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-page">
       <PollPageHeader />
       <div className="flex-1 overflow-y-auto hide-scrollbar animate-enter">
         <main className="mx-auto flex w-full max-w-detail flex-col gap-3 px-4 pb-8 pt-4">
-          <section className="overflow-hidden rounded-lg border border-border bg-surface">
+          <section className="overflow-hidden rounded-lg border border-neutral-weak bg-surface">
             <img
               src={coverUrl}
               alt={poll.title}
@@ -96,17 +96,17 @@ export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultVie
 
             <div className="px-4 pb-6 pt-2">
               <div className="flex flex-col items-center gap-1 pt-4 text-center">
-                <h1 className="break-keep text-heading-2 sm:text-heading-1 font-bold text-foreground">
+                <h1 className="break-keep text-heading-2 sm:text-heading-1 font-bold text-neutral">
                   {poll.title}
                 </h1>
-                <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-caption-1 text-muted-foreground">
+                <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-caption-1 text-neutral-muted">
                   {pollDate && <span>{pollDate}</span>}
                   <span>{poll.creator_name ?? 'Admin'}</span>
                 </div>
               </div>
             </div>
 
-            <div className="mx-4 h-px bg-border" />
+            <div className="mx-4 h-px bg-neutral-weak" />
 
             <div className="flex flex-col items-center gap-5 py-5">
               <p className="text-center text-label-2 font-semibold text-neutral-strong">
@@ -114,7 +114,7 @@ export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultVie
               </p>
 
               {total === 0 ? (
-                <div className="mx-4 w-[calc(100%-32px)] rounded-lg bg-disabled p-5 text-center text-label-1-normal font-medium text-muted-foreground">
+                <div className="mx-4 w-[calc(100%-32px)] rounded-lg bg-disabled p-5 text-center text-label-1-normal font-medium text-neutral-muted">
                   아직 집계된 투표가 없습니다
                 </div>
               ) : (
@@ -135,7 +135,7 @@ export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultVie
                 </div>
               )}
 
-              <div className="flex items-center justify-center gap-1 text-caption-1 text-muted-foreground">
+              <div className="flex items-center justify-center gap-1 text-caption-1 text-neutral-muted">
                 <Users className="h-3.5 w-3.5" />
                 <span>{total.toLocaleString()}명 참여</span>
               </div>

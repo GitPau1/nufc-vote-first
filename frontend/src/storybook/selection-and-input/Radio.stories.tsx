@@ -35,7 +35,7 @@ export const OptionGroup: Story = {
             selected={selected === option.id}
             onClick={() => setSelected(option.id)}
           >
-            <span className="text-label-1-normal font-semibold text-foreground">
+            <span className="text-label-1-normal font-semibold text-neutral">
               {option.label}
             </span>
           </RadioOption>

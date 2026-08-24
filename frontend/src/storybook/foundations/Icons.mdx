@@ -15,9 +15,9 @@ import { Search, Check, ChevronLeft, Lock } from 'lucide-react'
 <TokenList
   valueColumns={['크기']}
   items={[
-    { name: 'h-3.5 w-3.5', sample: <Search className="h-3.5 w-3.5 text-foreground" />, value: '14px', usage: '보조 아이콘. 텍스트·뱃지·리스트 행 안에 인라인으로 붙는 것 — 참여자 수, 태그 삭제, 댓글 액션' },
-    { name: 'h-4 w-4', sample: <Check className="h-4 w-4 text-foreground" />, value: '16px', usage: '**기본값.** 버튼 안 아이콘, 헤더 내비게이션, 입력창 검색 아이콘 — 대부분의 아이콘이 이 크기다' },
-    { name: 'h-6 w-6', sample: <Lock className="h-6 w-6 text-foreground" />, value: '24px', usage: '강조 아이콘. 텍스트 없이 단독으로 의미를 전달할 때 — 현재 로그인 모달 1곳뿐이라, 새로 쓸 때는 정말 단독 강조가 필요한지 먼저 확인한다' },
+    { name: 'h-3.5 w-3.5', sample: <Search className="h-3.5 w-3.5 text-neutral" />, value: '14px', usage: '보조 아이콘. 텍스트·뱃지·리스트 행 안에 인라인으로 붙는 것 — 참여자 수, 태그 삭제, 댓글 액션' },
+    { name: 'h-4 w-4', sample: <Check className="h-4 w-4 text-neutral" />, value: '16px', usage: '**기본값.** 버튼 안 아이콘, 헤더 내비게이션, 입력창 검색 아이콘 — 대부분의 아이콘이 이 크기다' },
+    { name: 'h-6 w-6', sample: <Lock className="h-6 w-6 text-neutral" />, value: '24px', usage: '강조 아이콘. 텍스트 없이 단독으로 의미를 전달할 때 — 현재 로그인 모달 1곳뿐이라, 새로 쓸 때는 정말 단독 강조가 필요한지 먼저 확인한다' },
   ]}
 />
 
@@ -25,7 +25,7 @@ import { Search, Check, ChevronLeft, Lock } from 'lucide-react'
 
 ## 색
 
-아이콘 전용 색 토큰은 없다. SVG가 `currentColor`를 쓰기 때문에 부모의 텍스트 색을 그대로 물려받는다 — 즉 아이콘 색은 [Color](?path=/docs/foundations-color--docs)의 텍스트 토큰(`text-foreground`/`text-muted-foreground`/`text-brand`/`text-white` 등)을 그대로 따르면 된다. 아이콘만을 위한 별도 색 규칙을 만들지 않는다.
+아이콘 전용 색 토큰은 없다. SVG가 `currentColor`를 쓰기 때문에 부모의 텍스트 색을 그대로 물려받는다 — 즉 아이콘 색은 [Color](?path=/docs/foundations-color--docs)의 텍스트 토큰(`text-neutral`/`text-neutral-muted`/`text-brand`/`text-white` 등)을 그대로 따르면 된다. 아이콘만을 위한 별도 색 규칙을 만들지 않는다.
 
 ## 아이콘만 있는 버튼 — `aria-label` 필수
 

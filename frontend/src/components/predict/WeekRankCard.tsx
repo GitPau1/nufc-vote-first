@@ -39,11 +39,11 @@ export function WeekRankCard({
   }
 
   return (
-    <div className={cn('rounded-lg border border-gray-4 bg-surface p-4 text-left', className)}>
-      <p className="mb-3 text-body-2-normal font-bold text-black">{weekNo}주차 랭킹</p>
+    <div className={cn('rounded-lg border border-neutral-weak bg-surface p-4 text-left', className)}>
+      <p className="mb-3 text-body-2-normal font-bold text-neutral">{weekNo}주차 랭킹</p>
 
       {entries.length === 0 ? (
-        <p className="text-caption-1 text-gray-2">아직 이 주차에 채점된 예측이 없어요</p>
+        <p className="text-caption-1 text-neutral-muted">아직 이 주차에 채점된 예측이 없어요</p>
       ) : (
         <>
           <div
@@ -61,7 +61,7 @@ export function WeekRankCard({
             ))}
             {myRowBelow && (
               <>
-                <div className="py-1 text-center tracking-[0.2em] text-label-2 text-gray-3">⋯</div>
+                <div className="py-1 text-center text-label-2 text-neutral-subtle">⋯</div>
                 <RankRow entry={myRowBelow} />
               </>
             )}
@@ -71,7 +71,7 @@ export function WeekRankCard({
             <button
               type="button"
               onClick={() => setExpanded(true)}
-              className="mt-3 flex w-full items-center justify-center rounded-md border border-gray-4 p-2.5 text-label-2 font-bold text-gray-2 hover:border-primary hover:text-primary"
+              className="mt-3 flex w-full items-center justify-center rounded-md border border-neutral-weak p-2.5 text-label-2 font-bold text-neutral-muted transition-colors duration-micro hover:border-neutral-strong"
             >
               전체보기 · {entries.length}명
             </button>
@@ -85,12 +85,12 @@ export function WeekRankCard({
 function HeaderRow() {
   return (
     <div className="sticky top-0 z-[1] flex items-center gap-2 bg-surface px-1 pb-2.5">
-      <span className="w-8 shrink-0 text-center text-caption-2 font-bold text-gray-3">순위</span>
+      <span className="w-8 shrink-0 text-center text-caption-2 font-bold text-neutral-muted">순위</span>
       <span className="h-7 w-7 shrink-0" />
       <span className="min-w-0 flex-1" />
-      <span className="w-[42px] shrink-0 text-center text-caption-2 font-bold text-gray-3">예측</span>
-      <span className="w-[42px] shrink-0 text-center text-caption-2 font-bold text-gray-3">선수픽</span>
-      <span className="w-12 shrink-0 text-center text-caption-2 font-bold text-gray-3">종합</span>
+      <span className="w-[42px] shrink-0 text-center text-caption-2 font-bold text-neutral-muted">예측</span>
+      <span className="w-[42px] shrink-0 text-center text-caption-2 font-bold text-neutral-muted">선수픽</span>
+      <span className="w-12 shrink-0 text-center text-caption-2 font-bold text-neutral-muted">종합</span>
     </div>
   )
 }
@@ -99,20 +99,20 @@ function RankRow({ entry }: { entry: RankingRow }) {
   return (
     <div
       className={cn(
-        'flex items-center gap-2 border-b border-gray-4 px-1 py-2.5 last:border-b-0',
-        entry.isMe && 'rounded-md border-b-0 bg-primary-dim px-2',
+        'flex items-center gap-2 border-b border-neutral-weak px-1 py-2.5 last:border-b-0',
+        entry.isMe && 'rounded-md border-b-0 bg-brand-weak px-2',
       )}
     >
       <span
         className={cn(
-          'w-8 shrink-0 text-center text-body-1-normal font-black text-black',
-          entry.isMe && 'text-primary-dark',
+          'w-8 shrink-0 text-center text-body-1-normal font-black text-neutral',
+          entry.isMe && 'text-brand',
         )}
       >
         {entry.rank}
       </span>
 
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-disabled text-gray-3">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-disabled text-neutral-subtle">
         {entry.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={entry.avatarUrl} alt="" className="h-full w-full object-cover" />
@@ -121,20 +121,17 @@ function RankRow({ entry }: { entry: RankingRow }) {
         )}
       </span>
 
-      <span className="min-w-0 flex-1 truncate text-label-2 font-bold text-black">{entry.name}</span>
+      <span className="min-w-0 flex-1 truncate text-label-2 font-bold text-neutral">{entry.name}</span>
 
-      <span className="w-[42px] shrink-0 text-center text-body-2-normal font-semibold text-gray-3">
+      <span className="w-[42px] shrink-0 text-center text-body-2-normal font-semibold text-neutral-muted">
         {entry.matchPoints ?? 0}
       </span>
-      <span className="w-[42px] shrink-0 text-center text-body-2-normal font-semibold text-gray-3">
+      <span className="w-[42px] shrink-0 text-center text-body-2-normal font-semibold text-neutral-muted">
         {entry.pickPoints ?? 0}
       </span>
-      <span
-        className={cn(
-          'w-12 shrink-0 text-center text-body-2-normal font-black text-primary-dark',
-          entry.isMe && 'text-primary',
-        )}
-      >
+      {/* 옛 시스템은 isMe만 더 밝은 primary였는데, 새 brand 앵커는 배경·텍스트가 하나로
+          합쳐져(Foundations/Color) 두 분기가 같은 text-brand가 된다 — 분기를 없앴다. */}
+      <span className="w-12 shrink-0 text-center text-body-2-normal font-black text-brand">
         {entry.totalPoints}
       </span>
     </div>

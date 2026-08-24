@@ -59,14 +59,14 @@ export function AdminRatingsForm({
 
   return (
     <div>
-      <label className="block text-label-2 font-bold text-gray-2" htmlFor="fixture">
+      <label className="block text-label-2 font-bold text-neutral-muted" htmlFor="fixture">
         경기
       </label>
       <select
         id="fixture"
         value={selectedFixtureId}
         onChange={event => router.push(`/admin/ratings?fixture=${event.target.value}`)}
-        className="mt-1.5 h-11 w-full rounded-md border border-gray-4 bg-surface px-3 text-label-1-normal"
+        className="mt-1.5 h-11 w-full rounded-md border border-neutral-weak bg-surface px-3 text-label-1-normal"
       >
         {fixtures.map(fixture => (
           <option key={fixture.id} value={fixture.id}>
@@ -78,19 +78,19 @@ export function AdminRatingsForm({
       <div className="mt-6 flex flex-col gap-5">
         {POSITIONS.map(position => (
           <div key={position}>
-            <p className="mb-2 text-label-2 font-extrabold text-black">{POSITION_LABEL[position]}</p>
-            <div className="overflow-hidden rounded-lg border border-gray-4">
+            <p className="mb-2 text-label-2 font-extrabold text-neutral">{POSITION_LABEL[position]}</p>
+            <div className="overflow-hidden rounded-lg border border-neutral-weak">
               {candidates[position].map((candidate, i) => (
                 <div
                   key={candidate.id}
                   className={`flex items-center gap-3 bg-surface p-3 ${
-                    i < candidates[position].length - 1 ? 'border-b border-gray-4' : ''
+                    i < candidates[position].length - 1 ? 'border-b border-neutral-weak' : ''
                   }`}
                 >
-                  <span className="w-7 shrink-0 text-center text-label-2 font-bold text-gray-3">
+                  <span className="w-7 shrink-0 text-center text-label-2 font-bold text-neutral-muted">
                     {candidate.squadNumber ?? '-'}
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-label-1-normal font-bold text-black">
+                  <span className="min-w-0 flex-1 truncate text-label-1-normal font-bold text-neutral">
                     {candidate.name}
                   </span>
                   <input
@@ -105,12 +105,12 @@ export function AdminRatingsForm({
                     onChange={event =>
                       setInputs(prev => ({ ...prev, [candidate.id]: event.target.value }))
                     }
-                    className="h-10 w-20 rounded-md border border-gray-4 bg-surface px-2 text-center text-label-1-normal"
+                    className="h-10 w-20 rounded-md border border-neutral-weak bg-surface px-2 text-center text-label-1-normal"
                   />
                 </div>
               ))}
               {candidates[position].length === 0 && (
-                <p className="bg-surface p-3 text-label-2 text-gray-3">스쿼드 데이터가 없어요</p>
+                <p className="bg-surface p-3 text-label-2 text-neutral-muted">스쿼드 데이터가 없어요</p>
               )}
             </div>
           </div>
@@ -121,7 +121,7 @@ export function AdminRatingsForm({
         <p
           role="status"
           className={`mt-4 text-center text-label-2 font-bold ${
-            message.tone === 'ok' ? 'text-positive' : 'text-negative'
+            message.tone === 'ok' ? 'text-positive' : 'text-critical'
           }`}
         >
           {message.text}

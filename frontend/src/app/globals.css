@@ -6,29 +6,16 @@
 
 @layer base {
   :root {
-    /* LDSG 기반 Newcastle 토큰 */
-    --c-primary: #41b6e6;
-    --c-primary-dim: rgba(65, 182, 230, 0.12);
-    --c-primary-dark: #1a9fd4;
-    --c-primary-on: #ffffff;
+    /* ===== 색 토큰은 이제 Palette → Semantic 한 계층뿐이다 =====
+       LDSG 이전 세대(--c-* flat hex)와 shadcn 세대(HSL 삼중값) 색 토큰을 전부 삭제했다.
+       마지막 사용처를 semantic 토큰으로 옮기고 실사용 0건을 확인한 뒤 지웠고,
+       design-foundation.test.mjs의 `retired legacy color tokens stay deleted`가 재유입을 막는다.
+       근거: 두 구세대는 origin/main에 있는 a72b7b8에서 왔고 --sem-*는 그 뒤 디자인시스템
+       커밋(4602c15, main에 없음)에서 생겼다 — --sem-*가 신버전이다.
 
-    --c-black: 17 17 17; /* rgb 채널값 — bg-black/45 같은 알파 수정자 지원 */
-    --c-gray-1: #333333;
-    --c-gray-2: #666666;
-    --c-gray-3: #a8a8a8;
-    --c-gray-4: #e1e7ef;
-    --c-disabled: #ebebeb;
-
-    --c-bg: #fafafa;
-    --c-surface: #ffffff;
-
-    --c-positive: #2e9e4f;
-    --c-positive-dim: #e6f4ea;
-    --c-negative: #d93025;
-    --c-negative-dim: #fce8e6;
-    /* 디자인 시스템에 없던 색 — 결과 화면 평점 "보통"(6.0~6.9) 배지용으로 추가(사용자 확인, 2026-08-20) */
-    --c-warning: #c8801f;
-    --c-warning-dim: #fbf1e4;
+       --c-black만 남는다. 이미지 위 스크림(from-black/35)이 알파 수정자를 써야 해서
+       rgb 채널값 형태가 필요하고, 대응하는 sem 토큰이 아직 없다. */
+    --c-black: 17 17 17;
 
     --r-xs: 8px;
     --r-sm: 10px;
@@ -50,34 +37,15 @@
     --sh-g200: 0px 1px 4px rgba(0, 0, 0, .06);
     --sh-g300: 0px 1px 15px rgba(0, 0, 0, .04);
 
-    --background:         0 0% 98%;        /* #fafafa */
-    --foreground:         0 0% 7%;         /* #111111 */
-
-    --card:               0 0% 100%;
-    --card-foreground:    0 0% 7%;
-
-    --popover:            0 0% 100%;
-    --popover-foreground: 0 0% 7%;
-
-    --primary:            198 77% 58%;     /* #41b6e6 */
-    --primary-foreground: 0 0% 100%;
-
-    --secondary:          0 0% 92%;        /* #ebebeb */
-    --secondary-foreground: 0 0% 20%;      /* #333333 */
-
-    --muted:              0 0% 92%;
-    --muted-foreground:   0 0% 40%;        /* #666666 */
-
-    --accent:             198 77% 95%;
-    --accent-foreground:  198 78% 47%;     /* #1a9fd4 */
-
-    --destructive:        4 71% 50%;       /* #d93025 */
-    --destructive-foreground: 0 0% 100%;
-
-    --border:             214 30% 91%;     /* #e1e7ef */
-    --input:              214 30% 91%;
-    --ring:               198 77% 58%;
-    --radius:             12px;
+    /* shadcn/ui 세대(HSL 삼중값) 전체 삭제 — --background/--foreground/--card(-foreground)/
+       --popover(-foreground)/--primary(-foreground)/--secondary(-foreground)/--muted(-foreground)/
+       --accent(-foreground)/--destructive(-foreground)/--border/--input/--ring/--radius.
+       각각 대응하는 sem 토큰으로 옮겼다:
+         background→bg-page  foreground→text-neutral  border/input→border-neutral-weak
+         muted-foreground→text-neutral-muted  card→bg-surface  secondary/muted→bg-disabled
+         secondary-foreground→text-neutral-strong  ring→ring-brand-solid(--sem-stroke-focus-ring)
+         accent/destructive/popover→실사용 0건이라 대체 없이 삭제
+       --radius는 참조가 아예 없었다(borderRadius는 --r-*를 쓴다). */
 
     /* ===== Palette (원시 색, OKLCH 생성) — 직접 쓰지 않는다. semantic 토큰을 통해서만 쓴다 =====
        생성 근거: vault/10_gun/디자인시스템-스토리북-실행계획.md §3.5, §3.6
@@ -95,11 +63,14 @@
        기존 disabled/text-positive 클래스가 이미 실사용 중이라(값이 다름), 전체 이름
        이전 시점에 한 번에 검토하며 교체한다 — CSS 변수만 먼저 준비해둔다. */
     --sem-bg-page: var(--p-neutral-50);
+    /* 카드·헤더·시트의 흰 표면. ③ 계층에 흰 표면 토큰이 없어서 bg-surface가 구세대
+       --c-surface를 계속 참조하고 있었다 — 이름은 그대로 두고 값만 이 계층으로 옮겼다. */
+    --sem-bg-surface: #ffffff;
     --sem-bg-overlay: rgba(0, 0, 0, .45);
     --sem-bg-disabled: var(--p-neutral-200);           /* tailwind.config.ts backgroundColor.disabled로 노출됨 (기존 --c-disabled #ebebeb → neutral-200) */
     --sem-bg-neutral-weak: var(--p-neutral-200);
     --sem-bg-neutral-weak-pressed: var(--p-neutral-300);
-    --sem-bg-neutral-strong: var(--p-neutral-900);      /* 신규: 어두운 중립 배경. 기존 bg-gray-1(#333333)과 같은 값(neutral-900) */
+    --sem-bg-neutral-strong: var(--p-neutral-900);      /* 어두운 중립 배경. 구세대 flat 세대의 #333333 회색을 대체한다(값 거의 동일) */
     --sem-bg-brand-solid: var(--p-blue-700);
     --sem-bg-brand-solid-pressed: var(--p-blue-800);
     /* weak 배경 6종 재조정(2026-08-22) — text-{intent}(700, 고정)를 그 위에 올렸을 때
@@ -126,13 +97,34 @@
     --sem-bg-magic-weak: #f4e3ff;
     --sem-bg-magic-weak-pressed: var(--sem-bg-magic-weak);
 
+    /* 색·다크 면 **위에** 얹는 표면 2단계. fg-on-solid과 짝이고, 자기 밑에 깔린 색을
+       그대로 통과시켜야 해서 팔레트 색이 아니라 흰색 알파다(고정 hex로는 어떤 배경 위에
+       올려도 맞는 값을 못 만든다). MatchdayHero의 카운트다운 칸(weak) / 최우수 선수 줄과
+       PredictionResult 점수 박스(strong)가 사용처다. */
+    --sem-bg-on-solid-weak: rgba(255, 255, 255, .05);
+    --sem-bg-on-solid-strong: rgba(255, 255, 255, .1);
+    /* 컨텐츠 위에 떠 있는 반투명 흰 면(backdrop-blur와 함께 쓴다) — 모바일 하단 고정
+       액션 바(StickyActionBar / 예측 플로우 제출 바) 전용. bg-surface와 달리 뒤가 비친다. */
+    --sem-bg-surface-translucent: rgba(255, 255, 255, .95);
+
     --sem-fg-neutral: var(--p-neutral-950);
-    --sem-fg-neutral-strong: var(--p-neutral-900);      /* 신규: neutral과 muted 사이. 기존 text-gray-1(#333333)이 neutral-900(#313335)과 거의 동일값이라 그대로 대응 */
-    --sem-fg-neutral-muted: var(--p-neutral-700);
+    --sem-fg-neutral-strong: var(--p-neutral-900);      /* neutral과 muted 사이. 구세대의 #333333 강조 회색을 대체한다(neutral-900 #313335, 거의 동일값) */
+    /* 팔레트 단계(neutral-700 #6e7277)가 아니라 손으로 맞춘 값이다 — 위 weak 배경 6종과
+       같은 이유다. neutral-700은 흰 배경에서는 4.84:1로 통과하지만 옅은 틴트 배경 위에서
+       무너진다: bg-disabled/neutral-weak 3.99:1, bg-brand-weak 4.14:1, bg-critical-weak
+       4.12:1 — 전부 AA 미달. 이 토큰이 실제로 얹히는 자리가 바로 그 배경들이라(ui/badge.tsx
+       outline variant, PlayersPageClient 포지션 칩, MatchWeekList hover 카드 등 7곳)
+       팔레트 단계를 그대로 쓸 수 없다. 아래 값은 그 조합 전부가 4.7:1 이상을 유지한다. */
+    --sem-fg-neutral-muted: #666666;
     --sem-fg-neutral-subtle: var(--p-neutral-500);
     --sem-fg-placeholder: var(--p-neutral-500);         /* subtle과 의도적으로 동일 */
     --sem-fg-disabled: var(--p-neutral-400);            /* tailwind.config.ts textColor.disabled로 노출됨 (기존 #a8a8a8 → neutral-400) */
     --sem-fg-on-solid: #ffffff;
+    /* 어두운·색 있는 면 위의 2차 텍스트(라벨, 단위, 캡션). 값은 neutral-400으로,
+       bg-neutral-strong(neutral-900) 위에서 6.80:1로 AA를 통과한다. 이 자리에 원래
+       text-disabled를 전용해 쓰고 있었는데 — 값은 맞지만 "비활성"이 아니라 "보조"라
+       역할 이름이 어긋났다. 그래서 값은 그대로 두고 이름만 새로 뗐다(시각 변화 없음). */
+    --sem-fg-on-solid-muted: var(--p-neutral-400);
     --sem-fg-brand: var(--p-blue-700);
     --sem-fg-critical: var(--p-red-700);
     --sem-fg-positive: var(--p-green-700);              /* tailwind.config.ts textColor.positive로 노출됨 (기존 #2e9e4f, AA 미달 → green-700, AA 통과) */
@@ -142,19 +134,19 @@
 
     --sem-stroke-neutral-weak: var(--p-neutral-200);
     --sem-stroke-neutral-subtle: var(--p-neutral-100);
-    --sem-stroke-neutral-strong: var(--p-neutral-500);  /* 신규: hover 등 강조 테두리. 기존 border-gray-3(#a8a8a8)과 거의 동일값(neutral-500, #a2a5a9) */
+    --sem-stroke-neutral-strong: var(--p-neutral-500);  /* hover 등 강조 테두리. 구세대의 #a8a8a8 테두리를 대체한다(neutral-500 #a2a5a9, 거의 동일값) */
     --sem-stroke-brand-solid: var(--p-blue-700);
     --sem-stroke-critical-weak: var(--p-red-200);
     --sem-stroke-focus-ring: var(--p-blue-700);
   }
 
   * {
-    @apply border-border;
+    @apply border-neutral-weak;
     -webkit-tap-highlight-color: transparent;
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-page text-neutral font-sans;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -169,7 +161,7 @@
   }
 
   .animate-skeleton {
-    background: linear-gradient(90deg, var(--c-disabled) 0%, #f7f7f7 45%, var(--c-disabled) 100%);
+    background: linear-gradient(90deg, var(--sem-bg-disabled) 0%, #f7f7f7 45%, var(--sem-bg-disabled) 100%);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.15s ease-in-out infinite;
   }
@@ -190,7 +182,7 @@
     background:
       radial-gradient(250px at 0% 0%, color-mix(in srgb, var(--p-blue-700) 20%, transparent) 0%, transparent 70%),
       radial-gradient(250px at 100% 0%, color-mix(in srgb, var(--p-blue-600) 20%, transparent) 0%, transparent 70%),
-      var(--c-bg);
+      var(--sem-bg-page);
   }
 
   /* spotlight-glow-brand의 다크 카드 변형 — 베이스를 bg-neutral-strong으로 쓰는 카드(MatchdayHero 등)용.
@@ -203,7 +195,7 @@
   }
 
   .input-field {
-    @apply w-full rounded-sm border border-border bg-surface px-3 py-2 text-label-1-normal text-foreground outline-none;
+    @apply w-full rounded-sm border border-neutral-weak bg-surface px-3 py-2 text-label-1-normal text-neutral outline-none;
   }
 
   /* focus:border-brand-solid를 위 .input-field의 @apply 안에 넣으면 Storybook(Vite dev

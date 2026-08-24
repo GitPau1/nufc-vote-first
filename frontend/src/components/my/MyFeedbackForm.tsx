@@ -34,11 +34,11 @@ export function MyFeedbackForm() {
       <textarea
         value={content}
         onChange={e => setContent(e.target.value.slice(0, 500))}
-        className="min-h-[180px] w-full resize-none rounded-sm border border-border bg-surface px-3.5 py-3 text-body-1-reading text-foreground outline-none placeholder:text-placeholder focus:border-brand-solid"
+        className="min-h-[180px] w-full resize-none rounded-sm border border-neutral-weak bg-surface px-3.5 py-3 text-body-1-reading text-neutral outline-none placeholder:text-placeholder focus:border-brand-solid"
         placeholder="불편했던 점이나 개선 아이디어를 알려주세요."
         maxLength={500}
       />
-      <div className="flex items-center justify-between text-caption-2 text-muted-foreground">
+      <div className="flex items-center justify-between text-caption-2 text-neutral-muted">
         <span>{message}</span>
         <span>{content.length}/500</span>
       </div>

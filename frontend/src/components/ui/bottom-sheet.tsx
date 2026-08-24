@@ -43,9 +43,14 @@ function useIsDesktopViewport(): boolean {
  * ConfirmModal은 좌측 정렬, LoginModal은 중앙 정렬 + 아이콘을 쓰는 등 실제로 레이아웃이
  * 달라서, 여기서 억지로 하나의 헤더 API로 묶으면 각 사용처의 className 오버라이드만 늘어난다.
  *
- * 화면 폭에 따라 `sheet.tsx`의 `bottom`/`center` variant를 오간다 — 두 variant 모두
- * 기본 X 닫기 버튼은 숨기고(children이 자체 닫기 버튼을 둔다), 폭/위치는 각 variant가
+ * 화면 폭에 따라 `sheet.tsx`의 `bottom`/`center` variant를 오간다 — 폭/위치는 각 variant가
  * 그대로 물려준다.
+ *
+ * 한때 여기서 `[&>button]:hidden`으로 sheet 기본 X 닫기 버튼을 가렸는데, 그 선택자가
+ * **children의 직계 버튼까지 전부** 숨겨서 LoginModal의 "Google로 로그인"·"닫기" CTA가
+ * 화면에서 사라졌다(= 모든 로그인 경로가 막혔다. ConfirmModal은 버튼을 div로 감싸고 있어서
+ * 우연히 살아 있었다). 지금은 그 규칙을 걷어냈고, 그래서 우측 상단 X가 함께 보인다.
+ * 다시 가리려면 CSS가 아니라 `SheetContent`에서 그 버튼을 렌더하지 않는 방향으로 간다.
  */
 export function BottomSheet({ open, onOpenChange, className, children }: BottomSheetProps) {
   const isDesktop = useIsDesktopViewport()
@@ -56,7 +61,7 @@ export function BottomSheet({ open, onOpenChange, className, children }: BottomS
       <SheetContent
         side={side}
         showDragHandle={!isDesktop}
-        className={cn('[&>button]:hidden', side === 'bottom' && 'border-t-0', className)}
+        className={cn(side === 'bottom' && 'border-t-0', className)}
       >
         {children}
       </SheetContent>

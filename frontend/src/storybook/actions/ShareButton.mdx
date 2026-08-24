@@ -1,0 +1,65 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as ShareButtonStories from './ShareButton.stories'
+
+<Meta of={ShareButtonStories} />
+
+# ShareButton
+
+승부예측 결과 화면의 "공유하기" 버튼(`src/components/predict/shared.tsx`). 이름과 `↗` 화살표는 공유를 가리키지만 실제 동작은 **현재 주소 링크 복사 한 가지뿐**이다 — 아래 "실제로 하는 일"을 먼저 읽고 쓸지 판단한다.
+
+<Canvas of={ShareButtonStories.Default} />
+
+## 실제로 하는 일
+
+소스는 클릭 시 이것만 한다.
+
+```tsx
+await navigator.clipboard.writeText(window.location.href)
+setCopied(true)
+setTimeout(() => setCopied(false), 2000)
+```
+
+- **Web Share API는 쓰지 않는다.** `navigator.share`를 호출하는 코드가 없다. 그래서 모바일 OS 공유 시트가 뜨지 않고, 공유 대상 앱을 고르는 단계도 없다.
+- 복사하는 값은 `window.location.href` — 별도의 공유용 URL을 만들지 않으므로 쿼리스트링·해시가 붙은 현재 주소가 그대로 복사된다.
+- 성공하면 라벨이 `'↗ 공유하기'` → `'링크 복사 완료'`로 바뀌고 **2초 뒤 원래 라벨로 되돌아간다**. 토스트·모달은 없고 라벨 교체가 유일한 피드백이다.
+- `alert`·`confirm`을 쓰지 않는다.
+
+<Canvas of={ShareButtonStories.Copied} />
+
+## 실패 경로: 폴백이 없다
+
+`try/catch`의 catch 블록은 비어 있다(주석만 있다). 즉 클립보드 쓰기가 거부되면
+
+- 다른 공유 수단으로 폴백하지 않고,
+- 에러 메시지도 띄우지 않고,
+- 라벨도 바뀌지 않는다 — 사용자에게는 "버튼이 아무 반응이 없다"로 보인다.
+
+`navigator.clipboard`는 보안 컨텍스트(https 또는 localhost)에서만 존재하므로, http로 접근하는 LAN IP·스테이징 주소에서는 이 조용한 실패 경로를 타게 된다. 그 환경을 지원해야 한다면 이 컴포넌트를 그대로 쓰지 말고 폴백을 가진 버튼을 별도로 만든다.
+
+라벨 교체 영역에 `aria-live`가 없어서 스크린리더는 "링크 복사 완료"를 자동으로 읽지 않는다.
+
+## Button과의 관계
+
+자체 마크업이 아니라 [Button](?path=/docs/actions-button--docs)의 **`default` variant**(variant를 넘기지 않아 defaultVariants가 적용된다)에 `className="w-40"`만 얹은 얇은 래퍼다. 따라서 배경은 `bg-brand-solid`, 글자는 `text-on-solid`, press는 `active:bg-brand-solid-pressed`이고 높이는 `size="default"`의 `h-11`이다.
+
+`w-40`(160px) 고정폭이라 컨테이너를 채우지 않는다 — 화면 하단에 가로로 꽉 차는 1차 CTA가 필요하면 이 컴포넌트가 아니라 [StickyActionBar](?path=/docs/actions-stickyactionbar--docs) 안의 `w-full` Button을 쓴다.
+
+<Canvas of={ShareButtonStories.CenteredInResultFooter} />
+
+## 사용처
+
+| 파일 | 위치 | 조건 |
+|---|---|---|
+| `src/components/predict/PredictionResult.tsx` | 결과 본문 맨 아래, `mt-7 flex justify-center` | `participated`가 true일 때만 렌더 |
+| `src/components/predict/PredictionDone.tsx` | 제출 완료 본문 맨 아래, 같은 래퍼 | 항상 |
+
+두 곳 모두 감싸는 마크업이 동일하고, props가 하나도 없어서(`ShareButton()`) 라벨·폭·복사 대상은 호출부에서 바꿀 수 없다. 다른 문구나 다른 URL이 필요하면 소스를 고쳐야 한다.
+
+## Storybook에서 확인되는 것 / 안 되는 것
+
+| 확인 가능 | 확인 불가 |
+|---|---|
+| 기본/복사완료 라벨, 크기·색·press 상태 | 복사되는 주소가 예측 결과 페이지 URL인지 — Storybook에서는 iframe 주소가 복사된다 |
+| 클릭 후 2초 뒤 라벨이 되돌아가는 타이밍 | 보안 컨텍스트가 아닐 때의 조용한 실패(로컬 Storybook은 localhost라 보통 성공한다) |
+
+`Copied` 스토리는 결과를 고정하려고 play에서 `navigator.clipboard.writeText`를 스텁으로 덮고 끝나면 원복한다. 실제 클립보드 동작을 보려면 `Default`를 직접 누른다.

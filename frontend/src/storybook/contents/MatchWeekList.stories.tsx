@@ -156,7 +156,7 @@ export const Result: Story = {
 
 /**
  * 예측 오픈 전 — 자물쇠 아이콘 + `예정` 배지. 버튼이 `disabled`라 클릭·hover가 전부
- * 막히고 배경도 `--c-bg`로 가라앉는다. 아래 상태 표시에 아무것도 안 잡히는 게 정상.
+ * 막히고 배경도 `bg-page`로 가라앉는다. 아래 상태 표시에 아무것도 안 잡히는 게 정상.
  */
 export const Upcoming: Story = {
   args: {

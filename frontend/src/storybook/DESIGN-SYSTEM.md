@@ -48,7 +48,9 @@ Palette와 Semantic은 한때 `PaletteProposal.mdx`/`SemanticProposal.mdx`("제�
 
 Montage 분류(Actions / Contents / Feedback / Loading / Navigations / Presentation / Selection and Input)를 따른다. Phase 4(2026-08-22)에서 §5-1의 생존 패턴 14개를 전부 작성했다 — 원래 있던 이름과 달라진 것들의 이유는 각 MDX에 적어뒀다.
 
-2026-08-24에 "코드에는 있는데 Storybook에 없는 것"을 전수 점검해 16개를 추가했다(아래 표에서 Phase 4 항목 뒤에 붙은 행들). 그 결과 승부예측 3종·Skeleton처럼 §"아직 인덱스에 없는 컴포넌트"에 유예해뒀던 항목이 모두 문서화됐다.
+2026-08-24에 "코드에는 있는데 Storybook에 없는 것"을 전수 점검해 16개를 추가했고, 같은 날 main을 병합(승부예측 25커밋)한 뒤 그 기능으로 들어온 5개(`ShareButton`·`TeamBadge`·`PlayerPhoto`·`StepTrack`·`WeekRankCard`)를 더 문서화해 **총 21개가 늘었다.** 그 결과 §"아직 인덱스에 없는 컴포넌트"로 유예해뒀던 항목은 남지 않았다.
+
+승부예측 컴포넌트의 색·타이포 토큰은 같은 날 구세대 flat 토큰(`primary`/`gray-N`)에서 semantic 토큰으로 옮겼다 — 그래서 문서에 인용된 클래스 이름은 현행 semantic 기준이다. 되돌아가지 않도록 `components/design-foundation.test.mjs`가 predict 파일 목록을 검사한다.
 
 ### Actions
 
@@ -57,6 +59,7 @@ Montage 분류(Actions / Contents / Feedback / Loading / Navigations / Presentat
 | Button | 1차 CTA·보조 액션. `default`/`destructive`/`secondary`/`outline`/`ghost`/`link` 6개 variant | `components/ui/button.tsx` | `actions/Button.mdx` |
 | StickyActionBar | 투표 상세 하단 제출 버튼 바. 모바일은 fixed, 데스크탑은 흐름 안 static | `components/layout/StickyActionBar.tsx` | `actions/StickyActionBar.mdx` |
 | LoginButton | 로그아웃 상태 헤더 우측 "로그인" 버튼. Button `outline`+`sm`에 4개 클래스를 덮어쓴 헤더 전용 파생형 | `components/layout/LoginButton.tsx` | `actions/LoginButton.mdx` |
+| ShareButton | 예측 결과·완료 화면의 링크 복사 버튼. 이름과 달리 Web Share API가 아니라 현재 주소 클립보드 복사다 | `components/predict/shared.tsx` | `actions/ShareButton.mdx` |
 
 ### Contents
 
@@ -75,6 +78,9 @@ Montage 분류(Actions / Contents / Feedback / Loading / Navigations / Presentat
 | CommentsSection | 투표 결과 화면의 댓글 입력창+목록(투표 항목 칩·좋아요·내 댓글 수정/삭제) | `components/polls/CommentsSection.tsx` | `contents/CommentsSection.mdx` |
 | RankingCard | 승부예측 시즌 누적 랭킹 카드. `top3`/`mine` 2개 variant | `components/predict/RankingCard.tsx` | `contents/RankingCard.mdx` |
 | MatchWeekList | 승부예측 월별 주차 목록. 주차 1개 = 예측 세션 1개(진행중/결과/예정) | `components/predict/MatchWeekList.tsx` | `contents/MatchWeekList.mdx` |
+| WeekRankCard | 주차 랭킹 카드. 예측·선수픽·종합 3컬럼, 데스크탑 10명 캡 + 모바일 화면높이 크롭 | `components/predict/WeekRankCard.tsx` | `contents/WeekRankCard.mdx` |
+| TeamBadge | 승부예측 팀 엠블럼. `logoUrl` 없음·로드 실패 모두 팀명 첫 글자 원형으로 폴백 | `components/predict/shared.tsx` | `contents/TeamBadge.mdx` |
+| PlayerPhoto | 선수 사진 원형. Avatar(Radix) 기반이라 null·로드 실패 모두 실루엣 폴백 | `components/predict/shared.tsx` | `contents/PlayerPhoto.mdx` |
 
 `ResultProgress`는 원래 `Progress`(Radix 기반, 실사용 0건)였다 — `ResultView.tsx`가 이 컴포넌트 없이 직접 만든 결과 막대를 쓰고 있어서, 실제 마크업 그대로 통합하며 이름을 바꿨다.
 
@@ -100,6 +106,7 @@ Montage 분류(Actions / Contents / Feedback / Loading / Navigations / Presentat
 | BottomNav | 모바일 하단 내비게이션(4개 경로에서만 렌더) | `components/layout/BottomNav.tsx` | `navigations/BottomNav.mdx` |
 | DesktopNavLinks | 데스크탑(≥640px) 헤더 GNB 3항목. `usePathname()`으로 활성 항목 판정 | `components/layout/DesktopNavLinks.tsx` | `navigations/DesktopNavLinks.mdx` |
 | UserMenu | 로그인 상태 헤더 우측 아바타 + 드롭다운(마이페이지·피드백·로그아웃, 관리자면 1개 추가) | `components/layout/UserMenu.tsx` | `navigations/UserMenu.mdx` |
+| StepTrack | 승부예측 3스텝(score→pick→confirm) 진행 표시. 가로 트랙·히어로 문구·세로 트랙 3종 | `components/predict/steps.tsx` | `navigations/StepTrack.mdx` |
 
 ### Presentation
 
@@ -135,8 +142,14 @@ Montage 분류(Actions / Contents / Feedback / Loading / Navigations / Presentat
 
 **1. 화면 단위 클라이언트** — 컴포넌트가 아니라 페이지 조립체다. 이 안의 재사용 패턴은 이미 PollCarouselCard·RatingMatrix·FormSection·CommentsSection으로 추출돼 있다.
 
-`polls/HomeClient.tsx` · `polls/PollListClient.tsx` · `polls/TypeAPollClient.tsx` · `polls/TypeBPollClient.tsx` · `polls/OverallRatingPollClient.tsx` · `polls/ResultView.tsx` · `polls/OverallRatingResultView.tsx` · `polls/UserPollCreateForm.tsx` · `my/MyPageClient.tsx` · `my/MyFeedbackForm.tsx` · `players/PlayersPageClient.tsx` · `polls/PollPageHeader.tsx`(AppHeader `mobileBack` 7줄 래퍼)
+`predict/PredictListClient.tsx` · `predict/PredictionFlowClient.tsx` · `predict/PredictionResult.tsx` · `predict/PredictionDone.tsx` · `polls/HomeClient.tsx` · `polls/PollListClient.tsx` · `polls/TypeAPollClient.tsx` · `polls/TypeBPollClient.tsx` · `polls/OverallRatingPollClient.tsx` · `polls/ResultView.tsx` · `polls/OverallRatingResultView.tsx` · `polls/UserPollCreateForm.tsx` · `my/MyPageClient.tsx` · `my/MyFeedbackForm.tsx` · `players/PlayersPageClient.tsx` · `polls/PollPageHeader.tsx`(AppHeader `mobileBack` 7줄 래퍼)
 
 **2. 렌더 결과가 없는 컴포넌트** — `analytics/AppAnalytics.tsx` · `auth/AuthCodeHandler.tsx` · `players/PlayerRatingChangesAnalytics.tsx` · `layout/HeaderAuthStatus.tsx`(LoginButton/UserMenu를 갈아 끼우는 컨테이너 — 갈림 규칙은 `navigations/UserMenu.mdx`에 있다)
 
-**3. import하는 곳이 없는 컴포넌트** — 현재 없다. 2026-08-24에 `polls/CountdownTimer.tsx`, `polls/PollCreateLink.tsx`, `images/BannerImageInput.tsx`의 `BannerImageInput` export(+ 그때 함께 죽은 `lib/utils.ts`의 `formatDeadline`)를 삭제했다. 남은 `CroppedImageInput`에 맞춰 파일 이름도 `images/CroppedImageInput.tsx`로 바꿨다. 사용처 없는 구현체는 과거 `ui/progress.tsx`처럼 디자인시스템에 넣지 않고, 되살릴 때는 새로 설계한다.
+**3. import하는 곳이 없는 컴포넌트** — 현재 없다. 2026-08-24에 두 차례 정리했다. ① `polls/CountdownTimer.tsx`, `polls/PollCreateLink.tsx`, `images/BannerImageInput.tsx`의 `BannerImageInput` export(+ 그때 함께 죽은 `lib/utils.ts`의 `formatDeadline`) — 남은 `CroppedImageInput`에 맞춰 파일 이름도 `images/CroppedImageInput.tsx`로 바꿨다. ② main 병합(승부예측 25커밋) 후 전수 재점검에서 `lib/utils.ts`의 `calcPercents`, `lib/actions/polls.ts`의 `deleteUserPoll`, `storybook/_internal/TokenList.tsx`의 `Swatch`. 병합된 `components/predict/**`에는 사용처 없는 파일·export가 없었다.
+
+`deleteUserPoll`은 단순한 죽은 코드가 아니었다 — 호출 UI가 2026-06-17에 사라진 뒤에도 `'use server'` 모듈의 export로 남아, **화면 없이 외부에서 도달 가능한 삭제 엔드포인트**였다(service-role cascade). 서버 액션은 export되어 있는 것만으로 공개 엔드포인트이므로, 화면을 지울 때 액션도 함께 지운다.
+
+사용처가 없는데도 **일부러 남겨둔 것 셋**: `ui/sheet.tsx`의 `SheetTrigger`/`SheetClose`/`SheetFooter`(shadcn CLI가 관리하는 vendored primitive — 미사용 표면이 의도적이라고 `feedback/BottomSheet.mdx`에 기록돼 있다) · `lib/players/pick-one-rating.ts`의 rating 함수들(Postgres 함수와 같은 알고리즘을 검증하는 참조 구현) · `types/database.ts`의 `*Row` 별칭 블록(스키마 전체를 비추는 것이 파일의 목적).
+
+사용처 없는 구현체는 과거 `ui/progress.tsx`처럼 디자인시스템에 넣지 않고, 되살릴 때는 새로 설계한다.

@@ -22,13 +22,13 @@ function WidthProbe() {
   return (
     <div className="py-4">
       <div className="mx-auto max-w-content border-x border-dashed border-brand-solid bg-brand-weak px-4 py-3">
-        <p className="text-label-2 text-foreground">max-w-content · 1140px — 목록 화면</p>
+        <p className="text-label-2 text-neutral">max-w-content · 1140px — 목록 화면</p>
       </div>
       <div className="mx-auto mt-3 max-w-detail border-x border-dashed border-brand-solid bg-brand-weak px-4 py-3">
-        <p className="text-label-2 text-foreground">max-w-detail · 680px — 투표 상세</p>
+        <p className="text-label-2 text-neutral">max-w-detail · 680px — 투표 상세</p>
       </div>
       <div className="mx-auto mt-3 max-w-shell border-x border-dashed border-brand-solid bg-brand-weak px-4 py-3">
-        <p className="text-label-2 text-foreground">max-w-shell · 480px — 모바일 전용 UI</p>
+        <p className="text-label-2 text-neutral">max-w-shell · 480px — 모바일 전용 UI</p>
       </div>
     </div>
   )
@@ -38,11 +38,11 @@ function WidthProbe() {
 function ShellProbe() {
   return (
     <div className="px-5 py-10">
-      <p className="text-heading-2 text-foreground">온보딩</p>
-      <p className="mt-2 text-label-1-normal text-muted-foreground">
+      <p className="text-heading-2 text-neutral">온보딩</p>
+      <p className="mt-2 text-label-1-normal text-neutral-muted">
         헤더가 없는 독립 화면. 데스크탑에서는 이 카드가 480px로 고정되고 좌우는 body 배경이 드러난다.
       </p>
-      <div className="mt-6 h-32 rounded-lg border border-border bg-surface" />
+      <div className="mt-6 h-32 rounded-lg border border-neutral-weak bg-surface" />
     </div>
   )
 }
@@ -65,7 +65,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 /**
- * 온보딩을 제외한 모든 경로 — 폭 제한 없이 그대로 통과시킨다(`min-h-screen w-full bg-background`).
+ * 온보딩을 제외한 모든 경로 — 폭 제한 없이 그대로 통과시킨다(`min-h-screen w-full bg-page`).
  * 점선이 자식이 직접 건 폭 경계다. 컨테이너가 아니라 화면이 폭을 고르는 구조라는 게 핵심.
  */
 export const Default: Story = {
@@ -74,7 +74,7 @@ export const Default: Story = {
 
 /**
  * 셸 분기(`SHELL_PATHS = ['/onboarding']`) 데스크탑. 480px 카드가 중앙에 놓이고
- * 좌우 여백에 `sm:border-x sm:border-border/60` 세로선이 생긴다.
+ * 좌우 여백에 `sm:border-x sm:border-neutral-weak/60` 세로선이 생긴다.
  */
 export const ShellDesktop: Story = {
   args: { children: <ShellProbe /> },
@@ -100,7 +100,7 @@ export const NoWidthConstraint: Story = {
   args: {
     children: (
       <div className="border-y border-dashed border-neutral-strong px-4 py-6">
-        <p className="text-label-1-normal text-foreground">
+        <p className="text-label-1-normal text-neutral">
           max-w-*를 걸지 않은 콘텐츠. 1920px 모니터에서도 이만큼 늘어난다.
         </p>
       </div>

@@ -11,7 +11,7 @@ import { usePathname } from 'next/navigation'
  *
  * **셸(SHELL_PATHS만)**: 헤더 자체가 없는 독립 화면(온보딩)만 예외 — 모바일(<640px)에서는
  * 화면 폭 전체를 그대로 쓰는 카드형 뷰이고, 데스크탑(≥640px)에서는 --shell-w(480px)로 고정된 카드가
- * 중앙에 뜨고 좌우 여백은 body의 기본 배경(bg-background)이 그대로 드러난다. (예전엔 이 여백에
+ * 중앙에 뜨고 좌우 여백은 body의 기본 배경(bg-page)이 그대로 드러난다. (예전엔 이 여백에
  * .shell-desktop-bg 장식 그라디언트를 깔았는데 안 쓰기로 해서 걷어냈다 — 2026-08-23.) (로그인은
  * 더 이상 페이지가 아니라 LoginModal이라 여기 나열할 대상 자체가 없다 — 어떤 화면 위에서든 모달로 뜬다.)
  *
@@ -25,12 +25,12 @@ export function PageContainer({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
   if (!SHELL_PATHS.includes(pathname)) {
-    return <div className="relative min-h-screen w-full bg-background">{children}</div>
+    return <div className="relative min-h-screen w-full bg-page">{children}</div>
   }
 
   return (
     <div className="relative min-h-screen w-full">
-      <div className="relative mx-auto min-h-screen w-full max-w-shell bg-background sm:border-x sm:border-border/60">
+      <div className="relative mx-auto min-h-screen w-full max-w-shell bg-page sm:border-x sm:border-neutral-weak/60">
         {children}
       </div>
     </div>

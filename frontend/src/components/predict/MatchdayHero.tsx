@@ -73,16 +73,16 @@ function TeamBadge({ id, name, align }: { id: number; name: string; align: 'star
       className={`flex w-[88px] flex-col items-center gap-1.5 ${align === 'end' ? 'justify-self-end' : 'justify-self-start'}`}
     >
       <img src={crestUrl(id)} alt="" className="h-11 w-11 object-contain" />
-      <p className="max-w-[88px] truncate text-caption-1 font-semibold text-white">{name}</p>
+      <p className="max-w-[88px] truncate text-caption-1 font-semibold text-on-solid">{name}</p>
     </div>
   )
 }
 
 function CountdownBox({ value, label }: { value: number; label: string }) {
   return (
-    <div className="flex w-14 flex-col items-center gap-0.5 rounded-sm bg-white/10 py-1.5">
-      <p className="text-headline-1 font-black tabular-nums text-white">{String(value).padStart(2, '0')}</p>
-      <p className="text-caption-2 text-disabled">{label}</p>
+    <div className="flex w-14 flex-col items-center gap-0.5 rounded-sm bg-on-solid-strong py-1.5">
+      <p className="text-headline-1 font-black tabular-nums text-on-solid">{String(value).padStart(2, '0')}</p>
+      <p className="text-caption-2 text-on-solid-muted">{label}</p>
     </div>
   )
 }
@@ -91,15 +91,15 @@ function CountdownBox({ value, label }: { value: number; label: string }) {
 function PlayerOfMatch({ player }: { player: NonNullable<MatchdayFixture['playerOfMatch']> }) {
   return (
     <div className="mt-4 flex justify-center">
-      <div className="flex w-64 items-center gap-3 rounded-lg bg-white/5 p-3">
-        <div className="h-11 w-11 shrink-0 overflow-hidden rounded-pill bg-white/10">
+      <div className="flex w-64 items-center gap-3 rounded-lg bg-on-solid-weak p-3">
+        <div className="h-11 w-11 shrink-0 overflow-hidden rounded-pill bg-on-solid-strong">
           <img src={player.photoUrl} alt="" className="h-full w-full object-cover" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-caption-2 text-disabled">최우수 선수</p>
-          <p className="truncate text-label-1-normal font-bold text-white">{player.name}</p>
+          <p className="text-caption-2 text-on-solid-muted">최우수 선수</p>
+          <p className="truncate text-label-1-normal font-bold text-on-solid">{player.name}</p>
         </div>
-        <p className="text-headline-1 font-black tabular-nums text-white">{player.rating.toFixed(1)}</p>
+        <p className="text-headline-1 font-black tabular-nums text-on-solid">{player.rating.toFixed(1)}</p>
       </div>
     </div>
   )
@@ -117,13 +117,13 @@ export function MatchdayHero({ fixture, href }: { fixture: MatchdayFixture; href
     (fixture.finished && fixture.homeScore !== null && fixture.awayScore !== null
       ? `${fixture.homeScore}–${fixture.awayScore}`
       : null)
-  // /predictions/[weekKey] — origin/main의 승부예측 백엔드 라우트(이 브랜치엔 아직 머지 전).
+  // /predictions/[weekKey] — 승부예측 세션 화면(main 병합으로 이 브랜치에 존재한다).
   const targetHref = href ?? `/predictions/${fixture.weekKey}`
 
   return (
     <div className="spotlight-glow-brand-strong relative overflow-hidden rounded-lg px-4 pb-4 pt-5">
       {fixture.competitionName && (
-        <p className="text-center text-caption-2 font-semibold tracking-wide text-disabled">
+        <p className="text-center text-caption-2 font-semibold text-on-solid-muted">
           {fixture.competitionName}
         </p>
       )}
@@ -135,18 +135,18 @@ export function MatchdayHero({ fixture, href }: { fixture: MatchdayFixture; href
         <TeamBadge id={fixture.homeId} name={fixture.homeName} align="end" />
         <div className="flex flex-col items-center gap-0.5">
           {fixture.shootoutScore && (
-            <p className="text-caption-2 text-disabled">승부차기({fixture.shootoutScore})</p>
+            <p className="text-caption-2 text-on-solid-muted">승부차기({fixture.shootoutScore})</p>
           )}
           {displayScore ? (
-            <p className="text-title-3 font-black tabular-nums text-white">{displayScore}</p>
+            <p className="text-title-3 font-black tabular-nums text-on-solid">{displayScore}</p>
           ) : (
-            <p className="text-headline-1 font-bold text-disabled">{fixture.finished ? '종료' : 'VS'}</p>
+            <p className="text-headline-1 font-bold text-on-solid-muted">{fixture.finished ? '종료' : 'VS'}</p>
           )}
         </div>
         <TeamBadge id={fixture.awayId} name={fixture.awayName} align="start" />
       </div>
 
-      <p className="mt-3 text-center text-caption-1 text-disabled">{formatKickoff(fixture.kickoffAt)}</p>
+      <p className="mt-3 text-center text-caption-1 text-on-solid-muted">{formatKickoff(fixture.kickoffAt)}</p>
 
       {isUpcoming && countdown && !countdown.done && (
         <div className="mt-3 flex justify-center gap-2">
@@ -170,10 +170,9 @@ export function MatchdayHero({ fixture, href }: { fixture: MatchdayFixture; href
       {isUpcoming && (
         <div className="mt-4 flex justify-center">
           <Button asChild className="h-12 w-52 rounded-lg text-body-2-normal font-bold">
-            {/* /predictions/[weekKey]가 이 브랜치엔 아직 없음(머지 전) — 연결 전까지는 prefetch가
-                존재하지 않는 RSC 페이로드를 계속 시도하게 되므로 다른 고정 네비 링크(BottomNav 등)와
-                같이 꺼둔다. */}
-            <Link href={targetHref} prefetch={false}>승부예측 하러 가기</Link>
+            {/* 홈 히어로에 하나뿐인 주 CTA다 — 목록 반복 링크(PollCard)나 상시 네비(BottomNav)와 달리
+                클릭 확률이 높아 prefetch를 켜둔다(라우트는 이제 존재). prefetch-policy 테스트 대상 아님. */}
+            <Link href={targetHref}>승부예측 하러 가기</Link>
           </Button>
         </div>
       )}

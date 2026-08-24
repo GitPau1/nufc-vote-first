@@ -8,24 +8,24 @@ import { Meta } from '@storybook/addon-docs/blocks'
 
 <div className="my-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
   <div className="flex flex-col gap-1.5">
-    <div className="h-16 rounded-sm border border-border bg-gradient-to-b from-white to-white/75" />
-    <code className="text-caption-2 text-muted-foreground">AppHeader</code>
+    <div className="h-16 rounded-sm border border-neutral-weak bg-gradient-to-b from-white to-white/75" />
+    <code className="text-caption-2 text-neutral-muted">AppHeader</code>
   </div>
   <div className="flex flex-col gap-1.5">
     <div className="h-16 rounded-sm bg-gradient-to-br from-brand-solid/30 to-brand-solid" />
-    <code className="text-caption-2 text-muted-foreground">avatar fallback</code>
+    <code className="text-caption-2 text-neutral-muted">avatar fallback</code>
   </div>
   <div className="flex flex-col gap-1.5">
     <div className="banner-text-overlay h-16 rounded-sm" />
-    <code className="text-caption-2 text-muted-foreground">banner-text-overlay</code>
+    <code className="text-caption-2 text-neutral-muted">banner-text-overlay</code>
   </div>
   <div className="flex flex-col gap-1.5">
     <div className="spotlight-glow-brand h-16 rounded-sm" />
-    <code className="text-caption-2 text-muted-foreground">spotlight-glow-brand (준비됨)</code>
+    <code className="text-caption-2 text-neutral-muted">spotlight-glow-brand (준비됨)</code>
   </div>
   <div className="flex flex-col gap-1.5">
     <div className="spotlight-glow-brand-strong h-16 rounded-sm" />
-    <code className="text-caption-2 text-muted-foreground">spotlight-glow-brand-strong</code>
+    <code className="text-caption-2 text-neutral-muted">spotlight-glow-brand-strong</code>
   </div>
 </div>
 
@@ -51,7 +51,7 @@ import { Meta } from '@storybook/addon-docs/blocks'
 }
 ```
 
-두 모서리에서 브랜드색이 옅게 스며들다 사라지는 앰비언트 글로우다. **아직 어떤 화면에도 붙이지 않았다** — 새 화면·카드가 생길 때 쓰라고 미리 만들어둔 것이다. 이 클래스는 배경을 통째로 정하므로, 쓰는 요소에 `bg-surface`/`bg-background` 등 다른 배경 클래스를 같이 주지 않는다.
+두 모서리에서 브랜드색이 옅게 스며들다 사라지는 앰비언트 글로우다. **아직 어떤 화면에도 붙이지 않았다** — 새 화면·카드가 생길 때 쓰라고 미리 만들어둔 것이다. 이 클래스는 배경을 통째로 정하므로, 쓰는 요소에 `bg-surface`/`bg-page` 등 다른 배경 클래스를 같이 주지 않는다.
 
 원래 이 자리에는 데스크탑 전용 장식 배경 `.shell-desktop-bg`(온보딩 화면의 데스크탑 좌우 여백)가 있었는데, 그 화면 자체를 안 쓰기로 해서 걷어냈다 — 하드코딩 hex를 쓰던 자리라 드리프트 위험도 같이 없어졌다.
 

@@ -57,10 +57,3 @@ export function formatDate(dateStr: string): string {
     year: 'numeric', month: '2-digit', day: '2-digit',
   }).replace(/\. /g, '.').replace(/\.$/, '')
 }
-
-/** 투표 수 배열 → 퍼센트 배열 */
-export function calcPercents(counts: number[]): number[] {
-  const total = counts.reduce((a, b) => a + b, 0)
-  if (total === 0) return counts.map(() => 0)
-  return counts.map(c => Math.round((c / total) * 100))
-}

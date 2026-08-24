@@ -86,7 +86,7 @@ function PollFeedCard({ poll }: { poll: PollListItem }) {
       href={`/polls/${poll.id}`}
       prefetch={false}
       onClick={onClick}
-      // neutral-weak-pressed(neutral-300)는 text-muted-foreground와 4.06:1로 AA 미달이라 안 쓴다.
+      // neutral-weak-pressed(neutral-300)는 text-neutral-muted와 4.06:1로 AA 미달이라 안 쓴다.
       // neutral-weak(값은 기존 bg-disabled와 동일, neutral-200)을 press 색으로 써서 대비는 유지하고
       // "disabled 색을 press 피드백으로 재사용"하던 이름만 바로잡는다.
       className={`block bg-surface transition-colors active:bg-neutral-weak ${poll.status === 'closed' ? 'opacity-70' : ''}`}
@@ -108,8 +108,8 @@ function PollFeedCard({ poll }: { poll: PollListItem }) {
             gap-3: justify-between이 만드는 여백은 row가 다른 카드보다 안 길면 0에 가까워질 수
             있어서, 제목/부제 묶음과 메타 줄 사이 최소 간격을 gap으로 따로 보장한다. */}
         <div className="flex min-w-0 flex-1 flex-col justify-between gap-3 self-stretch">
-          <p className="min-w-0 line-clamp-2 text-headline-2 font-bold text-foreground">{poll.title}</p>
-          <div className="flex items-center justify-between text-caption-1 text-muted-foreground">
+          <p className="min-w-0 line-clamp-2 text-headline-2 font-bold text-neutral">{poll.title}</p>
+          <div className="flex items-center justify-between text-caption-1 text-neutral-muted">
             <span className="inline-flex items-center gap-1">
               <Users className="h-3.5 w-3.5" />
               {poll.vote_count.toLocaleString()}명
@@ -133,7 +133,7 @@ function PollGridCard({ poll }: { poll: PollListItem }) {
       onClick={onClick}
       // flex flex-col: 그리드가 이 Link를 같은 행의 가장 큰 카드 높이만큼 stretch시켜도(기본
       // align-items: stretch), 아래 정보 패널이 flex-1로 그 남는 높이를 실제로 가져다 쓰게 한다.
-      className={`flex flex-col overflow-hidden rounded-lg border border-border bg-surface transition-colors active:bg-neutral-weak ${poll.status === 'closed' ? 'opacity-70' : ''}`}
+      className={`flex flex-col overflow-hidden rounded-lg border border-neutral-weak bg-surface transition-colors active:bg-neutral-weak ${poll.status === 'closed' ? 'opacity-70' : ''}`}
     >
       <div className="relative shrink-0">
         <img
@@ -152,12 +152,12 @@ function PollGridCard({ poll }: { poll: PollListItem }) {
           텍스트끼리 붙어 보일 수 있어서, 최소 간격을 gap으로 따로 보장한다. */}
       <div className="flex flex-1 flex-col justify-between gap-3 p-3.5">
         <div>
-          <p className="truncate text-headline-2 font-bold text-foreground">{poll.title}</p>
-          <p className="mt-0.5 line-clamp-2 text-label-1-normal text-muted-foreground">
+          <p className="truncate text-headline-2 font-bold text-neutral">{poll.title}</p>
+          <p className="mt-0.5 line-clamp-2 text-label-1-normal text-neutral-muted">
             {poll.description || getOptionPreview(poll)}
           </p>
         </div>
-        <div className="flex items-center justify-between text-caption-1 text-muted-foreground">
+        <div className="flex items-center justify-between text-caption-1 text-neutral-muted">
           <span className="inline-flex items-center gap-1">
             <Users className="h-3.5 w-3.5" />
             {poll.vote_count.toLocaleString()}명

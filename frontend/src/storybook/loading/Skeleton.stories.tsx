@@ -18,7 +18,7 @@ function SkeletonBlock({ className }: { className: string }) {
 // 화면 스켈레톤 스토리는 그 폭 안에서만 비율이 맞으므로 모바일 폭으로 가둔다.
 const screenDecorator = [
   (Story: () => React.JSX.Element) => (
-    <div className="w-[375px] border border-border bg-background">
+    <div className="w-[375px] border border-neutral-weak bg-page">
       <Story />
     </div>
   ),
@@ -38,7 +38,7 @@ type Story = StoryObj<typeof meta>
  */
 export const Primitives: Story = {
   render: () => (
-    <div className="w-80 rounded-lg border border-border bg-surface p-4">
+    <div className="w-80 rounded-lg border border-neutral-weak bg-surface p-4">
       <div className="flex flex-col gap-3">
         <SkeletonBlock className="h-5 w-16 rounded-xs" />
         <SkeletonBlock className="h-4 w-4/5 rounded-xs" />
@@ -68,11 +68,11 @@ export const PollsScreen: Story = {
         <div className="h-full animate-skeleton bg-disabled" />
       </div>
 
-      <div className="mt-3 overflow-hidden rounded-lg border border-border bg-surface p-px">
+      <div className="mt-3 overflow-hidden rounded-lg border border-neutral-weak bg-surface p-px">
         <div className="flex px-3 pt-4">
           <div className="h-8 flex-1 border-b border-brand-solid" />
-          <div className="h-8 flex-1 border-b border-border" />
-          <div className="h-8 flex-1 border-b border-border" />
+          <div className="h-8 flex-1 border-b border-neutral-weak" />
+          <div className="h-8 flex-1 border-b border-neutral-weak" />
         </div>
 
         <div className="divide-y divide-border">
@@ -100,8 +100,8 @@ export const PlayersScreen: Story = {
   decorators: screenDecorator,
   render: () => (
     <div aria-hidden="true" className="flex-1 px-5 pb-24 pt-4">
-      <div className="overflow-hidden rounded-lg border border-border bg-surface">
-        <div className="flex justify-center border-b border-border px-3.5 pb-[13px] pt-3">
+      <div className="overflow-hidden rounded-lg border border-neutral-weak bg-surface">
+        <div className="flex justify-center border-b border-neutral-weak px-3.5 pb-[13px] pt-3">
           <SkeletonBlock className="h-6 w-32 rounded-xs" />
         </div>
         <div className="flex justify-center px-4 pt-3">
@@ -123,20 +123,20 @@ export const PlayersScreen: Story = {
         </div>
       </div>
 
-      <div className="mb-3 mt-3 flex h-10 items-center gap-2 rounded-md border border-border bg-surface px-3">
+      <div className="mb-3 mt-3 flex h-10 items-center gap-2 rounded-md border border-neutral-weak bg-surface px-3">
         <SkeletonBlock className="h-4 w-4 rounded-xs" />
         <SkeletonBlock className="h-4 flex-1 rounded-xs" />
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-surface">
-        <div className="flex h-10 items-center justify-between border-b border-border px-3.5">
+      <div className="overflow-hidden rounded-lg border border-neutral-weak bg-surface">
+        <div className="flex h-10 items-center justify-between border-b border-neutral-weak px-3.5">
           <SkeletonBlock className="h-3 w-20 rounded-xs" />
           <SkeletonBlock className="h-3 w-12 rounded-xs" />
         </div>
         {[0, 1, 2, 3].map(index => (
           <div
             key={index}
-            className="flex h-[68px] items-center gap-2.5 border-b border-border px-3.5 py-2.5 last:border-b-0"
+            className="flex h-[68px] items-center gap-2.5 border-b border-neutral-weak px-3.5 py-2.5 last:border-b-0"
           >
             <SkeletonBlock className="h-6 w-6 shrink-0 rounded-xs" />
             <SkeletonBlock className="h-[42px] w-[42px] shrink-0 rounded-pill" />
@@ -164,11 +164,11 @@ export const MenuScreen: Story = {
         <SkeletonBlock className="mt-2 h-4 w-64 max-w-full rounded-xs" />
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-surface">
+      <div className="overflow-hidden rounded-lg border border-neutral-weak bg-surface">
         {[0, 1, 2, 3, 4].map(index => (
           <div
             key={index}
-            className="flex h-14 items-center gap-3 border-b border-border px-4 last:border-b-0"
+            className="flex h-14 items-center gap-3 border-b border-neutral-weak px-4 last:border-b-0"
           >
             <SkeletonBlock className="h-8 w-8 shrink-0 rounded-md" />
             <SkeletonBlock className="h-4 flex-1 rounded-xs" />

@@ -46,12 +46,12 @@ test('poll list and home hero apply the mobile layout foundation', () => {
   const list = source('components/polls/PollListClient.tsx')
   const hero = source('components/polls/PollHeroCard.tsx')
 
-  assert.match(listPage, /bg-background/)
+  assert.match(listPage, /bg-page/)
   assert.doesNotMatch(listPage, /bg-\[#f4f4f5\]/)
   // 데스크탑 1140px 그리드 도입으로 mx-auto max-w-content가 앞에 붙었다(모바일 여백 자체는 그대로).
   assert.match(list, /className="mx-auto max-w-content px-5 pt-4 pb-10 animate-enter"/)
   assert.match(list, /className="px-5 pt-4 animate-enter"/)
-  assert.match(list, /overflow-hidden rounded-lg border border-border bg-surface/)
+  assert.match(list, /overflow-hidden rounded-lg border border-neutral-weak bg-surface/)
   // 히어로 배너 규격은 옮겨간 자리(PollHeroCard)에서 지킨다.
   assert.match(hero, /relative block h-\[252px\] overflow-hidden rounded-lg/)
   assert.match(hero, /banner-text-overlay absolute inset-0/)

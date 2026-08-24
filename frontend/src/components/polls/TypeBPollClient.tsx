@@ -125,7 +125,7 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
         {(poll.description || errorMsg) && (
           <div className="px-4 pt-4 pb-0 flex flex-col gap-2">
             {poll.description && (
-              <p className="text-label-1-reading text-muted-foreground">{poll.description}</p>
+              <p className="text-label-1-reading text-neutral-muted">{poll.description}</p>
             )}
             {errorMsg && (
               <p className="text-label-1-normal text-destructive font-medium">{errorMsg}</p>
@@ -180,8 +180,8 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
                 type="button"
                 onClick={() => !isCenter && isInteractive && setSelectedIdx(i)}
                 className={cn(
-                  'absolute top-0 overflow-hidden rounded-lg border border-border bg-surface text-left shadow-g200',
-                  'transition-all duration-enter ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'absolute top-0 overflow-hidden rounded-lg border border-neutral-weak bg-surface text-left shadow-g200',
+                  'transition-all duration-enter ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-solid',
                   isCenter && 'border-brand-solid shadow-w200',
                   isCenter ? 'cursor-default' : 'cursor-pointer'
                 )}
@@ -209,7 +209,7 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
                   )}
                   <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/35 to-transparent" />
                   {player?.squad_number != null && (
-                    <span className="absolute left-2.5 top-2.5 rounded-pill bg-white/95 px-2.5 py-1 text-caption-2 font-black text-foreground shadow-g100">
+                    <span className="absolute left-2.5 top-2.5 rounded-pill bg-white/95 px-2.5 py-1 text-caption-2 font-black text-neutral shadow-g100">
                       #{player.squad_number}
                     </span>
                   )}
@@ -222,18 +222,18 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
 
                 <div className={cn('bg-surface px-3 py-2.5', isFreeChoice ? 'min-h-[92px]' : 'min-h-[62px]')}>
                   <p className={cn(
-                    'font-black text-foreground',
+                    'font-black text-neutral',
                     isFreeChoice ? 'text-body-2-reading line-clamp-2' : 'text-body-2-normal line-clamp-1'
                   )}>
                     {option.label}
                   </p>
                   {isFreeChoice && option.description && (
-                    <p className="mt-1.5 line-clamp-2 text-caption-1 font-medium text-muted-foreground">
+                    <p className="mt-1.5 line-clamp-2 text-caption-1 font-medium text-neutral-muted">
                       {option.description}
                     </p>
                   )}
                   {!isFreeChoice && player && (
-                    <p className="mt-0.5 text-caption-1 font-bold text-muted-foreground">
+                    <p className="mt-0.5 text-caption-1 font-bold text-neutral-muted">
                       {player.position}
                     </p>
                   )}
@@ -269,7 +269,7 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
                   'rounded-full transition-all duration-micro',
                   i === selectedIdx
                     ? 'w-5 h-2 bg-brand-solid'
-                    : 'w-2 h-2 bg-muted-foreground/30'
+                    : 'w-2 h-2 bg-disabled-foreground/30'
                 )}
               />
             ))}
@@ -289,13 +289,13 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
 
         {/* 선택된 선수 요약 */}
         <div className="mx-4 mt-4 rounded-md bg-disabled px-4 py-3">
-          <p className="text-caption-1 text-muted-foreground mb-0.5">현재 선택</p>
-          <p className="text-label-1-normal font-bold text-foreground">{selectedOption?.label}</p>
+          <p className="text-caption-1 text-neutral-muted mb-0.5">현재 선택</p>
+          <p className="text-label-1-normal font-bold text-neutral">{selectedOption?.label}</p>
           {!isFreeChoice && selectedPlayer && (
-            <p className="mt-1 text-caption-1 text-muted-foreground">{selectedPlayer.position}</p>
+            <p className="mt-1 text-caption-1 text-neutral-muted">{selectedPlayer.position}</p>
           )}
           {isFreeChoice && selectedOption?.description && (
-            <p className="mt-1 text-caption-1 text-muted-foreground">{selectedOption.description}</p>
+            <p className="mt-1 text-caption-1 text-neutral-muted">{selectedOption.description}</p>
           )}
         </div>
       </div>

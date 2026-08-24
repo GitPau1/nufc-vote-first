@@ -5,9 +5,32 @@ import { IS_MOCK } from '@/lib/config'
 import type { AnySupabase } from '@/lib/supabase/admin'
 import type { CommentItem } from '@/lib/queries/comments'
 
-type CommentActionResult = { success: true; comment: CommentItem } | { error: string }
-type ActionResult = { success: true } | { error: string }
+/**
+ * `not_voted` = 투표에 참여하지 않은 사용자의 댓글 작성 시도.
+ * DB의 `comments: insert for voters` RLS와 같은 조건을 서버 액션에서 먼저 판정해,
+ * UI를 우회한 호출도 'failed'라는 뭉뚱그린 코드가 아니라 이유를 받게 한다.
+ */
+type CommentErrorCode = 'empty' | 'unauthenticated' | 'not_voted' | 'forbidden' | 'failed'
+
+type CommentActionResult = { success: true; comment: CommentItem } | { error: CommentErrorCode }
+type ActionResult = { success: true } | { error: CommentErrorCode }
 type SupabaseLike = Pick<AnySupabase, 'from'>
+
+/** 투표 참여 여부 — comments RLS와 동일하게 votes에 이 유저 행이 있는지만 본다(마감 여부는 무관). */
+async function hasVoted(
+  supabase: SupabaseLike,
+  pollId: string,
+  userId: string,
+): Promise<boolean> {
+  const { data } = await supabase
+    .from('votes')
+    .select('id')
+    .eq('poll_id', pollId)
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  return !!data
+}
 
 async function getVotedOptionLabel(
   supabase: SupabaseLike,
@@ -73,6 +96,11 @@ export async function submitComment(
   if (!content.trim()) return { error: 'empty' }
 
   if (IS_MOCK) {
+    // 목 모드의 투표 이력은 mock-vote-{pollId} 쿠키에만 있다(userId는 쓰이지 않는다).
+    // 실연동 모드와 같은 순서로 막아, 목에서만 통과하는 경로가 생기지 않게 한다.
+    const { mockGetMyVote } = await import('@/lib/mock/queries')
+    if (!(await mockGetMyVote(pollId, 'mock-user'))) return { error: 'not_voted' }
+
     revalidatePath(`/polls/${pollId}`)
     return {
       success: true,
@@ -96,6 +124,10 @@ export async function submitComment(
   if (!user) return { error: 'unauthenticated' }
 
   const db = supabase as AnySupabase
+  // 투표 참여자만 댓글을 쓸 수 있다. RLS도 같은 조건을 걸지만, 여기서 먼저 판정해야
+  // 거부 이유가 'failed'로 뭉개지지 않고 UI가 사용자에게 설명할 수 있다.
+  if (!(await hasVoted(db, pollId, user.id))) return { error: 'not_voted' }
+
   const { data: comment, error } = await db
     .from('comments')
     .insert({ poll_id: pollId, user_id: user.id, content: content.trim() })

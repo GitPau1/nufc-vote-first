@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { trackEvent } from '@/lib/analytics/mixpanel'
-import { PlayerPhoto, ShareButton, Silhouette, TeamBadge } from './shared'
+import { PlayerPhoto, ShareButton, TeamBadge } from './shared'
 import { POSITIONS, POSITION_LABEL, playerPhotoUrl, type Candidate, type Position } from '@/lib/predictions/candidates'
 import {
   NUFC_LABEL,
@@ -78,8 +78,8 @@ export function PredictionDone({
 
   const intro = (align: 'center' | 'left') => (
     <div className={align === 'center' ? 'text-center' : 'text-left'}>
-      <p className="text-headline-1 font-extrabold text-black">{week.weekNo}주차 제출 완료</p>
-      <p className="mt-1 text-label-2 text-gray-2">킥오프 전까지 언제든 결과를 확인하러 다시 와주세요</p>
+      <p className="text-headline-1 font-extrabold text-neutral">{week.weekNo}주차 제출 완료</p>
+      <p className="mt-1 text-label-2 text-neutral-muted">킥오프 전까지 언제든 결과를 확인하러 다시 와주세요</p>
     </div>
   )
 
@@ -100,13 +100,13 @@ export function PredictionDone({
           {missedMatches.map(match => (
             <div key={match.id} className="mb-4">
               {isMulti && (
-                <p className="mb-2 text-label-2 font-extrabold text-gray-2">
+                <p className="mb-2 text-label-2 font-extrabold text-neutral-muted">
                   {NUFC_LABEL} vs {match.opponent}
                 </p>
               )}
-              <div className="rounded-lg border border-gray-4 bg-surface px-4 py-5">
+              <div className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
                 <p className="mb-2.5 text-body-2-normal font-bold">경기 예측</p>
-                <p className="px-4 pb-4 pt-5 text-center text-label-1-normal text-gray-2">
+                <p className="px-4 pb-4 pt-5 text-center text-label-1-normal text-neutral-muted">
                   이 경기는 예측 마감 시간이 지나 참여하지 못했어요
                 </p>
               </div>
@@ -120,11 +120,11 @@ export function PredictionDone({
             return (
               <div key={match.id} className={cn(i > 0 && 'mt-4')}>
                 {isMulti && (
-                  <p className="mb-2 text-label-2 font-extrabold text-gray-2">
+                  <p className="mb-2 text-label-2 font-extrabold text-neutral-muted">
                     경기 {i + 1} · {NUFC_LABEL} vs {match.opponent}
                   </p>
                 )}
-                <div className="rounded-lg border border-gray-4 bg-surface px-4 py-5">
+                <div className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
                   <p className="mb-2.5 text-body-2-normal font-bold">경기 예측</p>
                   <div className="flex items-center justify-center gap-2 sm:gap-6">
                     <MatchupTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
@@ -154,7 +154,7 @@ export function PredictionDone({
           </div>
 
           {/* 퍼블리싱엔 없는 문구 — DB UNIQUE + UPDATE 정책 없음을 반영 */}
-          <p className="mt-4 text-center text-caption-1 text-gray-3">제출한 예측은 수정할 수 없어요</p>
+          <p className="mt-4 text-center text-caption-1 text-neutral-muted">제출한 예측은 수정할 수 없어요</p>
         </div>
       </div>
     </div>
@@ -198,17 +198,17 @@ function Countdown({ targetIso, pendingCount }: { targetIso: string | null; pend
         ]
 
   return (
-    <div className="mb-4 rounded-lg bg-[#0c2340] px-4 pb-[18px] pt-5 text-center">
-      <p className="mb-2.5 text-caption-1 font-bold text-white/65">
+    <div className="mb-4 rounded-lg bg-neutral-strong px-4 pb-[18px] pt-5 text-center">
+      <p className="mb-2.5 text-caption-1 font-bold text-on-solid-muted">
         결과 반영까지{pendingCount > 1 && ' (늦은 경기 종료 기준)'}
       </p>
       <div className="flex items-start justify-center gap-2.5">
         {segments.map((segment, i) => (
           <div key={segment.unit} className="flex items-start gap-2.5">
-            {i > 0 && <span className="mt-px text-heading-2 font-black text-white/30">:</span>}
+            {i > 0 && <span className="mt-px text-heading-2 font-black text-on-solid-muted">:</span>}
             <div className="flex min-w-[34px] flex-col items-center gap-[3px]">
-              <span className="text-[26px] font-black tabular-nums text-white">{segment.value}</span>
-              <span className="text-[10px] leading-none text-white/50">{segment.unit}</span>
+              <span className="text-title-3 font-black tabular-nums text-on-solid">{segment.value}</span>
+              <span className="text-caption-2 text-on-solid-muted">{segment.unit}</span>
             </div>
           </div>
         ))}
@@ -224,22 +224,22 @@ function pad(value: number): string {
 /** 모바일 픽 결과 행 — 퍼블리싱 `positionCompleteRowHtml`. 경기 전이라 평점·점수 없이 배당만. */
 function PickResultList({ picks }: { picks: PickedPlayer[] }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-gray-4">
+    <div className="overflow-hidden rounded-lg border border-neutral-weak">
       {picks.map((pick, i) => (
         <div
           key={pick.position}
-          className={cn('bg-surface p-3', i < picks.length - 1 && 'border-b border-gray-4')}
+          className={cn('bg-surface p-3', i < picks.length - 1 && 'border-b border-neutral-weak')}
         >
-          <p className="mb-2 text-caption-2 font-bold text-gray-3">{POSITION_LABEL[pick.position]}</p>
+          <p className="mb-2 text-caption-2 font-bold text-neutral-muted">{POSITION_LABEL[pick.position]}</p>
           <div className="flex items-center gap-2.5">
             <PlayerPhoto url={pick.photoUrl} size={48} />
             <div className="flex min-w-0 flex-1 flex-col items-start gap-[3px]">
-              <p className="truncate text-label-1-normal font-extrabold text-black">
+              <p className="truncate text-label-1-normal font-extrabold text-neutral">
                 {pick.name ?? '선수 정보 없음'}
               </p>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-[3px]">
-              <span className="text-caption-2 font-bold text-gray-3">×{pick.multiplier.toFixed(1)}</span>
+              <span className="text-caption-2 font-bold text-neutral-muted">×{pick.multiplier.toFixed(1)}</span>
             </div>
           </div>
         </div>
@@ -251,9 +251,9 @@ function PickResultList({ picks }: { picks: PickedPlayer[] }) {
 /** 데스크탑 포지션 카드 — 예측 플로우의 카드와 같은 모양이지만 클릭되지 않는다. */
 function PickCard({ pick }: { pick: PickedPlayer }) {
   return (
-    <div className="flex min-h-[196px] min-w-0 flex-1 flex-col rounded-lg border border-border bg-surface p-3">
-      <span className="text-caption-1 font-extrabold text-gray-2">{POSITION_LABEL[pick.position]}</span>
-      <div className="my-2.5 h-px bg-border" />
+    <div className="flex min-h-[196px] min-w-0 flex-1 flex-col rounded-lg border border-neutral-weak bg-surface p-3">
+      <span className="text-caption-1 font-extrabold text-neutral-muted">{POSITION_LABEL[pick.position]}</span>
+      <div className="my-2.5 h-px bg-neutral-weak" />
       <div className="flex flex-1 flex-col items-center justify-center gap-1">
         {pick.name ? (
           <>
@@ -262,13 +262,12 @@ function PickCard({ pick }: { pick: PickedPlayer }) {
           </>
         ) : (
           <>
-            <span className="flex h-10 w-10 items-center justify-center rounded-pill bg-disabled text-gray-3">
-              <Silhouette />
-            </span>
-            <p className="mt-0.5 text-center text-label-2 font-extrabold text-gray-3">선수 정보 없음</p>
+            {/* 손으로 조립한 실루엣 원 대신 PlayerPhoto의 폴백을 그대로 쓴다 — 폴백 톤이 한 곳에서만 정해진다. */}
+            <PlayerPhoto url={null} size={40} />
+            <p className="mt-0.5 text-center text-label-2 font-extrabold text-neutral-muted">선수 정보 없음</p>
           </>
         )}
-        <span className="text-caption-1 font-bold text-primary-dark">×{pick.multiplier.toFixed(1)}</span>
+        <span className="text-caption-1 font-bold text-brand">×{pick.multiplier.toFixed(1)}</span>
       </div>
     </div>
   )
@@ -278,7 +277,7 @@ function MatchupTeam({ logoUrl, name }: { logoUrl: string; name: string }) {
   return (
     <div className="flex w-[88px] shrink-0 flex-col items-center gap-1.5">
       <TeamBadge logoUrl={logoUrl} name={name} />
-      <span className="text-label-2 font-bold text-gray-2">{name}</span>
+      <span className="text-label-2 font-bold text-neutral-muted">{name}</span>
     </div>
   )
 }

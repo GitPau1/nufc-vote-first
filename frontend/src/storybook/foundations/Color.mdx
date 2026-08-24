@@ -22,14 +22,29 @@ import { ColorSwatch, TextSwatch, SwatchGrid } from '../_internal/ColorSwatch'
 
 옛 시스템(`primary` #41b6e6)은 텍스트로 쓰면 대비가 부족해서 `primary-dark`라는 더 어두운 전용 텍스트 색을 따로 둬야 했다. 새 brand 앵커(#115aff)는 흰 배경 대비 5.34:1로 AA를 통과해서, **배경(`bg-brand-solid`)과 텍스트(`text-brand`)가 값도 이름도 하나로 합쳐졌다** — 별도의 "-dark" 변형이 필요 없다.
 
+`primary`·`primary-dark`·`primary-dim` 계열은 이제 **정의 자체가 없다** — 실수로 옛 파랑을 고를 방법이 없다. 자세한 경위는 [Design Token](?path=/docs/foundations-design-token--docs) 참고.
+
+## 색 있는·어두운 면 위
+
+흰 배경이 아닌 면 위에서는 아래 텍스트 위계(neutral 계열)를 쓰지 않는다 — 전용 토큰 두 개가 따로 있다.
+
+| 이 텍스트가 무엇인가 | 토큰 |
+|---|---|
+| 색·다크 면 위의 본문·값·제목 | `text-on-solid` |
+| 색·다크 면 위의 라벨·단위·캡션(2차) | `text-on-solid-muted` |
+
+면을 한 단계 얹어야 하면 `bg-on-solid-weak`(5%) / `bg-on-solid-strong`(10%)를 쓴다 — 둘 다 흰색 알파라 밑에 깔린 색을 통과시킨다. 컨텐츠 위에 떠 있는 반투명 흰 면(하단 고정 액션 바)은 `bg-surface-translucent`다. 전부 [Semantic](?path=/docs/foundations-semantic--docs)에 값과 사용처가 있다.
+
+**`text-white`/`bg-white/…`를 쓰지 않는다.** Tailwind 기본 팔레트이고, 위 토큰들이 정확히 그 자리를 덮는다.
+
 ## 텍스트
 
 위계 순서대로 놓았다. 왼쪽이 가장 진하다.
 
 <SwatchGrid>
-  <TextSwatch className="text-foreground" name="text-foreground" note="본문" />
+  <TextSwatch className="text-neutral" name="text-neutral" note="본문" />
   <TextSwatch className="text-neutral-strong" name="text-neutral-strong" note="강조 라벨" />
-  <TextSwatch className="text-muted-foreground" name="text-muted-foreground" note="부제·설명" />
+  <TextSwatch className="text-neutral-muted" name="text-neutral-muted" note="부제·설명" />
   <TextSwatch className="text-neutral-subtle" name="text-neutral-subtle" note="힌트" />
   <TextSwatch className="text-disabled" name="text-disabled" note="비활성" />
 </SwatchGrid>
@@ -38,29 +53,29 @@ import { ColorSwatch, TextSwatch, SwatchGrid } from '../_internal/ColorSwatch'
 
 | 이 텍스트가 무엇인가 | 토큰 |
 |---|---|
-| 본문, 제목, 값 | `text-foreground` |
-| 굵게 강조하는 라벨 — `foreground`와 `muted-foreground` 사이가 필요할 때만 | `text-neutral-strong` |
-| 부제, 설명, 메타 정보, 타임스탬프 | `text-muted-foreground` |
+| 본문, 제목, 값 | `text-neutral` |
+| 굵게 강조하는 라벨 — `neutral`과 `neutral-muted` 사이가 필요할 때만 | `text-neutral-strong` |
+| 부제, 설명, 메타 정보, 타임스탬프 | `text-neutral-muted` |
 | 입력창 힌트(placeholder 아닌 보조 텍스트) | `text-neutral-subtle` |
 | 입력창 placeholder | `placeholder:text-placeholder` |
 | 비활성 상태 텍스트 | `disabled:text-disabled` |
 
 `text-neutral-subtle`과 `placeholder:text-placeholder`는 값이 같다 — 둘 다 "읽혀야 하는 보조 텍스트" 역할이라 의도적으로 같은 값을 쓰고, 위치(본문 흐름 vs placeholder)로만 구분한다. `text-disabled`는 이보다 한 단계 더 밝다 — 비활성은 "안 보이는 게 목적"이라 힌트보다 옅어야 한다.
 
-대부분의 화면에서는 `text-foreground`/`text-muted-foreground` 두 단계로 충분하다.
+대부분의 화면에서는 `text-neutral`/`text-neutral-muted` 두 단계로 충분하다.
 
 ## 표면과 경계
 
 <SwatchGrid>
-  <ColorSwatch className="bg-background" name="bg-background" bordered note="화면 배경" />
+  <ColorSwatch className="bg-page" name="bg-page" bordered note="화면 배경" />
   <ColorSwatch className="bg-surface" name="bg-surface" bordered note="카드·헤더" />
-  <ColorSwatch className="bg-border" name="bg-border" note="테두리·구분선" />
+  <ColorSwatch className="bg-neutral-weak" name="bg-neutral-weak" note="테두리·구분선·눌림 면" />
   <ColorSwatch className="bg-disabled" name="bg-disabled" bordered note="비활성 배경" />
 </SwatchGrid>
 
-`background`와 `surface`의 구분이 그림자 그룹 선택 기준이 된다 — 회색 배경 위에는 `shadow-g*`, 흰 면 위에는 `shadow-w*`. [Elevation](?path=/docs/foundations-elevation--docs) 참고.
+`page`와 `surface`의 구분이 그림자 그룹 선택 기준이 된다 — 회색 배경 위에는 `shadow-g*`, 흰 면 위에는 `shadow-w*`. [Elevation](?path=/docs/foundations-elevation--docs) 참고.
 
-카드는 `bg-surface` + `border-border` + `shadow-g200`을 함께 쓴다. 그림자만으로는 흰 카드와 회색 배경의 경계가 약하다.
+카드는 `bg-surface` + `border-neutral-weak` + `shadow-g200`을 함께 쓴다. 그림자만으로는 흰 카드와 회색 배경의 경계가 약하다.
 
 ## 상태
 

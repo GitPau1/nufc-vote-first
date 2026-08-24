@@ -75,11 +75,11 @@ export function MyPageClient({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-page">
       <div className="mx-auto max-w-shell px-4 pt-6 pb-10 flex flex-col gap-5">
 
         <div>
-          <p className="text-caption-1 font-semibold text-muted-foreground uppercase mb-3">
+          <p className="text-caption-1 font-semibold text-neutral-muted uppercase mb-3">
             내 계정 정보
           </p>
 
@@ -102,7 +102,7 @@ export function MyPageClient({
                         if (e.key === 'Enter') handleSaveName()
                         if (e.key === 'Escape') cancelEdit()
                       }}
-                      className="text-body-1-normal font-black text-foreground bg-transparent border-b-2 border-brand-solid outline-none w-32 pb-0.5"
+                      className="text-body-1-normal font-black text-neutral bg-transparent border-b-2 border-brand-solid outline-none w-32 pb-0.5"
                       autoFocus
                       maxLength={20}
                     />
@@ -115,18 +115,18 @@ export function MyPageClient({
                     </button>
                     <button
                       onClick={cancelEdit}
-                      className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center flex-shrink-0"
+                      className="w-6 h-6 rounded-full bg-disabled flex items-center justify-center flex-shrink-0"
                       aria-label="닉네임 수정 취소"
                     >
-                      <X className="h-3.5 w-3.5 text-muted-foreground" />
+                      <X className="h-3.5 w-3.5 text-neutral-muted" />
                     </button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <p className="text-headline-2 font-black text-foreground truncate">{nameValue}</p>
+                    <p className="text-headline-2 font-black text-neutral truncate">{nameValue}</p>
                       <button
                         onClick={startEdit}
-                        className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                        className="flex-shrink-0 text-neutral-muted hover:text-neutral transition-colors"
                         aria-label="닉네임 수정"
                       >
                         <Pencil className="h-3.5 w-3.5" />
@@ -134,7 +134,7 @@ export function MyPageClient({
                   </div>
                 )}
 
-                <p className="mt-1 text-label-1-normal text-muted-foreground">{email}</p>
+                <p className="mt-1 text-label-1-normal text-neutral-muted">{email}</p>
                 {isMockMode && (
                   <Badge variant="secondary" className="text-caption-2 mt-1">데모 프로필</Badge>
                 )}
@@ -147,12 +147,12 @@ export function MyPageClient({
 
         {/* 참여한 투표 */}
         <div>
-          <p className="text-caption-1 font-semibold text-muted-foreground uppercase mb-3">
+          <p className="text-caption-1 font-semibold text-neutral-muted uppercase mb-3">
             참여한 투표 · {participatedPolls.length}개
           </p>
 
           {participatedPolls.length === 0 ? (
-            <p className="text-label-1-normal text-muted-foreground py-4 text-center">
+            <p className="text-label-1-normal text-neutral-muted py-4 text-center">
               아직 참여한 투표가 없습니다
             </p>
           ) : (
@@ -162,16 +162,16 @@ export function MyPageClient({
                   <div key={item.pollId}>
                     {i > 0 && <Separator />}
                     <Link href={`/polls/${item.pollId}`} className="block active:bg-disabled transition-colors">
-                      <div className="flex items-center gap-3 px-4 py-3.5 hover:bg-secondary/50 transition-colors">
+                      <div className="flex items-center gap-3 px-4 py-3.5 hover:bg-disabled/50 transition-colors">
                         <div className="flex-1 min-w-0">
-                          <p className="text-label-1-normal font-semibold text-foreground line-clamp-1">
+                          <p className="text-label-1-normal font-semibold text-neutral line-clamp-1">
                             {item.pollTitle}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
                             <span className={cn('text-caption-1 font-medium text-brand')}>
                               {item.optionLabel}
                             </span>
-                            <span className="text-caption-2 text-muted-foreground">
+                            <span className="text-caption-2 text-neutral-muted">
                               · {formatDate(item.votedAt)}
                             </span>
                           </div>
@@ -183,7 +183,7 @@ export function MyPageClient({
                           >
                             {item.pollStatus === 'closed' ? '종료' : '진행 중'}
                           </Badge>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          <ChevronRight className="h-4 w-4 text-neutral-muted" />
                         </div>
                       </div>
                     </Link>

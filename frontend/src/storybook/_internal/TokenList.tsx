@@ -30,48 +30,38 @@ export function TokenList({ items, valueColumns = ['값'] }: { items: Array<Toke
     <div className="my-4 overflow-x-auto font-sans">
       <table className="w-full border-collapse text-left">
         <thead>
-          <tr className="border-b border-border">
-            <th className="w-32 py-2 pr-3 text-label-2 font-bold text-muted-foreground">샘플</th>
+          <tr className="border-b border-neutral-weak">
+            <th className="w-32 py-2 pr-3 text-label-2 font-bold text-neutral-muted">샘플</th>
             {valueColumns.map((label) => (
-              <th key={label} className="w-32 py-2 pr-3 text-label-2 font-bold text-muted-foreground">
+              <th key={label} className="w-32 py-2 pr-3 text-label-2 font-bold text-neutral-muted">
                 {label}
               </th>
             ))}
-            <th className="w-56 py-2 pr-3 text-label-2 font-bold text-muted-foreground">이름</th>
-            <th className="py-2 text-label-2 font-bold text-muted-foreground">언제 쓰는가</th>
+            <th className="w-56 py-2 pr-3 text-label-2 font-bold text-neutral-muted">이름</th>
+            <th className="py-2 text-label-2 font-bold text-neutral-muted">언제 쓰는가</th>
           </tr>
         </thead>
         <tbody>
           {items.map((item) => {
             const values = Array.isArray(item.value) ? item.value : [item.value]
             return (
-              <tr key={item.name} className="border-b border-border align-middle">
+              <tr key={item.name} className="border-b border-neutral-weak align-middle">
                 <td className="py-2.5 pr-3">{item.sample}</td>
                 {valueColumns.map((label, i) => (
-                  <td key={label} className="py-2.5 pr-3 font-mono text-caption-2 text-muted-foreground">
+                  <td key={label} className="py-2.5 pr-3 font-mono text-caption-2 text-neutral-muted">
                     {values[i] ?? '—'}
                   </td>
                 ))}
                 <td className="py-2.5 pr-3">
-                  <code className="text-label-2 text-foreground">{item.name}</code>
+                  <code className="text-label-2 text-neutral">{item.name}</code>
                 </td>
-                <td className="py-2.5 text-label-1-reading text-muted-foreground">{item.usage ?? '—'}</td>
+                <td className="py-2.5 text-label-1-reading text-neutral-muted">{item.usage ?? '—'}</td>
               </tr>
             )
           })}
         </tbody>
       </table>
     </div>
-  )
-}
-
-/** 색상 스와치. `cssVar`는 `--c-primary` 처럼 변수명만 넘긴다. */
-export function Swatch({ cssVar, border }: { cssVar: string; border?: boolean }) {
-  return (
-    <span
-      className={`inline-block h-8 w-16 rounded-sm ${border ? 'border border-border' : ''}`}
-      style={{ background: `var(${cssVar})` }}
-    />
   )
 }
 
@@ -125,7 +115,7 @@ function important(className: string): string {
 
 /** 타이포 샘플. 시각 예시만 그린다 — 값은 `TypeMetric`이 각 값 칸에서 따로 보여준다. */
 export function TypeSample({ className }: { className: string }) {
-  return <span className={`${important(className)} font-sans text-foreground`}>가나다 Ag 123</span>
+  return <span className={`${important(className)} font-sans text-neutral`}>가나다 Ag 123</span>
 }
 
 /** px 문자열을 `16px(1rem)`처럼 rem과 함께 보여준다. 루트(`html`)의 font-size를 기준으로 계산한다 — 16 고정값을 가정하지 않는다(사용자 브라우저 확대 설정을 반영). */

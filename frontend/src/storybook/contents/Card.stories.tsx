@@ -37,7 +37,7 @@ export const Default: Story = {
         <CardDescription>투표는 제출 후 수정할 수 없습니다.</CardDescription>
       </CardHeader>
       <CardContent>
-        <p className="text-label-1-normal text-foreground">본문 슬롯. 기본 패딩은 `p-4 pt-0`이라 Header 아래에 붙는 것을 전제한다.</p>
+        <p className="text-label-1-normal text-neutral">본문 슬롯. 기본 패딩은 `p-4 pt-0`이라 Header 아래에 붙는 것을 전제한다.</p>
       </CardContent>
       <CardFooter>
         <Button size="sm">투표하기</Button>
@@ -56,7 +56,7 @@ export const ContentOnly: Story = {
   render: () => (
     <Card className="mt-1">
       <CardContent className="p-4">
-        <p className="mb-3 text-caption-1 font-semibold uppercase text-muted-foreground">선수 정보</p>
+        <p className="mb-3 text-caption-1 font-semibold uppercase text-neutral-muted">선수 정보</p>
         <div className="flex items-center gap-3">
           <img
             src="https://placehold.co/44x44/0c2340/41b6e6?text=9"
@@ -64,8 +64,8 @@ export const ContentOnly: Story = {
             className="h-11 w-11 flex-shrink-0 rounded-full object-cover ring-2 ring-border"
           />
           <div>
-            <p className="text-label-1-normal font-bold text-foreground">알렉산더 이삭</p>
-            <p className="mt-0.5 text-caption-1 text-muted-foreground">
+            <p className="text-label-1-normal font-bold text-neutral">알렉산더 이삭</p>
+            <p className="mt-0.5 text-caption-1 text-neutral-muted">
               FW
               <span className="mx-1.5">·</span>
               <span className="font-semibold text-brand">#14</span>
@@ -93,8 +93,8 @@ export const ListContainer: Story = {
             {i > 0 && <Separator />}
             <div className="flex items-center gap-3 px-4 py-3.5">
               <div className="min-w-0 flex-1">
-                <p className="line-clamp-1 text-label-1-normal font-semibold text-foreground">{title}</p>
-                <p className="mt-1 text-caption-2 text-muted-foreground">알렉산더 이삭 · 2026.08.20</p>
+                <p className="line-clamp-1 text-label-1-normal font-semibold text-neutral">{title}</p>
+                <p className="mt-1 text-caption-2 text-neutral-muted">알렉산더 이삭 · 2026.08.20</p>
               </div>
             </div>
           </div>

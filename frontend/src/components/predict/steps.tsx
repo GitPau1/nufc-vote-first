@@ -22,7 +22,7 @@ function nodeState(index: number, currentIndex: number): NodeState {
 function StepCircle({ state }: { state: NodeState }) {
   if (state === 'done') {
     return (
-      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-pill bg-primary text-caption-2 font-black text-white">
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-pill bg-brand-solid text-caption-2 font-black text-on-solid">
         ✓
       </span>
     )
@@ -30,11 +30,11 @@ function StepCircle({ state }: { state: NodeState }) {
   return (
     <span
       className={cn(
-        'flex h-5 w-5 shrink-0 items-center justify-center rounded-pill border-2 bg-white',
-        state === 'active' ? 'border-primary' : 'border-gray-4',
+        'flex h-5 w-5 shrink-0 items-center justify-center rounded-pill border-2 bg-surface',
+        state === 'active' ? 'border-brand-solid' : 'border-neutral-weak',
       )}
     >
-      {state === 'active' && <span className="h-2 w-2 rounded-pill bg-primary" />}
+      {state === 'active' && <span className="h-2 w-2 rounded-pill bg-brand-solid" />}
     </span>
   )
 }
@@ -48,7 +48,7 @@ export function StepTrack({ current }: { current: StepKey }) {
         <div key={step.key} className="flex flex-1 items-center last:flex-none">
           <StepCircle state={nodeState(i, currentIndex)} />
           {i < STEP_META.length - 1 && (
-            <div className={cn('mx-1.5 h-0.5 flex-1', i < currentIndex ? 'bg-primary' : 'bg-gray-4')} />
+            <div className={cn('mx-1.5 h-0.5 flex-1', i < currentIndex ? 'bg-brand-solid' : 'bg-neutral-weak')} />
           )}
         </div>
       ))}
@@ -61,8 +61,8 @@ export function StepHero({ current, multi = false }: { current: StepKey; multi?:
   const step = STEP_META.find(s => s.key === current)!
   return (
     <div className="mt-5 text-left">
-      <p className="text-headline-1 font-extrabold text-primary">{step.name}</p>
-      <p className="mt-1 text-label-2 text-gray-2">{stepDesc(step, multi)}</p>
+      <p className="text-headline-1 font-extrabold text-brand">{step.name}</p>
+      <p className="mt-1 text-label-2 text-neutral-muted">{stepDesc(step, multi)}</p>
     </div>
   )
 }
@@ -82,18 +82,18 @@ export function StepTrackVertical({ current, multi = false }: { current: StepKey
                 <span
                   className={cn(
                     'text-label-1-normal font-bold',
-                    state === 'pending' ? 'text-gray-3' : 'text-foreground',
+                    state === 'pending' ? 'text-neutral-muted' : 'text-neutral',
                   )}
                 >
                   {step.name}
                 </span>
                 {state === 'active' && (
-                  <p className="mt-1 max-w-[168px] text-caption-1 text-gray-2">{stepDesc(step, multi)}</p>
+                  <p className="mt-1 max-w-[168px] text-caption-1 text-neutral-muted">{stepDesc(step, multi)}</p>
                 )}
               </div>
             </div>
             {i < STEP_META.length - 1 && (
-              <div className={cn('my-0.5 ml-[9px] h-6 w-0.5', i < currentIndex ? 'bg-primary' : 'bg-gray-4')} />
+              <div className={cn('my-0.5 ml-[9px] h-6 w-0.5', i < currentIndex ? 'bg-brand-solid' : 'bg-neutral-weak')} />
             )}
           </div>
         )

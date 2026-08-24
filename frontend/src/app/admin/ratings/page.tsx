@@ -55,21 +55,23 @@ export default async function AdminRatingsPage({
   return (
     <>
       <AppHeader auth={auth} />
-      <main className="mx-auto min-h-[calc(100vh-62px)] max-w-shell bg-background px-4 pb-24 pt-6">
-        <Link href="/admin" className="inline-flex items-center gap-1 text-label-2 font-bold text-gray-2">
+      <main className="mx-auto min-h-[calc(100vh-62px)] max-w-shell bg-page px-4 pb-24 pt-6">
+        <Link href="/admin" className="inline-flex items-center gap-1 text-label-2 font-bold text-neutral-muted">
           <ChevronLeft className="h-4 w-4" />
           관리자 페이지
         </Link>
 
         <div className="mb-5 mt-3">
-          <p className="text-heading-2 font-black text-foreground">경기별 선수 평점</p>
-          <p className="mt-1 text-label-2 text-muted-foreground">
+          <p className="text-heading-2 font-black text-neutral">경기별 선수 평점</p>
+          {/* 페이지 제목 아래 설명문은 읽기용 토큰(text-label-1-reading)으로 통일한다 —
+              admin/menu/폼 페이지가 전부 이 토큰을 쓴다. */}
+          <p className="mt-1 text-label-1-reading text-neutral-muted">
             평점을 넣지 않은 선수는 그 경기 픽 점수가 0점으로 계산돼요.
           </p>
         </div>
 
         {finished.length === 0 ? (
-          <p className="text-label-1-normal text-gray-2">아직 종료된 경기가 없어요.</p>
+          <p className="text-label-1-normal text-neutral-muted">아직 종료된 경기가 없어요.</p>
         ) : (
           <AdminRatingsForm
             fixtures={finished.map(({ week, match }) => ({

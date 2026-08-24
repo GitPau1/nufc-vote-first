@@ -25,7 +25,7 @@ export function BottomNav() {
   return (
     <nav
       className={cn(
-        'fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-shell bg-surface border-t border-border z-40',
+        'fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-shell bg-surface border-t border-neutral-weak z-40',
         hiddenOnDesktop && 'sm:hidden'
       )}
     >
@@ -37,7 +37,7 @@ export function BottomNav() {
               key={href}
               href={href}
               prefetch={false}
-              className={`flex flex-1 flex-col items-center gap-0.5 text-label-2 font-semibold transition-colors ${isActive ? 'text-brand' : 'text-muted-foreground'}`}
+              className={`flex flex-1 flex-col items-center gap-0.5 text-label-2 font-semibold transition-colors ${isActive ? 'text-brand' : 'text-neutral-muted'}`}
             >
               <Icon className="h-5 w-5" />
               <span>{label}</span>

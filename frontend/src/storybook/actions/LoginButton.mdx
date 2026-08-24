@@ -21,13 +21,13 @@ import * as LoginButtonStories from './LoginButton.stories'
 |---|---|
 | `h-8` (sm 기본 `h-9` 대신) | 56px 헤더 행에서 아바타(32px)와 같은 높이를 맞춘다 |
 | `rounded-pill` (기본 `rounded-sm` 대신) | 옆자리 원형 아바타와 같은 계열로 보이게 |
-| `border-brand-solid text-brand` (기본 `border-neutral-weak text-foreground` 대신) | 헤더에서 유일한 액션이라 brand로 강조 |
+| `border-brand-solid text-brand` (기본 `border-neutral-weak text-neutral` 대신) | 헤더에서 유일한 액션이라 brand로 강조 |
 | `font-semibold` (기본 `font-bold` 대신) | 로고(`font-black`)보다 약하게 |
 
 즉 **순수한 `outline` variant가 아니다.** 다른 화면에서 비슷한 버튼이 필요하다고 이 클래스 묶음을 복사하지 말고, 그 화면에 맞는 variant를 [Button](?path=/docs/actions-button--docs)에서 고른다.
 
 ## 클릭하면 LoginModal이 뜬다
 
-내부 `useState`로 [LoginModal](?path=/docs/feedback-loginmodal--docs)을 `triggerAction="login"`으로 열 뿐이다 — 실제 로그인 처리는 전부 모달 쪽에 있다. `triggerAction`은 `auth_prompt_viewed` 이벤트에 실려 나가는 값이라, "헤더에서 시작한 로그인"과 "투표하다 막혀서 뜬 로그인"을 구분하는 유일한 표식이다.
+내부 `useState`로 [LoginModal](?path=/docs/feedback-loginmodal--docs)을 `triggerAction="login"`으로 열 뿐이다 — 실제 로그인 처리는 전부 모달 쪽에 있다. `triggerAction="login"`은 "헤더에서 스스로 시작한 로그인"이라는 뜻이고, 모달의 설명 문구를 중립 문구(로그인해서 얻는 것)로 고정한다 — "투표하다 막혀서 뜬 로그인"(`vote`)과 문구가 다르다. 같은 값이 `auth_prompt_viewed` 이벤트의 `trigger_action`으로도 나간다.
 
 Storybook에서 버튼을 눌러 모달을 여는 것까지는 되지만, 그 안의 로그인은 서버 액션(mock) 또는 Supabase OAuth 리다이렉트라 **동작하지 않는다.**

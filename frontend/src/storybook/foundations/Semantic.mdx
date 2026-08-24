@@ -30,6 +30,16 @@ import { ColorSwatch, TextSwatch, SwatchGrid } from '../_internal/ColorSwatch'
   <ColorSwatch className="bg-magic-weak" name="bg-magic-weak" bordered note="미사용" />
 </SwatchGrid>
 
+아래 셋은 위 그리드로 못 보여준다 — **반투명이라 뒤에 무엇이 깔렸는지에 따라 보이는 색이 달라진다.**
+
+| 토큰 | 값 | 어디에 |
+|---|---|---|
+| `bg-on-solid-weak` | `rgba(255,255,255,.05)` | 어두운·색 있는 면 위에 아주 살짝 얹는 면 (MatchdayHero 최우수 선수 줄) |
+| `bg-on-solid-strong` | `rgba(255,255,255,.1)` | 같은 용도의 한 단계 진한 면 (MatchdayHero 카운트다운 칸, PredictionResult 점수 박스) |
+| `bg-surface-translucent` | `rgba(255,255,255,.95)` | 컨텐츠 위에 떠 있는 흰 면. `backdrop-blur`와 함께 쓴다 (모바일 하단 고정 액션 바) |
+
+이 셋은 `bg-white/5`·`bg-white/10`·`bg-white/95`라는 임의값으로 흩어져 있던 것을 모은 것이다. `bg-on-solid-*`는 밑에 깔린 색을 통과시켜야 해서 팔레트 hex로는 만들 수 없다 — 어떤 배경 위에 올려도 맞는 고정 값이 없다. `bg-surface-translucent`는 `bg-surface`(불투명 흰색)와 역할이 다르다: 뒤가 비쳐야 "위에 떠 있다"가 읽힌다.
+
 `-weak-pressed`는 별도로 나열하지 않았다 — `neutral-weak-pressed`를 뺀 나머지 전부(`brand`·`critical`·`positive`·`warning`·`informative`·`magic`)는 `-weak`과 값이 같다. 이 색들의 자기 텍스트(700단계)가 `-weak` 배경 위에서 이미 대비 여유가 거의 없어서, 더 어둡게 만들 여지가 없기 때문이다.
 
 ## Text
@@ -48,7 +58,9 @@ import { ColorSwatch, TextSwatch, SwatchGrid } from '../_internal/ColorSwatch'
   <TextSwatch className="text-magic" name="text-magic" note="미사용" />
 </SwatchGrid>
 
-`text-placeholder`·`text-on-solid`는 각각 `placeholder:` variant·색 있는 배경 위에서만 의미가 있어 위 그리드 방식(흰 배경 위 텍스트)으로는 못 보여준다 — [Color](?path=/docs/foundations-color--docs)의 실제 조합에서 확인한다.
+`text-placeholder`·`text-on-solid`·`text-on-solid-muted`는 각각 `placeholder:` variant·색 있는 배경 위에서만 의미가 있어 위 그리드 방식(흰 배경 위 텍스트)으로는 못 보여준다 — [Color](?path=/docs/foundations-color--docs)의 실제 조합에서 확인한다.
+
+`text-on-solid-muted`(neutral-400)는 어두운 면 위의 **2차** 텍스트다 — 라벨, 단위, 캡션. `bg-neutral-strong` 위에서 6.80:1로 AA를 통과한다. 이 자리에 원래 `text-disabled`를 전용해 쓰고 있었는데(값은 같다) "비활성"이 아니라 "보조"라 역할 이름이 어긋나 있었다. 값은 그대로 두고 이름만 뗀 것이라 화면은 바뀌지 않는다. **흰 배경 위에서는 쓰지 않는다** — 거기서는 대비가 2.2:1이다.
 
 ## Border
 
