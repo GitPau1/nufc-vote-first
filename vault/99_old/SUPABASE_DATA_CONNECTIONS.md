@@ -1,6 +1,6 @@
 # Supabase 데이터 연결 구조
 
-최종 업데이트: 2026-05-29
+최종 업데이트: 2026-08-24
 
 이 문서는 현재 서비스가 Supabase와 어떻게 연결되어 있는지 정리한 기준 문서입니다. 테이블, 컬럼, RLS 정책, Storage 버킷, 기능별 데이터 흐름을 바꿀 때마다 함께 업데이트하세요.
 
@@ -148,7 +148,7 @@ RLS:
 
 RLS:
 
-- 공개 SELECT(`fixtures_public_read`). 쓰기 정책 없음 — 동기화는 외부에서 수행합니다.
+- 공개 SELECT(`fixtures_public_read`). 앱에서 쓰는 경로는 없고, 적재는 Edge Function `sync-fixture`가 service-role로 upsert합니다(아래 "Edge Function · 크론" 참고).
 
 주의:
 
@@ -551,7 +551,7 @@ Update note 2026-05-30:
 진입점:
 
 - `frontend/src/app/predictions/page.tsx` (주차별 경기 목록 + 랭킹 사이드바)
-- `frontend/src/app/predictions/[weekKey]/page.tsx`. `weekKey`는 `2026-35` 형태의 ISO 연도-주차입니다. `status === 'open'`이면 예측 플로우(스코어 → 선수 픽 → 확인), `'result'`면 결과 화면(`PredictionResult`), `'upcoming'`이면 404입니다.
+- `frontend/src/app/predictions/[weekKey]/page.tsx`. `weekKey`는 `2026-35` 형태의 ISO 연도-주차입니다. `status === 'open'`이면 예측 플로우(스코어 → 선수 픽 → 확인), `'result'`면 결과 화면(`PredictionResult`)입니다. `'upcoming'`은 **잠긴 경기가 하나도 없을 때만** 404입니다 — 킥오프이 지났지만 `fixtures.finished`가 아직 적재되지 않은 주차도 `'upcoming'`으로 판정되기 때문에, 그것까지 404로 막으면 경기가 끝난 새벽부터 크론이 도는 아침까지 페이지가 사라집니다.
 - `frontend/src/lib/queries/fixtures.ts`, `frontend/src/lib/queries/predictions.ts`, `frontend/src/lib/queries/squads.ts`
 - 제출: `frontend/src/lib/actions/predictions.ts`의 `submitWeekPrediction(weekKey, input)`
 
@@ -559,9 +559,11 @@ Update note 2026-05-30:
 
 - `fixtures` 전체 조회 후 `lib/predictions/week.ts`에서 주차 그룹핑 → 주 단위 예측 세션(더블 매치위크는 경기 2개가 한 세션)
 - 선수 후보/배당은 `season_squads`(`prediction_multiplier`)에서 옵니다 — `lib/queries/squads.ts`
-- 제출은 `predictions`, 채점은 `prediction_results` view(종료 경기만) — 조회는 `getMyResults()`. 배당은 view에 없어서 결과 화면이 `getMyPredictions()`의 제출 스냅샷과 함께 읽습니다.
-- `fixture_player_ratings`는 픽 점수의 입력값입니다. 읽기는 공개(`getFixtureRatings`), 쓰기는 insert 정책이 없어 service-role만 가능하고 경로는 `/admin/ratings` 화면 + `lib/actions/fixture-ratings.ts`의 `saveFixtureRatings`(upsert) 하나뿐입니다. 평점 삭제는 지원하지 않습니다.
-- 랭킹은 주차 단위 `week_leaderboard`(`20260823140000_week_leaderboard.sql`)와 시즌 누적 `season_leaderboard`를 씁니다 — `lib/queries/predictions.ts`의 `getWeekRanking(weekKey)` / `getSeasonRanking(limit)`. 목록 화면 사이드바(TOP3 + 내 순위)는 연결됐고, 주차 랭킹은 결과 화면이 붙을 때 연결됩니다.
+- 제출은 `predictions`, 채점은 `prediction_results` view — 조회는 `getMyResults()`. 배당은 view에 없어서 결과 화면이 `getMyPredictions()`의 제출 스냅샷과 함께 읽습니다.
+- **`prediction_results`는 정산이 끝난 주차만 담습니다**(`20260824120000_prediction_results_week_settled.sql`): 종료된 경기여야 하고, 그 주차에 아직 안 끝난 경기(취소·일정 미정 제외)가 하나도 없어야 합니다. 제출 단위가 주(week)라 집계 단위도 주여야 하고, 진행 중인 주차의 부분 점수가 랭킹으로 새면 안 되기 때문입니다. `week_leaderboard` / `season_leaderboard`가 이 view 위에 있어 게이트가 자동으로 따라갑니다.
+- 그래서 **경기가 끝났지만 주차가 진행 중인 구간에는 점수가 없습니다.** 그때 제출 완료 화면(`PredictionDone`)이 실제 스코어와 적중 여부만 보여줍니다 — 판정은 `lib/predictions/result.ts`의 `matchHit()`이고, DB `prediction_match_points`와 같은 기준이라 한쪽만 고치면 배지와 점수가 어긋납니다.
+- `fixture_player_ratings`는 픽 점수의 입력값입니다. 읽기는 공개(`getFixtureRatings`), 쓰기는 insert 정책이 없어 service-role만 가능하고 경로가 둘입니다: 평상시 자동 적재는 Edge Function `sync-fixture-ratings`(크론), 손보정은 `/admin/ratings` 화면 + `lib/actions/fixture-ratings.ts`의 `saveFixtureRatings`(upsert). 평점 삭제는 지원하지 않습니다.
+- 랭킹은 주차 단위 `week_leaderboard`(`20260823140000_week_leaderboard.sql`)와 시즌 누적 `season_leaderboard`를 씁니다 — `lib/queries/predictions.ts`의 `getWeekRanking(weekKey)` / `getSeasonRanking(limit)`. 목록 화면 사이드바(TOP3 + 내 순위)와 결과 화면 주차 랭킹 모두 연결돼 있습니다.
 - 경기 단위 `fixture_leaderboard`는 랭킹 단위가 주차로 정리되면서 삭제했습니다(화면에서 참조한 적 없음).
 - `week_leaderboard.week_key`는 `to_char(week_start, 'IYYY-IW')`로 만든 값이라 `week.ts`의 `weekKey()`와 같은 문자열입니다 — 한쪽 기준만 바꾸면 화면이 랭킹을 못 찾습니다.
 
@@ -571,6 +573,24 @@ Update note 2026-05-30:
 - 세션은 **첫 경기 킥오프 7일 전에 열리고 마지막 경기 킥오프에 닫힙니다**. 마감은 실제로 경기별이라, 첫 경기가 끝난 뒤 처음 들어온 사용자는 남은 경기만 제출합니다(부분 제출이 정상 상태). 화면은 `submittableMatches`로 남은 경기를 골라 `pending`으로 넘깁니다.
 - insert RLS(`20260823130000_predictions_weekly_window.sql`): 그 경기가 `cancelled = false and started = false and kickoff_at > now()`이고, `prediction_week_first_kickoff(fixture_id) < now() + interval '7 days'`여야 통과합니다. 프론트의 `isMatchLocked`/`weekStatus`와 같은 기준이므로 한쪽만 바꾸면 어긋납니다.
 - 주차 경계는 한국시간 월요일 시작입니다(SQL: `date_trunc('week', kickoff_at at time zone 'Asia/Seoul')` / TS: `week.ts`의 ISO 주차).
+
+## Edge Function · 크론
+
+FotMob 비공식 API에서 경기·선수 데이터를 긁어 DB에 적재하는 수집 함수들입니다. 소스는 `supabase/functions/`에 있고(배포본과 동일하게 관리), 요약은 `supabase/functions/README.md`, 채택 배경은 `vault/00_의사결정사항/02-adr/002-fotmob-api-채택.md`입니다.
+
+**앱 코드는 이 함수들을 호출하지 않습니다.** 크론과 관리자 버튼 전용이고, 조회는 전부 클라이언트가 테이블/view를 직접 select합니다.
+
+| 함수 | 쓰는 테이블 | 호출 |
+|---|---|---|
+| `sync-fixture` | `fixtures` (전 경기 upsert) | 크론 `sync-fixture-daily` (UTC `0 23 * * *` = KST 08:00) |
+| `sync-fixture-ratings` | `fixture_player_ratings` | 크론 `sync-fixture-ratings-daily` (UTC `5 23 * * *` = KST 08:05) |
+| `sync-season-squad` | `season_squads` | 수동(시즌 시작·이적시장) |
+| `get-fotmob-fixture`, `health-check` | 없음(조회/확인용) | 수동 |
+
+- 크론은 **Supabase 대시보드 → Integrations → Cron**에 등록되어 있습니다. pg_cron은 DB 타임존(UTC) 기준으로 스케줄을 해석하므로 UI에 "At 23:00"으로 보이는 것이 KST 08:00입니다. Method는 **POST 필수**(두 함수 모두 POST 전용), Timeout은 기본값 1000ms가 너무 짧아 각각 10000 / 30000ms로 둡니다.
+- 크론이 보내는 Authorization은 anon 키입니다. `verify_jwt: true`가 "프로젝트가 서명한 유효한 JWT"만 확인하고, DB 쓰기는 함수가 자기 환경변수의 service-role 키로 하기 때문에 크론 쪽에 비밀키가 없습니다.
+- `sync-fixture-ratings`는 **종료됐고 평점 행이 11개 미만인 경기**를 최신순으로 최대 **5경기**씩 처리합니다. "행이 하나라도 있으면 완료"가 아닌 이유: FotMob 평점은 종료 직후 일부만 채워져 내려올 수 있고, 그 상태로 굳으면 남은 선수가 영구히 0점이 됩니다. 배치 상한은 Edge Function CPU 2초 제한 때문입니다(응답의 `remaining`이 0이 아니면 다음 실행이 이어받습니다).
+- 즉시 실행이 필요하면 `/admin`의 "경기 결과·평점 동기화" 버튼(`lib/actions/sync-fixtures.ts`)이 같은 두 함수를 순서대로 POST하고 `revalidateTag('fixture-weeks')`로 목록 캐시를 비웁니다. 두 함수 모두 멱등해서 여러 번 눌러도 무해합니다.
 
 ## DB 수정 체크리스트
 
@@ -604,4 +624,5 @@ Supabase 스키마를 바꿀 때는 아래를 함께 처리하세요.
 - 관리자 권한은 DB role이 아니라 `ADMIN_EMAILS` 환경변수 기반 앱 코드로 판단합니다.
 - `votes`는 `20260529_public_profiles_storage_vote_guards.sql`에서 option-poll 복합 FK를 추가합니다. 기존 운영 DB에 이미 잘못된 vote row가 있으면 FK validation은 별도 점검이 필요합니다.
 - 예정/마감 투표의 상태 자동 전환 cron/Edge Function은 아직 별도 구현 대상입니다. 현재는 `submitVote()`에서 잘못된 INSERT를 방어합니다.
+- 경기·평점 데이터는 **FotMob 비공식 API**에 의존합니다. 스펙이 예고 없이 바뀌면 수집이 조용히 멈출 수 있으므로, 함수들은 빈 응답을 성공으로 넘기지 않고(`EMPTY_FIXTURES`) 사유를 응답에 남깁니다. 이상 신호는 대시보드 Cron의 Runs 이력에서 확인합니다.
 - 일부 기존 소스 파일의 한글 주석/문자열이 깨져 있습니다. DB 동작과 직접 관련은 없지만 유지보수 중 오해를 만들 수 있습니다.

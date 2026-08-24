@@ -1,6 +1,6 @@
 # Agent Maintenance Guide
 
-최종 업데이트: 2026-05-29
+최종 업데이트: 2026-08-24
 
 이 문서는 앞으로 이 저장소에서 기능 수정, 개선, DB 변경, Supabase 연동 작업을 할 때 먼저 확인할 작업 기준입니다. 작업 중 새로 알게 된 구조나 반복되는 오류 원인이 있으면 이 문서를 계속 업데이트합니다.
 
@@ -54,6 +54,8 @@ DB나 Supabase 연동을 건드릴 때:
 - `votes`는 `20260529_public_profiles_storage_vote_guards.sql` 이후 option-poll 복합 FK로 보강됩니다.
 - `submitVote()`는 status/scheduled_at/closes_at 검증을 거친 뒤 INSERT해야 합니다.
 - 예정/마감 투표 자동 상태 전환은 아직 cron/Edge Function 후속 작업입니다.
+- 경기·평점 수집은 `supabase/functions/`의 Edge Function + Supabase 대시보드 Cron(KST 08:00/08:05)입니다. **함수 소스는 리포에서 관리하니 대시보드에서 직접 고치지 말고** `npx supabase functions deploy <name>`으로 배포합니다. 크론 등록만 대시보드에 있습니다(`supabase/functions/README.md`).
+- `prediction_results`는 **정산이 끝난 주차만** 담습니다(`20260824120000_prediction_results_week_settled.sql`). 주차 진행 중에는 점수·랭킹이 비어 있는 게 정상이고, 그 구간의 화면 표기는 `matchHit()`의 적중 배지입니다.
 
 ## 기능별 주요 파일
 
@@ -78,15 +80,19 @@ DB나 Supabase 연동을 건드릴 때:
 - 제출 검증/insert 행 생성: `frontend/src/lib/predictions/submit.ts` (+ `submit.test.mjs`), action은 `frontend/src/lib/actions/predictions.ts`
 - 포지션 정의/표시 헬퍼: `frontend/src/lib/predictions/candidates.ts`
 - 화면: `frontend/src/app/predictions/page.tsx`, `frontend/src/app/predictions/[weekKey]/page.tsx`(오픈 주차=예측 플로우 / 종료 주차=결과 화면 분기), `frontend/src/components/predict/*`
-- 결과 화면은 `PredictionResult.tsx` + 주차 랭킹 `WeekRankCard.tsx`, 순수 계산은 `lib/predictions/result.ts`(+ `result.test.mjs`). 채점 결과 조회는 `getMyResults()`(`prediction_results` view, 종료 경기만).
+- 결과 화면은 `PredictionResult.tsx` + 주차 랭킹 `WeekRankCard.tsx`, 순수 계산은 `lib/predictions/result.ts`(+ `result.test.mjs`). 채점 결과 조회는 `getMyResults()`(`prediction_results` view — **정산이 끝난 주차만** 담는다).
 - 예측/제출 단위는 경기가 아니라 **주(week)**다. 상태(`open`/`result`/`upcoming`)도 주 레벨에만 있고, 더블 매치위크는 경기 2개가 한 세션이다. 다만 목록 카드의 **배지는 경기 단위**(`matchStatusMeta`)다 — 한 경기가 끝났는데 다른 경기는 아직 열려 있을 수 있어서 두 상태를 병기한다.
 - 세션은 **그 주 첫 경기 킥오프 7일 전**에 열리고 **그 주 마지막 경기 킥오프**에 닫힌다. 마감 판정은 실제로는 경기별(`isMatchLocked`)이고, 잠기지 않은 경기가 하나도 없으면 주차가 닫히는 구조다.
 - 그래서 **부분 제출이 정상 상태**다: 첫 경기가 끝난 뒤 처음 들어온 사용자는 남은 경기만 예측한다(`submittableMatches`). 페이지가 미제출·미잠김 경기를 `pending`으로 넘기고, 비어 있으면 완료 화면을 띄운다.
 - 프론트는 `week.ts`의 `isMatchLocked`/`weekStatus`, DB는 `20260823130000_predictions_weekly_window.sql`의 insert 정책(`kickoff_at > now()` + `prediction_week_first_kickoff < now() + 7 days`) — 둘이 같은 기준이라 한쪽만 고치면 안 된다.
 - `predictions` 테이블은 **경기당 1행**이고 제출은 주 단위 1회다: 그 주 경기 전부를 한 번의 insert로 넣는다. 스코어도 **선수 픽도 경기별**이다(2026-08-23 확정 — 더블 매치위크는 경기마다 다른 선수를 고를 수 있고, 화면에 첫 경기 픽을 복사하는 "그대로 적용" 버튼이 있다). 포지션 간 중복 금지(`predictions_distinct_picks`)는 행 단위라 경기끼리 같은 선수를 고르는 건 허용된다. 점수는 그 주 행들을 합해 주차 성적이 된다(FR-017 = 픽 점수 주 단위 합산).
 - 랭킹 조회는 `lib/queries/predictions.ts`의 `getWeekRanking(weekKey)`(주차, `week_leaderboard` view) / `getSeasonRanking(limit)`(시즌 누적, `season_leaderboard` view). `week_leaderboard.week_key`는 `week.ts`의 `weekKey()`와 같은 ISO 주차 문자열이라 둘을 같이 고쳐야 한다.
-- 경기별 선수 평점 입력은 `/admin/ratings`(`app/admin/ratings/page.tsx` + `components/admin/AdminRatingsForm.tsx`), 쓰기는 `lib/actions/fixture-ratings.ts`의 `saveFixtureRatings`. `fixture_player_ratings`에 insert 정책이 없어 service-role(`requireAdminClient`)로만 쓴다. 평점 행이 없는 선수는 픽 점수가 0으로 계산되므로, 경기가 끝나면 여기서 평점을 넣어야 결과·랭킹이 의미를 갖는다. 이름이 `actions/ratings.ts`가 아닌 이유: 그 파일은 선수 평점 **투표**(rating_votes)가 이미 쓰고 있다.
-- 아직 없는 것: 평점 자동 주입(sofascore 스크래핑 → `fixture_player_ratings`), 순위 변동(▲/▼) 표시용 지난 주차 순위 보관
+- 평점 자동 적재는 Edge Function `sync-fixture-ratings`(크론 KST 08:05). 종료됐고 평점 행이 11개 미만인 경기를 최신순 최대 5경기씩 처리하고, `remaining`이 남으면 다음 실행이 이어받는다. "행이 하나라도 있으면 완료"로 판정하지 않는 이유는 FotMob 평점이 종료 직후 일부만 내려올 수 있어서다(그 상태로 굳으면 남은 선수가 영구히 0점).
+- 즉시 실행은 `/admin`의 동기화 버튼(`components/admin/AdminSyncButton.tsx` + `lib/actions/sync-fixtures.ts`) — `sync-fixture` → `sync-fixture-ratings` 순서로 POST하고 `revalidateTag('fixture-weeks')`로 목록 캐시를 비운다. 순서는 스코어가 먼저 들어와야 평점 대상이 잡히기 때문이다.
+- 결과 화면 진입 전(경기는 끝났고 주차는 진행 중)에는 완료 화면이 적중 배지만 보여준다 — `lib/predictions/result.ts`의 `matchHit()`, DB `prediction_match_points`와 같은 기준이라 한쪽만 고치면 안 된다. 점수는 정산 게이트를 지나야 나온다.
+- `[weekKey]` 페이지의 404 조건은 `status === 'upcoming'` **그리고 잠긴 경기가 하나도 없을 때**다. 킥오프이 지났지만 종료 적재 전인 주차도 `'upcoming'`이라, 그것까지 막으면 경기 끝난 뒤 크론이 돌기 전까지 페이지가 사라진다.
+- 경기별 선수 평점 손보정은 `/admin/ratings`(`app/admin/ratings/page.tsx` + `components/admin/AdminRatingsForm.tsx`), 쓰기는 `lib/actions/fixture-ratings.ts`의 `saveFixtureRatings`. `fixture_player_ratings`에 insert 정책이 없어 service-role(`requireAdminClient`)로만 쓴다. 평점 행이 없는 선수는 픽 점수가 0으로 계산되므로, 경기가 끝나면 여기서 평점을 넣어야 결과·랭킹이 의미를 갖는다. 이름이 `actions/ratings.ts`가 아닌 이유: 그 파일은 선수 평점 **투표**(rating_votes)가 이미 쓰고 있다.
+- 아직 없는 것: 순위 변동(▲/▼) 표시용 지난 주차 순위 보관, FR-009 시즌 하이라이트, 선수 픽 적중 표기(평점 = 곧 점수라 정산 화면 몫)
 
 인증/온보딩/마이페이지:
 
@@ -111,7 +117,7 @@ DB나 Supabase 연동을 건드릴 때:
 관리자:
 
 - 화면: `frontend/src/app/admin/page.tsx`(링크 허브), `frontend/src/app/admin/ratings/page.tsx`(경기별 선수 평점)
-- action: `frontend/src/lib/actions/admin.ts`, `frontend/src/lib/actions/farewells.ts`, `frontend/src/lib/actions/fixture-ratings.ts`
+- action: `frontend/src/lib/actions/fixture-ratings.ts`(평점 손보정), `frontend/src/lib/actions/sync-fixtures.ts`(Edge Function 수동 트리거)
 - 권한 판정: `frontend/src/lib/admin.ts`
 - service-role client: `frontend/src/lib/supabase/admin.ts`
 
