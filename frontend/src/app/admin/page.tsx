@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { BarChart3, PlusCircle, Star } from 'lucide-react'
 import { AppHeader } from '@/components/layout/AppHeader'
+import { AdminSyncButton } from '@/components/admin/AdminSyncButton'
 import { Button } from '@/components/ui/button'
 import { RequireAuthModal } from '@/components/auth/RequireAuthModal'
 import { getHeaderAuth } from '@/lib/actions/auth'
@@ -28,7 +29,7 @@ export default async function AdminPage() {
         <div className="mb-5">
           <p className="text-heading-2 font-black text-foreground">관리자 페이지</p>
           <p className="mt-1 text-label-2 text-muted-foreground">
-            투표 생성·목록과 경기별 선수 평점을 관리할 수 있어요.
+            투표 생성·목록과 경기 결과·선수 평점을 관리할 수 있어요.
           </p>
         </div>
 
@@ -53,6 +54,8 @@ export default async function AdminPage() {
               경기별 선수 평점 입력
             </Link>
           </Button>
+
+          <AdminSyncButton />
         </div>
       </main>
     </>
