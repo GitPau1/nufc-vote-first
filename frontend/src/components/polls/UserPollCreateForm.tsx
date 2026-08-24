@@ -1,26 +1,20 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { useLoadingRouter } from '@/components/layout/NavigationLoading'
-import { Check, Plus, Search, Users, X } from 'lucide-react'
+import { Plus, Users, X } from 'lucide-react'
 import { createUserPoll } from '@/lib/actions/polls'
 import { uploadPollImage } from '@/lib/actions/images'
 import { trackEvent } from '@/lib/analytics/mixpanel'
 import { CroppedImageInput } from '@/components/images/CroppedImageInput'
 import type { PollFormPlayer } from '@/lib/queries/polls'
-import type { PollType, Position } from '@/types/database'
-import {
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
-import { BottomSheet } from '@/components/ui/bottom-sheet'
+import type { PollType } from '@/types/database'
 import { Button } from '@/components/ui/button'
+import { Modal } from '@/components/primitives/modal/Modal'
+import { PollPickerContent, getPlayerMeta, type PlayerPickMode } from '@/components/primitives/modal/contents/PollPicker'
 
 type FreeOption = { label: string; description: string; imageUrl: string }
 type CreatePollType = Extract<PollType, 'subject_options' | 'question_targets' | 'free_choice' | 'overall_rating'>
-type PlayerPickMode = 'single' | 'multiple'
-type PlayerFilter = 'all' | 'first_team' | 'loan' | 'u21'
 
 const POLL_TYPES: Array<{ type: CreatePollType; label: string; description: string }> = [
   { type: 'subject_options', label: '대상+선택지', description: '한 선수에 대해 여러 선택지를 붙입니다.' },
@@ -28,33 +22,6 @@ const POLL_TYPES: Array<{ type: CreatePollType; label: string; description: stri
   { type: 'free_choice', label: '자유 선택', description: '선수와 무관한 선택지를 직접 만듭니다.' },
   { type: 'overall_rating', label: '전체 평점', description: '여러 선수에게 각각 등급과 코멘트를 받습니다.' },
 ]
-
-const POSITION_ORDER: Array<Position | 'ETC'> = ['GK', 'DEF', 'MID', 'FWD', 'MGR', 'ETC']
-const POSITION_LABEL: Record<Position | 'ETC', string> = {
-  GK: '골키퍼',
-  DEF: '수비수',
-  MID: '미드필더',
-  FWD: '공격수',
-  MGR: '감독',
-  ETC: '기타',
-}
-
-const PLAYER_FILTERS: Array<{ id: PlayerFilter; label: string }> = [
-  { id: 'all', label: '전체' },
-  { id: 'first_team', label: '1군' },
-  { id: 'loan', label: '임대' },
-  { id: 'u21', label: 'U21' },
-]
-
-function isSelectablePlayer(player: PollFormPlayer): boolean {
-  return player.is_active
-}
-
-function getPlayerMeta(player: PollFormPlayer): string {
-  const number = player.squad_number ? `#${player.squad_number}` : '번호 없음'
-  const status = !player.is_active ? '구단 외' : player.squad_status === 'loan' ? '임대' : player.squad_status === 'u21' ? 'U21' : '1군'
-  return `${player.position ?? '기타'} · ${number} · ${status}`
-}
 
 export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
   const router = useLoadingRouter()
@@ -364,15 +331,19 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
         </Button>
       </form>
 
-      <PlayerPickerSheet
+      <Modal
         open={pickerOpen}
         onOpenChange={setPickerOpen}
-        mode={pickerMode}
-        players={players}
-        selectedIds={pickerMode === 'single' ? (selectedSubjectPlayerId ? [selectedSubjectPlayerId] : []) : selectedPlayerIds}
-        onToggle={togglePlayer}
-        onDone={() => setPickerOpen(false)}
-      />
+        className="flex h-[82vh] max-h-[82vh] flex-col overflow-hidden p-0"
+      >
+        <PollPickerContent
+          mode={pickerMode}
+          players={players}
+          selectedIds={pickerMode === 'single' ? (selectedSubjectPlayerId ? [selectedSubjectPlayerId] : []) : selectedPlayerIds}
+          onToggle={togglePlayer}
+          onDone={() => setPickerOpen(false)}
+        />
+      </Modal>
     </>
   )
 }
@@ -401,133 +372,5 @@ function PlayerSummary({ player }: { player: PollFormPlayer }) {
         <p className="mt-0.5 text-caption-2 font-semibold text-neutral-muted">{getPlayerMeta(player)}</p>
       </div>
     </div>
-  )
-}
-
-function PlayerPickerSheet({
-  open,
-  onOpenChange,
-  mode,
-  players,
-  selectedIds,
-  onToggle,
-  onDone,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  mode: PlayerPickMode
-  players: PollFormPlayer[]
-  selectedIds: string[]
-  onToggle: (playerId: string) => void
-  onDone: () => void
-}) {
-  const [query, setQuery] = useState('')
-  const [playerFilter, setPlayerFilter] = useState<PlayerFilter>('all')
-  const normalizedQuery = query.trim().toLowerCase()
-
-  const positionGroups = useMemo(() => {
-    const filtered = players.filter(player => {
-      if (!normalizedQuery) return true
-      const haystack = `${player.name} ${player.position ?? ''} ${player.squad_number ?? ''}`.toLowerCase()
-      return haystack.includes(normalizedQuery)
-    }).filter(player => {
-      if (!isSelectablePlayer(player)) return false
-      if (playerFilter === 'all') return true
-      return player.squad_status === playerFilter
-    })
-
-    return POSITION_ORDER.map(position => ({
-      key: position,
-      label: POSITION_LABEL[position],
-      players: filtered.filter(player => (player.position ?? 'ETC') === position),
-    })).filter(positionGroup => positionGroup.players.length > 0)
-  }, [players, normalizedQuery, playerFilter])
-
-  return (
-    <BottomSheet
-      open={open}
-      onOpenChange={onOpenChange}
-      className="flex h-[82vh] max-h-[82vh] flex-col overflow-hidden p-0"
-    >
-        <SheetHeader className="sr-only">
-          <SheetTitle className="text-body-1-normal font-black">선수 선택</SheetTitle>
-          <SheetDescription className="text-caption-1">
-            {mode === 'single' ? '투표 대상 선수 1명을 선택합니다.' : '투표 후보로 올릴 선수를 선택합니다.'}
-          </SheetDescription>
-        </SheetHeader>
-        <div className="space-y-3 border-b border-neutral-weak px-4 py-3">
-          <div className="mr-10 flex h-10 items-center gap-2 rounded-sm border border-neutral-weak bg-surface px-3">
-            <Search className="h-4 w-4 text-neutral-muted" />
-            <input
-              value={query}
-              onChange={event => setQuery(event.target.value)}
-              className="min-w-0 flex-1 bg-transparent text-label-2 font-semibold outline-none"
-              placeholder="선수 검색"
-            />
-          </div>
-          <div className="flex gap-1.5 overflow-x-auto hide-scrollbar">
-            {PLAYER_FILTERS.map(filter => {
-              const selected = filter.id === playerFilter
-              return (
-                <button
-                  key={filter.id}
-                  type="button"
-                  onClick={() => setPlayerFilter(filter.id)}
-                  className={`shrink-0 rounded-pill border px-2.5 py-1 text-caption-2 font-black transition-opacity hover:opacity-70 ${selected ? 'border-brand-solid bg-brand-solid text-on-solid' : 'border-neutral-weak bg-surface text-neutral-muted'}`}
-                >
-                  {filter.label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto hide-scrollbar px-4 py-3">
-          {positionGroups.length === 0 ? (
-            <p className="py-12 text-center text-label-2 font-semibold text-neutral-muted">검색 결과가 없습니다.</p>
-          ) : (
-            <div className="space-y-4">
-              {positionGroups.map(positionGroup => (
-                <section key={positionGroup.key} className="space-y-1.5">
-                  <p className="px-0.5 text-caption-1 font-bold text-neutral-muted">{positionGroup.label}</p>
-                  {positionGroup.players.map(player => {
-                    const selected = selectedIds.includes(player.id)
-                    return (
-                      <button
-                        key={player.id}
-                        type="button"
-                        onClick={() => onToggle(player.id)}
-                        className={`flex w-full items-center gap-3 rounded-sm border px-3 py-2 text-left transition-opacity hover:opacity-70 ${selected ? 'border-brand-solid bg-brand-weak' : 'border-neutral-weak bg-surface'}`}
-                      >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-disabled text-caption-1 font-black text-brand">
-                          {player.photo_url ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={player.photo_url} alt="" className="h-full w-full object-cover" />
-                          ) : (
-                            player.name.slice(0, 2)
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-label-2 font-black text-neutral">{player.name}</p>
-                          <p className="mt-0.5 text-caption-2 font-semibold text-neutral-muted">{getPlayerMeta(player)}</p>
-                        </div>
-                        <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${selected ? 'border-brand-solid bg-brand-solid text-on-solid' : 'border-neutral-weak text-transparent'}`}>
-                          <Check className="h-3.5 w-3.5" />
-                        </span>
-                      </button>
-                    )
-                  })}
-                </section>
-              ))}
-            </div>
-          )}
-        </div>
-        {mode === 'multiple' && (
-          <div className="border-t border-neutral-weak bg-surface px-4 py-3">
-            <Button type="button" onClick={onDone} className="w-full h-12">
-              {selectedIds.length}명 선택 완료
-            </Button>
-          </div>
-        )}
-    </BottomSheet>
   )
 }

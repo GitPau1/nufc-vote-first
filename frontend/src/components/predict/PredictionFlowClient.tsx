@@ -5,8 +5,9 @@ import { useLoadingRouter } from '@/components/layout/NavigationLoading'
 import { trackEvent } from '@/lib/analytics/mixpanel'
 import { Button } from '@/components/ui/button'
 import { StickyActionBar } from '@/components/layout/StickyActionBar'
-import { LoginModal } from '@/components/polls/LoginModal'
-import { PlayerPickModal } from './PlayerPickModal'
+import { Modal } from '@/components/primitives/modal/Modal'
+import { LoginContent } from '@/components/primitives/modal/contents/Login'
+import { PlayerPickContent } from '@/components/primitives/modal/contents/PlayerPick'
 import { PredictionDone } from './PredictionDone'
 import { PlayerPhoto, TeamBadge } from './shared'
 import { StepHero, StepTrack, StepTrackVertical, type StepKey } from './steps'
@@ -343,28 +344,30 @@ export function PredictionFlowClient({
         </div>
       </div>
 
-      <PlayerPickModal
+      <Modal
         open={pickTarget !== null}
         onOpenChange={open => !open && setPickTarget(null)}
-        positionLabel={pickTarget ? POSITION_LABEL[pickTarget.position] : ''}
-        players={pickTarget ? candidates[pickTarget.position] : []}
-        selectedPlayerId={pickTarget ? picks[pickTarget.matchId]?.[pickTarget.position]?.id ?? null : null}
-        onSelect={player => {
-          if (!pickTarget) return
-          const { matchId, position } = pickTarget
-          const picked = candidates[position].find(candidate => candidate.id === player.id)
-          if (picked) {
-            setPicks(prev => ({ ...prev, [matchId]: { ...prev[matchId], [position]: picked } }))
-          }
-          setPickTarget(null)
-        }}
-      />
+        className="max-h-[78vh] overflow-y-auto hide-scrollbar sm:max-h-[80vh]"
+      >
+        <PlayerPickContent
+          positionLabel={pickTarget ? POSITION_LABEL[pickTarget.position] : ''}
+          players={pickTarget ? candidates[pickTarget.position] : []}
+          selectedPlayerId={pickTarget ? picks[pickTarget.matchId]?.[pickTarget.position]?.id ?? null : null}
+          onSelect={player => {
+            if (!pickTarget) return
+            const { matchId, position } = pickTarget
+            const picked = candidates[position].find(candidate => candidate.id === player.id)
+            if (picked) {
+              setPicks(prev => ({ ...prev, [matchId]: { ...prev[matchId], [position]: picked } }))
+            }
+            setPickTarget(null)
+          }}
+        />
+      </Modal>
 
-      <LoginModal
-        open={loginOpen}
-        onClose={() => setLoginOpen(false)}
-        triggerAction="predict"
-      />
+      <Modal open={loginOpen} onOpenChange={o => { if (!o) setLoginOpen(false) }} form="default">
+        <LoginContent triggerAction="predict" onClose={() => setLoginOpen(false)} />
+      </Modal>
     </div>
   )
 }

@@ -12,8 +12,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { StickyActionBar } from '@/components/layout/StickyActionBar'
-import { ConfirmModal } from './ConfirmModal'
-import { LoginModal } from './LoginModal'
+import { Modal } from '@/components/primitives/modal/Modal'
+import { ConfirmContent } from '@/components/primitives/modal/contents/Confirm'
+import { LoginContent } from '@/components/primitives/modal/contents/Login'
 import { PollPageHeader } from './PollPageHeader'
 
 type RatingState = Record<string, { score: number | null; comment: string }>
@@ -256,17 +257,20 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
         )}
       </StickyActionBar>
 
-      <ConfirmModal
-        open={showConfirm}
-        selectedLabel={`선수 ${totalRequired}명 평가`}
-        title="이 평가로 제출하시겠어요?"
-        summaryCaption="내 평가"
-        onCancel={() => setShowConfirm(false)}
-        onConfirm={handleSubmit}
-        isPending={isPending}
-      />
+      <Modal open={showConfirm} onOpenChange={o => { if (!o) setShowConfirm(false) }}>
+        <ConfirmContent
+          selectedLabel={`선수 ${totalRequired}명 평가`}
+          title="이 평가로 제출하시겠어요?"
+          summaryCaption="내 평가"
+          onCancel={() => setShowConfirm(false)}
+          onConfirm={handleSubmit}
+          isPending={isPending}
+        />
+      </Modal>
 
-      <LoginModal open={showLogin} onClose={() => setShowLogin(false)} triggerAction="vote" />
+      <Modal open={showLogin} onOpenChange={o => { if (!o) setShowLogin(false) }} form="default">
+        <LoginContent triggerAction="vote" onClose={() => setShowLogin(false)} />
+      </Modal>
     </div>
   )
 }

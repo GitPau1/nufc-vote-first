@@ -2,28 +2,29 @@ import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { INITIAL_VIEWPORTS } from 'storybook/viewport'
 
-import { LoginModal } from '@/components/polls/LoginModal'
+import { Modal } from '@/components/primitives/modal/Modal'
+import { LoginContent, type LoginTrigger } from '@/components/primitives/modal/contents/Login'
 import { RequireAuthModal } from '@/components/auth/RequireAuthModal'
 import { Button } from '@/components/ui/button'
 
+// 로그인 내용(LoginContent)을 공용 껍데기(Modal)에 끼워 보여준다. 로그인은 form="default"라
+// 모바일에서도 중앙 모달로 뜬다(다른 모달은 responsive라 모바일에서 바텀시트).
 const meta = {
   title: 'Feedback/LoginModal',
-  component: LoginModal,
   parameters: {
     // usePathname()을 쓰기 때문에 appDirectory: true가 없으면
     // "invariant expected app router to be mounted"로 죽는다.
     // pathname은 analytics의 source_page를 결정하는 값이기도 하다.
     nextjs: { appDirectory: true, navigation: { pathname: '/polls/1' } },
-    // BottomSheet가 768px을 기준으로 바텀시트/중앙 모달을 갈라서 좁은 폭 확인이 필요하다.
     viewport: { options: INITIAL_VIEWPORTS },
   },
-  args: {
-    open: true,
-    onClose: () => {},
-    // triggerAction은 기본값이 없다 — 문구를 가르는 값이라 호출부가 늘 명시한다.
-    triggerAction: 'login',
-  },
-} satisfies Meta<typeof LoginModal>
+  args: { triggerAction: 'login' as LoginTrigger },
+  render: (args: { triggerAction: LoginTrigger }) => (
+    <Modal open form="default" onOpenChange={() => {}}>
+      <LoginContent triggerAction={args.triggerAction} onClose={() => {}} />
+    </Modal>
+  ),
+} satisfies Meta<{ triggerAction: LoginTrigger }>
 
 export default meta
 type Story = StoryObj<typeof meta>
@@ -31,7 +32,7 @@ type Story = StoryObj<typeof meta>
 /** 기본 스토리는 일반 로그인(`triggerAction="login"`) 상태다 — 문구 비교는 아래 trigger 스토리에서. */
 export const Default: Story = {}
 
-/** 모바일 폭 — 중앙 모달이 아니라 바텀시트(드래그 핸들 포함)로 뜨는지 확인. */
+/** 모바일 폭 — 로그인은 form="default"라 바텀시트가 아니라 **중앙 모달**로 뜬다. */
 export const Mobile: Story = {
   globals: { viewport: { value: 'iphone12' } },
 }
@@ -50,7 +51,6 @@ export const TriggerLogin: Story = {
 /**
  * **케이스 2 — 행동 유도(투표).** `triggerAction="vote"`. 투표하려다 막힌 비로그인 사용자.
  * `TypeAPollClient`·`TypeBPollClient`·`OverallRatingPollClient`가 이 값을 넘긴다.
- * 아래 `TriggerLogin`과 나란히 두고 보면 설명문이 실제로 갈리는 게 보인다.
  */
 export const TriggerVote: Story = {
   args: { triggerAction: 'vote' },
@@ -58,8 +58,7 @@ export const TriggerVote: Story = {
 
 /**
  * **케이스 2 — 행동 유도(승부예측).** `triggerAction="predict"`.
- * `predict/PredictionFlowClient.tsx`가 제출 시 `unauthenticated`를 받았을 때 띄운다 —
- * 3스텝을 다 채운 뒤 만나는 로그인 벽이라 "투표"가 아니라 "승부예측"이라고 말해야 한다.
+ * `predict/PredictionFlowClient.tsx`가 제출 시 `unauthenticated`를 받았을 때 띄운다.
  */
 export const TriggerPredict: Story = {
   args: { triggerAction: 'predict' },
@@ -68,7 +67,7 @@ export const TriggerPredict: Story = {
 
 /**
  * 실제로 열리고 닫히는 형태 — 헤더 로그인 버튼(`layout/LoginButton.tsx`)과 같은 구조다.
- * "닫기" 버튼, 배경 클릭, ESC 모두 `onClose`로 들어온다.
+ * "닫기" 버튼, 배경 클릭, ESC 모두 Modal의 onOpenChange를 통해 닫힘으로 들어온다.
  */
 export const Interactive: Story = {
   render: function Render() {
@@ -78,17 +77,17 @@ export const Interactive: Story = {
         <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
           로그인
         </Button>
-        <LoginModal open={open} onClose={() => setOpen(false)} triggerAction="login" />
+        <Modal open={open} form="default" onOpenChange={o => { if (!o) setOpen(false) }}>
+          <LoginContent triggerAction="login" onClose={() => setOpen(false)} />
+        </Modal>
       </>
     )
   },
 }
 
 /**
- * `auth/RequireAuthModal.tsx` 사용 형태 — 로그인 없이는 볼 게 없는 화면(`/admin`,
- * `/polls/create`, `/my`, `/my/feedback`, `/onboarding`)에서 `open`을 항상 true로 두고
- * `onClose`를 홈 이동(`router.push('/')`)에 묶은 래퍼다. 닫기 = 화면 이탈이라 취소 경로가 없다.
- * Storybook에서는 라우터가 목이라 홈으로 실제 이동은 하지 않는다(Actions 패널에 push만 기록).
+ * `auth/RequireAuthModal.tsx` 사용 형태 — 로그인 없이는 볼 게 없는 화면에서 `open`을 항상
+ * true로 두고 닫기를 홈 이동(`router.push('/')`)에 묶은 래퍼다. 닫기 = 화면 이탈이라 취소 경로가 없다.
  */
 export const RequireAuthGate: Story = {
   parameters: { nextjs: { navigation: { pathname: '/my' } } },

@@ -11,8 +11,9 @@ import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { StickyActionBar } from '@/components/layout/StickyActionBar'
-import { ConfirmModal } from './ConfirmModal'
-import { LoginModal } from './LoginModal'
+import { Modal } from '@/components/primitives/modal/Modal'
+import { ConfirmContent } from '@/components/primitives/modal/contents/Confirm'
+import { LoginContent } from '@/components/primitives/modal/contents/Login'
 import { PollPageHeader } from './PollPageHeader'
 
 interface TypeBPollClientProps {
@@ -314,18 +315,17 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
         </Button>
       </StickyActionBar>
 
-      <ConfirmModal
-        open={showConfirm}
-        selectedLabel={selectedOption?.label ?? ''}
-        onCancel={() => setShowConfirm(false)}
-        onConfirm={handleConfirm}
-        isPending={isPending}
-      />
-      <LoginModal
-        open={showLogin}
-        onClose={() => setShowLogin(false)}
-        triggerAction="vote"
-      />
+      <Modal open={showConfirm} onOpenChange={o => { if (!o) setShowConfirm(false) }}>
+        <ConfirmContent
+          selectedLabel={selectedOption?.label ?? ''}
+          onCancel={() => setShowConfirm(false)}
+          onConfirm={handleConfirm}
+          isPending={isPending}
+        />
+      </Modal>
+      <Modal open={showLogin} onOpenChange={o => { if (!o) setShowLogin(false) }} form="default">
+        <LoginContent triggerAction="vote" onClose={() => setShowLogin(false)} />
+      </Modal>
     </div>
   )
 }

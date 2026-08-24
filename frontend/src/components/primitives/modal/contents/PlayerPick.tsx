@@ -1,11 +1,12 @@
 'use client'
 
-import { BottomSheet } from '@/components/ui/bottom-sheet'
-import { SheetTitle } from '@/components/ui/sheet'
-import { PlayerPhoto } from './shared'
+// 사용 도메인: predict (승부예측 포지션별 선수 선택 — Modal 껍데기에 끼워 쓴다)
+// 참고: predict 도메인의 PlayerPhoto를 쓰므로 이 content는 composition/predict에 의존한다(사용자 결정 b안).
+
+import { PlayerPhoto } from '@/components/predict/shared'
 import { cn } from '@/lib/utils'
 import { badgeVariants } from '@/components/ui/badge'
-
+import { SheetTitle } from '../sheet'
 
 export interface PlayerPickCandidate {
   /** season_squads.fotmob_player_id */
@@ -21,45 +22,33 @@ export interface PlayerPickCandidate {
   multiplier: number
 }
 
-interface PlayerPickModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+interface PlayerPickContentProps {
   /** 모달 타이틀에 쓰일 라벨 — "미드필더 선택" */
   positionLabel: string
   players: PlayerPickCandidate[]
   /** 이미 이 포지션에 픽한 선수가 있으면(재오픈 케이스) 하이라이트 */
   selectedPlayerId?: number | null
   /**
-   * 선수를 선택했을 때 호출된다. 프로토타입은 선택과 동시에 모달을 닫으므로,
+   * 선수를 선택했을 때 호출된다. 선택과 동시에 닫지 않으므로,
    * 호출부에서 상태 반영 후 onOpenChange(false)까지 함께 호출해줘야 한다.
    */
   onSelect: (player: PlayerPickCandidate) => void
 }
 
 /**
- * "예측하기" 플로우의 포지션별 선수 선택 모달.
- * 공용 shell(`ui/bottom-sheet.tsx`)을 그대로 쓴다 — 모바일 하단 바텀시트 / 데스크탑 중앙 모달
- * 전환, 오버레이, 드래그 핸들, 포커스 트랩·ESC, 우측 상단 X 닫기가 shell에서 함께 온다.
- * 이 컴포넌트는 content(타이틀 + 선수 목록)만 담당한다. 목록 스크롤 높이는 shell 골격이 정하지
- * 않으므로 className으로 주입한다.
+ * 포지션별 선수 선택 모달의 **내용**(타이틀 + 목록). 껍데기(Modal)는 호출부가 씌운다.
+ * 목록 스크롤 높이는 껍데기 골격이 정하지 않으므로 호출부에서 Modal의 className으로 주입한다
+ * (`max-h-[78vh] overflow-y-auto hide-scrollbar sm:max-h-[80vh]`).
  */
-export function PlayerPickModal({
-  open,
-  onOpenChange,
+export function PlayerPickContent({
   positionLabel,
   players,
   selectedPlayerId,
   onSelect,
-}: PlayerPickModalProps) {
+}: PlayerPickContentProps) {
   return (
-    <BottomSheet
-      open={open}
-      onOpenChange={onOpenChange}
-      className="max-h-[78vh] overflow-y-auto hide-scrollbar sm:max-h-[80vh]"
-    >
-      <SheetTitle className="mb-3 text-headline-2 font-extrabold text-neutral">
-        {positionLabel} 선택
-      </SheetTitle>
+    <>
+      <SheetTitle className="mb-3 text-headline-2 font-extrabold text-neutral">{positionLabel} 선택</SheetTitle>
 
       {players.length === 0 ? (
         <p className="py-8 text-center text-caption-1 text-neutral-muted">
@@ -77,7 +66,7 @@ export function PlayerPickModal({
           ))}
         </div>
       )}
-    </BottomSheet>
+    </>
   )
 }
 

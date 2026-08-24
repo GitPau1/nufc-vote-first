@@ -2,13 +2,15 @@ import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { INITIAL_VIEWPORTS } from 'storybook/viewport'
 
-import { PlayerPickModal, type PlayerPickCandidate } from '@/components/predict/PlayerPickModal'
+import { Modal } from '@/components/primitives/modal/Modal'
+import { PlayerPickContent, type PlayerPickCandidate } from '@/components/primitives/modal/contents/PlayerPick'
 
 // 실제 photoUrl은 lib/predictions/candidates.ts의 playerPhotoUrl(fotmobPlayerId)로 조립되는데,
-// 진짜 FotMob 선수 ID가 아니면 403이다 — 그러면 PlayerPhoto(Avatar)가 실루엣으로 떨어져서
-// "사진 있는 행"을 보여줄 수 없으니, 다른 mock 사진과 같은 placehold.co를 쓴다.
-// (id도 실제로는 season_squads.fotmob_player_id라 number다.)
+// 진짜 FotMob 선수 ID가 아니면 403이라 실루엣으로 떨어진다 — 다른 mock과 같은 placehold.co를 쓴다.
 const PLACEHOLDER_PHOTO = 'https://placehold.co/88x88/2a2f36/8a929c?text=%20'
+
+// 목록 스크롤 높이는 껍데기가 정하지 않으므로 호출부에서 Modal className으로 준다(실사용과 동일).
+const PICK_MODAL_CLASS = 'max-h-[78vh] overflow-y-auto hide-scrollbar sm:max-h-[80vh]'
 
 function mockCandidate(overrides: Partial<PlayerPickCandidate>): PlayerPickCandidate {
   return {
@@ -31,65 +33,76 @@ const MID_CANDIDATES: PlayerPickCandidate[] = [
   mockCandidate({ id: 1005, name: '조엘린톤', squadNumber: 24, nationality: '브라질', age: 29, multiplier: 1.9 }),
 ]
 
+type PickArgs = {
+  positionLabel: string
+  players: PlayerPickCandidate[]
+  selectedPlayerId: number | null
+}
+
+// 선수 선택 내용(PlayerPickContent)을 공용 껍데기(Modal, form=responsive)에 끼워 보여준다 —
+// 모바일=하단 바텀시트 / 데스크탑=중앙 모달.
 const meta = {
   title: 'Selection and Input/PlayerPickModal',
-  component: PlayerPickModal,
   parameters: {
-    // 모바일=하단 바텀시트 / sm+ =중앙 다이얼로그로 갈라지는 컴포넌트라
-    // 좁은 폭 렌더를 뷰포트로 확인할 수 있어야 한다.
     viewport: { options: INITIAL_VIEWPORTS },
   },
   args: {
-    open: true,
     positionLabel: '미드필더',
     players: MID_CANDIDATES,
     selectedPlayerId: null,
-    onOpenChange: () => {},
-    onSelect: () => {},
   },
-} satisfies Meta<typeof PlayerPickModal>
+  render: (args: PickArgs) => (
+    <Modal open onOpenChange={() => {}} className={PICK_MODAL_CLASS}>
+      <PlayerPickContent
+        positionLabel={args.positionLabel}
+        players={args.players}
+        selectedPlayerId={args.selectedPlayerId}
+        onSelect={() => {}}
+      />
+    </Modal>
+  ),
+} satisfies Meta<PickArgs>
 
 export default meta
 type Story = StoryObj<typeof meta>
 
 /**
- * 열린 상태의 후보 목록. 행을 누르면 선택 하이라이트(`border-brand-solid bg-brand-weak`)가 옮겨간다.
- * 실제 호출부는 선택과 동시에 모달을 닫지만, 여기서는 닫으면 캔버스가 비어버려서
- * 선택만 반영하고 열어둔다(닫히는 실제 흐름은 `SelectAndClose` 스토리).
+ * 열린 상태의 후보 목록. 행을 누르면 선택 하이라이트가 옮겨간다.
+ * 실제 호출부는 선택과 동시에 닫지만, 여기서는 선택만 반영하고 열어둔다(닫히는 흐름은 `SelectAndClose`).
  */
 export const Default: Story = {
   render: function Render(args) {
     const [selectedId, setSelectedId] = useState<number | null>(null)
-    return <PlayerPickModal {...args} selectedPlayerId={selectedId} onSelect={player => setSelectedId(player.id)} />
+    return (
+      <Modal open onOpenChange={() => {}} className={PICK_MODAL_CLASS}>
+        <PlayerPickContent
+          positionLabel={args.positionLabel}
+          players={args.players}
+          selectedPlayerId={selectedId}
+          onSelect={player => setSelectedId(player.id)}
+        />
+      </Modal>
+    )
   },
 }
 
-/** 모바일 폭 — 중앙 다이얼로그가 아니라 드래그 핸들이 있는 하단 바텀시트로 떠야 한다. */
+/** 모바일 폭 — 중앙 모달이 아니라 드래그 핸들이 있는 하단 바텀시트로 떠야 한다. */
 export const Mobile: Story = {
   ...Default,
   globals: { viewport: { value: 'iphone12' } },
 }
 
-/**
- * 이미 이 포지션에 픽한 선수가 있는 재오픈 케이스 — `selectedPlayerId`로 넘긴 행이
- * 처음부터 하이라이트되어 있어야 한다(`aria-pressed`도 함께 켜진다).
- */
+/** 이미 이 포지션에 픽한 선수가 있는 재오픈 케이스 — `selectedPlayerId` 행이 처음부터 하이라이트. */
 export const PreSelected: Story = {
   args: { selectedPlayerId: 1002 },
 }
 
-/**
- * 후보가 없을 때 — 목록 대신 "선택할 수 있는 선수가 없어요" 한 줄만 남는다.
- * 부상·출전 정지로 포지션 후보가 비는 주차가 있어서 빈 상태가 실제로 나온다.
- */
+/** 후보가 없을 때 — "선택할 수 있는 선수가 없어요" 한 줄만 남는다. */
 export const NoCandidates: Story = {
   args: { players: [] },
 }
 
-/**
- * 후보가 많을 때 — 시트 높이가 `max-h-[78vh]`(sm+ 80vh)로 잘리고 내부가 스크롤된다.
- * 타이틀도 같이 스크롤되어 올라가므로, 목록이 길면 지금 어떤 포지션을 고르는지 사라진다.
- */
+/** 후보가 많을 때 — 시트 높이가 잘리고 내부가 스크롤된다(max-h는 Modal className으로 주입). */
 export const ManyCandidates: Story = {
   args: {
     players: Array.from({ length: 14 }, (_, i) =>
@@ -103,10 +116,7 @@ export const ManyCandidates: Story = {
   },
 }
 
-/**
- * 이름이 긴 선수 — 이름은 `truncate`로 한 줄에서 잘리고, 오른쪽 배당 배지는
- * `shrink-0`이라 밀려나지 않아야 한다(모바일 폭에서 특히).
- */
+/** 이름이 긴 선수 — 이름은 truncate, 오른쪽 배당 배지는 shrink-0이라 밀려나지 않아야 한다. */
 export const LongPlayerName: Story = {
   args: {
     players: [
@@ -118,12 +128,11 @@ export const LongPlayerName: Story = {
 }
 
 /**
- * 실제 사용처(`components/predict/PredictionFlowClient.tsx`)의 흐름 재현 — 버튼으로 열고,
- * 선수를 고르면 상태 반영 + `onOpenChange(false)`까지 호출부가 직접 해야 닫힌다
- * (컴포넌트는 선택만 알리고 스스로 닫지 않는다). 배경 클릭·ESC로도 닫히는지 여기서 확인한다.
+ * 실제 사용처(`PredictionFlowClient`)의 흐름 재현 — 버튼으로 열고, 선수를 고르면 상태 반영 +
+ * 호출부가 직접 닫는다(내용은 선택만 알린다). 배경 클릭·ESC로도 닫히는지 확인한다.
  */
 export const SelectAndClose: Story = {
-  render: function Render(args) {
+  render: function Render() {
     const [open, setOpen] = useState(false)
     const [picked, setPicked] = useState<PlayerPickCandidate | null>(null)
 
@@ -139,26 +148,25 @@ export const SelectAndClose: Story = {
         <p className="text-caption-1 text-neutral-muted">
           {picked ? `선택: ${picked.name} (×${picked.multiplier.toFixed(1)})` : '아직 선택 없음'}
         </p>
-        <PlayerPickModal
-          {...args}
-          open={open}
-          onOpenChange={setOpen}
-          selectedPlayerId={picked?.id ?? null}
-          onSelect={player => {
-            setPicked(player)
-            setOpen(false)
-          }}
-        />
+        <Modal open={open} onOpenChange={setOpen} className={PICK_MODAL_CLASS}>
+          <PlayerPickContent
+            positionLabel="미드필더"
+            players={MID_CANDIDATES}
+            selectedPlayerId={picked?.id ?? null}
+            onSelect={player => {
+              setPicked(player)
+              setOpen(false)
+            }}
+          />
+        </Modal>
       </div>
     )
   },
 }
 
 /**
- * 스쿼드 데이터가 덜 채워진 후보 — main에서 `squadNumber`·`photoUrl`·`nationality`·`age`가
- * 전부 nullable이 됐다. 등번호가 없으면 `–`, 사진이 없으면 실루엣 원형(`shared.tsx`의
- * `PlayerPhoto`), 국적·나이는 있는 값만 ` · `로 이어 붙는다(둘 다 없으면 줄 자체가 빈다).
- * 시즌 초 신입·임대 복귀 선수에서 실제로 나오는 상태다.
+ * 스쿼드 데이터가 덜 채워진 후보 — `squadNumber`·`photoUrl`·`nationality`·`age`가 전부 nullable.
+ * 등번호 없으면 `–`, 사진 없으면 실루엣, 국적·나이는 있는 값만 ` · `로 이어 붙는다.
  */
 export const MissingSquadData: Story = {
   args: {

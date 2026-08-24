@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { LoginModal } from '@/components/polls/LoginModal'
+import { Modal } from '@/components/primitives/modal/Modal'
+import { LoginContent } from '@/components/primitives/modal/contents/Login'
 
 export function LoginButton() {
   const [open, setOpen] = useState(false)
@@ -18,11 +19,9 @@ export function LoginButton() {
         로그인
       </Button>
 
-      <LoginModal
-        open={open}
-        onClose={() => setOpen(false)}
-        triggerAction="login"
-      />
+      <Modal open={open} onOpenChange={o => { if (!o) setOpen(false) }} form="default">
+        <LoginContent triggerAction="login" onClose={() => setOpen(false)} />
+      </Modal>
     </>
   )
 }

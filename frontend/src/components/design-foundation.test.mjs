@@ -15,7 +15,7 @@ test('shared UI primitives use foundation radius and typography tokens', () => {
   const card = source('components/ui/card.tsx')
   const button = source('components/ui/button.tsx')
   const badge = source('components/ui/badge.tsx')
-  const sheet = source('components/ui/sheet.tsx')
+  const sheet = source('components/primitives/modal/sheet.tsx')
 
   assert.match(tailwind, /"headline-1": \["18px", \{ lineHeight: "26px", letterSpacing: "-0\.002em" \}\]/)
   assert.match(tailwind, /"label-2": \["13px", \{ lineHeight: "18px", letterSpacing: "0\.0194em" \}\]/)
@@ -195,7 +195,7 @@ const PREDICT_FILES = [
   'app/predictions/[weekKey]/page.tsx',
   'components/predict/MatchWeekList.tsx',
   'components/predict/MatchdayHero.tsx',
-  'components/predict/PlayerPickModal.tsx',
+  'components/primitives/modal/contents/PlayerPick.tsx',
   'components/predict/PredictListClient.tsx',
   'components/predict/PredictionDone.tsx',
   'components/predict/PredictionFlowClient.tsx',
@@ -221,8 +221,9 @@ test('application source does not use arbitrary typography or hardcoded visual c
     'components/my/MyPageClient.tsx',
     'components/players/PlayersPageClient.tsx',
     'components/polls/CommentsSection.tsx',
-    'components/polls/ConfirmModal.tsx',
-    'components/polls/LoginModal.tsx',
+    'components/primitives/modal/contents/Confirm.tsx',
+    'components/primitives/modal/contents/Login.tsx',
+    'components/primitives/modal/contents/PollPicker.tsx',
     'components/polls/OverallRatingPollClient.tsx',
     'components/polls/OverallRatingResultView.tsx',
     'components/polls/PollCard.tsx',

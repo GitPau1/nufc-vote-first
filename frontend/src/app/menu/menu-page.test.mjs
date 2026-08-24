@@ -23,7 +23,7 @@ test('menu page renders auth-aware actions', () => {
   assert.match(actions, /href="\/my\/feedback"/)
   assert.match(actions, /내 정보/)
   assert.doesNotMatch(actions, /마이페이지/)
-  assert.match(actions, /LoginModal/)
+  assert.match(actions, /LoginContent/)
   assert.match(actions, /setLoginOpen\(true\)/)
   assert.match(logoutButton, /로그아웃/)
   assert.match(logoutButton, /router\.refresh\(\)/)

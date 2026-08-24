@@ -1,7 +1,8 @@
 'use client'
 
 import { useLoadingRouter } from '@/components/layout/NavigationLoading'
-import { LoginModal } from '@/components/polls/LoginModal'
+import { Modal } from '@/components/primitives/modal/Modal'
+import { LoginContent } from '@/components/primitives/modal/contents/Login'
 
 /**
  * 로그인 없이는 볼 수 없는 화면(관리자/피드백/투표 생성/온보딩/마이페이지)에서
@@ -13,12 +14,11 @@ import { LoginModal } from '@/components/polls/LoginModal'
  */
 export function RequireAuthModal() {
   const router = useLoadingRouter()
+  const close = () => router.push('/')
 
   return (
-    <LoginModal
-      open
-      onClose={() => router.push('/')}
-      triggerAction="login"
-    />
+    <Modal open onOpenChange={o => { if (!o) close() }} form="default">
+      <LoginContent triggerAction="login" onClose={close} />
+    </Modal>
   )
 }

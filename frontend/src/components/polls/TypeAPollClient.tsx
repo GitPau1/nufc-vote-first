@@ -12,8 +12,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { RadioOption } from '@/components/ui/radio'
 import { StickyActionBar } from '@/components/layout/StickyActionBar'
-import { ConfirmModal } from './ConfirmModal'
-import { LoginModal } from './LoginModal'
+import { Modal } from '@/components/primitives/modal/Modal'
+import { ConfirmContent } from '@/components/primitives/modal/contents/Confirm'
+import { LoginContent } from '@/components/primitives/modal/contents/Login'
 import { PollPageHeader } from './PollPageHeader'
 
 interface TypeAPollClientProps {
@@ -190,19 +191,18 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
 
       {/* 모달 */}
       {selectedOption && (
-        <ConfirmModal
-          open={showConfirm}
-          selectedLabel={selectedOption.label}
-          onCancel={() => setShowConfirm(false)}
-          onConfirm={handleConfirm}
-          isPending={isPending}
-        />
+        <Modal open={showConfirm} onOpenChange={o => { if (!o) setShowConfirm(false) }}>
+          <ConfirmContent
+            selectedLabel={selectedOption.label}
+            onCancel={() => setShowConfirm(false)}
+            onConfirm={handleConfirm}
+            isPending={isPending}
+          />
+        </Modal>
       )}
-      <LoginModal
-        open={showLogin}
-        onClose={() => setShowLogin(false)}
-        triggerAction="vote"
-      />
+      <Modal open={showLogin} onOpenChange={o => { if (!o) setShowLogin(false) }} form="default">
+        <LoginContent triggerAction="vote" onClose={() => setShowLogin(false)} />
+      </Modal>
     </div>
   )
 }

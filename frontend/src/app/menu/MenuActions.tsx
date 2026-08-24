@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { LogIn, MessageSquareText, ShieldCheck, UserRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { LoginModal } from '@/components/polls/LoginModal'
+import { Modal } from '@/components/primitives/modal/Modal'
+import { LoginContent } from '@/components/primitives/modal/contents/Login'
 import { MenuLogoutButton } from './MenuLogoutButton'
 
 type MenuActionsProps = {
@@ -64,7 +65,9 @@ export function MenuActions({ isLoggedIn, isAdmin }: MenuActionsProps) {
         )}
       </div>
 
-      <LoginModal open={loginOpen} onClose={closeLogin} triggerAction="login" />
+      <Modal open={loginOpen} onOpenChange={o => { if (!o) closeLogin() }} form="default">
+        <LoginContent triggerAction="login" onClose={closeLogin} />
+      </Modal>
     </>
   )
 }

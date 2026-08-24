@@ -1,16 +1,12 @@
 'use client'
 
-import {
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet'
-import { BottomSheet } from '@/components/ui/bottom-sheet'
+// 사용 도메인: polls (투표 제출 확인 — Modal 껍데기에 끼워 쓴다)
+
+import { SheetHeader, SheetTitle, SheetDescription } from '../sheet'
 import { Button } from '@/components/ui/button'
 import { RadioIndicator } from '@/components/ui/radio'
 
-interface ConfirmModalProps {
-  open: boolean
+interface ConfirmContentProps {
   selectedLabel: string
   onCancel: () => void
   onConfirm: () => void
@@ -21,8 +17,11 @@ interface ConfirmModalProps {
   confirmLabel?: string
 }
 
-export function ConfirmModal({
-  open,
+/**
+ * 투표 제출 직전 확인 모달의 **내용**. 껍데기(Modal)는 호출부가 씌운다(기본 form=responsive).
+ * "제출 후에는 변경할 수 없습니다" 설명은 이 모달이 존재하는 이유라 고정 — prop으로 못 끈다.
+ */
+export function ConfirmContent({
   selectedLabel,
   onCancel,
   onConfirm,
@@ -30,9 +29,9 @@ export function ConfirmModal({
   title = '이 선택으로 투표하시겠어요?',
   summaryCaption = '내 선택',
   confirmLabel = '최종 제출',
-}: ConfirmModalProps) {
+}: ConfirmContentProps) {
   return (
-    <BottomSheet open={open} onOpenChange={open => { if (!open) onCancel() }}>
+    <>
       <SheetHeader className="text-left mb-5">
         <SheetTitle className="text-body-1-normal">{title}</SheetTitle>
         <SheetDescription>제출 후에는 변경할 수 없습니다</SheetDescription>
@@ -49,22 +48,13 @@ export function ConfirmModal({
 
       {/* 버튼 */}
       <div className="flex gap-2">
-        <Button
-          variant="outline"
-          className="flex-1"
-          onClick={onCancel}
-          disabled={isPending}
-        >
+        <Button variant="outline" className="flex-1" onClick={onCancel} disabled={isPending}>
           취소
         </Button>
-        <Button
-          className="flex-[2]"
-          onClick={onConfirm}
-          disabled={isPending}
-        >
+        <Button className="flex-[2]" onClick={onConfirm} disabled={isPending}>
           {isPending ? '제출 중…' : confirmLabel}
         </Button>
       </div>
-    </BottomSheet>
+    </>
   )
 }

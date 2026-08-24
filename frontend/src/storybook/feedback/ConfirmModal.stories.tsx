@@ -2,26 +2,36 @@ import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { INITIAL_VIEWPORTS } from 'storybook/viewport'
 
-import { ConfirmModal } from '@/components/polls/ConfirmModal'
+import { Modal } from '@/components/primitives/modal/Modal'
+import { ConfirmContent } from '@/components/primitives/modal/contents/Confirm'
 import { Button } from '@/components/ui/button'
 import { RadioOption } from '@/components/ui/radio'
 
+type ConfirmArgs = {
+  selectedLabel: string
+  isPending: boolean
+  title?: string
+  summaryCaption?: string
+  confirmLabel?: string
+}
+
+// 확인 내용(ConfirmContent)을 공용 껍데기(Modal, form=responsive)에 끼워 보여준다 —
+// 데스크탑은 중앙 모달, 모바일(768px 미만)은 바텀시트로 뜬다.
 const meta = {
   title: 'Feedback/ConfirmModal',
-  component: ConfirmModal,
   parameters: {
-    // BottomSheet가 화면 폭 768px을 기준으로 바텀시트/중앙 모달을 갈라서,
-    // 좁은 폭 렌더를 확인할 수 있어야 한다.
     viewport: { options: INITIAL_VIEWPORTS },
   },
   args: {
-    open: true,
     selectedLabel: '알렉산더 이삭',
     isPending: false,
-    onCancel: () => {},
-    onConfirm: () => {},
   },
-} satisfies Meta<typeof ConfirmModal>
+  render: (args: ConfirmArgs) => (
+    <Modal open onOpenChange={() => {}}>
+      <ConfirmContent {...args} onCancel={() => {}} onConfirm={() => {}} />
+    </Modal>
+  ),
+} satisfies Meta<ConfirmArgs>
 
 export default meta
 type Story = StoryObj<typeof meta>
@@ -36,7 +46,6 @@ export const Mobile: Story = {
 /**
  * 전체 평가(`OverallRatingPollClient`)에서 쓰는 문구 조합 — 요약할 "선택" 하나가 없는
  * 제출이라 `title`·`summaryCaption`을 바꾸고 라벨에 채점한 인원 수를 넣는다.
- * 나머지 구조(설명 문구, 요약 박스, 버튼 2개)는 선택형과 같다.
  */
 export const RatingSubmit: Story = {
   args: {
@@ -56,8 +65,7 @@ export const Pending: Story = {
 
 /**
  * 실제 투표 화면의 흐름 재현 — 선택지를 고르고 "투표하기"로 모달을 띄운 뒤
- * 취소/최종 제출로 닫는다. `onCancel`이 배경 클릭·ESC에도 호출되는지(BottomSheet의
- * `onOpenChange`가 취소로 연결돼 있다) 여기서 확인할 수 있다.
+ * 취소/최종 제출로 닫는다. 배경 클릭·ESC는 Modal의 onOpenChange가 취소로 연결한다.
  */
 export const Interactive: Story = {
   render: function Render() {
@@ -79,16 +87,17 @@ export const Interactive: Story = {
         {submitted && (
           <p className="text-caption-1 text-neutral-muted">제출됨: {submitted}</p>
         )}
-        <ConfirmModal
-          open={open}
-          selectedLabel={options[selected]}
-          isPending={false}
-          onCancel={() => setOpen(false)}
-          onConfirm={() => {
-            setSubmitted(options[selected])
-            setOpen(false)
-          }}
-        />
+        <Modal open={open} onOpenChange={o => { if (!o) setOpen(false) }}>
+          <ConfirmContent
+            selectedLabel={options[selected]}
+            isPending={false}
+            onCancel={() => setOpen(false)}
+            onConfirm={() => {
+              setSubmitted(options[selected])
+              setOpen(false)
+            }}
+          />
+        </Modal>
       </div>
     )
   },
