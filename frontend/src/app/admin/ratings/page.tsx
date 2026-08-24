@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
-import { AppHeader } from '@/components/layout/AppHeader'
+import { AppHeader } from '@/components/composition/common/AppHeader'
 import { RequireAuthModal } from '@/components/auth/RequireAuthModal'
 import { AdminRatingsForm } from '@/components/admin/AdminRatingsForm'
 import { getHeaderAuth } from '@/lib/actions/auth'

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { DesktopNavLinks } from '@/components/layout/DesktopNavLinks'
+import { DesktopNavLinks } from '@/components/composition/common/DesktopNavLinks'
 
 const meta = {
   title: 'Navigations/DesktopNavLinks',

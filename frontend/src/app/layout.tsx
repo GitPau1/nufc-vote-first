@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import './globals.css'
-import { BottomNav } from '@/components/layout/BottomNav'
+import { BottomNav } from '@/components/composition/common/BottomNav'
 import { NavigationLoading } from '@/components/primitives/navigation-loading'
 import { PageContainer } from '@/components/primitives/page-container'
 import { AuthCodeHandler } from '@/components/auth/AuthCodeHandler'
-import { AppAnalytics } from '@/components/analytics/AppAnalytics'
+import { AppAnalytics } from '@/components/composition/common/AppAnalytics'
 
 export const metadata: Metadata = {
   title: 'NUFC Vote',

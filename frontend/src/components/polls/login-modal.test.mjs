@@ -12,7 +12,7 @@ const menuActionsSource = fs.readFileSync(path.join(__dirname, '../../app/menu/M
 
 /** LoginContent를 띄우는 모든 호출부 → 그 화면의 진입 맥락. */
 const CALLSITES = [
-  ['../layout/LoginButton.tsx', 'login'],
+  ['../composition/common/LoginButton.tsx', 'login'],
   ['../../app/menu/MenuActions.tsx', 'login'],
   ['../auth/RequireAuthModal.tsx', 'login'],
   ['./TypeAPollClient.tsx', 'vote'],

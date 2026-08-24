@@ -1,4 +1,4 @@
-import { AppHeader } from '@/components/layout/AppHeader'
+import { AppHeader } from '@/components/composition/common/AppHeader'
 import { PollListClient } from '@/components/polls/PollListClient'
 import { getPollList } from '@/lib/queries/polls'
 

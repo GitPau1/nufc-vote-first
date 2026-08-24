@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { userEvent, within } from 'storybook/test'
 
-import { UserMenu } from '@/components/layout/UserMenu'
+import { UserMenu } from '@/components/composition/common/UserMenu'
 
 const meta = {
   title: 'Navigations/UserMenu',

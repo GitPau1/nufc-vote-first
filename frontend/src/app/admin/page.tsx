@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { BarChart3, PlusCircle, Star } from 'lucide-react'
-import { AppHeader } from '@/components/layout/AppHeader'
+import { AppHeader } from '@/components/composition/common/AppHeader'
 import { Button } from '@/components/primitives/button'
 import { RequireAuthModal } from '@/components/auth/RequireAuthModal'
 import { getHeaderAuth } from '@/lib/actions/auth'

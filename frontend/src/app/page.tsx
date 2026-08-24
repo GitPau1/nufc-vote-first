@@ -1,5 +1,5 @@
-import { AppHeader } from '@/components/layout/AppHeader'
-import { HomeClient } from '@/components/polls/HomeClient'
+import { AppHeader } from '@/components/composition/common/AppHeader'
+import { HomeClient } from '@/components/composition/common/HomeClient'
 import { getPollHomeSections } from '@/lib/queries/polls'
 import { getHomeMatchdayFixture } from '@/lib/queries/fixtures'
 

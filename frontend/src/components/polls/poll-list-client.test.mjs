@@ -26,7 +26,7 @@ test('poll list has no hero banner — the hero belongs to the home screen', () 
 })
 
 test('home hero prefers the fixture and otherwise picks the most urgent poll deterministically', () => {
-  const home = source('components/polls/HomeClient.tsx')
+  const home = source('components/composition/common/HomeClient.tsx')
   const page = source('app/page.tsx')
 
   // 경기 정보가 있으면 MatchdayHero, 없을 때만 투표 배너로 대체한다.

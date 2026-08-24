@@ -47,7 +47,7 @@ test('shared UI primitives use foundation radius and typography tokens', () => {
 })
 
 test('app and poll headers use color and typography foundations', () => {
-  const appHeader = source('components/layout/AppHeader.tsx')
+  const appHeader = source('components/composition/common/AppHeader.tsx')
   const pollHeader = source('components/polls/PollPageHeader.tsx')
 
   assert.match(appHeader, /border-b border-neutral-weak/)
@@ -168,13 +168,13 @@ test('state opacity stays on the documented scale', () => {
 test('primary tab surfaces do not use arbitrary typography classes', () => {
   const files = [
     'app/menu/page.tsx',
-    'components/layout/BottomNav.tsx',
+    'components/composition/common/BottomNav.tsx',
     'components/players/PlayersPageClient.tsx',
     'components/polls/PollListClient.tsx',
     'components/polls/PollCard.tsx',
     'components/polls/PollHeroCard.tsx',
     'components/polls/PollHomeSection.tsx',
-    'components/polls/HomeClient.tsx',
+    'components/composition/common/HomeClient.tsx',
   ]
 
   for (const file of files) {
@@ -214,9 +214,9 @@ test('application source does not use arbitrary typography or hardcoded visual c
     'app/players/changes/page.tsx',
     'app/polls/create/page.tsx',
     'components/auth/RequireAuthModal.tsx',
-    'components/images/CroppedImageInput.tsx',
-    'components/layout/UserMenu.tsx',
-    'components/layout/LoginButton.tsx',
+    'components/composition/common/CroppedImageInput.tsx',
+    'components/composition/common/UserMenu.tsx',
+    'components/composition/common/LoginButton.tsx',
     'components/my/MyFeedbackForm.tsx',
     'components/my/MyPageClient.tsx',
     'components/players/PlayersPageClient.tsx',
@@ -229,7 +229,7 @@ test('application source does not use arbitrary typography or hardcoded visual c
     'components/polls/PollCard.tsx',
     'components/polls/PollHeroCard.tsx',
     'components/polls/PollHomeSection.tsx',
-    'components/polls/HomeClient.tsx',
+    'components/composition/common/HomeClient.tsx',
     'components/polls/PollListClient.tsx',
     'components/polls/ResultView.tsx',
     'components/polls/TypeAPollClient.tsx',

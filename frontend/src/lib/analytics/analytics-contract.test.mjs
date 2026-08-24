@@ -38,7 +38,7 @@ test('analytics stitches client identity to the supabase user id used by server 
 })
 
 test('app analytics binds identity once via supabase auth state, not per navigation', () => {
-  const file = source('components/analytics/AppAnalytics.tsx')
+  const file = source('components/composition/common/AppAnalytics.tsx')
 
   assert.match(file, /onAuthStateChange/)
   assert.match(file, /identifyUser\(session\.user\.id\)/)
@@ -49,7 +49,7 @@ test('app analytics binds identity once via supabase auth state, not per navigat
 })
 
 test('app analytics separates session starts from primary tab views', () => {
-  const file = source('components/analytics/AppAnalytics.tsx')
+  const file = source('components/composition/common/AppAnalytics.tsx')
 
   assert.match(file, /sessionKey = 'nufc_vote_analytics_session_started'/)
   assert.match(file, /trackEvent\('session_started'/)
@@ -64,7 +64,7 @@ test('app analytics separates session starts from primary tab views', () => {
 })
 
 test('poll tab analytics does not duplicate tab_viewed with poll_feed_viewed', () => {
-  const file = source('components/analytics/AppAnalytics.tsx')
+  const file = source('components/composition/common/AppAnalytics.tsx')
   const pollList = source('components/polls/PollListClient.tsx')
 
   assert.doesNotMatch(file, /PollFeedAnalytics/)
@@ -84,7 +84,7 @@ test('players page tracks the Pick One participation and reward loop', () => {
 })
 
 test('app level events carry the app-defined KST week key, not mixpanel default bucketing', () => {
-  const file = source('components/analytics/AppAnalytics.tsx')
+  const file = source('components/composition/common/AppAnalytics.tsx')
 
   assert.match(file, /import \{ currentWeekKey \} from '@\/lib\/predictions\/week'/)
   assert.match(file, /const weekKey = currentWeekKey\(\)/)

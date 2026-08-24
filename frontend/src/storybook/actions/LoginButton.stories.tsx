@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { LoginButton } from '@/components/layout/LoginButton'
+import { LoginButton } from '@/components/composition/common/LoginButton'
 
 const meta = {
   title: 'Actions/LoginButton',

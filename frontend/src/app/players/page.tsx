@@ -1,5 +1,5 @@
 import { unstable_cache } from 'next/cache'
-import { AppHeader } from '@/components/layout/AppHeader'
+import { AppHeader } from '@/components/composition/common/AppHeader'
 import { PlayersPageClient, type PlayerListItem } from '@/components/players/PlayersPageClient'
 import { IS_MOCK } from '@/lib/config'
 import { MOCK_PLAYERS } from '@/lib/mock/data'

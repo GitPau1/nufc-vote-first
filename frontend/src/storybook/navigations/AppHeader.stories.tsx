@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { INITIAL_VIEWPORTS } from 'storybook/viewport'
 
-import { AppHeader } from '@/components/layout/AppHeader'
+import { AppHeader } from '@/components/composition/common/AppHeader'
 
 const meta = {
   title: 'Navigations/AppHeader',

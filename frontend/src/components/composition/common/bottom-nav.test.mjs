@@ -3,14 +3,14 @@ import test from 'node:test'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const root = path.resolve(import.meta.dirname, '../..')
+const root = path.resolve(import.meta.dirname, '../../..')
 
 function source(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), 'utf8')
 }
 
 test('bottom nav exposes poll, prediction, players, and menu tabs only', () => {
-  const file = source('components/layout/BottomNav.tsx')
+  const file = source('components/composition/common/BottomNav.tsx')
 
   assert.match(file, /href:\s*'\/'[\s\S]{0,80}label:\s*'투표'/)
   assert.match(file, /href:\s*'\/predictions'[\s\S]{0,80}label:\s*'예측'/)
@@ -22,7 +22,7 @@ test('bottom nav exposes poll, prediction, players, and menu tabs only', () => {
 })
 
 test('bottom nav is visible on the four tab routes', () => {
-  const file = source('components/layout/BottomNav.tsx')
+  const file = source('components/composition/common/BottomNav.tsx')
 
   assert.match(file, /pathname !== '\/'/)
   assert.match(file, /pathname !== '\/polls'/)

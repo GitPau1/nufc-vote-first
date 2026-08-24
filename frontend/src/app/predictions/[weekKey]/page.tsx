@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { AppHeader } from '@/components/layout/AppHeader'
+import { AppHeader } from '@/components/composition/common/AppHeader'
 import { PredictionFlowClient } from '@/components/predict/PredictionFlowClient'
 import { PredictionResult } from '@/components/predict/PredictionResult'
 import { getFixtureWeeks } from '@/lib/queries/fixtures'

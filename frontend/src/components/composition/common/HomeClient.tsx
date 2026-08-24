@@ -1,7 +1,7 @@
 'use client'
 
-import { PollHeroCard } from './PollHeroCard'
-import { PollHomeSection } from './PollHomeSection'
+import { PollHeroCard } from '@/components/polls/PollHeroCard'
+import { PollHomeSection } from '@/components/polls/PollHomeSection'
 import { MatchdayHero } from '@/components/predict/MatchdayHero'
 import type { PollHomeSections } from '@/lib/queries/polls'
 import type { MatchdayFixture } from '@/lib/queries/fixtures'

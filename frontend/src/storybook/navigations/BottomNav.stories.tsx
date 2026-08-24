@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { BottomNav } from '@/components/layout/BottomNav'
+import { BottomNav } from '@/components/composition/common/BottomNav'
 
 const meta = {
   title: 'Navigations/BottomNav',

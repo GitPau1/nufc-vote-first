@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
-import { AppHeader } from '@/components/layout/AppHeader'
+import { AppHeader } from '@/components/composition/common/AppHeader'
 import { PlayerRatingChangesAnalytics } from '@/components/players/PlayerRatingChangesAnalytics'
 import { getLatestPickOneRatingChanges } from '@/lib/queries/player-pick-one'
 

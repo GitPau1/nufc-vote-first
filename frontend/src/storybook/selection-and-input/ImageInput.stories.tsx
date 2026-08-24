@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { CroppedImageInput } from '@/components/images/CroppedImageInput'
+import { CroppedImageInput } from '@/components/composition/common/CroppedImageInput'
 
 // 투표 만들기 폼(모바일 퍼스트) 안에 들어가는 입력이라, 데스크탑 캔버스 폭 그대로 두면
 // 크롭 슬라이더 3개가 실제보다 훨씬 넓게 보인다 — 실제 폼 폭으로 감싼다.

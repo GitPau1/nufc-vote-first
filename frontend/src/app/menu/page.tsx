@@ -1,5 +1,5 @@
 import { getHeaderAuth } from '@/lib/actions/auth'
-import { AppHeader } from '@/components/layout/AppHeader'
+import { AppHeader } from '@/components/composition/common/AppHeader'
 import { MenuActions } from './MenuActions'
 
 export const dynamic = 'force-dynamic'
