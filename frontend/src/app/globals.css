@@ -194,6 +194,15 @@
       var(--sem-bg-neutral-strong);
   }
 
+  /* 최우수 선수(경기 최고 평점) 카드 전용 골드 배경 — MatchdayHero의 다크 카드 위에서
+     "트로피" 느낌을 주려고 앰버 그라데이션을 쓴다. 디자인시스템에 골드 solid 배경 semantic
+     토큰이 아직 없어(warning-weak은 옅은 크림) palette orange 단계를 직접 조합한 컴포넌트
+     예외다 — .spotlight-glow-brand-strong가 --p-blue-*를 직접 참조하는 것과 같은 선례.
+     이 배경 위에는 흰 텍스트가 아니라 어두운 텍스트(text-neutral*)를 올려야 대비(AA)가 난다. */
+  .award-gold {
+    background: linear-gradient(135deg, var(--p-orange-300) 0%, var(--p-orange-400) 50%, var(--p-orange-500) 100%);
+  }
+
   .input-field {
     @apply w-full rounded-sm border border-neutral-weak bg-surface px-3 py-2 text-label-1-normal text-neutral outline-none;
   }

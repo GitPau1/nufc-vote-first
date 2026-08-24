@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import type { MatchdayFixture } from '@/lib/queries/fixtures'
+import type { MatchdayFixture, MatchdayRatedPlayer, MatchdayPositionLeader } from '@/lib/queries/fixtures'
 
 /**
  * 홈 히어로 — `fixtures` 테이블(FotMob 동기화) 한 건을 받아 다음/최근 경기를 보여주고
@@ -87,20 +87,74 @@ function CountdownBox({ value, label }: { value: number; label: string }) {
   )
 }
 
-/** 카드 너비가 커져도 이 블록만 늘어나지 않도록 고정폭(w-64)으로 가운데 배치한다. */
-function PlayerOfMatch({ player }: { player: NonNullable<MatchdayFixture['playerOfMatch']> }) {
+/**
+ * 평점 카드 한 장 — 가로형(사진 | 라벨·이름 | 평점). 기존 최우수 선수 카드와 같은 anatomy다.
+ * variant="award"는 셋 중 최고 평점 카드 전용으로, 다크 카드 위에 골드 배경(.award-gold)을
+ * 깔고 그 위엔 어두운 텍스트(text-neutral*)를 올린다(대비 AA).
+ */
+function RatingCard({
+  player,
+  label,
+  variant = 'default',
+}: {
+  player: MatchdayRatedPlayer
+  label: string
+  variant?: 'default' | 'award'
+}) {
+  const isAward = variant === 'award'
   return (
-    <div className="mt-4 flex justify-center">
-      <div className="flex w-64 items-center gap-3 rounded-lg bg-on-solid-weak p-3">
-        <div className="h-11 w-11 shrink-0 overflow-hidden rounded-pill bg-on-solid-strong">
-          <img src={player.photoUrl} alt="" className="h-full w-full object-cover" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-caption-2 text-on-solid-muted">최우수 선수</p>
-          <p className="truncate text-label-1-normal font-bold text-on-solid">{player.name}</p>
-        </div>
-        <p className="text-headline-1 font-black tabular-nums text-on-solid">{player.rating.toFixed(1)}</p>
+    <div
+      className={`flex items-center gap-3 rounded-lg p-3 md:flex-1 ${
+        isAward ? 'award-gold' : 'bg-on-solid-weak'
+      }`}
+    >
+      <div
+        className={`h-11 w-11 shrink-0 overflow-hidden rounded-pill ${
+          isAward ? 'bg-warning-weak' : 'bg-on-solid-strong'
+        }`}
+      >
+        <img src={player.photoUrl} alt="" className="h-full w-full object-cover" />
       </div>
+      <div className="min-w-0 flex-1">
+        <p className={`text-caption-2 ${isAward ? 'text-neutral-strong' : 'text-on-solid-muted'}`}>{label}</p>
+        <p className={`truncate text-label-1-normal font-bold ${isAward ? 'text-neutral' : 'text-on-solid'}`}>
+          {player.name}
+        </p>
+      </div>
+      <p className={`text-headline-1 font-black tabular-nums ${isAward ? 'text-neutral' : 'text-on-solid'}`}>
+        {player.rating.toFixed(1)}
+      </p>
+    </div>
+  )
+}
+
+/**
+ * 포지션별(수비수·미드필더·공격수) 최고 평점 선수를 나열한다. 셋 중 평점이 가장 높은 한 장을
+ * 골드(.award-gold)로 강조한다 — 동점이면 표시 순서(수비수→미드필더→공격수)상 먼저 나오는
+ * 카드만 골드로 준다. 데스크탑(md~)은 가로로 나란히 화면을 넓게 쓰고, 모바일은 세로로 쌓는다.
+ * 평점이 없는 포지션 카드는 생략한다.
+ */
+function MatchRatingsRow({ fixture }: { fixture: MatchdayFixture }) {
+  const leaders = (
+    [
+      fixture.topDefender && { player: fixture.topDefender, label: '수비수' },
+      fixture.topMidfielder && { player: fixture.topMidfielder, label: '미드필더' },
+      fixture.topForward && { player: fixture.topForward, label: '공격수' },
+    ] as ({ player: MatchdayPositionLeader; label: string } | null | undefined)[]
+  ).filter(Boolean) as { player: MatchdayPositionLeader; label: string }[]
+
+  if (leaders.length === 0) return null
+
+  const topRating = Math.max(...leaders.map((l) => l.player.rating))
+  let goldGiven = false
+
+  return (
+    <div className="mt-4 flex flex-col gap-2 md:flex-row">
+      {leaders.map(({ player, label }) => {
+        const isTop = !goldGiven && player.rating === topRating
+        if (isTop) goldGiven = true
+        return <RatingCard key={label} player={player} label={label} variant={isTop ? 'award' : 'default'} />
+      })}
     </div>
   )
 }
@@ -163,7 +217,7 @@ export function MatchdayHero({ fixture, href }: { fixture: MatchdayFixture; href
         </div>
       )}
 
-      {fixture.finished && fixture.playerOfMatch && <PlayerOfMatch player={fixture.playerOfMatch} />}
+      {fixture.finished && <MatchRatingsRow fixture={fixture} />}
 
       {/* 예측 제출은 킥오프 전까지만 가능하다 — 진행중/종료 둘 다 이미 잠긴 상태라 버튼을 아예 없앤다.
           킥오프를 기다리는 중(isUpcoming)일 때만 보여준다. */}

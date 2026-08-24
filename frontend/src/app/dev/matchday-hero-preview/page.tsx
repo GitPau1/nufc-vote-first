@@ -36,7 +36,9 @@ const UPCOMING: MatchdayFixture = {
   started: false,
   finished: false,
   weekKey: withWeekKey(UPCOMING_KICKOFF),
-  playerOfMatch: null,
+  topDefender: null,
+  topMidfielder: null,
+  topForward: null,
   scoreStr: null,
   shootoutScore: null,
 }
@@ -64,17 +66,33 @@ const FINISHED: MatchdayFixture = {
   started: true,
   finished: true,
   weekKey: withWeekKey(FINISHED_KICKOFF),
-  playerOfMatch: {
+  // 셋 중 최고 평점(미드필더 브루노 8.4)이 골드로 강조된다.
+  topDefender: {
+    playerId: 0,
+    name: '스벤 보트만',
+    rating: 7.6,
+    photoUrl: PLACEHOLDER_PLAYER_PHOTO,
+    position: 'DEF',
+  },
+  topMidfielder: {
     playerId: 0,
     name: '브루노 기마랑이스',
     rating: 8.4,
     photoUrl: PLACEHOLDER_PLAYER_PHOTO,
+    position: 'MID',
+  },
+  topForward: {
+    playerId: 0,
+    name: '알렉산더 이사크',
+    rating: 8.1,
+    photoUrl: PLACEHOLDER_PLAYER_PHOTO,
+    position: 'FWD',
   },
   scoreStr: '2-1',
   shootoutScore: null,
 }
 
-// 0-0 무승부 — 스코어가 "없는 것"과 "0-0인 것"은 다르다. 0-0도 정상적으로 결과+최우수 선수가 떠야 한다.
+// 0-0 무승부 — 스코어가 "없는 것"과 "0-0인 것"은 다르다. 0-0도 정상적으로 결과+평점 카드가 떠야 한다.
 const DRAW_0_0: MatchdayFixture = {
   ...FINISHED,
   fixtureId: 5,
@@ -82,11 +100,27 @@ const DRAW_0_0: MatchdayFixture = {
   awayName: '리버풀',
   homeScore: 0,
   awayScore: 0,
-  playerOfMatch: {
+  // 셋 중 최고 평점이 수비수(보트만 7.6)라 골드가 첫 번째 카드에 붙는 경우.
+  topDefender: {
     playerId: 0,
     name: '스벤 보트만',
     rating: 7.6,
     photoUrl: PLACEHOLDER_PLAYER_PHOTO,
+    position: 'DEF',
+  },
+  topMidfielder: {
+    playerId: 0,
+    name: '산드로 토날리',
+    rating: 7.3,
+    photoUrl: PLACEHOLDER_PLAYER_PHOTO,
+    position: 'MID',
+  },
+  topForward: {
+    playerId: 0,
+    name: '앤서니 고든',
+    rating: 7.1,
+    photoUrl: PLACEHOLDER_PLAYER_PHOTO,
+    position: 'FWD',
   },
   scoreStr: '0-0',
 }
@@ -103,11 +137,27 @@ const PENALTY_SHOOTOUT: MatchdayFixture = {
   homeScore: 5,
   awayScore: 4,
   scoreStr: '1-1',
-  playerOfMatch: {
+  // 셋 중 최고 평점이 미드필더(조엘린통 7.7)라 골드가 가운데 카드에 붙는 경우.
+  topDefender: {
     playerId: 0,
-    name: '닉 포프',
-    rating: 8.1,
+    name: '파비안 스하르',
+    rating: 7.5,
     photoUrl: PLACEHOLDER_PLAYER_PHOTO,
+    position: 'DEF',
+  },
+  topMidfielder: {
+    playerId: 0,
+    name: '조엘린통',
+    rating: 7.7,
+    photoUrl: PLACEHOLDER_PLAYER_PHOTO,
+    position: 'MID',
+  },
+  topForward: {
+    playerId: 0,
+    name: '칼럼 윌슨',
+    rating: 7.2,
+    photoUrl: PLACEHOLDER_PLAYER_PHOTO,
+    position: 'FWD',
   },
 }
 
@@ -141,12 +191,12 @@ export default function MatchdayHeroPreviewPage() {
         </section>
 
         <section>
-          <p className="mb-2 text-label-1-normal font-bold text-neutral-muted">종료 (결과 + 최우수 선수)</p>
+          <p className="mb-2 text-label-1-normal font-bold text-neutral-muted">종료 (결과 + 포지션별 최고 평점)</p>
           <MatchdayHero fixture={FINISHED} />
         </section>
 
         <section>
-          <p className="mb-2 text-label-1-normal font-bold text-neutral-muted">종료 (0-0 무승부 + 최우수 선수)</p>
+          <p className="mb-2 text-label-1-normal font-bold text-neutral-muted">종료 (0-0 무승부 + 포지션별 최고 평점)</p>
           <MatchdayHero fixture={DRAW_0_0} />
         </section>
 
@@ -177,6 +227,15 @@ export default function MatchdayHeroPreviewPage() {
           넓은 화면에서도 팀 배지가 VS 근처에 붙어 있는지 확인 (창 폭 그대로 — 좁히거나 넓혀서 확인)
         </p>
         <MatchdayHero fixture={LONG_NAME} />
+      </section>
+
+      <hr className="my-10 border-neutral-weak" />
+
+      <section>
+        <p className="mb-2 text-label-1-normal font-bold text-neutral-muted">
+          종료 경기 — 넓은 화면(창 폭 그대로): 평점 카드가 md~에서 가로로 나란히 펼쳐지는지 확인
+        </p>
+        <MatchdayHero fixture={FINISHED} />
       </section>
     </div>
   )
