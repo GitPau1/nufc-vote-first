@@ -64,7 +64,7 @@ export function PlayersPageClient({ players }: PlayersPageClientProps) {
         </div>
 
         {filteredPlayers.length > 0 ? (
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-neutral-weak">
             {filteredPlayers.map(player => (
               <PlayerRow key={player.id} player={player} />
             ))}

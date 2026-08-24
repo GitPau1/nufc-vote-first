@@ -75,7 +75,7 @@ export const PollsScreen: Story = {
           <div className="h-8 flex-1 border-b border-neutral-weak" />
         </div>
 
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-neutral-weak">
           {[0, 1, 2].map(index => (
             <div key={index} className="flex h-32 items-center gap-4 py-4 pl-3 pr-5">
               <SkeletonBlock className="h-24 w-24 shrink-0 rounded-md" />

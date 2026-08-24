@@ -157,7 +157,7 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
                     src={poll.player.photo_url
                       ?? `https://placehold.co/44x44/0c2340/41b6e6?text=${poll.player.squad_number}`}
                     alt={poll.player.name}
-                    className="w-11 h-11 rounded-full object-cover flex-shrink-0 ring-2 ring-border"
+                    className="w-11 h-11 rounded-full object-cover flex-shrink-0"
                   />
                   <div>
                     <p className="text-label-1-normal font-bold text-neutral">{poll.player.name}</p>

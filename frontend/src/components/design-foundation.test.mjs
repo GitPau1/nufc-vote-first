@@ -328,6 +328,11 @@ test('retired legacy color class names are gone repo-wide', () => {
     'border-border': 'border-neutral-weak',
     'border-input': 'border-neutral-weak',
     'bg-border': 'bg-neutral-weak',
+    // divide-border / ring-border는 폐기된 border 색 토큰을 참조해 조용히 무효화되던
+    // 죽은 클래스다(divideColor/ringColor에 border 키 없음). divide는 neutral-weak로,
+    // ring은 제거하는 게 원칙이나 재도입 시엔 brand-solid를 쓴다(ring-neutral-weak 토큰 없음).
+    'divide-border': 'divide-neutral-weak',
+    'ring-border': 'ring-brand-solid',
     'bg-secondary': 'bg-disabled',
     'bg-muted': 'bg-disabled',
     'ring-ring': 'ring-brand-solid',
@@ -373,25 +378,40 @@ test('retired legacy color class names are gone repo-wide', () => {
   assert.deepEqual(offenders, [], `삭제된 구세대 색 클래스가 남아 있다:\n${offenders.join('\n')}`)
 })
 
-test('prediction screens do not fall back to legacy color tokens', () => {
-  // 구세대 flat 토큰(globals.css :root 상단의 --c-*)을 Tailwind가 유효한 클래스로 노출하기
+test('legacy flat color tokens are gone repo-wide', () => {
+  // ①세대 flat 토큰(globals.css :root 상단의 --c-*)을 Tailwind가 유효한 클래스로 노출하기
   // 때문에(bg-primary / text-gray-2 …) 임의값 검사로는 못 잡힌다 — Foundations/Design Token의
   // "이름이 겹치는 함정" 항목이 지적하는 그 문제다. 그래서 이름을 직접 금지한다.
   //
-  // **리포 전체가 아니라 predict 파일로 범위를 한정한다.** 다른 화면(app/admin/ratings/page.tsx,
-  // components/admin/AdminRatingsForm.tsx, components/layout/NavigationLoading.tsx)이 아직
-  // border-gray-4 / text-gray-2 / bg-primary를 쓰고 있어서, 전체 금지는 지금 깨진다.
-  // 그 파일들을 옮기는 작업이 끝나면 이 검사를 리포 전체 글롭 스캔으로 넓힌다.
+  // 이 검사는 predict뿐 아니라 **src 전체**를 훑는다 — primary/gray-N/*-dim/negative는
+  // 대응 semantic 토큰이 전부 갖춰졌고 리포 전체 실사용 0건이라, 어느 파일에서든 재유입을
+  // 영구 차단한다. white/black은 배너·이미지 위 텍스트에 아직 정당하게 쓰이는 곳이 있어
+  // 여기서 막지 않고, predict 화면에서만 아래 검사가 금지한다.
+  const legacyFlat =
+    /\b(?:bg|text|border|ring|divide|from|to|fill|stroke)-(?:primary(?:-dark|-dim|-on)?|gray-[1-4]|positive-dim|negative(?:-dim)?|warning-dim)\b/g
+  const entries = fs.readdirSync(root, { recursive: true })
+  const offenders = []
+  for (const entry of entries) {
+    if (typeof entry !== 'string' || !/\.(tsx|ts|css)$/.test(entry)) continue
+    const full = path.join(root, entry)
+    if (!fs.statSync(full).isFile()) continue
+    if (entry.endsWith('design-foundation.test.mjs')) continue
+    const hits = fs.readFileSync(full, 'utf8').match(legacyFlat)
+    if (hits) offenders.push(`${entry} → ${[...new Set(hits)].join(', ')}`)
+  }
+  assert.deepEqual(offenders, [], `구세대 flat 색 토큰이 남아 있다:\n${offenders.join('\n')}`)
+})
+
+test('prediction screens do not fall back to legacy color tokens', () => {
+  // ①세대 flat 토큰은 위 `legacy flat color tokens are gone repo-wide`가 리포 전체에서
+  // 막는다. 이 검사가 추가로 하는 일은 predict 화면에서 **white/black까지** 금지하는 것이다 —
+  // predict 밖에서는 배너·이미지 위 텍스트에 white/black이 정당하게 쓰여 리포 전체 금지가
+  // 아직 불가하지만(대응 토큰은 있다: text-white→text-on-solid / bg-white/5·/10→
+  // bg-on-solid-weak·-strong / bg-white/95→bg-surface-translucent / bg-black/45→bg-overlay),
+  // predict 화면은 이미 semantic으로 정리돼 있어 여기서 재유입을 막는다.
   //
   // `bg-surface`만 예외로 남는다 — 이름은 그대로지만 값이 --sem-bg-surface로 옮겨져
-  // 이제 ③ 계층 토큰이다. 나머지 구세대 이름(bg-page / text-neutral /
-  // text-neutral-muted / border-neutral-weak …)은 아래 `retired legacy color tokens…`가
-  // 리포 전체에서 막는다.
-  //
-  // Tailwind 기본 팔레트의 white/black도 함께 막는다. 예전엔 대응 토큰이 없어 남겨뒀지만
-  // 지금은 다 있다: text-white→text-on-solid / 다크 면 위 2차 텍스트→text-on-solid-muted /
-  // bg-white/5·/10→bg-on-solid-weak·-strong / bg-white/95→bg-surface-translucent /
-  // bg-black/45→bg-overlay.
+  // 이제 ③ 계층 토큰이다.
   const legacyToken =
     /\b(?:bg|text|border|ring|divide|from|to|fill|stroke)-(?:primary(?:-dark|-dim|-on)?|gray-[1-4]|positive-dim|negative(?:-dim)?|warning-dim|black|white)\b/
 

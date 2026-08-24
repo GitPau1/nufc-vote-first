@@ -98,7 +98,7 @@ export function PollListClient({ initialPolls, headerRight }: PollListClientProp
             <PollTabs activeTab={activeTab} {...tabCounts} onChange={setActiveTab} />
           </div>
           {/* 모바일: 세로로 쌓이는 한 줄짜리 리스트 — 카드는 horizontal(썸네일 좌측) */}
-          <div className="divide-y divide-border sm:hidden">
+          <div className="divide-y divide-neutral-weak sm:hidden">
             {listPolls.map(p => <PollCard key={p.id} poll={p} />)}
           </div>
           {/* 데스크탑(≥640px): 2단, 넓어지면(≥1024px) 3단 그리드 — 카드는 vertical(썸네일 상단) */}

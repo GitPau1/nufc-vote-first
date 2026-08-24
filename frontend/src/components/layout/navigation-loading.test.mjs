@@ -101,7 +101,7 @@ test('loading overlay follows the desktop layout of each route', () => {
   // 상단 진행바는 데스크탑에서 폭이 잘리지 않아야 한다
   assert.doesNotMatch(componentFile, /h-1 w-full max-w-shell/)
   // 투표 목록 스켈레톤은 데스크탑 카드 그리드를 따라간다
-  assert.match(componentFile, /divide-y divide-border sm:hidden/)
+  assert.match(componentFile, /divide-y divide-neutral-weak sm:hidden/)
   assert.match(componentFile, /hidden sm:grid sm:grid-cols-2 sm:gap-4 sm:pt-4 lg:grid-cols-3/)
   // 예측 스켈레톤은 데스크탑 2단(경기 리스트 : 랭킹) 구성을 따라간다
   assert.match(componentFile, /sm:grid-cols-\[2fr_1fr\]/)

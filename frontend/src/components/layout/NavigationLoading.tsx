@@ -230,7 +230,7 @@ function PollsSkeleton() {
         </div>
 
         {/* 모바일: 한 줄 리스트 / 데스크탑: 카드 그리드 — PollListClient와 같은 분기 */}
-        <div className="divide-y divide-border sm:hidden">
+        <div className="divide-y divide-neutral-weak sm:hidden">
           {[0, 1, 2].map(index => (
             <PollRowSkeleton key={index} />
           ))}
@@ -368,7 +368,7 @@ function PlayersSkeleton() {
           </div>
           <SkeletonBlock className="h-3.5 w-9 rounded-xs" />
         </div>
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-neutral-weak">
           {[0, 1, 2, 3, 4].map(index => (
             <div key={index} className="flex h-[68px] items-center gap-2.5 px-3.5 py-2.5">
               <SkeletonBlock className="h-6 w-6 shrink-0 rounded-xs" />

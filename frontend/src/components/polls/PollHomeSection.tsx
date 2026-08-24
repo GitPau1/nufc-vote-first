@@ -103,7 +103,7 @@ export function PollHomeSection({ title, polls, action }: PollHomeSectionProps) 
           바깥 테두리+radius를 준다. `/polls`(PollListClient)의 리스트 래핑과 같은 처리 —
           이 컴포넌트를 새로 만들 때 빠뜨렸던 부분. */}
       <div className="overflow-hidden rounded-lg border border-neutral-weak bg-surface sm:hidden">
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-neutral-weak">
           {mobileItems.map(poll => <PollCard key={poll.id} poll={poll} />)}
         </div>
       </div>

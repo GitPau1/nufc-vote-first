@@ -15,7 +15,7 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   render: () => (
-    <div className="w-96 divide-y divide-border rounded-lg border border-neutral-weak bg-surface">
+    <div className="w-96 divide-y divide-neutral-weak rounded-lg border border-neutral-weak bg-surface">
       {ITEMS.map((item) => (
         <div key={item.title} className="px-4 py-3">
           <p className="text-label-1-normal font-semibold text-neutral">{item.title}</p>

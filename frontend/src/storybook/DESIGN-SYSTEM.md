@@ -62,7 +62,7 @@ Montage 분류(Actions / Contents / Feedback / Loading / Navigations / Presentat
 | PollCard | 2-a | 투표 목록 한 줄(썸네일·상태·제목·참여자 수) | `components/polls/PollCard.tsx` | `contents/PollCard.mdx` |
 | PollCarouselCard | 패턴 | 투표 상세 캐러셀. 가운데 카드 확대 + 좌우 스와이프 | `components/polls/TypeBPollClient.tsx` | `contents/PollCarouselCard.mdx` |
 | ResultProgress | T1 | 투표 결과 한 줄(사진+이름+득표율 막대+퍼센트) | `components/ui/result-progress.tsx` | `contents/ResultProgress.mdx` |
-| ListGroup | 패턴 | `divide-y divide-border` 패턴. 행 내용은 사용처마다 다름(컴포넌트 아님) | 사용처 4곳 | `contents/ListGroup.mdx` |
+| ListGroup | 패턴 | `divide-y divide-neutral-weak` 패턴. 행 내용은 사용처마다 다름(컴포넌트 아님) | 사용처 4곳 | `contents/ListGroup.mdx` |
 | MatchdayHero | 2-a | 홈 히어로의 다음/직전 경기 카드(예정·진행중·종료 + 최우수 선수) | `components/predict/MatchdayHero.tsx` | `contents/MatchdayHero.mdx` |
 | Card | T1 | 정보 덩어리를 배경에서 띄우는 컨테이너. 실사용은 `Card`+`CardContent` 두 겹뿐(Header/Title/Description/Footer 사용처 0곳) | `components/ui/card.tsx` | `contents/Card.mdx` |
 | PollHeroCard | 2-a | 홈 히어로 자리의 252px 고정높이 투표 배너. MatchdayHero가 없을 때의 폴백 | `components/polls/PollHeroCard.tsx` | `contents/PollHeroCard.mdx` |

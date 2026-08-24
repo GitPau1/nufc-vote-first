@@ -54,7 +54,7 @@ export default async function PlayerRatingChangesPage() {
                 <span className="text-center">이후 오버롤</span>
                 <span className="text-right">변화</span>
               </div>
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-neutral-weak">
                 {week.changes.map(change => (
                   <div
                     key={change.playerId}
