@@ -10,12 +10,11 @@ import { CroppedImageInput } from '@/components/images/CroppedImageInput'
 import type { PollFormPlayer } from '@/lib/queries/polls'
 import type { PollType, Position } from '@/types/database'
 import {
-  Sheet,
-  SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { BottomSheet } from '@/components/ui/bottom-sheet'
 import { Button } from '@/components/ui/button'
 
 type FreeOption = { label: string; description: string; imageUrl: string }
@@ -445,11 +444,11 @@ function PlayerPickerSheet({
   }, [players, normalizedQuery, playerFilter])
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="bottom"
-        className="flex h-[82vh] max-h-[82vh] flex-col overflow-hidden p-0"
-      >
+    <BottomSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      className="flex h-[82vh] max-h-[82vh] flex-col overflow-hidden p-0"
+    >
         <SheetHeader className="sr-only">
           <SheetTitle className="text-body-1-normal font-black">선수 선택</SheetTitle>
           <SheetDescription className="text-caption-1">
@@ -529,7 +528,6 @@ function PlayerPickerSheet({
             </Button>
           </div>
         )}
-      </SheetContent>
-    </Sheet>
+    </BottomSheet>
   )
 }

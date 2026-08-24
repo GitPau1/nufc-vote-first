@@ -9,7 +9,7 @@ import * as PlayerPickModalStories from './PlayerPickModal.stories'
 
 코드는 `components/predict/PlayerPickModal.tsx`, 사용처는 `components/predict/PredictionFlowClient.tsx`(예측 제출 플로우의 포지션별 선수 픽) 한 곳이다.
 
-`ui/sheet.tsx`의 바텀시트는 항상 하단 고정이라 이 컴포넌트가 필요한 반응형 전환(모바일=바텀시트 / sm+=중앙 다이얼로그)을 표현할 수 없어서, Radix Dialog를 직접 써서 이 컴포넌트 전용 variant로 만들었다. 다른 모달은 계속 `ui/bottom-sheet.tsx`를 쓴다.
+공용 shell [BottomSheet](?path=/docs/feedback-bottomsheet--docs)(`ui/bottom-sheet.tsx`)을 그대로 쓴다 — 모바일=바텀시트 / 데스크탑(sm+)=중앙 모달 전환, 오버레이, 드래그 핸들, 포커스 트랩·ESC, 우측 상단 X 닫기가 shell에서 함께 온다. 이 컴포넌트는 content(타이틀 + 선수 목록)만 담당하고, 목록 스크롤 높이만 `className`으로 주입한다.
 
 <Canvas of={PlayerPickModalStories.Default} />
 <Canvas of={PlayerPickModalStories.Mobile} />
@@ -44,4 +44,3 @@ import * as PlayerPickModalStories from './PlayerPickModal.stories'
 ## 알려진 어긋남
 
 - 배당 배지는 [Badge](?path=/docs/contents-badge--docs)의 스타일을 쓰지만 컴포넌트가 아니라 `badgeVariants()`를 span에 얹는다 — 행 전체가 `<button>`이고 `Badge`는 `div`를 렌더해서 버튼 안에 넣을 수 없다. 스타일 원본은 `ui/badge.tsx` 하나이므로 색·타이포를 이 파일에서 따로 바꾸지 않는다.
-- 모션이 열림에만 `ease-out`이고 닫힘은 기본값이다 — [Motion](?path=/docs/foundations-motion--docs)에 적힌 규칙과 어긋나는 부분이다.

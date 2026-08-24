@@ -1,6 +1,7 @@
 'use client'
 
-import * as DialogPrimitive from '@radix-ui/react-dialog'
+import { BottomSheet } from '@/components/ui/bottom-sheet'
+import { SheetTitle } from '@/components/ui/sheet'
 import { PlayerPhoto } from './shared'
 import { cn } from '@/lib/utils'
 import { badgeVariants } from '@/components/ui/badge'
@@ -37,10 +38,10 @@ interface PlayerPickModalProps {
 
 /**
  * "예측하기" 플로우의 포지션별 선수 선택 모달.
- * 모바일: 하단 바텀시트(드래그 핸들 표시) / 데스크탑(sm+): 중앙 다이얼로그로 전환.
- * ui/sheet.tsx의 바텀시트는 항상 하단 고정이라 이 반응형 전환을 표현할 수 없어서
- * Radix Dialog를 직접 써서 이 컴포넌트 전용 variant로 구성했다(다른 모달에 영향 없음).
- * 덕분에 포커스 트랩·ESC 닫기는 프로토타입엔 없던 접근성 개선으로 함께 따라온다.
+ * 공용 shell(`ui/bottom-sheet.tsx`)을 그대로 쓴다 — 모바일 하단 바텀시트 / 데스크탑 중앙 모달
+ * 전환, 오버레이, 드래그 핸들, 포커스 트랩·ESC, 우측 상단 X 닫기가 shell에서 함께 온다.
+ * 이 컴포넌트는 content(타이틀 + 선수 목록)만 담당한다. 목록 스크롤 높이는 shell 골격이 정하지
+ * 않으므로 className으로 주입한다.
  */
 export function PlayerPickModal({
   open,
@@ -51,58 +52,32 @@ export function PlayerPickModal({
   onSelect,
 }: PlayerPickModalProps) {
   return (
-    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
-      <DialogPrimitive.Portal>
-        {/*
-          위치 정렬은 여기(Overlay)의 flex가 전부 담당한다 — Content 쪽에 별도의
-          left-1/2/-translate-x-1/2 같은 중앙정렬용 transform을 두면, 진입 애니메이션이
-          같은 transform 속성을 덮어써서 "정렬이 풀렸다가 스냅되는" 것처럼 보인다(예전 버그).
-          모바일=하단 정렬, 데스크탑(sm+)=중앙 정렬, 모션은 Content에서 가볍게만 얹는다.
-        */}
-        <DialogPrimitive.Overlay
-          className={cn(
-            'fixed inset-0 z-50 flex items-end justify-center bg-overlay sm:items-center',
-            'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:duration-enter',
-            'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:duration-exit'
-          )}
-        >
-          <DialogPrimitive.Content
-            className={cn(
-              'relative w-full max-w-shell max-h-[78vh] overflow-y-auto hide-scrollbar rounded-t-lg bg-surface px-4 py-5',
-              'sm:max-w-[420px] sm:max-h-[80vh] sm:rounded-lg',
-              // 가벼운 페이드 + 살짝 위로(8px) 올라오는 모션 하나로 모바일/데스크탑 공통 처리.
-              'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-2 data-[state=open]:duration-enter data-[state=open]:ease-out',
-              'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-bottom-2 data-[state=closed]:duration-exit'
-            )}
-          >
-            {/* 드래그 핸들 — 모바일 바텀시트 전용. 자리를 차지하지 않게 절대 위치(top:8px)로 띄워서
-                타이틀-상단 거리가 sheet padding(20px)만으로 결정되게 한다. */}
-            <div className="absolute left-1/2 top-2 h-[5px] w-10 -translate-x-1/2 rounded-pill bg-neutral-weak sm:hidden" />
+    <BottomSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      className="max-h-[78vh] overflow-y-auto hide-scrollbar sm:max-h-[80vh]"
+    >
+      <SheetTitle className="mb-3 text-headline-2 font-extrabold text-neutral">
+        {positionLabel} 선택
+      </SheetTitle>
 
-            <DialogPrimitive.Title className="m-0 mb-3 text-headline-2 font-extrabold">
-              {positionLabel} 선택
-            </DialogPrimitive.Title>
-
-            {players.length === 0 ? (
-              <p className="py-8 text-center text-caption-1 text-neutral-muted">
-                선택할 수 있는 선수가 없어요
-              </p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {players.map(player => (
-                  <PlayerPickRow
-                    key={player.id}
-                    player={player}
-                    selected={player.id === selectedPlayerId}
-                    onSelect={() => onSelect(player)}
-                  />
-                ))}
-              </div>
-            )}
-          </DialogPrimitive.Content>
-        </DialogPrimitive.Overlay>
-      </DialogPrimitive.Portal>
-    </DialogPrimitive.Root>
+      {players.length === 0 ? (
+        <p className="py-8 text-center text-caption-1 text-neutral-muted">
+          선택할 수 있는 선수가 없어요
+        </p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {players.map(player => (
+            <PlayerPickRow
+              key={player.id}
+              player={player}
+              selected={player.id === selectedPlayerId}
+              onSelect={() => onSelect(player)}
+            />
+          ))}
+        </div>
+      )}
+    </BottomSheet>
   )
 }
 
