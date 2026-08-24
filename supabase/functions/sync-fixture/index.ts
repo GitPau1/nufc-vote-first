@@ -272,6 +272,16 @@ function toFixtureRow(
     return null;
   }
 
+  /*
+   * 승부차기 경기는 FotMob 이 home/away.score 에 승부차기 스코어를 넣는다.
+   * 정규(연장 포함) 스코어는 scoreStr 에만 있으므로 그쪽을 정답으로 쓴다.
+   * 예: 뉴캐슬 3 - 4 스트라스부르 / scoreStr "1 - 1" / reason.short "Pen"
+   */
+  const regulation =
+    fixture.status?.reason?.short === "Pen"
+      ? parseScoreStr(fixture.status?.scoreStr)
+      : null;
+
   return {
     fixture_id: fixture.id,
 
@@ -283,11 +293,11 @@ function toFixtureRow(
 
     home_id: fixture.home.id,
     home_name: fixture.home.name,
-    home_score: fixture.home.score ?? null,
+    home_score: regulation?.[0] ?? fixture.home.score ?? null,
 
     away_id: fixture.away.id,
     away_name: fixture.away.name,
-    away_score: fixture.away.score ?? null,
+    away_score: regulation?.[1] ?? fixture.away.score ?? null,
 
     score_str: fixture.status?.scoreStr ?? null,
 
@@ -301,6 +311,16 @@ function toFixtureRow(
 
     synced_at: syncedAt,
   };
+}
+
+/*
+ * "1 - 1" -> [1, 1]. 형식이 다르면 null 을 돌려 원본 score 를 그대로 쓰게 한다.
+ */
+function parseScoreStr(scoreStr?: string): [number, number] | null {
+  const matched = scoreStr?.match(/^\s*(\d+)\s*-\s*(\d+)\s*$/);
+  if (!matched) return null;
+
+  return [Number(matched[1]), Number(matched[2])];
 }
 
 /*
