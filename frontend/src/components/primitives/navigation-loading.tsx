@@ -5,7 +5,6 @@ import { usePathname, useRouter } from 'next/navigation'
 
 const MIN_VISIBLE_MS = 350
 const SHOW_DELAY_MS = 120
-const ROUTE_SETTLE_MS = 450
 const FALLBACK_HIDE_MS = 4000
 const NAVIGATION_START_EVENT = 'nufc:navigation-start'
 type LoadingVariant = 'polls' | 'predictions' | 'players' | 'menu' | 'top'
@@ -125,8 +124,9 @@ export function NavigationLoading() {
     // 서버 리다이렉트로 다른 곳에 도착했을 때 FALLBACK_HIDE_MS까지 방치된다
     if (pathname === fromPathRef.current) return
 
+    // 도착하면 즉시 내리되, 총 노출 350ms는 보장해 순간 깜빡임만 막는다
     const elapsed = Date.now() - visibleAtRef.current
-    const hideDelay = Math.max(MIN_VISIBLE_MS - elapsed, ROUTE_SETTLE_MS)
+    const hideDelay = Math.max(MIN_VISIBLE_MS - elapsed, 0)
     const hideTimer = window.setTimeout(() => setIsLoading(false), hideDelay)
     return () => window.clearTimeout(hideTimer)
   }, [pathname, isLoading])

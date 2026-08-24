@@ -13,7 +13,7 @@ test('root layout includes a client-side navigation loading indicator', () => {
 test('navigation loading indicator reacts to internal link clicks', () => {
   assert.match(componentFile, /'use client'/)
   assert.match(componentFile, /const SHOW_DELAY_MS = 120/)
-  assert.match(componentFile, /const ROUTE_SETTLE_MS = 450/)
+  assert.match(componentFile, /const MIN_VISIBLE_MS = 350/)
   assert.match(componentFile, /document\.addEventListener\('click'/)
   assert.match(componentFile, /closest\('a\[href\]'\)/)
   assert.match(componentFile, /setIsLoading\(true\)/)
@@ -62,7 +62,10 @@ test('navigation loading hides after leaving the origin path (redirect arrivals 
   // 도착 판정은 '예측 경로 일치'가 아니라 '출발 pathname에서 벗어남' —
   // 서버 리다이렉트로 다른 곳에 도착해도 4초 fallback까지 방치되지 않는다
   assert.match(componentFile, /if \(pathname === fromPathRef\.current\) return/)
-  assert.match(componentFile, /Math\.max\(MIN_VISIBLE_MS - elapsed, ROUTE_SETTLE_MS\)/)
+  // 도착하면 즉시 내리되, 총 노출 350ms는 보장해 순간 깜빡임만 막는다 —
+  // 도착 후 고정 대기(구 ROUTE_SETTLE_MS 450ms)는 모든 이동에 확정 지연만 붙여서 제거했다
+  assert.match(componentFile, /Math\.max\(MIN_VISIBLE_MS - elapsed, 0\)/)
+  assert.doesNotMatch(componentFile, /ROUTE_SETTLE_MS/)
 })
 
 test('navigation loading also covers back/forward and programmatic pushes', () => {
