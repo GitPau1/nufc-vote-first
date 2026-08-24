@@ -10,6 +10,7 @@ import { PredictionDone } from './PredictionDone'
 import { PlayerPhoto, Silhouette, TeamBadge } from './shared'
 import { StepHero, StepTrack, StepTrackVertical, type StepKey } from './steps'
 import { POSITIONS, POSITION_LABEL, type Candidate, type Position } from '@/lib/predictions/candidates'
+import { MAX_SCORE } from '@/lib/predictions/submit'
 import { submitWeekPrediction, type SubmitPredictionResult } from '@/lib/actions/predictions'
 import {
   NUFC_LABEL,
@@ -76,6 +77,22 @@ export function PredictionFlowClient({
 
   // 경기마다 3포지션이 다 채워져야 다음 단계로 넘어갈 수 있다.
   const allPicked = pending.every(match => POSITIONS.every(position => picks[match.id]?.[position]))
+
+  /**
+   * 버튼 상한 가드와 changeScore 클램프를 뚫고 범위 밖 값이 들어온 경우까지 화면에서 막는 안전망.
+   * 서버 왕복 후 invalid_score를 받는 대신 그 자리에서 알리고, 넘어가기·제출을 함께 잠근다.
+   * 판정 기준은 서버(buildPredictionRows)와 같은 "0~MAX_SCORE 사이 정수"다.
+   */
+  const scoreRangeError = pending.some(match => {
+    const [our, their] = scores[match.id] ?? [0, 0]
+    return ![our, their].every(
+      value => Number.isInteger(value) && value >= 0 && value <= MAX_SCORE,
+    )
+  })
+    ? `스코어는 0~${MAX_SCORE} 사이로 입력해주세요`
+    : null
+  /** 범위 오류는 제출 실패 메시지보다 먼저 보여준다 — 지금 당장 고칠 수 있는 문제라서. */
+  const visibleError = scoreRangeError ?? error
   // 더블 매치위크 = 이번에 제출할 경기가 2개 이상 — 스코어 입력이 경기별로 쌓이므로 안내 문구가 갈린다.
   const isMulti = pending.length > 1
   const goBackToList = () => router.push('/predictions')
@@ -118,7 +135,9 @@ export function PredictionFlowClient({
     setScores(prev => {
       const current = prev[fixtureId] ?? [0, 0]
       const next: [number, number] = [current[0], current[1]]
-      next[side] = Math.max(0, next[side] + delta)
+      // 하한·상한 양쪽을 여기서 막는다. 상한은 서버 검증과 같은 MAX_SCORE를 쓴다 —
+      // 예전에는 하한만 클램프해서 +를 21번 누르면 서버 왕복 후 invalid_score를 받았다.
+      next[side] = Math.min(MAX_SCORE, Math.max(0, next[side] + delta))
       return { ...prev, [fixtureId]: next }
     })
   }
@@ -285,15 +304,20 @@ export function PredictionFlowClient({
               </>
           )}
 
-          {error && (
+          {visibleError && (
             <p role="alert" className="mt-3 text-center text-label-2 font-bold text-negative">
-              {error}
+              {visibleError}
             </p>
           )}
 
           <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-shell -translate-x-1/2 border-t border-border bg-white/95 p-4 backdrop-blur sm:static sm:mx-auto sm:mt-8 sm:flex sm:max-w-[560px] sm:translate-x-0 sm:justify-center sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
             {step === 'score' && (
-              <Button size="lg" className="w-full sm:w-[200px]" onClick={() => completeStep('score', 'pick')}>
+              <Button
+                size="lg"
+                className="w-full sm:w-[200px]"
+                disabled={!!scoreRangeError}
+                onClick={() => completeStep('score', 'pick')}
+              >
                 다음
               </Button>
             )}
@@ -303,7 +327,12 @@ export function PredictionFlowClient({
               </Button>
             )}
             {step === 'confirm' && (
-              <Button size="lg" className="w-full sm:w-[200px]" disabled={submitting} onClick={handleSubmit}>
+              <Button
+                size="lg"
+                className="w-full sm:w-[200px]"
+                disabled={submitting || !!scoreRangeError}
+                onClick={handleSubmit}
+              >
                 {submitting ? '제출 중…' : '이대로 제출하기'}
               </Button>
             )}
@@ -383,8 +412,9 @@ function ScoreStepper({ value, onChange }: { value: number; onChange: (delta: nu
       <button
         type="button"
         aria-label="점수 증가"
+        disabled={value >= MAX_SCORE}
         onClick={() => onChange(1)}
-        className="flex h-[34px] w-full items-center justify-center bg-primary text-body-1-normal text-white transition-colors hover:bg-primary-dark"
+        className="flex h-[34px] w-full items-center justify-center bg-primary text-body-1-normal text-white transition-colors hover:bg-primary-dark disabled:bg-surface disabled:text-gray-3"
       >
         +
       </button>
