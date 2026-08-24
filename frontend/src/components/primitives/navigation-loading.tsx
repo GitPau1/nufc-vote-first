@@ -49,13 +49,13 @@ export function NavigationLoading() {
   const [isLoading, setIsLoading] = useState(false)
   const [loadingVariant, setLoadingVariant] = useState<LoadingVariant>('top')
   const visibleAtRef = useRef(0)
-  const targetPathRef = useRef<string | null>(null)
+  const fromPathRef = useRef<string | null>(null)
   const showTimerRef = useRef<number | null>(null)
   const pathnameRef = useRef(pathname)
 
-  useEffect(() => {
-    pathnameRef.current = pathname
-  }, [pathname])
+  // 렌더 중 동기화 — passive effect로 갱신하면 커밋이 긴 이동(캐시 히트 + 무거운 페이지)에서
+  // show 타이머가 옛 pathname을 보고 이미 그려진 화면 위에 스켈레톤을 띄운다
+  pathnameRef.current = pathname
 
   function clearShowTimer() {
     if (!showTimerRef.current) return
@@ -65,12 +65,14 @@ export function NavigationLoading() {
 
   function beginLoading(nextPath: string) {
     setLoadingVariant(getLoadingVariant(nextPath))
-    targetPathRef.current = nextPath
+    fromPathRef.current = pathnameRef.current
     clearShowTimer()
     showTimerRef.current = window.setTimeout(() => {
       showTimerRef.current = null
       // 캐시된 뒤로가기처럼 이미 도착했으면 굳이 띄우지 않는다
       if (pathnameRef.current === nextPath) return
+      // 리다이렉트로 예측과 다른 곳에 이미 도착한 경우도 마찬가지
+      if (pathnameRef.current !== fromPathRef.current) return
       visibleAtRef.current = Date.now()
       setIsLoading(true)
     }, SHOW_DELAY_MS)
@@ -119,7 +121,9 @@ export function NavigationLoading() {
   useEffect(() => {
     clearShowTimer()
     if (!isLoading) return
-    if (targetPathRef.current !== pathname) return
+    // 출발 pathname에서 벗어났으면 도착 — 예측 경로 일치를 요구하면
+    // 서버 리다이렉트로 다른 곳에 도착했을 때 FALLBACK_HIDE_MS까지 방치된다
+    if (pathname === fromPathRef.current) return
 
     const elapsed = Date.now() - visibleAtRef.current
     const hideDelay = Math.max(MIN_VISIBLE_MS - elapsed, ROUTE_SETTLE_MS)

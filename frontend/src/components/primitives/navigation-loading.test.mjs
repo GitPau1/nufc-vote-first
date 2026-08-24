@@ -19,7 +19,7 @@ test('navigation loading indicator reacts to internal link clicks', () => {
   assert.match(componentFile, /setIsLoading\(true\)/)
   assert.match(componentFile, /setLoadingVariant\(getLoadingVariant\(nextPath\)\)/)
   assert.match(componentFile, /beginLoading\(nextUrl\.pathname\)/)
-  assert.match(componentFile, /targetPathRef/)
+  assert.match(componentFile, /fromPathRef/)
   assert.match(componentFile, /showTimerRef/)
   assert.match(componentFile, /window\.setTimeout\(\(\) => \{/)
   assert.match(componentFile, /clearShowTimer\(\)/)
@@ -58,8 +58,10 @@ test('skeleton routes do not render the top progress bar', () => {
   assert.match(componentFile, /renderLoadingBody\(loadingVariant\)/)
 })
 
-test('navigation loading remains covered briefly after the target path arrives', () => {
-  assert.match(componentFile, /if \(targetPathRef\.current !== pathname\) return/)
+test('navigation loading hides after leaving the origin path (redirect arrivals included)', () => {
+  // 도착 판정은 '예측 경로 일치'가 아니라 '출발 pathname에서 벗어남' —
+  // 서버 리다이렉트로 다른 곳에 도착해도 4초 fallback까지 방치되지 않는다
+  assert.match(componentFile, /if \(pathname === fromPathRef\.current\) return/)
   assert.match(componentFile, /Math\.max\(MIN_VISIBLE_MS - elapsed, ROUTE_SETTLE_MS\)/)
 })
 
@@ -74,6 +76,16 @@ test('navigation loading also covers back/forward and programmatic pushes', () =
 
 test('already-arrived navigations skip the skeleton', () => {
   assert.match(componentFile, /if \(pathnameRef\.current === nextPath\) return/)
+  // 리다이렉트로 예측과 다른 곳에 이미 도착한 경우도 띄우지 않는다
+  assert.match(componentFile, /if \(pathnameRef\.current !== fromPathRef\.current\) return/)
+})
+
+test('pathname guard is synced during render, not in a passive effect', () => {
+  // 커밋이 긴 이동(캐시 히트 + 무거운 페이지)에서 show 타이머가 passive effect보다
+  // 먼저 실행되면 옛 pathname을 보고 이미 그려진 화면 위에 스켈레톤을 띄운다 —
+  // 렌더 중 갱신이면 커밋 안에서 항상 최신이 된다
+  assert.match(componentFile, /pathnameRef\.current = pathname/)
+  assert.doesNotMatch(componentFile, /useEffect\(\(\) => \{\s*pathnameRef\.current = pathname/)
 })
 
 test('programmatic navigation call sites use the loading-aware router', () => {
