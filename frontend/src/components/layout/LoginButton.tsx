@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/primitives/button'
 import { Modal } from '@/components/primitives/modal/Modal'
 import { LoginContent } from '@/components/primitives/modal/contents/Login'
 

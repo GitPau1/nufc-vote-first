@@ -4,8 +4,8 @@ import { INITIAL_VIEWPORTS } from 'storybook/viewport'
 
 import { Modal } from '@/components/primitives/modal/Modal'
 import { ConfirmContent } from '@/components/primitives/modal/contents/Confirm'
-import { Button } from '@/components/ui/button'
-import { RadioOption } from '@/components/ui/radio'
+import { Button } from '@/components/primitives/button'
+import { RadioOption } from '@/components/primitives/radio'
 
 type ConfirmArgs = {
   selectedLabel: string

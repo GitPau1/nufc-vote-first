@@ -10,7 +10,7 @@ import { Check, Search } from 'lucide-react'
 import type { PollFormPlayer } from '@/lib/queries/polls'
 import type { Position } from '@/types/database'
 import { SheetHeader, SheetTitle, SheetDescription } from '../sheet'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/primitives/button'
 
 export type PlayerPickMode = 'single' | 'multiple'
 type PlayerFilter = 'all' | 'first_team' | 'loan' | 'u21'

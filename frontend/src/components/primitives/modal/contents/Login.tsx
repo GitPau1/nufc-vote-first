@@ -9,7 +9,7 @@ import { IS_MOCK } from '@/lib/config'
 import { mockLogin } from '@/lib/actions/auth'
 import { getSourcePage, trackEvent } from '@/lib/analytics/mixpanel'
 import { SheetHeader, SheetTitle, SheetDescription } from '../sheet'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/primitives/button'
 
 /**
  * 이 모달이 뜬 맥락. 실제로 넘기는 값만 둔다 — 이 값이 설명 문구까지 가른다.

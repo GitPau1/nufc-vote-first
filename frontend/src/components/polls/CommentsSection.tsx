@@ -7,8 +7,8 @@ import type { PollStatus, PollType } from '@/types/database'
 import { deleteComment, submitComment, toggleLike, updateComment } from '@/lib/actions/comments'
 import { trackEvent } from '@/lib/analytics/mixpanel'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Button } from '@/components/primitives/button'
+import { Avatar, AvatarFallback } from '@/components/primitives/avatar'
 
 interface CommentsSectionProps {
   pollId: string

@@ -3,7 +3,7 @@
 import { ChevronLeft, ChevronRight, Lock } from 'lucide-react'
 import { TeamBadge } from './shared'
 import { cn } from '@/lib/utils'
-import { badgeVariants } from '@/components/ui/badge'
+import { badgeVariants } from '@/components/primitives/badge'
 
 /**
  * 클릭/예측의 단위는 "주차(week)"다 — 더블 매치위크(경기 2개)도 한 예측 세션으로 함께 열리고

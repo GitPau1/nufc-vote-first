@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { saveNickname } from '@/lib/actions/onboarding'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/primitives/button'
 
 export function OnboardingForm() {
   const [error, setError] = useState<string>()

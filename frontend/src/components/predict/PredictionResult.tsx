@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useLoadingRouter } from '@/components/layout/NavigationLoading'
+import { useLoadingRouter } from '@/components/primitives/navigation-loading'
 import { trackEvent } from '@/lib/analytics/mixpanel'
 import { PlayerPhoto, ShareButton, TeamBadge } from './shared'
 import { WeekRankCard } from './WeekRankCard'

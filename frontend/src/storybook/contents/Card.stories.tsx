@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/primitives/button'
 import {
   Card,
   CardContent,
@@ -8,8 +8,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
+} from '@/components/primitives/card'
+import { Separator } from '@/components/primitives/separator'
 
 // 이 앱의 Card는 전부 모바일 단일 컬럼(PageContainer) 안에서 쓰인다 —
 // 데스크탑 와이드 캔버스 그대로 두면 실제 배치와 여백 느낌이 달라진다.

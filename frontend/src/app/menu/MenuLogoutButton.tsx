@@ -1,9 +1,9 @@
 'use client'
 
-import { useLoadingRouter } from '@/components/layout/NavigationLoading'
+import { useLoadingRouter } from '@/components/primitives/navigation-loading'
 import { LogOut } from 'lucide-react'
 import { IS_MOCK } from '@/lib/config'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/primitives/button'
 
 export function MenuLogoutButton() {
   const router = useLoadingRouter()

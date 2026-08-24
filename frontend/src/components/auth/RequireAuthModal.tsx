@@ -1,6 +1,6 @@
 'use client'
 
-import { useLoadingRouter } from '@/components/layout/NavigationLoading'
+import { useLoadingRouter } from '@/components/primitives/navigation-loading'
 import { Modal } from '@/components/primitives/modal/Modal'
 import { LoginContent } from '@/components/primitives/modal/contents/Login'
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { useLoadingRouter } from '@/components/layout/NavigationLoading'
+import { useLoadingRouter } from '@/components/primitives/navigation-loading'
 import { trackEvent } from '@/lib/analytics/mixpanel'
 import { MatchWeekList } from './MatchWeekList'
 import { RankingCard } from './RankingCard'

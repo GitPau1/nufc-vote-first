@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { ResultProgress } from '@/components/ui/result-progress'
+import { ResultProgress } from '@/components/primitives/result-progress'
 
 const meta = {
   title: 'Contents/ResultProgress',

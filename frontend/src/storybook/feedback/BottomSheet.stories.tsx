@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
 import { Modal, type ModalForm } from '@/components/primitives/modal/Modal'
 import { SheetHeader, SheetTitle, SheetDescription } from '@/components/primitives/modal/sheet'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/primitives/button'
 
 // 공용 껍데기(Modal) 데모. form으로 default(중앙)/sheet(바텀)/responsive(폭 따라 자동)를 고른다.
 const meta = {

@@ -7,7 +7,7 @@ import type { PollListItem } from '@/lib/queries/polls'
 import { getSourcePage, trackEvent } from '@/lib/analytics/mixpanel'
 import { getEffectivePollStatus } from '@/lib/polls/status'
 import { formatScheduled, formatDate } from '@/lib/utils'
-import { Badge, type BadgeProps } from '@/components/ui/badge'
+import { Badge, type BadgeProps } from '@/components/primitives/badge'
 
 interface PollCardProps {
   poll: PollListItem
@@ -42,7 +42,7 @@ export function formatTimeLeft(closesAt: string): string {
 }
 
 /**
- * 상태 뱃지 톤. components/ui/badge.tsx의 기존 variant를 그대로 재사용한다(새 색 안 만듦) —
+ * 상태 뱃지 톤. components/primitives/badge.tsx의 기존 variant를 그대로 재사용한다(새 색 안 만듦) —
  * 공개 전/종료는 "지금 참여 못 함"으로 묶어 중립(outline), 진행중은 마감까지 1일 이하로
  * 남았을 때만 긴급(destructive)으로 올리고 그 외엔 기본(default) 톤을 쓴다.
  */

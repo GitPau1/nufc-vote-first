@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
 /**
- * `NavigationLoading.tsx`의 `SkeletonBlock`을 그대로 옮긴 것.
+ * `navigation-loading.tsx`의 `SkeletonBlock`을 그대로 옮긴 것.
  * 원본은 export되지 않는 내부 함수이고, 감싸는 `NavigationLoading`은 라우팅 클릭을
  * 가로채야만 렌더되는 클라이언트 컴포넌트라 스토리에서 직접 띄울 수 없다.
  * 소스를 고치지 않기 위해 마크업만 동일하게 복제했다.

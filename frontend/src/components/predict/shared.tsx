@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/primitives/avatar'
+import { Button } from '@/components/primitives/button'
 
 /** 팀 엠블럼(FotMob CDN URL은 lib/predictions/week.ts의 teamLogoUrl이 만든다). 실패하면 이니셜 원형으로 폴백. */
 export function TeamBadge({ logoUrl, name, size = 48 }: { logoUrl?: string; name: string; size?: number }) {

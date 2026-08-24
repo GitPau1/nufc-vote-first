@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { INITIAL_VIEWPORTS } from 'storybook/viewport'
 
-import { PageContainer } from '@/components/layout/PageContainer'
+import { PageContainer } from '@/components/primitives/page-container'
 
 // PageContainer는 min-h-screen이라 캔버스를 한 화면 높이로 채운다. Docs 페이지에서
 // 스토리 4개가 각각 100vh를 먹으면 읽을 수 없어서, 상단만 보이도록 잘라서 보여준다.

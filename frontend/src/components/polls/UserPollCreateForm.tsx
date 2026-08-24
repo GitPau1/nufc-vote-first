@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { useLoadingRouter } from '@/components/layout/NavigationLoading'
+import { useLoadingRouter } from '@/components/primitives/navigation-loading'
 import { Plus, Users, X } from 'lucide-react'
 import { createUserPoll } from '@/lib/actions/polls'
 import { uploadPollImage } from '@/lib/actions/images'
@@ -9,7 +9,7 @@ import { trackEvent } from '@/lib/analytics/mixpanel'
 import { CroppedImageInput } from '@/components/images/CroppedImageInput'
 import type { PollFormPlayer } from '@/lib/queries/polls'
 import type { PollType } from '@/types/database'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/primitives/button'
 import { Modal } from '@/components/primitives/modal/Modal'
 import { PollPickerContent, getPlayerMeta, type PlayerPickMode } from '@/components/primitives/modal/contents/PollPicker'
 

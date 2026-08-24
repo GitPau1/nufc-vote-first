@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/primitives/button'
 import { trackEvent } from '@/lib/analytics/mixpanel'
 
 export function MyFeedbackForm() {

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { StickyActionBar } from '@/components/layout/StickyActionBar'
-import { Button } from '@/components/ui/button'
+import { StickyActionBar } from '@/components/primitives/sticky-action-bar'
+import { Button } from '@/components/primitives/button'
 
 /**
  * 투표 상세(`/polls/[id]`) 레이아웃 축약판.

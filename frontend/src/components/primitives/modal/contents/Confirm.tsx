@@ -3,8 +3,8 @@
 // 사용 도메인: polls (투표 제출 확인 — Modal 껍데기에 끼워 쓴다)
 
 import { SheetHeader, SheetTitle, SheetDescription } from '../sheet'
-import { Button } from '@/components/ui/button'
-import { RadioIndicator } from '@/components/ui/radio'
+import { Button } from '@/components/primitives/button'
+import { RadioIndicator } from '@/components/primitives/radio'
 
 interface ConfirmContentProps {
   selectedLabel: string

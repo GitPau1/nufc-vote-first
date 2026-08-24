@@ -5,7 +5,7 @@
 
 import { PlayerPhoto } from '@/components/predict/shared'
 import { cn } from '@/lib/utils'
-import { badgeVariants } from '@/components/ui/badge'
+import { badgeVariants } from '@/components/primitives/badge'
 import { SheetTitle } from '../sheet'
 
 export interface PlayerPickCandidate {

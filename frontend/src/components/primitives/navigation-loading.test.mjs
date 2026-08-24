@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
-const componentFile = readFileSync(new URL('./NavigationLoading.tsx', import.meta.url), 'utf8')
+const componentFile = readFileSync(new URL('./navigation-loading.tsx', import.meta.url), 'utf8')
 const layoutFile = readFileSync(new URL('../../app/layout.tsx', import.meta.url), 'utf8')
 
 test('root layout includes a client-side navigation loading indicator', () => {

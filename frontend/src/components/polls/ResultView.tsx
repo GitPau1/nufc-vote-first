@@ -8,7 +8,7 @@ import { trackEvent } from '@/lib/analytics/mixpanel'
 import { CommentsSection } from './CommentsSection'
 import { PollPageHeader } from './PollPageHeader'
 import { IS_MOCK } from '@/lib/config'
-import { ResultProgress } from '@/components/ui/result-progress'
+import { ResultProgress } from '@/components/primitives/result-progress'
 import type { PlayerRow, PollOptionRow } from '@/types/database'
 
 interface ResultViewProps {

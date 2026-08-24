@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useRef, useState, useTransition } from 'react'
-import { useLoadingRouter } from '@/components/layout/NavigationLoading'
+import { useLoadingRouter } from '@/components/primitives/navigation-loading'
 import { trackEvent } from '@/lib/analytics/mixpanel'
-import { Button } from '@/components/ui/button'
-import { StickyActionBar } from '@/components/layout/StickyActionBar'
+import { Button } from '@/components/primitives/button'
+import { StickyActionBar } from '@/components/primitives/sticky-action-bar'
 import { Modal } from '@/components/primitives/modal/Modal'
 import { LoginContent } from '@/components/primitives/modal/contents/Login'
 import { PlayerPickContent } from '@/components/primitives/modal/contents/PlayerPick'

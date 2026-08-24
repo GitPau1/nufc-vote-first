@@ -5,9 +5,9 @@ import { Heart } from 'lucide-react'
 import type { PollDetail, RatingResultItem } from '@/lib/queries/polls'
 import { toggleRatingCommentLike } from '@/lib/actions/ratings'
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/primitives/badge'
+import { Button } from '@/components/primitives/button'
+import { Card, CardContent } from '@/components/primitives/card'
 import { PollPageHeader } from './PollPageHeader'
 
 const POSITION_GROUPS = [

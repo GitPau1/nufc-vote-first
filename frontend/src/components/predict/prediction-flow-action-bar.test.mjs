@@ -15,7 +15,7 @@ function source(relativePath) {
 test('prediction flow reuses StickyActionBar instead of duplicating the fixed bottom bar', () => {
   const flow = source('components/predict/PredictionFlowClient.tsx')
 
-  assert.match(flow, /import \{ StickyActionBar \} from '@\/components\/layout\/StickyActionBar'/)
+  assert.match(flow, /import \{ StickyActionBar \} from '@\/components\/primitives\/sticky-action-bar'/)
   assert.match(flow, /<StickyActionBar/)
 
   // 위치 전환 로직(fixed→static)을 이 파일이 직접 다시 쓰면 안 된다 — StickyActionBar가 소유한다.

@@ -12,9 +12,9 @@ function source(relativePath) {
 test('shared UI primitives use foundation radius and typography tokens', () => {
   const tailwind = fs.readFileSync(path.join(root, '../tailwind.config.ts'), 'utf8')
   const globals = source('app/globals.css')
-  const card = source('components/ui/card.tsx')
-  const button = source('components/ui/button.tsx')
-  const badge = source('components/ui/badge.tsx')
+  const card = source('components/primitives/card.tsx')
+  const button = source('components/primitives/button.tsx')
+  const badge = source('components/primitives/badge.tsx')
   const sheet = source('components/primitives/modal/sheet.tsx')
 
   assert.match(tailwind, /"headline-1": \["18px", \{ lineHeight: "26px", letterSpacing: "-0\.002em" \}\]/)
@@ -41,7 +41,7 @@ test('shared UI primitives use foundation radius and typography tokens', () => {
 
   // globals.css에서 타이포 토큰을 쓰는 유틸리티는 이제 .input-field 하나뿐이다.
   // text-body-2-normal을 쓰던 .btn-primary/.btn-secondary는 ed4972a에서 삭제되고
-  // 버튼 스타일이 components/ui/button.tsx로 옮겨갔다 — 그쪽은 위에서 검증한다.
+  // 버튼 스타일이 components/primitives/button.tsx로 옮겨갔다 — 그쪽은 위에서 검증한다.
   assert.match(globals, /text-label-1-normal/)
   assert.doesNotMatch(globals, /text-\[14px\]|text-\[15px\]/)
 })
@@ -63,7 +63,7 @@ test('app and poll headers use color and typography foundations', () => {
 })
 
 test('loading skeletons mirror the mobile layout foundation', () => {
-  const loading = source('components/layout/NavigationLoading.tsx')
+  const loading = source('components/primitives/navigation-loading.tsx')
 
   assert.match(loading, /className="flex-1 px-5 pt-4 pb-24 sm:pb-10"/)
   assert.match(loading, /className="flex-1 px-5 pt-6 pb-24 sm:pb-10"/)

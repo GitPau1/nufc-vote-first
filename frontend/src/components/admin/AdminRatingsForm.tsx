@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/primitives/button'
 import { POSITIONS, POSITION_LABEL } from '@/lib/predictions/candidates'
 import { saveFixtureRatings, type SaveRatingsResult } from '@/lib/actions/fixture-ratings'
 import type { PickCandidates } from '@/lib/queries/squads'

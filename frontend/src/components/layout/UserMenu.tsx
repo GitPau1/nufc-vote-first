@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { IS_MOCK } from '@/lib/config'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/primitives/avatar'
 
 interface UserMenuProps {
   avatarUrl?: string
