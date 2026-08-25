@@ -375,6 +375,17 @@ export interface Database {
         // 스키마 전체가 supabase-js 추론에서 빠진다 — 조회 결과는 PredictionResultRow 등으로 직접 단언해 쓴다.
         Relationships: []
       }
+      // 평점 투표 poll별 참여자 수 (20260825120000_rating_poll_participants.sql).
+      // 행 수가 아니라 중복 제거된 user_id 수다 — 참여자 1명이 선수 수만큼 rating_votes 행을 남긴다.
+      rating_poll_participants: {
+        Row: {
+          poll_id: string
+          participant_count: number
+        }
+        // 읽기 전용 view (GenericNonUpdatableView 형태). 다만 Tables 쪽에 Relationships가 없어
+        // 스키마 전체가 supabase-js 추론에서 빠진다 — 조회 결과는 PredictionResultRow 등으로 직접 단언해 쓴다.
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
@@ -410,6 +421,7 @@ export type PredictionInsert = Database['public']['Tables']['predictions']['Inse
 export type PredictionResultRow = Database['public']['Views']['prediction_results']['Row']
 export type WeekLeaderboardRow = Database['public']['Views']['week_leaderboard']['Row']
 export type SeasonLeaderboardRow = Database['public']['Views']['season_leaderboard']['Row']
+export type RatingPollParticipantsRow = Database['public']['Views']['rating_poll_participants']['Row']
 
 export type PollWithOptions = PollRow & {
   poll_options: PollOptionRow[]
