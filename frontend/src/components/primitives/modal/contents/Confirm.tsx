@@ -4,7 +4,6 @@
 
 import { SheetHeader, SheetTitle, SheetDescription } from '../sheet'
 import { Button } from '@/components/primitives/button'
-import { RadioIndicator } from '@/components/primitives/radio'
 
 interface ConfirmContentProps {
   selectedLabel: string
@@ -37,13 +36,12 @@ export function ConfirmContent({
         <SheetDescription>제출 후에는 변경할 수 없습니다</SheetDescription>
       </SheetHeader>
 
-      {/* 선택 요약 */}
-      <div className="flex items-center gap-3 rounded-sm bg-brand-weak border border-brand-solid px-4 py-3.5 mb-5">
-        <RadioIndicator selected />
-        <div>
-          <p className="text-caption-2 text-neutral-muted mb-0.5">{summaryCaption}</p>
-          <p className="text-label-1-normal font-semibold text-neutral">{selectedLabel}</p>
-        </div>
+      {/* 선택 요약 — 라디오 인디케이터·브랜드색 테두리로 "선택하는 중"을 다시 그리지 않는다.
+          이 자리는 고르는 화면이 아니라 이미 고른 것을 확인하는 화면이라, bg-page로 눌러 앉힌
+          블록에 내가 고른 선택지를 텍스트로만 보여준다. */}
+      <div className="rounded-sm bg-page px-4 py-3.5 mb-5">
+        <p className="text-caption-2 text-neutral-muted mb-0.5">{summaryCaption}</p>
+        <p className="text-label-1-normal font-semibold text-neutral">{selectedLabel}</p>
       </div>
 
       {/* 버튼 */}

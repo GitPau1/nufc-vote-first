@@ -11,7 +11,9 @@ import * as BottomSheetStories from './BottomSheet.stories'
 
 ## 단일 shell 원칙 — 껍데기는 하나, 내용만 호출부
 
-**모달·바텀시트의 shell은 `primitives/modal/Modal.tsx` 하나로 통일한다.** shell이 책임지는 것: 위치·폭·반응형(모바일 하단시트 ↔ 데스크탑 중앙 모달), 오버레이, 드래그 핸들, 포커스 트랩·ESC 닫기, 우측 상단 X 닫기. 호출부는 `children`으로 **본문만** 넣는다.
+**모달·바텀시트의 shell은 `primitives/modal/Modal.tsx` 하나로 통일한다.** shell이 책임지는 것: 위치·폭·반응형(모바일 하단시트 ↔ 데스크탑 중앙 모달), 오버레이, 포커스 트랩·ESC 닫기, 그리고 상태별 닫기 어포던스 하나. 호출부는 `children`으로 **본문만** 넣는다.
+
+닫기 어포던스는 상태마다 **하나만** 둔다 — 중앙 모달(`default`)은 우측 상단 X, 바텀시트(`sheet`)는 상단 드래그 핸들. 시트에 X를 함께 얹지 않는다(같은 역할이 두 개가 된다). shell이 `sheet.tsx`의 `showCloseButton`/`showDragHandle`로 자동 전환하므로 호출부가 신경 쓸 것은 없다.
 
 새 모달·시트가 필요하면 shell을 새로 짜지 말고 이 컴포넌트를 재사용한다 — Radix Dialog를 직접 조립하거나 `ui/sheet`를 직접 import하지 않는다. 그래야 반응형 전환·접근성·닫기 동작이 한 곳에서 관리된다.
 
@@ -22,18 +24,20 @@ import * as BottomSheetStories from './BottomSheet.stories'
 | ConfirmModal | `components/primitives/modal/contents/Confirm.tsx` | 투표 제출 확인 |
 | LoginModal (+ RequireAuthModal 래퍼) | `components/primitives/modal/contents/Login.tsx` | 로그인 유도 |
 | PlayerPickModal | `components/primitives/modal/contents/PlayerPick.tsx` | 포지션별 선수 선택 목록 |
-| 선수 선택 시트 (투표 생성) | `components/composition/polls/UserPollCreateForm.tsx`(`PlayerPickerSheet`) | 검색·필터 + 선수 목록 + 선택 완료 |
+| PollPickerModal (투표 생성의 선수 선택 시트) | `components/primitives/modal/contents/PollPicker.tsx` | 검색·필터 + 선수 목록 + 선택 완료 |
 
 `UserMenu`의 드롭다운처럼 오버레이·포커스 트랩 없이 앵커에 붙는 **팝오버성 표면은 이 원칙 대상이 아니다** — 모달·바텀시트 문법이 아니기 때문이다.
 
 ## 헤더는 통일하지 않는다
 
-`ConfirmModal`은 좌측 정렬, `LoginModal`은 중앙 정렬 + 아이콘을 쓴다 — 실제로 레이아웃이 달라서 여기서 억지로 하나의 헤더 API로 묶지 않는다. `children`으로 자유롭게 구성한다.
+`ConfirmModal`은 좌측 정렬, `LoginModal`은 중앙 정렬 + 아이콘을 쓴다 — 실제로 레이아웃이 달라서 여기서 억지로 하나의 헤더 API로 묶지 않는다. `children`으로 자유롭게 구성한다. `SheetHeader`의 기본 정렬은 중앙이고, 좌측이 필요하면 content가 `text-left`를 직접 준다(반응형 정렬은 base에 두지 않는다 — shell의 형태 전환 기준과 어긋난다).
+
+**본문 요소 사이 간격도 shell이 정하지 않는다** — content의 margin/padding이 단독으로 책임진다. shell base에 `gap`을 두면 세로 flex를 주입한 목록형 시트에서만 되살아나 같은 껍데기인데 간격 규칙이 두 갈래가 되므로 두지 않는다.
 
 ## side variant
 
 더 아래 레벨 primitive인 `primitives/modal/sheet.tsx`는 `top`·`bottom`·`left`·`right`·`center` 5방향을 지원한다. `BottomSheet`은 이 중 **`bottom`(모바일)과 `center`(데스크탑)를 화면 폭(`min-width: 768px`)에 따라 오간다** — 바텀시트는 손가락으로 끌어내리는 모바일 제스처 문법이라 마우스로 조작하는 데스크탑에는 중앙 모달(`center`)이 맞다. 나머지 `top`·`left`·`right`는 primitive에 준비만 돼 있고 화면 어디서도 안 쓴다.
 
-본문 스크롤 높이는 shell 골격이 정하지 않는다 — 목록형 시트는 `className`으로 `max-h-*`/`overflow-y-auto`를 주입한다(예: `PlayerPickModal`).
+본문 스크롤 높이는 shell 골격이 정하지 않는다 — 목록형 시트는 `className`으로 주입한다. 이때 **껍데기를 통째로 스크롤시키지 않는다**(`overflow-y-auto`를 shell에 주면 타이틀·드래그 핸들까지 같이 밀려 올라간다). 대신 shell에는 `flex … flex-col overflow-hidden` + 높이 제한을 주고, 내용 쪽에서 목록 영역만 `min-h-0 flex-1 overflow-y-auto`로 감싼다(예: `PlayerPickModal`, `PollPickerModal`).
 
 열림/닫힘 duration은 [Motion](?path=/docs/foundations-motion--docs)의 `enter`(300ms)/`exit`(200ms) 토큰을 쓴다.

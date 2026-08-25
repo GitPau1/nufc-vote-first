@@ -30,8 +30,11 @@ const SheetOverlay = React.forwardRef<
 ))
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName
 
+// 본문 요소 사이 간격은 껍데기가 정하지 않는다 — content(modal/contents/*)의 margin/padding이
+// 단독으로 책임진다. base에 gap을 두면 호출부가 세로 flex를 주입한 시트에서만 되살아나서(목록형
+// 시트가 그렇다) 같은 껍데기인데 간격 규칙이 두 갈래가 된다.
 const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-surface p-5 shadow-w300 transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-exit data-[state=open]:duration-enter",
+  "fixed z-50 bg-surface p-5 shadow-w300 transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-exit data-[state=open]:duration-enter",
   {
     variants: {
       side: {
@@ -68,12 +71,17 @@ interface SheetContentProps
     VariantProps<typeof sheetVariants> {
   /** 상단에 드래그 핸들 바를 표시(하단 시트에서 선택적으로 사용) */
   showDragHandle?: boolean
+  /**
+   * 우측 상단 X 닫기 버튼을 표시. 드래그 핸들이 있는 하단 시트에서는 닫기 어포던스가
+   * 중복되므로 끈다(핸들 ↔ X는 한 번에 하나만 — `Modal`이 form에 따라 정한다).
+   */
+  showCloseButton?: boolean
 }
 
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = "right", showDragHandle = false, className, children, ...props }, ref) => (
+>(({ side = "right", showDragHandle = false, showCloseButton = true, className, children, ...props }, ref) => (
   <SheetPortal>
     <SheetOverlay />
     <SheetPrimitive.Content
@@ -85,10 +93,12 @@ const SheetContent = React.forwardRef<
         <div className="mx-auto mb-6 h-1.5 w-10 rounded-full bg-disabled" />
       )}
       {children}
-      <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-brand-solid disabled:pointer-events-none data-[state=open]:bg-disabled">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </SheetPrimitive.Close>
+      {showCloseButton && (
+        <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-brand-solid disabled:pointer-events-none data-[state=open]:bg-disabled">
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </SheetPrimitive.Close>
+      )}
     </SheetPrimitive.Content>
   </SheetPortal>
 ))
@@ -99,28 +109,17 @@ const SheetHeader = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
+    // 정렬은 content가 정한다 — 좌측 정렬이 필요하면 `text-left`를 직접 준다(Confirm이 그렇게 쓴다).
+    // base에 있던 `sm:text-left`는 shell의 형태 전환 기준(md/768px)과도 어긋나는 잔재였고,
+    // 정렬을 지정하지 않은 Login 헤더가 640px 이상에서 아이콘만 중앙에 남고 텍스트만 좌측으로 갈렸다.
     className={cn(
-      "flex flex-col space-y-2 text-center sm:text-left",
+      "flex flex-col space-y-2 text-center",
       className
     )}
     {...props}
   />
 )
 SheetHeader.displayName = "SheetHeader"
-
-const SheetFooter = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-      className
-    )}
-    {...props}
-  />
-)
-SheetFooter.displayName = "SheetFooter"
 
 const SheetTitle = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Title>,
@@ -154,7 +153,6 @@ export {
   SheetClose,
   SheetContent,
   SheetHeader,
-  SheetFooter,
   SheetTitle,
   SheetDescription,
 }

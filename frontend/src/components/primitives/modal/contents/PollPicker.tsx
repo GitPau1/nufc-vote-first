@@ -91,7 +91,9 @@ export function PollPickerContent({
         </SheetDescription>
       </SheetHeader>
       <div className="space-y-3 border-b border-neutral-weak px-4 py-3">
-        <div className="mr-10 flex h-10 items-center gap-2 rounded-sm border border-neutral-weak bg-surface px-3">
+        {/* 오른쪽 여백은 껍데기의 X 닫기 버튼(우측 상단)을 피하려고 둔 것이다. X는 중앙 모달에만
+            남았으므로(바텀시트는 드래그 핸들) Modal의 전환 기준과 같은 md(768px)부터만 준다. */}
+        <div className="flex h-10 items-center gap-2 rounded-sm border border-neutral-weak bg-surface px-3 md:mr-10">
           <Search className="h-4 w-4 text-neutral-muted" />
           <input
             value={query}
