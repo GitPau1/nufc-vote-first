@@ -375,7 +375,9 @@ test('retired legacy color class names are gone repo-wide', () => {
     if (entry.endsWith('design-foundation.test.mjs')) continue
     // 이 페이지의 존재 이유가 "무엇을 왜 걷어냈는지" 설명하는 것이라, 폐기된 이름을
     // 본문에서 인용하는 게 정상이다. 유일한 예외.
-    if (entry.endsWith('foundations/DesignToken.mdx')) continue
+    // readdirSync는 플랫폼 구분자로 경로를 준다 — Windows에서는 역슬래시라 '/' 하드코딩
+    // 비교가 빗나가고, 이 예외가 무력화돼 이 파일이 위반으로 잡혔다(Windows에서만 실패).
+    if (entry.split(path.sep).join('/').endsWith('foundations/DesignToken.mdx')) continue
 
     const hits = fs.readFileSync(full, 'utf8').match(pattern)
     if (hits) {

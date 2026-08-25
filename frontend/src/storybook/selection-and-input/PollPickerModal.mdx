@@ -9,7 +9,7 @@ import * as PollPickerModalStories from './PollPickerModal.stories'
 
 코드는 `components/primitives/modal/contents/PollPicker.tsx`(`PollPickerContent`), 사용처는 `components/composition/polls/UserPollCreateForm.tsx`(투표 생성 폼의 선수 picker) 한 곳이다. poll 도메인 헬퍼(`POSITION_ORDER`·`isSelectablePlayer` 등)를 담고 있어 content가 polls 도메인 로직에 의존한다 — 파일 상단 주석에 이 결정이 기록되어 있다.
 
-공용 shell [BottomSheet](?path=/docs/primitives-modal--docs)를 그대로 쓴다. 이 컴포넌트는 content(검색바 + 소속 필터 + 포지션별 목록 + 다중 모드의 완료 버튼)만 담당하고, 전체높이 시트 크기는 호출부가 Modal `className`(`flex h-[82vh] max-h-[82vh] flex-col overflow-hidden p-0`)으로 준다. 시각 타이틀은 없다 — `SheetHeader`가 `sr-only`라 스크린리더에만 "선수 선택"이 읽힌다.
+공용 shell [BottomSheet](?path=/docs/primitives-modal--docs)를 그대로 쓴다. 이 컴포넌트는 content(검색바 + 소속 필터 + 포지션별 목록 + 다중 모드의 완료 버튼)만 담당하고, 전체높이 시트 크기는 호출부가 Modal `className`(`flex h-[82vh] max-h-[82vh] flex-col overflow-hidden px-0 pb-0 pt-5`)으로 준다. 좌우 패딩만 0으로 지운다 — 검색블록의 `border-b`와 목록 행이 시트 폭 끝까지 닿아야 하기 때문이고, 상단 `pt-5`는 껍데기가 그리는 드래그 핸들의 여백이라 남긴다(`p-0`으로 통째로 지우면 핸들이 시트 최상단에 붙는다). 시각 타이틀은 없다 — `SheetHeader`가 `sr-only`라 스크린리더에만 "선수 선택"이 읽힌다.
 
 <Canvas of={PollPickerModalStories.Default} />
 <Canvas of={PollPickerModalStories.Mobile} />

@@ -42,15 +42,18 @@ function useIsDesktopViewport(): boolean {
 }
 
 /**
- * 모달·바텀시트 공용 껍데기(shell). 오버레이·위치/폭·반응형 전환·드래그 핸들·포커스 트랩·ESC·
- * 우측 상단 X 닫기를 전담한다. **내부 본문은 `children`(= modal/contents/*)에 완전히 위임**한다 —
+ * 모달·바텀시트 공용 껍데기(shell). 오버레이·위치/폭·반응형 전환·포커스 트랩·ESC와
+ * **닫기 어포던스 하나**를 전담한다. **내부 본문은 `children`(= modal/contents/*)에 완전히 위임**한다 —
  * 헤더 정렬/아이콘 등은 사용처마다 달라서 껍데기에서 하나의 API로 묶지 않는다.
  *
  * 상태는 둘: `default`(중앙 모달, `sheet.tsx`의 center variant) / `sheet`(바텀시트, bottom variant).
  * `form`으로 무엇을 띄울지 정하고, `'responsive'`면 화면 폭으로 자동 전환한다.
  *
- * 주의: sheet 기본 X 닫기 버튼을 CSS(`[&>button]:hidden`)로 가리지 않는다 — 그 선택자가 children의
- * 직계 버튼까지 숨겨 CTA가 사라진 적이 있다. 가려야 하면 `SheetContent`에서 그 버튼을 렌더하지 않는 쪽으로.
+ * 닫기 어포던스는 상태별로 하나만 둔다: 중앙 모달 = 우측 상단 X, 바텀시트 = 상단 드래그 핸들.
+ * 시트에 X까지 얹으면 같은 역할이 두 개가 되므로 `showCloseButton`으로 끈다.
+ *
+ * 주의: X 닫기 버튼을 CSS(`[&>button]:hidden`)로 가리지 않는다 — 그 선택자가 children의
+ * 직계 버튼까지 숨겨 CTA가 사라진 적이 있다. 끄려면 `SheetContent`가 렌더하지 않게 하는 쪽으로.
  */
 export function Modal({ open, onOpenChange, form = 'responsive', className, children }: ModalProps) {
   const isDesktop = useIsDesktopViewport()
@@ -62,6 +65,7 @@ export function Modal({ open, onOpenChange, form = 'responsive', className, chil
       <SheetContent
         side={side}
         showDragHandle={asSheet}
+        showCloseButton={!asSheet}
         className={cn(side === 'bottom' && 'border-t-0', className)}
       >
         {children}

@@ -463,10 +463,12 @@ export function PredictionFlowClient({
         )}
       </StickyActionBar>
 
+      {/* 껍데기가 아니라 목록만 스크롤한다(타이틀·드래그 핸들 고정) — 세로 flex로 높이를 나눠주고
+          스크롤은 PlayerPickContent 내부 목록이 맡는다. */}
       <Modal
         open={pickTarget !== null}
         onOpenChange={open => !open && setPickTarget(null)}
-        className="max-h-[78vh] overflow-y-auto hide-scrollbar sm:max-h-[80vh]"
+        className="flex max-h-[78vh] flex-col overflow-hidden sm:max-h-[80vh]"
       >
         <PlayerPickContent
           positionLabel={pickTarget ? POSITION_LABEL[pickTarget.position] : ''}
@@ -567,6 +569,15 @@ function ConfirmTeam({ logoUrl, name }: { logoUrl: string; name: string }) {
   )
 }
 
+/**
+ * +/− 가능·불가능은 **면을 채우지 않고 기호 색으로만** 말한다 — 누를 수 있으면
+ * `text-neutral-muted`, 한계에 닿아 못 누르면 `text-disabled`(한 단계 밝다). 전에는 누를 수 있는
+ * 쪽을 `bg-brand-solid`로 채웠는데, 스코어 입력은 브랜드 CTA가 아니라 값을 미세조정하는 컨트롤이라
+ * 카드 안에서 제출 버튼보다 더 강하게 튀었다. 면은 `bg-surface` 하나로 두고 구분은 경계선이 한다.
+ */
+const SCORE_STEP_BUTTON_CLASS =
+  'flex h-[34px] w-full items-center justify-center bg-surface text-body-1-normal text-neutral-muted transition-[opacity,background-color] duration-micro hover:opacity-70 active:bg-neutral-weak disabled:pointer-events-none disabled:text-disabled'
+
 function ScoreStepper({ value, onChange }: { value: number; onChange: (delta: number) => void }) {
   return (
     <div className="w-16 overflow-hidden rounded-md border border-neutral-weak bg-surface">
@@ -575,7 +586,7 @@ function ScoreStepper({ value, onChange }: { value: number; onChange: (delta: nu
         aria-label="점수 증가"
         disabled={value >= MAX_SCORE}
         onClick={() => onChange(1)}
-        className="flex h-[34px] w-full items-center justify-center bg-brand-solid text-body-1-normal text-on-solid transition-[opacity,background-color] duration-micro hover:opacity-70 active:bg-brand-solid-pressed disabled:pointer-events-none disabled:bg-disabled disabled:text-disabled disabled:opacity-100"
+        className={SCORE_STEP_BUTTON_CLASS}
       >
         +
       </button>
@@ -587,7 +598,7 @@ function ScoreStepper({ value, onChange }: { value: number; onChange: (delta: nu
         aria-label="점수 감소"
         disabled={value <= 0}
         onClick={() => onChange(-1)}
-        className="flex h-[34px] w-full items-center justify-center bg-brand-solid text-body-1-normal text-on-solid transition-[opacity,background-color] duration-micro hover:opacity-70 active:bg-brand-solid-pressed disabled:pointer-events-none disabled:bg-disabled disabled:text-disabled disabled:opacity-100"
+        className={SCORE_STEP_BUTTON_CLASS}
       >
         −
       </button>

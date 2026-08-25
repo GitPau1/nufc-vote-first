@@ -61,16 +61,23 @@ export async function getComments(
   if (error || !data) return []
 
   const commenterIds = Array.from(new Set(data.map(row => row.user_id)))
-  const voteMap = new Map<string, string>()
+  const commentIds = data.map(row => row.id)
 
-  if (commenterIds.length > 0) {
-    const { data: voteData } = await supabase
-      .from('votes')
-      .select('user_id, option_id')
-      .eq('poll_id', pollId)
-      .in('user_id', commenterIds) as unknown as { data: VoteQueryRow[] | null }
+  // votes→poll_options 체인과 comment_likes는 서로의 결과를 안 쓴다. 순차로 기다릴 이유가 없어 나눠 보낸다.
+  // (votes→poll_options는 option_id 의존이라 그 안에서는 순차가 맞다)
+  const [voteMap, likedSet] = await Promise.all([
+    (async () => {
+      const map = new Map<string, string>()
+      if (commenterIds.length === 0) return map
 
-    if (voteData && voteData.length > 0) {
+      const { data: voteData } = await supabase
+        .from('votes')
+        .select('user_id, option_id')
+        .eq('poll_id', pollId)
+        .in('user_id', commenterIds) as unknown as { data: VoteQueryRow[] | null }
+
+      if (!voteData || voteData.length === 0) return map
+
       const optionIds = Array.from(new Set(voteData.map(vote => vote.option_id)))
       const { data: optionData } = await supabase
         .from('poll_options')
@@ -83,22 +90,24 @@ export async function getComments(
 
       for (const vote of voteData) {
         const label = optionLabelMap.get(vote.option_id)
-        if (label) voteMap.set(vote.user_id, label)
+        if (label) map.set(vote.user_id, label)
       }
-    }
-  }
+      return map
+    })(),
+    (async () => {
+      const set = new Set<string>()
+      if (!userId) return set
 
-  const likedSet = new Set<string>()
-  if (userId) {
-    const commentIds = data.map(row => row.id)
-    const { data: likeData } = await supabase
-      .from('comment_likes')
-      .select('comment_id')
-      .eq('user_id', userId)
-      .in('comment_id', commentIds) as unknown as { data: LikeQueryRow[] | null }
+      const { data: likeData } = await supabase
+        .from('comment_likes')
+        .select('comment_id')
+        .eq('user_id', userId)
+        .in('comment_id', commentIds) as unknown as { data: LikeQueryRow[] | null }
 
-    for (const like of likeData ?? []) likedSet.add(like.comment_id)
-  }
+      for (const like of likeData ?? []) set.add(like.comment_id)
+      return set
+    })(),
+  ])
 
   return data.map(row => ({
     id: row.id,

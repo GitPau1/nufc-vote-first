@@ -418,6 +418,7 @@ DB 제약:
 
 - `polls`, `poll_options`, `players`
 - `votes` count aggregate
+- 평점 투표(`overall_rating`)의 참여자 수는 **view `rating_poll_participants`**(`20260825120000_rating_poll_participants.sql`) — `lib/queries/polls.ts`의 `getRatingParticipantCounts`. 참여자 1명이 선수 수만큼 `rating_votes` 행을 남기므로 행 수가 아니라 `count(distinct user_id)`여야 하고, 예전처럼 행을 전량 받아 JS로 세면 PostgREST `db-max-rows=1000`에 잘려 화면 숫자가 조용히 틀립니다(선수 14명 기준 참여자 14명부터). `security_invoker = true`라 `rating_votes: public read` 정책을 그대로 탑니다.
 - 최신 공개 `farewells`
 - `farewell_comments` count aggregate
 

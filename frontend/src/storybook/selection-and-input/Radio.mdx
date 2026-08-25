@@ -17,7 +17,9 @@ import * as RadioStories from './Radio.stories'
 
 ## RadioIndicator만 쓰는 경우
 
-클릭할 수 없는 요약 화면(`ConfirmModal`의 "내 선택")처럼, 상태를 보여주기만 하고 상호작용은 없는 곳에 쓴다. `selected`는 항상 `true`로 고정해서 쓴다 — 이 컴포넌트 자체엔 미선택 상태를 보여줄 이유가 없다.
+지금은 없다. `RadioOption`이 내부에서 쓰는 게 유일한 사용처다(그 밖에는 이 문서의 스토리뿐).
+
+전에는 `ConfirmModal`의 "내 선택" 요약 박스가 `selected` 고정으로 썼는데, 그 자리는 선택지를 고르는 화면이 아니라 이미 고른 것을 확인하는 화면이어서 라디오를 지우고 텍스트만 남겼다([ConfirmModal](?path=/docs/primitives-modal-confirm--docs) 참고). **클릭할 수 없는 자리에 라디오 인디케이터를 다시 놓지 않는다** — 상호작용이 없는데 선택 UI 문법을 쓰면 여기서도 바꿀 수 있는 것처럼 읽힌다.
 
 ## 미선택 링 색
 

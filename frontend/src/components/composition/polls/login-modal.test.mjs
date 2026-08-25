@@ -98,6 +98,15 @@ test('Modal shell switches between sheet (mobile) and center (desktop) for respo
   assert.match(modalSource, /form === 'responsive' && !isDesktop/)
 })
 
+// 닫기 어포던스는 상태마다 하나만 둔다 — 중앙 모달=우측 상단 X / 바텀시트=드래그 핸들.
+// 시트에 X가 함께 뜨면 같은 역할이 두 개가 된다(핸들과 X가 같이 보이던 상태로 되돌아가지 않게 고정).
+test('close affordance is exclusive: X for center modal, drag handle for bottom sheet', () => {
+  assert.match(sheetSource, /showCloseButton = true/)
+  assert.match(sheetSource, /\{showCloseButton && \(\s*<SheetPrimitive\.Close/)
+  assert.match(modalSource, /showDragHandle=\{asSheet\}/)
+  assert.match(modalSource, /showCloseButton=\{!asSheet\}/)
+})
+
 test('sheet.tsx center variant re-centers after tailwindcss-animate resets translate mid-animation', () => {
   assert.match(sheetSource, /center:/)
   assert.match(sheetSource, /data-\[state=open\]:slide-in-from-left-1\/2/)

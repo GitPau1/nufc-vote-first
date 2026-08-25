@@ -3,9 +3,9 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 /**
- * 라디오 인디케이터(링 + 안쪽 점)만 렌더링한다.
- * 상호작용이 없는 요약 화면(ConfirmModal, 항상 selected)과 상호작용 가능한
- * 옵션 목록(RadioOption) 양쪽에서 재사용한다.
+ * 라디오 인디케이터(링 + 안쪽 점)만 렌더링한다. 지금 사용처는 `RadioOption` 내부뿐이다 —
+ * 클릭할 수 없는 자리(요약·확인 화면)에는 쓰지 않는다. 상호작용이 없는데 선택 UI 문법을 쓰면
+ * 거기서도 선택을 바꿀 수 있는 것처럼 읽힌다(ConfirmModal의 "내 선택" 박스에서 그래서 걷어냈다).
  */
 export function RadioIndicator({
   selected,

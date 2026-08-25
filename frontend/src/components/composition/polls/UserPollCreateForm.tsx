@@ -331,10 +331,13 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
         </Button>
       </form>
 
+      {/* 좌우 패딩은 0이어야 한다 — 검색블록의 border-b와 목록 행이 시트 폭 끝까지 닿는 구조다.
+          다만 상단 패딩은 껍데기의 드래그 핸들이 쓰는 여백이라 다른 시트와 같은 pt-5로 남긴다
+          (`p-0`이면 핸들이 시트 최상단에 붙는다). 하단은 콘텐츠의 완료 버튼 블록이 직접 채운다. */}
       <Modal
         open={pickerOpen}
         onOpenChange={setPickerOpen}
-        className="flex h-[82vh] max-h-[82vh] flex-col overflow-hidden p-0"
+        className="flex h-[82vh] max-h-[82vh] flex-col overflow-hidden px-0 pb-0 pt-5"
       >
         <PollPickerContent
           mode={pickerMode}

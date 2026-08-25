@@ -135,6 +135,8 @@
 
 `deleteUserPoll`은 단순한 죽은 코드가 아니었다 — 호출 UI가 사라진 뒤에도 `'use server'` 모듈의 export로 남아, **화면 없이 외부에서 도달 가능한 삭제 엔드포인트**였다(service-role cascade). 서버 액션은 export되어 있는 것만으로 공개 엔드포인트이므로, 화면을 지울 때 액션도 함께 지운다.
 
-사용처가 없는데도 **일부러 남겨둔 것 셋**: `primitives/modal/sheet.tsx`의 `SheetTrigger`/`SheetClose`/`SheetFooter`(shadcn CLI가 관리하는 vendored primitive — 미사용 표면이 의도적이라고 `feedback/BottomSheet.mdx`에 기록돼 있다) · `lib/players/pick-one-rating.ts`의 rating 함수들(Postgres 함수와 같은 알고리즘을 검증하는 참조 구현) · `types/database.ts`의 `*Row` 별칭 블록(스키마 전체를 비추는 것이 파일의 목적).
+사용처가 없는데도 **일부러 남겨둔 것 셋**: `primitives/modal/sheet.tsx`의 `SheetTrigger`/`SheetClose`(Radix Root/Portal과 짝을 이루는 얇은 재export — 여는 트리거·닫기 버튼을 시트 안에서 직접 조립할 때 쓴다) · `lib/players/pick-one-rating.ts`의 rating 함수들(Postgres 함수와 같은 알고리즘을 검증하는 참조 구현) · `types/database.ts`의 `*Row` 별칭 블록(스키마 전체를 비추는 것이 파일의 목적).
+
+같은 목록에 있던 `SheetFooter`는 삭제했다. 얇은 재export가 아니라 **자체 레이아웃을 든 구현체**였고(`flex flex-col-reverse sm:flex-row …`), 그 `sm:` 정렬은 shell의 형태 전환 기준(md/768px)과도 어긋나 있었다 — 되살릴 일이 생기면 그때 실제 푸터 요구에 맞춰 새로 설계한다.
 
 사용처 없는 구현체는 디자인시스템에 넣지 않고, 되살릴 때는 새로 설계한다.
