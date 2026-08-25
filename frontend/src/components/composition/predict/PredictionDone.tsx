@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { trackEvent } from '@/lib/analytics/mixpanel'
 import { PlayerPhoto, ShareButton, TeamBadge } from './shared'
 import { POSITIONS, POSITION_LABEL, playerPhotoUrl, type Candidate, type Position } from '@/lib/predictions/candidates'
+import { matchHit, type MatchHit } from '@/lib/predictions/result'
 import {
   NUFC_LABEL,
   NUFC_TEAM_ID,
@@ -62,6 +63,8 @@ export function PredictionDone({
   const isMulti = week.matches.length > 1
   // 카운트다운은 아직 킥오프 전인 경기가 여러 개일 때만 "늦은 경기 기준"임을 밝힌다.
   const pendingCount = week.matches.filter(match => !match.finished).length
+  // 그 주 경기가 전부 킥오프을 지났으면 카운트다운이 0에 붙어 있을 뿐이라 그린다는 의미가 없다.
+  const hasUpcomingMatch = week.matches.some(match => !match.locked)
 
   // 퍼널 A의 종료 지점. 제출 성공 직후 router.refresh()로 이 화면이 마운트되므로 사실상
   // 제출 성공과 1:1이고, 앞 단계가 전부 클라이언트 이벤트라 퍼널이 한 계층에서 일관된다.
@@ -93,7 +96,7 @@ export function PredictionDone({
         </div>
 
         <div>
-          <Countdown targetIso={week.deadlineAt} pendingCount={pendingCount} />
+          {hasUpcomingMatch && <Countdown targetIso={week.deadlineAt} pendingCount={pendingCount} />}
 
           {/* 제출하지 못한 경기(킥오프이 지나 마감)도 같은 화면에 함께 보여준다 — 참여 마감은 경기
               단위라 더블 매치위크에서 한 경기만 놓치는 상황이 정상이다(2026-08-23 확정). */}
@@ -133,6 +136,20 @@ export function PredictionDone({
                     </span>
                     <MatchupTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
                   </div>
+
+                  {/* 끝난 경기는 실제 스코어와 적중 여부만 보여준다 — 점수·랭킹은 그 주차가 다
+                      끝난 뒤에 공개된다(prediction_results의 정산 게이트). */}
+                  {match.finished && (
+                    <div className="mt-4 rounded-md bg-background px-4 py-3 text-center">
+                      <p className="text-caption-1 text-gray-2">실제 결과</p>
+                      <p className="text-label-1-normal font-extrabold">
+                        {match.actual ? match.actual.join(' – ') : '스코어 집계 중'}
+                      </p>
+                      {match.actual && (
+                        <HitBadge hit={matchHit([ourScore, theirScore], match.actual)} />
+                      )}
+                    </div>
+                  )}
 
                   <p className="mb-2.5 mt-7 text-body-2-normal font-bold">내 선수 픽</p>
                   {/* 모바일은 행 리스트, 데스크탑은 포지션 카드 3개 (퍼블리싱 동일) */}
@@ -270,6 +287,29 @@ function PickCard({ pick }: { pick: PickedPlayer }) {
         <span className="text-caption-1 font-bold text-brand">×{pick.multiplier.toFixed(1)}</span>
       </div>
     </div>
+  )
+}
+
+/**
+ * 적중 배지. 결과 화면의 `PointsBadge`와 같은 색 체계를 쓰지만 점수 대신 등급만 말한다 —
+ * 주차 정산 전에는 점수를 공개하지 않기 때문이다.
+ */
+const HIT_LABEL: Record<MatchHit, string> = {
+  exact: '정확히 적중',
+  outcome: '승패 적중',
+  miss: '미적중',
+}
+
+function HitBadge({ hit }: { hit: MatchHit }) {
+  return (
+    <span
+      className={cn(
+        'mt-2 inline-flex rounded-pill px-[9px] py-[3px] text-caption-2 font-bold',
+        hit === 'miss' ? 'bg-negative-dim text-negative' : 'bg-positive-dim text-positive',
+      )}
+    >
+      {HIT_LABEL[hit]}
+    </span>
   )
 }
 

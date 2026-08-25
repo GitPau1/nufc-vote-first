@@ -19,6 +19,30 @@ export function ratingTier(rating: number | null): RatingTier | null {
   return rating >= 6 ? 'mid' : 'bad'
 }
 
+/** 예측 스코어의 적중 정도 — 제출 완료 화면 배지. 점수는 정산 후에만 공개하므로 여기선 등급만 낸다. */
+export type MatchHit = 'exact' | 'outcome' | 'miss'
+
+/**
+ * DB `prediction_match_points`(20260821120000_create_predictions.sql)와 같은 기준이다:
+ * 스코어까지 정확하면 3점(exact), 승/무/패만 맞으면 2점(outcome), 아니면 0점(miss).
+ * 한쪽 기준만 바꾸면 화면 배지와 실제 점수가 어긋나니 둘을 같이 고칠 것.
+ *
+ * 두 인자는 같은 순서여야 한다 — 화면은 [우리, 상대], DB는 [홈, 원정]이라 섞어 넣으면 안 된다.
+ */
+export function matchHit(
+  predicted: [number, number],
+  actual: [number, number],
+): MatchHit {
+  const [predictedOurs, predictedTheirs] = predicted
+  const [actualOurs, actualTheirs] = actual
+
+  if (predictedOurs === actualOurs && predictedTheirs === actualTheirs) return 'exact'
+
+  return Math.sign(predictedOurs - predictedTheirs) === Math.sign(actualOurs - actualTheirs)
+    ? 'outcome'
+    : 'miss'
+}
+
 /** 그 주 성적 한 줄 — 결과 히어로가 그리는 값. */
 export type WeekResultSummary = {
   matchPoints: number
