@@ -157,7 +157,7 @@ function LoadingShell({ loadingVariant }: { loadingVariant: LoadingVariant }) {
     <div
       role="status"
       aria-label="페이지를 불러오는 중"
-      className={`pointer-events-none fixed inset-x-0 bottom-[64px] top-[62px] z-[100] mx-auto flex w-full max-w-shell flex-col bg-page/95 backdrop-blur-sm sm:bottom-0 ${
+      className={`pointer-events-none fixed inset-x-0 bottom-[64px] top-[62px] z-[100] mx-auto flex w-full max-w-shell flex-col bg-page sm:bottom-0 ${
         WIDE_VARIANTS.includes(loadingVariant) ? 'sm:max-w-content' : ''
       }`}
     >
