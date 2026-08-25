@@ -74,7 +74,7 @@ type Story = StoryObj<typeof meta>
 export const VoteSubmit: Story = {
   args: {
     children: (
-      <Button className="h-12 w-full text-body-2-normal font-bold">투표하기</Button>
+      <Button size="lg" className="w-full">투표하기</Button>
     ),
   },
 }
@@ -86,7 +86,7 @@ export const VoteSubmit: Story = {
 export const RatingStepNext: Story = {
   args: {
     children: (
-      <Button className="h-12 w-full rounded-lg text-body-2-normal font-bold">
+      <Button size="lg" className="w-full">
         다음 포지션 평가
       </Button>
     ),
@@ -100,7 +100,7 @@ export const RatingStepNext: Story = {
 export const RatingSubmitDisabled: Story = {
   args: {
     children: (
-      <Button disabled className="h-12 w-full rounded-lg text-body-2-normal font-bold">
+      <Button disabled size="lg" className="w-full">
         전체 평가 제출
       </Button>
     ),
@@ -116,7 +116,7 @@ export const DesktopInFlow: Story = {
   parameters: { docs: { story: { inline: true, height: 'auto' } } },
   args: {
     children: (
-      <Button className="h-12 w-full text-body-2-normal font-bold">투표하기</Button>
+      <Button size="lg" className="w-full">투표하기</Button>
     ),
   },
 }

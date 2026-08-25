@@ -81,7 +81,7 @@ export const Interactive: Story = {
             <span className="text-label-1-normal">{label}</span>
           </RadioOption>
         ))}
-        <Button className="mt-2 h-12" onClick={() => setOpen(true)}>
+        <Button size="lg" className="mt-2" onClick={() => setOpen(true)}>
           투표하기
         </Button>
         {submitted && (
