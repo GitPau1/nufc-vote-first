@@ -223,7 +223,7 @@ export function MatchdayHero({ fixture, href }: { fixture: MatchdayFixture; href
           킥오프를 기다리는 중(isUpcoming)일 때만 보여준다. */}
       {isUpcoming && (
         <div className="mt-4 flex justify-center">
-          <Button asChild className="h-12 w-52 rounded-lg text-body-2-normal font-bold">
+          <Button asChild size="lg" className="w-52">
             {/* 홈 히어로에 하나뿐인 주 CTA다 — 목록 반복 링크(PollCard)나 상시 네비(BottomNav)와 달리
                 클릭 확률이 높아 prefetch를 켜둔다(라우트는 이제 존재). prefetch-policy 테스트 대상 아님. */}
             <Link href={targetHref}>승부예측 하러 가기</Link>

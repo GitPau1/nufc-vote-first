@@ -42,7 +42,7 @@ export function MyFeedbackForm() {
         <span>{message}</span>
         <span>{content.length}/500</span>
       </div>
-      <Button type="submit" disabled={isPending} className="h-12">
+      <Button type="submit" disabled={isPending} size="lg">
         {isPending ? '보내는 중...' : '피드백 보내기'}
       </Button>
     </form>

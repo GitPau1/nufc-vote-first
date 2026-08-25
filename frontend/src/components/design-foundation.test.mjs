@@ -72,22 +72,25 @@ test('loading skeletons mirror the mobile layout foundation', () => {
   assert.doesNotMatch(loading, /gap-\[49px\]/)
 })
 
-test('poll form and carousel surfaces use card radius foundation', () => {
+test('poll form and poll detail surfaces use card radius foundation', () => {
   const form = source('components/composition/polls/UserPollCreateForm.tsx')
-  const carousel = source('components/composition/polls/TypeBPollClient.tsx')
+  const detail = source('components/composition/polls/TypeBPollClient.tsx')
 
   assert.match(form, /rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200/)
   assert.doesNotMatch(form, /<section className="[^"]*rounded-md border border-neutral-weak bg-surface p-4 shadow-g200/)
   assert.match(form, /text-label-2/)
   assert.match(form, /text-caption-1/)
 
-  assert.match(carousel, /rounded-lg border border-neutral-weak bg-surface text-left shadow-g200/)
-  assert.match(carousel, /absolute inset-0 rounded-lg/)
+  // 투표 상세(선택형)의 캐러셀 카드는 세로 리스트로 대체됐다 — 이제 이 화면의 카드 표면은
+  // 커버 컨테이너와 글 컨테이너 둘이고, 선택지 행의 radius는 primitives/radio.tsx(RadioOption의
+  // rounded-sm)가 준다. 검사 대상을 그 두 표면으로 옮긴다.
+  assert.match(detail, /overflow-hidden rounded-lg bg-disabled/)
+  assert.match(detail, /rounded-lg border border-neutral-weak bg-surface/)
   // bg-primary-dark → bg-brand-solid: semantic 토큰 이전(primary→brand)으로 이름이 바뀜.
   // 새 brand 앵커는 배경·텍스트 대비를 둘 다 통과해 -dark 변형이 필요 없어져 흡수됨.
-  assert.match(carousel, /bg-brand-solid/)
-  assert.match(carousel, /text-title-1/)
-  assert.doesNotMatch(carousel, /rounded-md border border-neutral-weak bg-surface text-left shadow-g200|rounded-md ring-inset|#0c2340|text-\[38px\]/)
+  // 지금은 썸네일 슬롯의 이니셜 배경이 이 토큰을 쓴다.
+  assert.match(detail, /bg-brand-solid/)
+  assert.doesNotMatch(detail, /rounded-md border border-neutral-weak bg-surface|rounded-md ring-inset|text-\[38px\]/)
 })
 
 test('image banners use a readable dark overlay for white text', () => {
@@ -96,7 +99,9 @@ test('image banners use a readable dark overlay for white text', () => {
     // PollHeroCard는 원래 PollListClient.tsx 안에 있던 걸 /(홈)과 /polls가 같이 쓰도록 뽑아낸 것.
     'components/composition/polls/PollHeroCard.tsx',
     'components/composition/polls/TypeAPollClient.tsx',
-    'components/composition/polls/TypeBPollClient.tsx',
+    // TypeBPollClient는 이 목록에서 빠졌다 — 투표 상세(선택형)는 제목을 이미지 위에 얹지 않고
+    // 이미지 아래 글 컨테이너로 내렸다. 이미지 위에 흰 텍스트가 없으니 오버레이도 필요 없다.
+    // 아래에서 오버레이가 되살아나지 않는지를 대신 검사한다.
     'components/composition/polls/OverallRatingPollClient.tsx',
     'components/composition/polls/OverallRatingResultView.tsx',
   ]
@@ -111,6 +116,11 @@ test('image banners use a readable dark overlay for white text', () => {
     assert.doesNotMatch(content, /from-black\/10 via-black\/50 to-black\/90/, `${file} should not rely on black opacity utilities`)
     assert.doesNotMatch(content, /linear-gradient\(to bottom, rgba/, `${file} should not hide banner overlay in inline styles`)
   }
+
+  // 투표 상세(선택형)는 커버를 단독으로 두고 글은 그 아래 컨테이너가 받는다.
+  // 텍스트 오버레이가 다시 들어오면 이미지 위 흰 글씨가 부활한 것이므로 실패시킨다.
+  const typeB = source('components/composition/polls/TypeBPollClient.tsx')
+  assert.doesNotMatch(typeB, /banner-text-overlay/)
 })
 
 test('motion uses duration tokens, not numeric durations', () => {

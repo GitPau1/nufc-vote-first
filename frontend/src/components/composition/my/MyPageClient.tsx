@@ -108,14 +108,14 @@ export function MyPageClient({
                     />
                     <button
                       onClick={handleSaveName}
-                      className="w-6 h-6 rounded-full bg-brand-solid flex items-center justify-center flex-shrink-0"
+                      className="w-6 h-6 rounded-pill bg-brand-solid flex items-center justify-center flex-shrink-0"
                       aria-label="닉네임 저장"
                     >
                       <Check className="h-3.5 w-3.5 text-white" />
                     </button>
                     <button
                       onClick={cancelEdit}
-                      className="w-6 h-6 rounded-full bg-disabled flex items-center justify-center flex-shrink-0"
+                      className="w-6 h-6 rounded-pill bg-disabled flex items-center justify-center flex-shrink-0"
                       aria-label="닉네임 수정 취소"
                     >
                       <X className="h-3.5 w-3.5 text-neutral-muted" />
@@ -200,7 +200,7 @@ export function MyPageClient({
         <div className="flex flex-col gap-2">
           <Button
             variant="ghost"
-            className="w-full justify-start gap-2 h-12 text-critical hover:text-critical hover:bg-critical-weak"
+            size="lg" className="w-full justify-start text-critical hover:text-critical hover:bg-critical-weak"
             onClick={handleDelete}
           >
             <Trash2 className="h-4 w-4" />

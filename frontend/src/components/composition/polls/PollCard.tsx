@@ -27,7 +27,16 @@ export function getThumbnailUrl(poll: PollListItem): string {
   return `https://placehold.co/96x96/0c2340/41b6e6?text=${encodeURIComponent(poll.title.slice(0, 2))}`
 }
 
-export function getStatusLabel(poll: PollListItem): string {
+/**
+ * 상태 라벨/톤이 실제로 읽는 건 status·scheduled_at·closes_at 셋뿐이라 그만큼만 요구한다.
+ * PollListItem(목록)뿐 아니라 PollDetail(상세)도 그대로 넘길 수 있어야 하기 때문 —
+ * PollDetail은 scheduled_at이 optional이고 vote_count가 없다.
+ */
+type PollStatusSource = Pick<PollListItem, 'status' | 'closes_at'> & {
+  scheduled_at?: string | null
+}
+
+export function getStatusLabel(poll: PollStatusSource): string {
   if (poll.status === 'scheduled') return poll.scheduled_at ? formatScheduled(poll.scheduled_at) : '공개 예정'
   if (poll.status === 'closed') return '종료됨'
   return poll.closes_at ? formatTimeLeft(poll.closes_at) : '진행중'
@@ -46,7 +55,7 @@ export function formatTimeLeft(closesAt: string): string {
  * 공개 전/종료는 "지금 참여 못 함"으로 묶어 중립(outline), 진행중은 마감까지 1일 이하로
  * 남았을 때만 긴급(destructive)으로 올리고 그 외엔 기본(default) 톤을 쓴다.
  */
-export function getStatusTone(poll: PollListItem): NonNullable<BadgeProps['variant']> {
+export function getStatusTone(poll: PollStatusSource): NonNullable<BadgeProps['variant']> {
   if (poll.status !== 'active') return 'outline'
   const diff = new Date(poll.closes_at).getTime() - Date.now()
   if (diff <= 0) return 'destructive'

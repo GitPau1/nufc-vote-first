@@ -17,12 +17,12 @@ export function RadioIndicator({
   return (
     <div
       className={cn(
-        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2",
+        "flex h-5 w-5 shrink-0 items-center justify-center rounded-pill border-2",
         selected ? "border-brand-solid" : "border-neutral-weak",
         className
       )}
     >
-      {selected && <div className="h-2.5 w-2.5 rounded-full bg-brand-solid" />}
+      {selected && <div className="h-2.5 w-2.5 rounded-pill bg-brand-solid" />}
     </div>
   )
 }

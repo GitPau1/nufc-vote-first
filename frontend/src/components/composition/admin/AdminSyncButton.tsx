@@ -54,7 +54,7 @@ export function AdminSyncButton() {
     <div>
       <Button
         variant="outline"
-        className="h-12 w-full justify-start"
+        size="lg" className="w-full justify-start"
         onClick={handleSync}
         disabled={syncing}
       >
