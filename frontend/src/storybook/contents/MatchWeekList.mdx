@@ -142,7 +142,7 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 |---|---|---|
 | 데이터 출처 | `lib/queries/fixtures.ts`의 `getHomeMatchdayFixture` | 같은 파일의 `getFixtureWeeks` → `lib/predictions/week.ts`의 `groupFixturesByWeek` |
 | 시각 | ISO 문자열을 받아 컴포넌트가 포맷 | 이미 포맷된 문자열(`"8월 2일"`, `"오후 8:00"`)을 받는다 |
-| 팀 표기 | FotMob 팀 ID → `images.fotmob.com` 크레스트 URL 조립 | 팀 이름 문자열 + 로고 URL을 그대로 받는다 |
+| 팀 표기 | FotMob 팀 ID → Storage `team-logos/{id}.png` URL 조립 | 팀 이름 문자열 + 로고 URL을 그대로 받는다 |
 
 실데이터를 붙일 때 부모가 메워야 할 간극이 여기서 나온다 — `fixtures.home_name`은 FotMob 원본(영문)이라 `lib/predict/team-names.ts`의 `koreanTeamName(teamId, fallbackName)`을 먼저 통과시켜야 하고(매핑에 없는 팀은 영문 그대로), 로고도 팀 ID에서 URL을 만들어 넘겨야 한다(안 넘기면 이니셜 원형으로 떨어진다).
 

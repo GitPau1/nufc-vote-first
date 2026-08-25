@@ -487,7 +487,7 @@ function MatchMeta({ weekNo, match }: { weekNo: number; match: MatchView }) {
   )
 }
 
-function TeamColumn({ logoUrl, name }: { logoUrl: string; name: string }) {
+function TeamColumn({ logoUrl, name }: { logoUrl: string | null; name: string }) {
   return (
     <div className="flex w-[88px] flex-col items-center gap-2">
       <TeamBadge logoUrl={logoUrl} name={name} />
@@ -496,7 +496,7 @@ function TeamColumn({ logoUrl, name }: { logoUrl: string; name: string }) {
   )
 }
 
-function ConfirmTeam({ logoUrl, name }: { logoUrl: string; name: string }) {
+function ConfirmTeam({ logoUrl, name }: { logoUrl: string | null; name: string }) {
   return (
     <div className="flex w-[88px] shrink-0 flex-col items-center gap-1.5">
       <TeamBadge logoUrl={logoUrl} name={name} />

@@ -19,7 +19,7 @@ export type MatchdayRatedPlayer = {
   playerId: number
   name: string
   rating: number
-  photoUrl: string
+  photoUrl: string | null
 }
 
 /** 포지션별 최고 평점 선수(수비수·미드필더·공격수). */

@@ -5,7 +5,7 @@ import { MatchWeekList, type PredictWeek, type PredictWeekMatch } from '@/compon
 
 // 로고는 URL을 그대로 받는다(팀 ID가 아니다) — 안 넘기면 실루엣으로 떨어져서 양 팀이 똑같이
 // 보이므로, 우리 팀 로고만 색을 달리해 좌우 배치를 눈으로 구분할 수 있게 한다.
-// MatchdayHero처럼 FotMob 크레스트를 조립해주지는 않는다.
+// MatchdayHero처럼 팀 ID에서 크레스트 URL을 조립해주지는 않는다.
 const OUR_LOGO = 'https://placehold.co/48x48/2a2f36/ffffff?text=NUFC'
 
 // 상대 팀은 문자열로 그대로 받는다 — 실제 연동 시엔 부모가 lib/predict/team-names.ts의

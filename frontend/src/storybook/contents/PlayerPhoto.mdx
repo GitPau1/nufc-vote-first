@@ -33,10 +33,10 @@ import * as PlayerPhotoStories from './PlayerPhoto.stories'
 `lib/predictions/candidates.ts`의 `playerPhotoUrl(fotmobPlayerId)`이 조립한다.
 
 ```ts
-`https://images.fotmob.com/image_resources/playerimages/${fotmobPlayerId}.png`
+`${SUPABASE_URL}/storage/v1/object/public/player-photos/players/${fotmobPlayerId}.png`
 ```
 
-`Candidate.photoUrl`에 담겨 내려오고, 없으면 `null`이다. 실제 시즌 스쿼드에 있는 진짜 FotMob 선수 ID여야 200이 오고 **임의 숫자는 403**이라, 스토리에서는 다른 예측 mock과 같은 `placehold.co`를 쓴다(스토리 파일 주석에도 같은 이유를 적어뒀다).
+사진 파일은 public `player-photos` 버킷의 `players/`에 `fotmob_player_id`를 파일명으로 올려둔다(현재 시즌 스쿼드 25명 전원). `Candidate.photoUrl`에 담겨 내려오고, 없으면 `null`이다 — mock 모드(`NEXT_PUBLIC_SUPABASE_URL` 없음)에서도 `null`이다. 버킷에 없는 id는 Storage가 **400**을 주므로, 스토리에서는 다른 예측 mock과 같은 `placehold.co`를 쓴다(스토리 파일 주석에도 같은 이유를 적어뒀다).
 
 ## 사용처와 size
 
@@ -59,4 +59,4 @@ import * as PlayerPhotoStories from './PlayerPhoto.stories'
 
 - **실루엣 아이콘은 20×20 고정이다.** `Silhouette`이 SVG의 `width`/`height`를 하드코딩해서, `size`를 키우면 원만 커지고 아이콘은 그대로 작게 남는다(위 Sizes 참고). 40/48/64에서는 문제 없지만 큰 자리에 쓰기 전에 확인할 것.
 - `alt=""`(장식)이다. 선수 이름은 항상 사진 바로 옆·아래 텍스트로 읽히는 걸 전제한다.
-- `next/image`가 아니라 Radix의 `<img>`다. FotMob CDN은 `next.config.mjs` 이미지 도메인 설정 대상이 아니다.
+- `next/image`가 아니라 Radix의 `<img>`다. `next.config.mjs`의 `remotePatterns`에 `*.supabase.co`가 있긴 하지만 앱 전체가 `next/image`를 쓰지 않아 그 설정은 지금 아무 영향이 없다.

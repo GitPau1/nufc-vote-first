@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/primitives/button'
 import { Badge } from '@/components/primitives/badge'
+import { teamLogoUrl } from '@/lib/predictions/week'
 import type { MatchdayFixture, MatchdayRatedPlayer, MatchdayPositionLeader } from '@/lib/queries/fixtures'
 
 /**
@@ -14,14 +15,10 @@ import type { MatchdayFixture, MatchdayRatedPlayer, MatchdayPositionLeader } fro
  *
  * 타입 정의는 `lib/queries/fixtures.ts`가 갖고 있다(polls.ts/PollListItem과 같은 관례) —
  * 여기서는 재수출만 해서 기존 임포트 지점을 안 건드린다.
- * home_id/away_id는 FotMob 팀 ID라 크레스트는 images.fotmob.com에서 직접 조립한다
- * (별도 로고 테이블/매핑 불필요).
+ * home_id/away_id는 FotMob 팀 ID고, 엠블럼 파일명이 그 id라 `teamLogoUrl`로 Storage 주소를
+ * 그대로 조립한다(별도 로고 테이블/매핑 불필요).
  */
 export type { MatchdayFixture }
-
-function crestUrl(teamId: number) {
-  return `https://images.fotmob.com/image_resources/logo/teamlogo/${teamId}.png`
-}
 
 function formatKickoff(iso: string) {
   return new Date(iso).toLocaleString('ko-KR', {
@@ -68,11 +65,12 @@ function useCountdown(targetIso: string) {
  * 같은 거리에 온다.
  */
 function TeamBadge({ id, name, align }: { id: number; name: string; align: 'start' | 'end' }) {
+  const logoUrl = teamLogoUrl(id)
   return (
     <div
       className={`flex w-[88px] flex-col items-center gap-1.5 ${align === 'end' ? 'justify-self-end' : 'justify-self-start'}`}
     >
-      <img src={crestUrl(id)} alt="" className="h-11 w-11 object-contain" />
+      {logoUrl && <img src={logoUrl} alt="" className="h-11 w-11 object-contain" />}
       <p className="max-w-[88px] truncate text-caption-1 font-semibold text-on-solid">{name}</p>
     </div>
   )
@@ -113,7 +111,7 @@ function RatingCard({
           isAward ? 'bg-warning-weak' : 'bg-on-solid-strong'
         }`}
       >
-        <img src={player.photoUrl} alt="" className="h-full w-full object-cover" />
+        {player.photoUrl && <img src={player.photoUrl} alt="" className="h-full w-full object-cover" />}
       </div>
       <div className="min-w-0 flex-1">
         <p className={`text-caption-2 ${isAward ? 'text-neutral-strong' : 'text-on-solid-muted'}`}>{label}</p>

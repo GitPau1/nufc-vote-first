@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils'
 type PickedPlayer = {
   position: Position
   name: string | null
-  photoUrl: string
+  photoUrl: string | null
   multiplier: number
 }
 
@@ -313,7 +313,7 @@ function HitBadge({ hit }: { hit: MatchHit }) {
   )
 }
 
-function MatchupTeam({ logoUrl, name }: { logoUrl: string; name: string }) {
+function MatchupTeam({ logoUrl, name }: { logoUrl: string | null; name: string }) {
   return (
     <div className="flex w-[88px] shrink-0 flex-col items-center gap-1.5">
       <TeamBadge logoUrl={logoUrl} name={name} />

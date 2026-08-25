@@ -4,8 +4,8 @@ import { MatchdayHero, type MatchdayFixture } from '@/components/composition/pre
 import { toKst, weekKey } from '@/lib/predictions/week'
 
 // 실제 선수 photoUrl은 lib/predictions/candidates.ts의 playerPhotoUrl(fotmobPlayerId)로 조립되는데,
-// 그건 실제 시즌 스쿼드에 있는 진짜 FotMob 선수 ID가 있어야 200이 온다(임의 숫자는 403) — 다른 mock
-// 사진과 같은 placehold.co를 쓴다.
+// 그건 Storage 버킷(players/{id}.png)에 파일이 있는 스쿼드 선수여야 200이 온다(없는 id는 400) —
+// 다른 mock 사진과 같은 placehold.co를 쓴다.
 const PLACEHOLDER_PLAYER_PHOTO = 'https://placehold.co/88x88/2a2f36/8a929c?text=%20'
 
 function mockFixture(overrides: Partial<MatchdayFixture>): MatchdayFixture {
