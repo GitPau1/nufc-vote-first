@@ -59,7 +59,7 @@
 | Separator | 단독으로 놓는 구분선(Radix 기반) | `components/primitives/separator.tsx` | `presentation/Separator.mdx` |
 | PageContainer | 앱 최상위 셸. 폭을 제한하지 않고 통과시키며, 온보딩만 480px 카드 셸로 분기 | `components/primitives/page-container.tsx` | `presentation/PageContainer.mdx` |
 | StickyActionBar | 투표 상세 하단 제출 버튼 바. 모바일은 fixed, 데스크탑은 흐름 안 static | `components/primitives/sticky-action-bar.tsx` | `actions/StickyActionBar.mdx` |
-| Skeleton | 로딩 플레이스홀더. 경로별 화면 스켈레톤 3종 + 그 외 경로용 상단 진행 바 | `components/primitives/navigation-loading.tsx`, `.animate-skeleton` | `loading/Skeleton.mdx` |
+| Skeleton | 로딩 플레이스홀더. 경로별 화면 스켈레톤 4종 + 그 외 경로용 상단 진행 바 | `components/primitives/navigation-loading.tsx`, `.animate-skeleton` | `loading/Skeleton.mdx` |
 | ListGroup (pattern) | `divide-y divide-neutral-weak` 패턴. 행 내용은 사용처마다 다름 | 사용처 4곳 | `contents/ListGroup.mdx` |
 | TextInput (pattern) | 텍스트 입력. CSS 유틸리티 클래스로 관리 | `.input-field` (globals.css) | `selection-and-input/TextInput.mdx` |
 
@@ -73,6 +73,7 @@
 | ConfirmModal | 투표 제출 직전 선택 확인 — 제출 후 수정 불가라서 되돌릴 수 없는 행동을 한 번 확인받는다 | `components/primitives/modal/contents/Confirm.tsx` | `feedback/ConfirmModal.mdx` |
 | LoginModal | 비로그인 사용자의 로그인 유도 모달(`/login` 페이지 없이 이 모달이 유일한 로그인 경로) | `components/primitives/modal/contents/Login.tsx`, `components/composition/auth/RequireAuthModal.tsx` | `feedback/LoginModal.mdx` |
 | PlayerPickModal | 승부예측 포지션별 선수 선택(모바일 바텀시트 / 데스크탑 중앙 모달) | `components/primitives/modal/contents/PlayerPick.tsx` | `selection-and-input/PlayerPickModal.mdx` |
+| PollPickerModal | 투표 생성 폼의 선수 선택 시트 — 검색·소속 필터·포지션 그룹, single/multiple 모드 | `components/primitives/modal/contents/PollPicker.tsx` | `selection-and-input/PollPickerModal.mdx` |
 
 ### Composition / Common
 
@@ -126,9 +127,9 @@
 
 **1. 화면 단위 클라이언트** — 컴포넌트가 아니라 페이지 1곳만 조립하는 화면 조립체다. 이 안의 재사용 패턴은 이미 PollCarouselCard·RatingMatrix·FormSection·CommentsSection으로 추출돼 있다.
 
-`composition/predict/PredictListClient.tsx` · `composition/predict/PredictionFlowClient.tsx` · `composition/predict/PredictionResult.tsx` · `composition/predict/PredictionDone.tsx` · `composition/common/HomeClient.tsx` · `composition/polls/PollListClient.tsx` · `composition/polls/TypeAPollClient.tsx` · `composition/polls/TypeBPollClient.tsx` · `composition/polls/OverallRatingPollClient.tsx` · `composition/polls/ResultView.tsx` · `composition/polls/OverallRatingResultView.tsx` · `composition/polls/UserPollCreateForm.tsx` · `composition/my/MyPageClient.tsx` · `composition/my/MyFeedbackForm.tsx` · `composition/players/PlayersPageClient.tsx` · `composition/polls/PollPageHeader.tsx`(AppHeader `mobileBack` 7줄 래퍼)
+`composition/predict/PredictListClient.tsx` · `composition/predict/PredictionFlowClient.tsx` · `composition/predict/PredictionResult.tsx` · `composition/predict/PredictionDone.tsx` · `composition/common/HomeClient.tsx` · `composition/polls/PollListClient.tsx` · `composition/polls/TypeAPollClient.tsx` · `composition/polls/TypeBPollClient.tsx` · `composition/polls/OverallRatingPollClient.tsx` · `composition/polls/ResultView.tsx` · `composition/polls/OverallRatingResultView.tsx` · `composition/polls/UserPollCreateForm.tsx` · `composition/my/MyPageClient.tsx` · `composition/my/MyFeedbackForm.tsx` · `composition/players/PlayersPageClient.tsx` · `composition/admin/AdminRatingsForm.tsx`(관리자 평점 입력 — `admin/ratings` 1곳 조립) · `composition/polls/PollPageHeader.tsx`(AppHeader `mobileBack` 7줄 래퍼)
 
-**2. 렌더 결과가 없는 컴포넌트** — `composition/common/AppAnalytics.tsx` · `composition/auth/AuthCodeHandler.tsx` · `composition/players/PlayerRatingChangesAnalytics.tsx` · `composition/common/HeaderAuthStatus.tsx`(LoginButton/UserMenu를 갈아 끼우는 컨테이너 — 갈림 규칙은 `navigations/UserMenu.mdx`에 있다)
+**2. 자체 UI가 없는 컴포넌트** — 로직만 수행하고 아무것도 그리지 않거나(`composition/common/AppAnalytics.tsx` · `composition/auth/AuthCodeHandler.tsx` · `composition/players/PlayerRatingChangesAnalytics.tsx`), 다른 컴포넌트를 갈아 끼우기만 한다(`composition/common/HeaderAuthStatus.tsx` — 판별 중엔 회색 원 플레이스홀더 하나를 그린다. 갈림 규칙은 `navigations/UserMenu.mdx`에 있다)
 
 **3. import하는 곳이 없는 컴포넌트** — 현재 없다.
 

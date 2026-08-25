@@ -5,7 +5,9 @@ import * as TextInputStories from './TextInput.stories'
 
 # TextInput
 
-컴포넌트가 아니라 `globals.css`의 `.input-field` CSS 클래스다. `input`·`textarea` 9곳 전부 이 클래스 하나만 쓴다 — 컴포넌트로 추출할 만큼 variant가 갈리지 않아서 CSS 클래스로 유지했다.
+컴포넌트가 아니라 `globals.css`의 `.input-field` CSS 클래스다. 컴포넌트로 추출할 만큼 variant가 갈리지 않아서 CSS 클래스로 유지했다.
+
+쓰는 곳은 9곳이지만 전부 polls 도메인 2개 파일이다 — `UserPollCreateForm` 8곳, `OverallRatingPollClient` 1곳(textarea). 그 밖의 텍스트 입력 8곳(`CommentsSection` textarea 2, `MyFeedbackForm` textarea, `OnboardingForm`, `MyPageClient` 인라인 편집, `PollPickerContent` 검색, `PlayersPageClient` 검색, `AdminRatingsForm` 숫자 입력)은 이 클래스를 쓰지 않고 각자 인라인 클래스를 조립하고 있다 — radius·패딩·타이포가 사용처마다 다르다.
 
 <Canvas of={TextInputStories.Default} />
 

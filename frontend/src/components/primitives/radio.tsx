@@ -18,7 +18,7 @@ export function RadioIndicator({
     <div
       className={cn(
         "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2",
-        selected ? "border-brand-solid" : "border-muted-foreground/40",
+        selected ? "border-brand-solid" : "border-neutral-weak",
         className
       )}
     >

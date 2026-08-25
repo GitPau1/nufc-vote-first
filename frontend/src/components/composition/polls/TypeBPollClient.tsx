@@ -129,7 +129,7 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
               <p className="text-label-1-reading text-neutral-muted">{poll.description}</p>
             )}
             {errorMsg && (
-              <p className="text-label-1-normal text-destructive font-medium">{errorMsg}</p>
+              <p className="text-label-1-normal text-critical font-medium">{errorMsg}</p>
             )}
           </div>
         )}

@@ -122,7 +122,7 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
 
           {/* 에러 */}
           {errorMsg && (
-            <p className="text-label-1-normal text-destructive font-medium">{errorMsg}</p>
+            <p className="text-label-1-normal text-critical font-medium">{errorMsg}</p>
           )}
 
           {/* 선택지 */}

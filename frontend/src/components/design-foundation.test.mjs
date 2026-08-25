@@ -340,8 +340,15 @@ test('retired legacy color class names are gone repo-wide', () => {
     'bg-accent': 'bg-brand-weak',
     'bg-popover': 'bg-surface',
     'bg-destructive': 'bg-critical-solid',
+    // 아래 넷은 삭제 당시 "실사용 0건"으로 잘못 집계돼 이 맵에서 빠졌던 이름들이다 —
+    // 실제로는 에러 문구 3곳(text-destructive)·스피너(border-muted/border-t-primary)·
+    // 라디오 미선택 링(border-muted-foreground/40)이 남아 조용히 무효화되고 있었다.
+    'text-destructive': 'text-critical',
+    'border-muted-foreground': 'border-neutral-weak',
+    'border-muted': 'border-neutral-weak',
     // ① LDSG 이전 세대
     'bg-primary': 'bg-brand-solid',
+    'border-t-primary': 'border-t-brand-solid',
     'text-primary': 'text-brand',
     'text-primary-dark': 'text-brand',
     'bg-primary-dim': 'bg-brand-weak',

@@ -5,7 +5,7 @@ import * as SkeletonStories from './Skeleton.stories'
 
 # Skeleton
 
-컴포넌트가 아니라 패턴이다. `Skeleton`이라는 export는 없고, `globals.css`의 `.animate-skeleton` 유틸리티와 `components/primitives/navigation-loading.tsx` 안의 내부 함수(`SkeletonBlock`, `PollsSkeleton`, `PlayersSkeleton`, `MenuSkeleton`)로만 존재한다. 이 페이지의 스토리는 그 마크업을 그대로 복제한 것이다 — 소스를 export하도록 고치지 않았으므로, 원본이 바뀌면 여기도 같이 고쳐야 한다.
+컴포넌트가 아니라 패턴이다. `Skeleton`이라는 export는 없고, `globals.css`의 `.animate-skeleton` 유틸리티와 `components/primitives/navigation-loading.tsx` 안의 내부 함수(`SkeletonBlock`, `PollsSkeleton`, `PredictionsSkeleton`, `PlayersSkeleton`, `MenuSkeleton`)로만 존재한다. 이 페이지의 스토리는 그 마크업을 그대로 복제한 것이다 — 소스를 export하도록 고치지 않았으므로, 원본이 바뀌면 여기도 같이 고쳐야 한다.
 
 `NavigationLoading`은 `document`의 링크 클릭을 캡처해서 뜨는 클라이언트 컴포넌트라 props로 상태를 열 수 없다. 그래서 컴포넌트 자체를 `component`로 붙이는 대신 형상별 스토리로 쪼갰다.
 
@@ -28,16 +28,20 @@ placeholder 한 칸은 `SkeletonBlock` 하나다 — 겉면이 `bg-disabled`로 
 
 ## 화면 로딩
 
-경로에 따라 4가지로 갈린다 (`getLoadingVariant`).
+경로에 따라 5가지로 갈린다 (`getLoadingVariant`).
 
 | 경로 | 무엇이 뜨는가 |
 |---|---|
 | `/`, `/polls` | `PollsSkeleton` |
+| `/predictions` | `PredictionsSkeleton` |
 | `/players` | `PlayersSkeleton` |
 | `/menu` | `MenuSkeleton` |
 | 그 외 전부 | 상단 진행 바만 (`TopBarOnly`) |
 
+경로 판정은 정확 일치라 `/predictions/[weekKey]` 같은 하위 경로는 스켈레톤 없이 상단 진행 바로 떨어진다.
+
 <Canvas of={SkeletonStories.PollsScreen} />
+<Canvas of={SkeletonStories.PredictionsScreen} />
 <Canvas of={SkeletonStories.PlayersScreen} />
 <Canvas of={SkeletonStories.MenuScreen} />
 <Canvas of={SkeletonStories.TopBar} />

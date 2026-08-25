@@ -158,7 +158,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
             <p className="text-label-1-reading text-neutral-muted">{poll.description}</p>
           )}
           {errorMsg && (
-            <p className="text-label-1-normal font-medium text-destructive">{errorMsg}</p>
+            <p className="text-label-1-normal font-medium text-critical">{errorMsg}</p>
           )}
 
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1">

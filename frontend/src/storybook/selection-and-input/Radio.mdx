@@ -19,6 +19,6 @@ import * as RadioStories from './Radio.stories'
 
 클릭할 수 없는 요약 화면(`ConfirmModal`의 "내 선택")처럼, 상태를 보여주기만 하고 상호작용은 없는 곳에 쓴다. `selected`는 항상 `true`로 고정해서 쓴다 — 이 컴포넌트 자체엔 미선택 상태를 보여줄 이유가 없다.
 
-## 하지 말 것
+## 미선택 링 색
 
-- 미선택 링 색(`border-muted-foreground/40`)은 아직 semantic stroke 토큰으로 옮기지 않았다 — 임의로 `border-neutral-weak` 등으로 바꾸지 않는다. 값이 다르다.
+미선택 링은 `border-neutral-weak`다. 원래는 shadcn 세대 `muted-foreground`의 40% 알파값이었으나 그 토큰이 삭제되면서(`globals.css`의 shadcn 세대 삭제 기록 참고) 죽은 클래스가 됐고, 실제 화면에는 Tailwind 기본 border색(#e5e7eb)으로 렌더되고 있었다. 그 실렌더값과 사실상 동일한 `border-neutral-weak`(neutral-200, #e9e9ea)로 고정했다 — 즉 이 정리는 보이는 모습을 바꾸지 않았다.

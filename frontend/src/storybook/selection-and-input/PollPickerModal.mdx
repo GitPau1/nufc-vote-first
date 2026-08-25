@@ -1,0 +1,43 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as PollPickerModalStories from './PollPickerModal.stories'
+
+<Meta of={PollPickerModalStories} />
+
+# PollPickerModal
+
+투표 생성 폼에서 투표 대상·후보 선수를 고르는 전체높이 시트다. [PlayerPickModal](?path=/docs/primitives-modal-playerpick--docs)과 같은 이유로 Selection and Input에 둔다 — 모달이라는 형태보다 **목록에서 고르는 선택 UI**가 본질이다.
+
+코드는 `components/primitives/modal/contents/PollPicker.tsx`(`PollPickerContent`), 사용처는 `components/composition/polls/UserPollCreateForm.tsx`(투표 생성 폼의 선수 picker) 한 곳이다. poll 도메인 헬퍼(`POSITION_ORDER`·`isSelectablePlayer` 등)를 담고 있어 content가 polls 도메인 로직에 의존한다 — 파일 상단 주석에 이 결정이 기록되어 있다.
+
+공용 shell [BottomSheet](?path=/docs/primitives-modal--docs)를 그대로 쓴다. 이 컴포넌트는 content(검색바 + 소속 필터 + 포지션별 목록 + 다중 모드의 완료 버튼)만 담당하고, 전체높이 시트 크기는 호출부가 Modal `className`(`flex h-[82vh] max-h-[82vh] flex-col overflow-hidden p-0`)으로 준다. 시각 타이틀은 없다 — `SheetHeader`가 `sr-only`라 스크린리더에만 "선수 선택"이 읽힌다.
+
+<Canvas of={PollPickerModalStories.Default} />
+<Canvas of={PollPickerModalStories.Mobile} />
+
+## 모드
+
+`mode`가 `'single'`(평가 대상 1명)과 `'multiple'`(투표 후보 여러 명)을 가른다.
+
+- **multiple** — 행을 누르면 토글되고, 하단 "N명 선택 완료" 버튼(`onDone`)으로 닫는다.
+- **single** — 완료 버튼이 렌더되지 않는다. 실사용에서는 행을 누르는 즉시 호출부(`UserPollCreateForm`의 `togglePlayer`)가 선택을 반영하고 모달을 닫는다 — 이 컴포넌트는 `onToggle`로 알리기만 한다.
+
+<Canvas of={PollPickerModalStories.SingleMode} />
+<Canvas of={PollPickerModalStories.PreSelected} />
+
+## 목록 규칙
+
+- `is_active: false`(구단 외) 선수는 **모드·필터와 무관하게 항상 제외**된다(`isSelectablePlayer`).
+- 소속 필터는 전체 / 1군 / 임대 / U21 4개 칩. 검색은 이름·포지션·등번호를 함께 매칭한다.
+- 검색·필터 결과는 포지션 순서(GK → DEF → MID → FWD → MGR → 기타)로 그룹핑되고, 빈 그룹은 표시하지 않는다.
+- 행 하나는 사진(40px 원형, 없으면 이름 앞 2글자 이니셜) / 이름 + `포지션 · 등번호 · 소속` 메타 / 오른쪽 체크 원 구성이다.
+
+<Canvas of={PollPickerModalStories.NoPlayers} />
+<Canvas of={PollPickerModalStories.InactiveExcluded} />
+
+## PlayerPickModal과의 차이
+
+같은 "선수 고르는 모달"이지만 별개 컴포넌트다. 그쪽은 승부예측 플로우 전용으로 검색·필터가 없고 단일 선택뿐이며 `id`가 number(FotMob id)다. 이쪽은 투표 생성 전용으로 검색·필터·다중 선택이 있고 `id`가 string(`players` 테이블 uuid)이다 — 데이터 소스 자체가 달라 합치지 않았다.
+
+## 알려진 어긋남
+
+- 행의 선택 카드 스타일(`border-brand-solid bg-brand-weak` ↔ `border-neutral-weak bg-surface`)은 [Radio](?path=/docs/primitives-radio--docs)의 `RadioOption`과 사실상 같은 조합인데 여기서는 raw `<button>`으로 다시 조립했고, 체크 표시도 `RadioIndicator`가 아니라 자체 체크 원이다. 사진 이니셜 폴백도 [Avatar](?path=/docs/primitives-avatar--docs)를 쓰지 않은 자체 구현이다 — 색·간격을 바꿀 일이 생기면 primitives 쪽과 함께 본다.
