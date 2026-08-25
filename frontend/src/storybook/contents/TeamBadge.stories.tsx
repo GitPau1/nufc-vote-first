@@ -7,6 +7,11 @@ import { TeamBadge } from '@/components/composition/predict/shared'
 // 그대로 쓰면 스토리 결과가 외부 CDN 상태에 묶이므로, 다른 예측 mock과 같은 placehold.co를 쓴다.
 const PLACEHOLDER_LOGO = 'https://placehold.co/48x48/2a2f36/8a929c?text=NU'
 
+// grayscale 스토리 전용. 위 PLACEHOLDER_LOGO는 회청색(#2a2f36 / #8a929c)이라 채도가 거의 없어서
+// filter: grayscale을 걸어도 Default와 눈으로 구분되지 않는다 — 실제 FotMob 엠블럼은 팀 컬러라
+// 채도가 높으니, 효과를 실제 크기로 보여주려면 유채색 샘플이 따로 필요하다.
+const SATURATED_PLACEHOLDER_LOGO = 'https://placehold.co/48x48/d81920/f5d000?text=NU'
+
 // `.invalid`는 예약 TLD(RFC 2606)라 어떤 환경에서도 절대 해석되지 않는다 — 네트워크 상태와 무관하게
 // onError가 반드시 한 번 뜨므로 폴백 경로를 결정적으로 보여줄 수 있다.
 const BROKEN_LOGO = 'https://images.fotmob.invalid/image_resources/logo/teamlogo/999999.png'
@@ -23,7 +28,12 @@ const meta = {
     },
     size: {
       control: { type: 'number', min: 16 },
-      description: 'px. 실사용처 5곳은 모두 기본값(48)을 쓴다.',
+      description:
+        'px. 실사용처 5곳 중 MatchWeekList만 32를 넘기고(목록의 작은 배지), 나머지 4곳은 기본값(48)이다.',
+    },
+    grayscale: {
+      description:
+        '종료된 경기(match.finished)의 로고를 흑백으로 가라앉힌다. 폴백 이니셜 원형에도 클래스가 같이 붙지만, 그쪽은 이미 무채색이라 보이는 변화는 없다(GrayscaleFallback 참고).',
     },
   },
   args: {
@@ -75,4 +85,34 @@ export const Sizes: Story = {
  */
 export const LongTeamName: Story = {
   args: { name: '웨스트브롬위치', logoUrl: undefined },
+}
+
+/**
+ * 종료된 경기의 로고 — `grayscale`로 채도를 없애 "끝난 경기"를 표시한다. 판정 단위는 경기(`match.finished`)라,
+ * 한 주차에 끝난 경기와 안 끝난 경기가 섞이면 로고 톤도 경기마다 갈린다. 차이가 보이도록 같은 로고를
+ * 컬러/흑백으로 나란히 놓았고, 로고는 유채색 샘플(`SATURATED_PLACEHOLDER_LOGO`)을 쓴다 — 위 상수 주석 참고.
+ */
+export const Grayscale: Story = {
+  render: (args) => (
+    <div className="flex items-end gap-4">
+      {[false, true].map((grayscale) => (
+        <div key={String(grayscale)} className="flex flex-col items-center gap-2">
+          <TeamBadge {...args} logoUrl={SATURATED_PLACEHOLDER_LOGO} grayscale={grayscale} />
+          <span className="text-caption-2 text-neutral-muted">
+            {grayscale ? 'grayscale (종료)' : '기본 (예정)'}
+          </span>
+        </div>
+      ))}
+    </div>
+  ),
+}
+
+/**
+ * 폴백 이니셜 원형에도 `grayscale` 클래스가 함께 걸린다. 다만 **눈에 보이는 변화는 없다** —
+ * 폴백 원은 `bg-disabled`(#e9e9ea) + `text-neutral-muted`(#666666)로 이미 무채색이라
+ * `filter: grayscale`이 바꿀 채도가 없다. 그래서 이 스토리는 효과를 보여주는 게 아니라
+ * **prop을 넘겨도 폴백이 깨지지 않는다**는 것을 고정하는 확인용이다(위 NoLogo와 같아야 정상).
+ */
+export const GrayscaleFallback: Story = {
+  args: { grayscale: true, logoUrl: undefined },
 }

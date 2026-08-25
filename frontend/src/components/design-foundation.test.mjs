@@ -224,6 +224,7 @@ test('application source does not use arbitrary typography or hardcoded visual c
     'components/primitives/modal/contents/Confirm.tsx',
     'components/primitives/modal/contents/Login.tsx',
     'components/primitives/modal/contents/PollPicker.tsx',
+    'components/primitives/accordion.tsx',
     'components/composition/polls/OverallRatingPollClient.tsx',
     'components/composition/polls/OverallRatingResultView.tsx',
     'components/composition/polls/PollCard.tsx',

@@ -33,7 +33,7 @@
 | State | 상호작용/옵션 상태 구분, opacity 스케일 4값, 상태 조합 규칙 | `foundations/State.mdx` |
 | Motion | duration 토큰 4종, enter>exit 규칙, easing 현황 | `foundations/Motion.mdx` |
 | Icons | `lucide-react` 아이콘 크기 3단계, 색 상속 규칙, 아이콘 전용 버튼 접근성 | `foundations/Icons.mdx` |
-| Gradient | 실사용 3곳(헤더 페이드/아바타 대체/텍스트 가독성 오버레이)과 그 근거 + 준비된 유틸리티 1개(`spotlight-glow-brand`) | `foundations/Gradient.mdx` |
+| Gradient | 실사용 5곳(헤더 페이드/아바타 대체/텍스트 가독성 오버레이/홈 히어로 다크 카드/예측 접수 중 주차 컨테이너)과 그 근거 — 준비만 해둔 유틸리티는 없다 | `foundations/Gradient.mdx` |
 | Design Token | 토큰 3세대(레거시 flat/shadcn HSL/Palette→Semantic) 공존 현황과 이름 겹침 함정 | `foundations/DesignToken.mdx` |
 
 ---

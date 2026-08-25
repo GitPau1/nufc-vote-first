@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { Explanation } from '@/components/composition/common/Explanation'
 import { useLoadingRouter } from '@/components/primitives/navigation-loading'
 import { trackEvent } from '@/lib/analytics/mixpanel'
 import { MatchWeekList } from './MatchWeekList'
@@ -13,6 +14,16 @@ import {
   type WeekGroup,
 } from '@/lib/predictions/week'
 import type { MyPredictionMap, RankingRow } from '@/lib/queries/predictions'
+
+/**
+ * 플레이 방법 — 요구사항 명세서에서 **확정**된 항목만 적는다.
+ * 배당 가중치(FR-005)는 미확정이라 넣지 않는다.
+ */
+const PLAY_GUIDE = [
+  '스코어를 정확히 맞히면 3점, 승·무·패만 맞혀도 2점',
+  '포지션마다 활약할 선수 1명 — 평점 7.0 이상이면 점수, 미출전은 0점',
+  '첫 경기 7일 전 오픈 · 마지막 경기 킥오프에 마감 · 제출 후 수정 불가',
+]
 
 export function PredictListClient({
   weeks,
@@ -72,8 +83,12 @@ export function PredictListClient({
         <div className="hidden flex-col gap-4 sm:flex">
           <RankingCard variant="top3" entries={ranking} />
           <RankingCard variant="mine" entries={ranking} />
+          <Explanation title="플레이 방법" items={PLAY_GUIDE} />
         </div>
       </div>
+
+      {/* 우측 열이 모바일에서 숨겨지므로(위 sm:flex) 플레이 방법만 목록 맨 아래에 한 번 더 둔다. */}
+      <Explanation title="플레이 방법" items={PLAY_GUIDE} className="mt-4 sm:hidden" />
     </div>
   )
 }

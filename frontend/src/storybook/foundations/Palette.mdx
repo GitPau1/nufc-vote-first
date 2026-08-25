@@ -20,3 +20,4 @@ import { PaletteRow } from '../_internal/PaletteSwatch'
 ## 하지 말 것
 
 - `bg-[var(--p-blue-700)]`처럼 팔레트 변수를 화면 코드에서 직접 참조하지 않는다. 항상 semantic 토큰(`bg-brand-solid` 등)을 거친다 — 그래야 나중에 팔레트 값이 바뀌어도 화면 코드를 안 건드릴 수 있다.
+  - 예외는 `globals.css` 안에서 팔레트를 직접 조합하는 장식 배경 유틸리티들이다(화면 코드가 아니다) — 지금은 `.award-gold` 하나뿐이고, 근거는 그 정의의 주석에 있다. 그라디언트 유틸리티들이 `--p-blue-*`를 참조하는 것도 같은 성격이다([Gradient](?path=/docs/foundations-gradient--docs) 참고).

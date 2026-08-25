@@ -5,19 +5,23 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 
 # MatchWeekList
 
-승부예측 월별 주차 목록. `src/components/composition/predict/MatchWeekList.tsx`이고, 사용처는 `components/composition/predict/PredictListClient.tsx`(예측 탭)다. [RankingCard](?path=/docs/composition-predict-rankingcard--docs)와 마찬가지로 **승부예측 기능과 함께 들어왔지만 디자인시스템에 문서화된 적이 없던 컴포넌트**다 — 아래 규칙은 새로 정한 게 아니라 소스에 이미 있던 동작이다.
+승부예측 월별 주차 목록. `src/components/composition/predict/MatchWeekList.tsx`이고, 사용처는 `components/composition/predict/PredictListClient.tsx`(예측 탭)다. [RankingCard](?path=/docs/composition-predict-rankingcard--docs)와 마찬가지로 **승부예측 기능과 함께 들어왔지만 디자인시스템에 문서화된 적이 없던 컴포넌트**다. 2026-08-25에 목록 구조를 다시 잡았고(배지·CTA를 주차 단위로 통일, 더블 매치위크 특별 취급 제거), 같은 날 한 라운드 더 손봤다 — **활성 주차 최상단 정렬과 경기 카드 가로 배치를 둘 다 폐기하고, 활성 주차는 위치가 아니라 색(브랜드 글로우 컨테이너)으로 강조한다.** 아래 서술은 그 결과 소스를 그대로 옮긴 것이다.
 
-## 핵심 규칙 — 세션은 주 단위, 제출과 배지는 경기 단위
+## 핵심 규칙 — 주차 하나 = 컨테이너 하나 = 예측 세션 하나
 
-**주차 하나 = 버튼 하나 = 예측 세션 하나.** 경기가 2개인 주(더블 매치위크)도 카드 하나로 묶여서 함께 열린다. 세션은 그 주 **첫 경기 킥오프 7일 전**에 열리고 **마지막 경기 킥오프**에 닫힌다.
+**주차 하나가 `<section>` 컨테이너 하나**고(`MatchWeekList.tsx:223-231`), 그 안에 좌상단 `N주차` 타이틀 + 배지 하나, 경기 카드 여러 장, 하단 CTA 버튼 하나가 들어간다. 세션은 그 주 **첫 경기 킥오프 7일 전**에 열리고 **마지막 경기 킥오프**에 닫힌다(`lib/predictions/week.ts:124-143`).
 
-그런데 **제출과 상태 배지는 경기 단위다.** `myResult`는 `PredictWeekMatch`(경기)에 붙고, 주 레벨에는 그걸 요약한 두 플래그만 있다.
+**컨테이너는 클릭 대상이 아니다.** 진입점은 하단 CTA `Button` 하나뿐이고(`MatchWeekList.tsx:265-277`), 경기 카드도 클릭되지 않는 정보 카드다. 경기가 1개든 2개든 같은 카드가 **세로로 쌓이고 폭 전체를 쓴다**(`flex flex-col gap-2`, `MatchWeekList.tsx:252`) — 폭에 따라 바뀌지 않는다. 컴포넌트 전체에 `sm:`/`md:` 분기가 하나도 없다.
+
+`N주차` 타이포는 `text-headline-1 font-extrabold`다(`MatchWeekList.tsx:233`).
+
+**배지도 CTA도 주차 단위로 하나씩이다.** 제출 자체는 경기 단위로 쌓이지만(`myResult`가 경기에 붙는다), 화면에 요약되는 건 주 레벨 두 플래그다.
 
 | 필드 | 위치 | 뜻 |
 |---|---|---|
 | `myResult` | 경기 | 이 경기에 제출한 예측(+ 채점되면 `totalPoints`) |
 | `locked` | 경기 | 킥오프가 지나 더 이상 제출할 수 없는 경기 |
-| `finished` | 경기 | 경기 종료(스코어 표시를 가른다 — `locked`와 별개다) |
+| `finished` | 경기 | 경기 종료(스코어 표시·로고 흑백을 가른다 — `locked`와 별개다) |
 | `submitted` | 주 | 이 주에 제출한 경기가 하나라도 있는지 |
 | `hasPending` | 주 | 아직 제출할 수 있는 경기가 남았는지 |
 
@@ -25,47 +29,82 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 
 이 컴포넌트는 **데이터를 소유하지 않는다.** `monthLabel`(문자열)과 `weeks`를 받고, 달 이동은 `onPrevMonth`/`onNextMonth` 콜백만 부른다 — 그 달의 `weeks`를 다시 채워 넣는 건 부모 몫이다(아래 스토리에서 달을 넘겨도 목록이 그대로인 이유).
 
-## 상태 3종
+## 주차 단계 4종 → 화면 5가지
+
+`PredictWeek.status`는 `'open' | 'result' | 'upcoming'` 셋인데, `'upcoming'`이 "아직 안 열림"과 "닫혔는데 결과가 아직 안 적재됨" 두 뜻을 겸한다(`lib/predictions/week.ts:139-142`). 그래서 컴포넌트가 경기별 `locked`/`finished`로 후자를 `settling`으로 갈라내 네 단계를 만든다(`weekPhase`, `MatchWeekList.tsx:80-83`). `open`만 참여 여부로 두 갈래가 되어 화면은 다섯 가지다.
+
+| 단계 | 조건 | 배지 (`variant`) | 하단 CTA |
+|---|---|---|---|
+| `open` + `hasPending` | 제출할 경기가 남았다 | `진행중` (default) | `예측하기` (솔리드) |
+| `open` + 남은 경기 없음 | 제출 가능한 걸 다 냈다 | `참여 완료` (secondary) | `내 예측 보기` (outline) |
+| `settling` | `status: 'upcoming'`인데 경기가 `locked && !finished` | `결과 반영중` (outline) | `submitted`면 `내 예측 보기`, 아니면 **disabled** `예측 마감` |
+| `result` | 그 주 경기가 다 끝났다 | `종료` (outline) | `결과보기` (outline) |
+| `upcoming` | 아직 안 열렸다 | `예정` (outline) | **disabled** `예측 오픈 전` |
+
+판정 원본은 `weekBadge`(`MatchWeekList.tsx:91-104`)와 `weekAction`(`MatchWeekList.tsx:111-131`)이다. 표의 `variant`는 `weekAction`이 반환하는 값이고 **화면에도 그대로 쓰인다** — 컨테이너 색과 무관하게 CTA variant를 덮어쓰지 않는다(`MatchWeekList.tsx:267`).
+
+## 주차 컨테이너 — 예측 접수 중인 주차만 브랜드 글로우
+
+**`weekPhase === 'open'`인 주차의 컨테이너만 라이트 브랜드 글로우다.** `.spotlight-glow-brand` 유틸리티를 쓰고(`globals.css:178-204` — `--sem-bg-surface`(흰색) 베이스 + 위에서 아래로 내려오는 **세로 linear 한 겹**: `--p-blue-700` 8%로 시작해 컨테이너 높이의 25%에서 완전히 소멸), 나머지 단계(`upcoming`·`settling`·`result`)는 `bg-surface` 흰 컨테이너다(`MatchWeekList.tsx:225-230`). 스톱이 px이 아니라 퍼센트인 게 핵심이다 — 이 컨테이너는 경기 카드 수에 따라 높이가 변하는데(1개면 130px대, 2개면 카드가 세로로 한 장 더 쌓인 만큼 커진다 — `MatchWeekList.tsx:252`), 앞서 시도한 radial 2겹은 반경이 절대 px이라 같은 "진행중" 주차인데도 경기 수에 따라 인상이 달랐다. 25%에서 끊는 이유는 끝까지 페이드하면 아래쪽 경기 카드(`bg-page`)가 틴트 위에 얹혀 회색기가 돌기 때문이고, 상단에서 끊으면 틴트가 `N주차`·배지 줄에만 걸린다 — 버린 시안 두 개와 자세한 근거는 [Gradient](?path=/docs/foundations-gradient--docs)에 있다. [MatchdayHero](?path=/docs/composition-predict-matchdayhero--docs)가 쓰는 `.spotlight-glow-brand-strong`은 코너 radial 방식을 유지한 다크 변형이고 여기서는 쓰지 않는다(2026-08-25에 다크 → 라이트로 교체).
+
+이 유틸리티는 `background`를 통째로 정하므로 같은 요소에 `bg-surface`를 함께 주지 않는다. **`border`는 반대로 함께 준다** — 글로우는 배경만 정하고 테두리는 만들지 않으므로, 테두리가 없으면 페이지와의 경계가 안 생긴다. 그래서 `rounded-lg border border-neutral-weak p-4`는 두 컨테이너의 공통 클래스이고(`MatchWeekList.tsx:226`), `cn()`이 가르는 건 마지막 한 칸뿐이다: `highlighted ? 'spotlight-glow-brand' : 'bg-surface'`(`MatchWeekList.tsx:229`).
+
+| | 흰 컨테이너 | 글로우 컨테이너(`open`) |
+|---|---|---|
+| 컨테이너 배경 | `bg-surface` | `.spotlight-glow-brand` (베이스도 `bg-surface`) |
+| 컨테이너 테두리 | `border border-neutral-weak` | 같다 |
+| 주차 번호 | `text-neutral` | `text-neutral` (같다) |
+| 경기 카드 표면 | `bg-page` | `bg-page` (같다) |
+| 카드 본문 텍스트 | `text-neutral` / `text-neutral-muted` | 같다 |
+| 예측 줄 구분선 | `border-neutral-weak` | 같다 |
+| 점수 강조 | `text-brand` | 같다 |
+| 하단 CTA | `weekAction`의 `variant` 그대로 | 같다 |
+
+스위치는 `const highlighted = weekPhase(week) === 'open'` 한 줄이고(`MatchWeekList.tsx:220`), **가르는 건 컨테이너 배경 하나뿐**이다. 테두리·텍스트·구분선·CTA는 물론 **안쪽 경기 카드 표면까지 두 컨테이너가 같다.**
+
+전에는 글로우 컨테이너 안의 경기 카드만 `bg-surface`로 뒤집었다 — 글로우 베이스가 `bg-page`여서 카드도 `bg-page`면 경계가 사라졌기 때문이다. 그 안팎 뒤집기는 없어졌다: 글로우 베이스 자체가 `bg-surface`로 바뀌면서(원래 베이스 `bg-page`는 이 앱의 페이지 배경과 같은 색이라 컨테이너 경계가 사라졌다 — `globals.css:148-149`의 `body`) 카드는 어느 컨테이너 안에서든 한 단계 낮은 `bg-page` 한 색이다. `MatchInfoCard`에 있던 `highlighted` prop도 그때 삭제됐다(`MatchWeekList.tsx:290-291`, `:293-303`).
+
+배지도 variant를 바꾸지 않는다. `Badge` 4종이 전부 "옅은 틴트 배경 + 짙은 텍스트"라(`primitives/badge.tsx:11-17`) 대비가 배지 안에서 닫혀 있다.
+
+**글로우는 "내가 참여할 수 있다"가 아니라 "이 주차가 접수 중이다"를 뜻한다** — 배지가 `진행중`이든 `참여 완료`든 둘 다 글로우다. 활성 주차를 목록 맨 위로 끌어올리던 정렬이 폐기됐으므로(아래 "실제 목록" 절), 지금 예측할 수 있는 주를 가리키는 신호는 이 색뿐이다.
 
 <Canvas of={MatchWeekListStories.Open} />
-<Canvas of={MatchWeekListStories.Result} />
-<Canvas of={MatchWeekListStories.Upcoming} />
-
-| `status` | 우측 CTA | 클릭 | 중앙 표시 |
-|---|---|---|---|
-| `open` + `hasPending` | `예측하기 ›` (이미 일부 제출했으면 `남은 경기 예측하기 ›`) | 가능 | `kickoffTime` |
-| `open` + 남은 경기 없음 | `제출완료 ›` | 가능 | `kickoffTime` |
-| `result` | `결과보기 ›` | 가능 | `actual` 스코어 |
-| `upcoming` | 자물쇠 아이콘 | **disabled** | `kickoffTime` |
-
-배지는 status가 아니라 **경기별로** 판정된다(`matchStatusMeta`).
-
-| 경기 상태 | 배지 |
-|---|---|
-| 주차가 `upcoming` | `예정`(outline) |
-| 제출함 | `참여`(secondary, 초록) — 경기가 안 끝났어도 `진행중`이 아니다 |
-| 미제출 + 종료됨 | `미참여`(outline) |
-| 미제출 + 진행 전/중 | `진행중`(brand) |
-
 <Canvas of={MatchWeekListStories.Submitted} />
-
-예측 줄(`예측 1-0`)은 해당 경기의 `myResult`가 있을 때만 붙고, 채점이 끝나면 뒤에 `+7점`이 따라온다.
-
-**미참여 주차도 클릭된다** — "예측을 안 했다"는 안내 자체가 결과 화면의 내용이라서다. 클릭이 막히는 건 `upcoming`뿐이고, 이때는 `disabled`라 hover·active도 전부 죽고 배경이 `bg-page`(화면 배경과 같은 톤)로 가라앉는다.
-
-## 더블 매치위크
-
-<Canvas of={MatchWeekListStories.DoubleMatchWeek} />
-
-매치 행이 구분선으로 쌓이고, 카드 맨 위에 `더블 매치위크 · 경기 2개` 라벨이 붙는다. **배지 위치가 단일 경기 주차와 다르다** — 단일 경기는 카드 하단에 배지 하나, 더블 매치위크는 **경기 행마다** 배지가 붙는다(한 경기는 끝났는데 다른 경기는 진행 중일 수 있어서다). 점수도 세션 합산이 아니라 경기별로 각각 표시된다.
-
 <Canvas of={MatchWeekListStories.PartiallySubmitted} />
 
-첫 경기만 제출하고 킥오프가 지나 잠긴 상태 — `submitted`와 `hasPending`이 동시에 참이라 CTA가 `남은 경기 예측하기 ›`가 된다.
+부분 제출은 `submitted`와 `hasPending`이 동시에 참인 상태다. 배지·CTA 문구가 미제출 주차와 **똑같다** — 남은 경기를 예측하러 같은 자리로 들어가기 때문에 따로 표시하지 않는다(`MatchWeekList.tsx:117-121`).
+
+<Canvas of={MatchWeekListStories.Settling} />
+
+`settling`은 킥오프가 지났는데 결과 적재가 안 끝난 구간이다. 위 카드(참여자)는 `내 예측 보기`로 열리고, 아래 카드(미참여자)는 `예측 마감`으로 막힌다 — 보여줄 예측이 없어서다(`MatchWeekList.tsx:122-125`).
+
+<Canvas of={MatchWeekListStories.Result} />
+
+**종료 주차 배지는 참여 여부와 무관하게 `종료` 하나다.** `미참여` 배지는 없다. 참여했는지는 경기 카드 아래 예측 줄(`예측 2-1`)로만 드러나고, 채점이 끝나면 뒤에 `+7점`이 붙는다(`MatchWeekList.tsx:374-389`). 종료 주차도 CTA는 눌린다 — "예측을 안 했다"는 안내 자체가 결과 화면의 내용이라서다.
+
+<Canvas of={MatchWeekListStories.Upcoming} />
+
+클릭이 막히는 건 `upcoming`과 미참여 `settling`뿐이고, 자물쇠 아이콘 대신 **disabled `Button`**으로 표현한다. `Button`의 `disabled:bg-disabled disabled:text-disabled`가 붙어 hover·active가 전부 죽는다(`primitives/button.tsx`).
+
+## 경기 카드
+
+<Canvas of={MatchWeekListStories.TwoMatches} />
+
+경기 2개인 주차(더블 매치위크)도 **다른 주차와 구조가 같다.** `더블 매치위크 · 경기 2개` 라벨도, 경기별 배지도 없다 — 카드가 한 장 더 세로로 쌓이는 것뿐이다.
+
+카드 안 배치는 이렇다(`MatchInfoCard`, `MatchWeekList.tsx:293-392`).
+
+- **표면은 주차 상태·컨테이너 종류와 무관하게 `bg-page` 한 색이고 테두리가 없다**(`MatchWeekList.tsx:317`). 컨테이너가 흰 면(`bg-surface`, 글로우 베이스도 같다)이라 한 단계 낮은 `bg-page`만으로 경계가 갈린다 — 컨테이너에 따라 표면을 바꾸는 prop은 없다(`MatchWeekList.tsx:290-291`). 패딩은 `p-3 pb-5` — 아래쪽만 20px로 더 줘서 시각적 무게를 아래로 배분한다.
+- 좌상단은 **대회명만** 둔다(`competition ?? '프리미어리그'`). 이전에 있던 `{weekNo}라운드` 표기는 실제 라운드가 아니라 ISO 주차 번호였고(`lib/predictions/week.ts:88-94`), `fixtures`에 라운드 컬럼이 없어서 삭제했다.
+- 가운데는 위아래 두 줄이다 — **일자**(`8월 23일`)가 caption으로 위, 그 아래에 아직 안 끝난 경기는 `kickoffTime`, 끝난 경기는 `actual` 스코어가 온다.
+- `finished`인 경기는 양쪽 팀 로고가 흑백이 된다(`TeamBadge`의 `grayscale`).
+- `isDimmed`(= 경기가 `locked`이거나 주차가 `upcoming`)는 이제 **텍스트 톤만** 가른다(`MatchWeekList.tsx:139-141`). 배경으로 가라앉히던 `bg-disabled`는 없어졌다 — 영향을 받는 건 팀명(`:341`, `:369`)과 스코어·킥오프 시각(`:355`, `:359`) 두 자리뿐이고, 대회명(`:323`)과 일자(`:353`)는 `dimmed`와 무관하게 늘 muted다. "지금 할 수 있는 것"은 카드 배경이 아니라 **주차 컨테이너 색**이 가리킨다.
+
+즉 **카드 표면만 보고는 종료·마감·미오픈도, 어느 컨테이너 안인지도 구분할 수 없다.** 갈리는 건 로고 흑백(`finished`)과 텍스트 톤뿐이다.
 
 <Canvas of={MatchWeekListStories.NoMatches} />
 
-경기가 없는 주(`matches: []`)는 카드가 아니라 안내 박스로 대체된다. 버튼 자체가 렌더되지 않으므로 배지·자물쇠도 없고 클릭도 없다 — `status`가 무엇이든 마찬가지다.
+경기가 없는 주(`matches: []`)도 컨테이너와 `N주차` 타이틀은 같고, 경기 카드 자리에 `bg-page` 안내 박스가 들어간다. 배지와 버튼은 렌더되지 않는다(`MatchWeekList.tsx:239-243`) — `status`가 무엇이든 마찬가지다.
 
 ## 좌우 배치와 스코어 순서
 
@@ -73,13 +112,27 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 
 좌측이 항상 홈이다. `isHome: false`(원정)면 우리 팀이 우측으로 간다. 그런데 **`actual`은 `isHome`과 무관하게 항상 `[홈, 원정]` 순서**라, 원정 경기에서 좌측 숫자는 상대 점수다. 이 순서를 헷갈리면 결과가 반대로 보이니, 데이터를 만들 때 "우리 점수 먼저"로 넣지 않는다.
 
-팀 배지는 `w-[84px]` 고정폭이라 이름이 길어져도 중앙 스코어가 밀리지 않는다.
+**팀명은 로고 옆에 온다.** 좌측 칸은 `[팀명][로고]`, 우측 칸은 `[로고][팀명]`이라 로고 두 개가 가운데(일자·스코어) 쪽에 붙고 팀명이 카드 가장자리 쪽으로 간다. `TeamSide`의 prop이 `side: 'left' | 'right'`인 것도 그 뜻이다 — 이 칸이 카드의 어느 쪽인지가 곧 순서와 붙일 방향(`justify-end` / `justify-start`)을 정한다(`MatchWeekList.tsx:404-445`). 이전 세로 스택 시절의 `align: 'start' | 'end'`(텍스트 정렬)에서 의미가 바뀐 자리다.
+
+팀 칸에 고정폭은 없다(`w-20` 폐지). 폭은 그리드 트랙 `grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]`이 잡고(`MatchWeekList.tsx:336`), 좌우 트랙이 서로 같은 폭이라 이름이 길어져도 가운데 일자·스코어가 정중앙에 남는다. `1fr`이 아니라 `minmax(0,1fr)`인 이유는 `1fr`이 항목의 min-content 아래로 못 줄어들어 좁은 열에서 카드가 가로로 터졌기 때문이다. 팀명은 `min-w-0 truncate`로 …로 잘리고, 로고는 `TeamBadge`가 `shrink-0` + 인라인 width/height라 어느 폭에서도 32px을 유지한다(`shared.tsx:26-52`).
+
+## 폭에 따른 배치 — 바뀌는 게 없다
+
+<Canvas of={MatchWeekListStories.DesktopWidth} />
+
+경기 카드 가로 배치는 폐기됐다(2026-08-25). `md:flex-row`와 `flex-1`이 함께 사라져서 카드는 **어느 폭에서도 세로로 쌓이고 폭 전체를 쓴다**(`MatchWeekList.tsx:252`) — 팀명이 로고 옆으로 오면서 카드 하나에 필요한 최소 폭이 커졌고, 실제 페이지의 목록 열은 데스크탑에서 전체 폭의 2/3뿐이라(`PredictListClient.tsx:57`, `sm:grid sm:grid-cols-[2fr_1fr]`) 그 열을 또 가로로 나누면 팀명이 잘린다.
+
+그래서 이 컴포넌트에는 반응형 분기가 하나도 없다. 위 스토리는 가로 배치를 보는 자리가 아니라, **넓은 폭에서 세로 카드가 어떻게 보이는지**를 보는 자리다: 팀 칸이 트랙 안에서 가운데 쪽으로 붙어 있으므로 폭이 커질수록 로고·팀명은 가운데에 모이고 카드 좌우 바깥의 빈 여백만 늘어난다. 720px은 실제 목록 열 폭의 상한(`2/3 × (--content-w 1140 − 80 − 40) ≈ 680px`, `globals.css:29`) 구간이다. 다른 스토리들은 실제 화면 밀도를 맞추려고 모바일 폭(358px)에 고정돼 있다.
 
 ## 실제 목록
 
 <Canvas of={MatchWeekListStories.FullMonth} />
 
-한 달 안에 결과·진행중·예정·경기 없는 주가 섞인 상태. 주차마다 `animate-enter`가 55ms씩 밀려 순차로 등장한다(애니메이션 자체는 [Motion](?path=/docs/foundations-motion--docs) 참고). 지연은 `weeks` 배열 인덱스로 계산하므로, 배열이 길어질수록 마지막 주차는 그만큼 늦게 뜬다.
+한 달 안에 종료·진행중·예정·경기 없는 주가 섞인 상태. **흰 컨테이너와 글로우 컨테이너가 한 화면에 같이 보이는 유일한 스토리**다 — 39주차만 `open`이라 글로우고 나머지는 흰 카드다.
+
+주차마다 `animate-enter`가 55ms씩 밀려 순차로 등장한다(애니메이션 자체는 [Motion](?path=/docs/foundations-motion--docs) 참고). 지연은 `weeks` 배열 인덱스로 계산하므로(`MatchWeekList.tsx:184`), 배열이 길어질수록 마지막 주차는 그만큼 늦게 뜬다.
+
+**목록 순서는 킥오프 오름차순 그대로다.** 컴포넌트는 받은 배열 순서대로 뿌리고(`MatchWeekList.tsx:178-187`), 부모도 재정렬하지 않는다 — `PredictListClient`는 달로 필터만 하고(`PredictListClient.tsx:47`) `toPredictWeeks`가 `map` 하나뿐이며(`lib/predictions/week.ts:301-331`), 원본 그룹핑이 킥오프 오름차순으로 정렬된 fixtures를 순서대로 쌓는다(`lib/predictions/week.ts:182-184`). 활성 주차를 맨 위로 끌어올리던 `openWeeksFirst`는 **삭제됐다** — 위치로 강조하는 방식을 버리고 글로우 컨테이너 색으로 대체했다. 그래서 예측 접수 중인 주차가 목록 중간에 있는 게 정상이고, 위 캔버스가 바로 그 배치다.
 
 ## MatchdayHero와의 관계 — 아직 안 이어져 있다
 
@@ -88,17 +141,18 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 | | MatchdayHero | MatchWeekList |
 |---|---|---|
 | 데이터 출처 | `lib/queries/fixtures.ts`의 `getHomeMatchdayFixture` | 같은 파일의 `getFixtureWeeks` → `lib/predictions/week.ts`의 `groupFixturesByWeek` |
-| 시각 | ISO 문자열을 받아 컴포넌트가 포맷 | 이미 포맷된 문자열(`"8/2"`, `"오후 8:00"`)을 받는다 |
+| 시각 | ISO 문자열을 받아 컴포넌트가 포맷 | 이미 포맷된 문자열(`"8월 2일"`, `"오후 8:00"`)을 받는다 |
 | 팀 표기 | FotMob 팀 ID → `images.fotmob.com` 크레스트 URL 조립 | 팀 이름 문자열 + 로고 URL을 그대로 받는다 |
 
-실데이터를 붙일 때 부모가 메워야 할 간극이 여기서 나온다 — `fixtures.home_name`은 FotMob 원본(영문)이라 `lib/predict/team-names.ts`의 `koreanTeamName(teamId, fallbackName)`을 먼저 통과시켜야 하고(매핑에 없는 팀은 영문 그대로), 로고도 팀 ID에서 URL을 만들어 넘겨야 한다(안 넘기면 회색 placeholder로 떨어진다).
+실데이터를 붙일 때 부모가 메워야 할 간극이 여기서 나온다 — `fixtures.home_name`은 FotMob 원본(영문)이라 `lib/predict/team-names.ts`의 `koreanTeamName(teamId, fallbackName)`을 먼저 통과시켜야 하고(매핑에 없는 팀은 영문 그대로), 로고도 팀 ID에서 URL을 만들어 넘겨야 한다(안 넘기면 이니셜 원형으로 떨어진다).
 
 주차 식별자는 MatchdayHero와 같다 — `PredictWeek.weekKey`가 `lib/predictions/week.ts`의 `weekKey`(`"2026-35"` = ISO 연도-주차, KST)이므로, `onSelectWeek`에서 `/predictions/{week.weekKey}`로 바로 보낼 수 있다.
 
 ## 알려진 제약
 
-- 상태 배지는 [Badge](?path=/docs/primitives-badge--docs)의 스타일을 쓰지만 컴포넌트가 아니라 `badgeVariants()`를 span에 얹는다 — 카드 전체가 `<button>`이고 `Badge`는 `div`를 렌더해서 버튼 안에 넣을 수 없기 때문이다. 스타일 원본은 `primitives/badge.tsx` 하나다. **variant 이름이 화면 문구와 다르다**: 참여(초록)는 `positive`가 아니라 `secondary`다.
-- 클릭 가능한 카드의 `active` 배경이 `hover`와 같은 `bg-brand-weak`다. pressed 전용 값(`brand-weak-pressed`, blue-200)은 본문 회색과 4.48:1로 AA 미달이라 일부러 안 쓴다 — [State](?path=/docs/foundations-state--docs)에 기록된 예외다.
-- 매치 행 우측의 라운드 표기는 `{weekNo}라운드`로, **주차 번호를 그대로 라운드 번호로 쓴다.** 리그 라운드와 ISO 주차는 같은 값이 아니라, 컵 경기나 연기된 경기가 끼면 어긋난다. 더블 매치위크에서는 이 자리가 경기별 배지로 대체되어 라운드 표기가 아예 사라진다.
-- 로고는 `next/image`가 아니라 `<img>`를 직접 쓴다. `alt=""`(장식)이고 팀 이름은 아래 텍스트로 읽힌다.
-- 목록에 오늘/이번 주 표시가 없다. 어느 주가 현재인지는 `status`로만 유추된다.
+- 배지는 [Badge](?path=/docs/primitives-badge--docs) 컴포넌트를 그대로 쓴다(컨테이너가 `<button>`이 아니라 `<section>`이 되면서 `badgeVariants()`를 span에 얹던 우회가 필요 없어졌다). **variant 이름이 화면 문구와 다르다**: `참여 완료`(초록)는 `positive`가 아니라 `secondary`이고, `종료`·`예정`·`결과 반영중`이 쓰는 `outline`은 테두리가 아니라 `bg-disabled` 회색 배지다.
+- CTA 하나로 진입점을 좁혔기 때문에 hover/pressed 규칙도 `Button` 것을 그대로 따른다 — 카드 표면에는 상호작용 상태가 없다. [State](?path=/docs/foundations-state--docs)에 남아 있는 `MatchWeekList`의 `bg-brand-weak-pressed` 예외 항목은 클릭 가능한 카드가 있던 시절 것이라 지금 소스에는 해당 클래스가 없다.
+- 로고는 `next/image`가 아니라 `<img>`를 직접 쓴다(`TeamBadge`). `alt=""`(장식)이고 팀 이름은 **바로 옆** 텍스트로 읽힌다. 로드 실패나 URL 미지정이면 이니셜 원형으로 떨어진다.
+- 목록에 오늘/이번 주 날짜 표시가 없다. 어느 주가 현재인지는 글로우 컨테이너(= `open`)와 배지(`진행중`/`결과 반영중`)로만 유추된다.
+- 글로우 컨테이너가 유일한 활성 표시라서 **색에만 실린 정보**다. 배지 문구(`진행중`/`참여 완료`)가 같은 뜻을 텍스트로도 나르지만, 그 배지는 `open`만이 아니라 모든 단계에 붙어 있어 "글로우"와 1:1로 대응하지는 않는다.
+- `settling`은 컴포넌트가 파생시키는 단계이고 `WeekStatus`에는 없다 — 순수 함수(`weekStatus`)는 건드리지 않았으므로, 다른 화면에서 같은 구분이 필요하면 여기 로직을 다시 만들어야 한다.

@@ -4,7 +4,9 @@ import { Meta } from '@storybook/addon-docs/blocks'
 
 # Gradient
 
-**예외적으로만 쓴다.** 대부분의 화면은 [Color](?path=/docs/foundations-color--docs)의 solid 값으로 충분하다. 지금 그라디언트가 쓰이는 곳은 실제로 4곳이고, 전부 "여러 색을 섞어 꾸미는" 용도가 아니라 **한 가지 실용적인 문제**(스크롤 시 헤더 경계, 사진 없을 때 배경, 사진 위 텍스트 가독성, 어두운 카드에 밋밋하지 않은 포인트)를 풀기 위한 것이다. 여기에 **아직 화면에 붙이지 않고 준비만 해둔 유틸리티 1개**(`spotlight-glow-brand`, 라이트 카드용)가 더 있다. 새 화면에 그라디언트가 필요해 보이면 먼저 flat color로 되는지 확인한다.
+**예외적으로만 쓴다.** 대부분의 화면은 [Color](?path=/docs/foundations-color--docs)의 solid 값으로 충분하다. 아래 표의 6곳이 이 문서가 다루는 전부고, 전부 "여러 색을 섞어 꾸미는" 용도가 아니라 **한 가지 실용적인 문제**(스크롤 시 헤더 경계, 사진 없을 때 배경, 사진 위 텍스트 가독성, 어두운 카드에 밋밋하지 않은 포인트, 목록에서 지금 예측할 수 있는 주차 구분, 최고 평점 카드의 트로피 강조)를 풀기 위한 것이다. 준비만 해두고 안 쓰는 그라디언트 유틸리티는 이제 없다 — `spotlight-glow-brand`(라이트 카드용)도 2026-08-25에 승부예측 목록에 붙었다. 새 화면에 그라디언트가 필요해 보이면 먼저 flat color로 되는지 확인한다.
+
+표 밖에 남는 그라디언트는 셋이다: 로딩 뼈대의 shimmer(`.animate-skeleton`, 색보다 애니메이션이 핵심이라 [Motion](?path=/docs/foundations-motion--docs)에서 다룬다), 캐러셀 사진 아래쪽 스크림(`bg-gradient-to-t from-black/35`, `TypeBPollClient.tsx:211`), 주차 랭킹 목록이 잘릴 때 "더 있음"을 암시하는 하단 페이드(`after:bg-gradient-to-b after:to-surface`, `WeekRankCard.tsx:55`). 뒤의 둘은 한 곳에서만 쓰는 인라인 유틸리티라 클래스로 뽑지 않았다.
 
 <div className="my-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
   <div className="flex flex-col gap-1.5">
@@ -21,11 +23,15 @@ import { Meta } from '@storybook/addon-docs/blocks'
   </div>
   <div className="flex flex-col gap-1.5">
     <div className="spotlight-glow-brand h-16 rounded-sm" />
-    <code className="text-caption-2 text-neutral-muted">spotlight-glow-brand (준비됨)</code>
+    <code className="text-caption-2 text-neutral-muted">spotlight-glow-brand</code>
   </div>
   <div className="flex flex-col gap-1.5">
     <div className="spotlight-glow-brand-strong h-16 rounded-sm" />
     <code className="text-caption-2 text-neutral-muted">spotlight-glow-brand-strong</code>
+  </div>
+  <div className="flex flex-col gap-1.5">
+    <div className="award-gold h-16 rounded-sm" />
+    <code className="text-caption-2 text-neutral-muted">award-gold</code>
   </div>
 </div>
 
@@ -34,20 +40,44 @@ import { Meta } from '@storybook/addon-docs/blocks'
 | 상단 고정 헤더 배경 | `bg-gradient-to-b from-white to-white/75` (+ `backdrop-blur`) — `AppHeader.tsx` | 스크롤 시 헤더 뒤로 콘텐츠가 그대로 잘려 보이지 않게, 아래쪽을 반투명으로 흐린다 |
 | 선수 사진이 없을 때의 대체 배경 | `bg-gradient-to-br from-brand-solid/30 to-brand-solid` — `TypeBPollClient.tsx` 캐러셀 카드 | 이니셜 하나만 있는 자리표시자가 flat color보다 덜 비어 보이게 |
 | 캐러셀 카드 하단 텍스트 가독성 오버레이 | `.banner-text-overlay` (`globals.css`, 흑백 3단 그라디언트) | 사진 위에 이름·번호를 올릴 때 사진 밝기와 무관하게 항상 읽히게. 투표 상세 5개 화면의 배너 이미지에도 동일하게 재사용 |
-| 홈 히어로(승부예측) 다크 카드 배경 | `.spotlight-glow-brand-strong` (`globals.css`) — `MatchdayHero.tsx` | `bg-neutral-strong` 다크 카드가 밋밋해 보이지 않게 두 모서리에 옅은 브랜드 글로우를 얹는다. `spotlight-glow-brand`와 같은 기법의 다크 변형 |
+| 홈 히어로(승부예측) 다크 카드 배경 | `.spotlight-glow-brand-strong` (`globals.css`) — `MatchdayHero.tsx` | `bg-neutral-strong` 다크 카드가 밋밋해 보이지 않게 두 모서리에 옅은 브랜드 글로우를 얹는다. `spotlight-glow-brand`의 다크 변형이지만 지오메트리는 **코너 `250px` radial 2겹 그대로**다(세로 linear로 바뀐 건 라이트 쪽뿐) |
+| 승부예측 목록에서 예측 접수 중인 주차 컨테이너 | `.spotlight-glow-brand` (`globals.css`) — `MatchWeekList.tsx` | 흰 컨테이너들 사이에서 "지금 예측할 수 있는 주차"만 눈에 들어오게. 활성 주차를 목록 맨 위로 끌어올리던 정렬을 폐기하고 색으로 대체한 자리다(2026-08-25 사용자 결정) |
+| 최고 평점 선수 카드 배경 | `.award-gold` (`globals.css:219-226`, `135deg` palette orange 3단) — `MatchdayHero.tsx:108` | 다크 히어로 위에서 "트로피" 느낌을 내야 하는데 골드 solid semantic 토큰이 없다(`warning-weak`은 옅은 크림). flat 한 색으로는 금속 인상이 안 나서 orange 3단계를 대각선으로 섞는다 |
 
-## 준비된 유틸리티 — `spotlight-glow-brand`
+## 라이트 카드용 — `spotlight-glow-brand`
 
 ```css
 .spotlight-glow-brand {
   background:
-    radial-gradient(250px at 0% 0%, color-mix(in srgb, var(--p-blue-700) 20%, transparent) 0%, transparent 70%),
-    radial-gradient(250px at 100% 0%, color-mix(in srgb, var(--p-blue-600) 20%, transparent) 0%, transparent 70%),
-    var(--c-bg);
+    linear-gradient(to bottom,
+      color-mix(in srgb, var(--p-blue-700) 8%, transparent) 0%,
+      transparent 25%),
+    var(--sem-bg-surface);
 }
 ```
 
-두 모서리에서 브랜드색이 옅게 스며들다 사라지는 앰비언트 글로우다. **아직 어떤 화면에도 붙이지 않았다** — 새 화면·카드가 생길 때 쓰라고 미리 만들어둔 것이다. 이 클래스는 배경을 통째로 정하므로, 쓰는 요소에 `bg-surface`/`bg-page` 등 다른 배경 클래스를 같이 주지 않는다.
+**위에서 아래로 내려오다 카드 높이의 25%에서 완전히 사라지는 세로 linear 한 겹**이다(`globals.css:178-204`). 색은 `--p-blue-700` **8%** 하나뿐이고(2026-08-25 사용자 지정값), 스톱도 두 개(시작 8% → 25%에서 투명)다. 베이스가 `--sem-bg-surface`(흰색)라 라이트 면 위 카드용이고, [MatchWeekList](?path=/docs/composition-predict-matchweeklist--docs)의 `weekPhase === 'open'` 주차 컨테이너에 쓴다. 이 클래스는 배경을 통째로 정하므로, 쓰는 요소에 `bg-surface`/`bg-page` 등 다른 배경 클래스를 같이 주지 않는다.
+
+**왜 radial이 아닌가 — 두 번 시도했다가 두 번 버렸다(둘 다 2026-08-25).** 이 유틸리티를 다시 손댈 사람이 반드시 알아야 하는 함정이라 이력을 남긴다.
+
+| 버린 시안 | 구성 | 왜 버렸나 |
+|---|---|---|
+| ① 코너 radial 2겹 | `250px at 0% 0%` / `at 100% 0%`, `blue-700`/`blue-600` 각 20% → 12%로 내림. 베이스 `bg-page` | 주차 컨테이너 높이가 130px대인데 반경이 250px이라 **글로우가 카드 위쪽만 스치고 끝나 존재감이 거의 없었다** — 가장 진한 중심점이 카드 모서리에 박혀 있어서 카드 안에 보이는 건 급격히 옅어지는 구간뿐이었다 |
+| ② 카드 밖에 중심을 둔 타원 블롭 2겹 | 중심 y가 음수(`-35%` / `-30%`)인 `360px 260px` / `340px 240px`, 좌상 `blue-700` 15% + 우상 `cyan-600` 14%. 베이스 `bg-surface` | ①의 "반경 > 카드 높이"는 피했지만 **반경이 여전히 절대 px**이라 근본 문제가 남았다 |
+
+**둘의 공통 실패 원인은 반경이 절대 px이라는 것이다.** radial의 반경이 px이면 같은 클래스를 붙여도 요소 높이에 따라 물드는 **비율**이 달라진다 — 같은 "진행중" 주차인데 경기가 1개(높이 130px대)일 때와 2개일 때 인상이 서로 달랐다. 퍼센트 기반 세로 linear는 스톱이 요소 높이에 비례하므로 그 의존이 아예 없다: 경기가 몇 개든 틴트가 걸리는 구간은 항상 위쪽 25%다. **높이가 데이터에 따라 변하는 컨테이너에 radial px 글로우를 얹지 않는다.**
+
+**25%에서 끊는 이유 — 끝까지 페이드하면 안쪽 경기 카드가 회색으로 죽는다.** 안쪽 경기 카드는 컨테이너보다 한 단계 낮은 `bg-page`인데, 틴트가 카드 아래까지 내려오면 그 회색 표면 위에 파란 틴트가 겹쳐 **탁한 회색기**가 돈다. 상단에서 끊으면 틴트가 주차 번호·배지 줄에만 걸리고 경기 카드는 제 색(`bg-page`)으로 읽힌다 — 즉 25%는 "그라디언트를 예쁘게 자른 값"이 아니라 **틴트가 걸릴 영역과 걸리면 안 되는 영역의 경계**다. 컨테이너 안쪽 구조가 바뀌면(예: 헤더 줄이 두 줄이 되면) 이 값을 같이 다시 봐야 한다.
+
+**두 글로우 유틸리티는 `--p-blue-*`를 팔레트에서 직접 참조한다.** [Palette](?path=/docs/foundations-palette--docs)의 "팔레트 변수를 화면 코드에서 직접 참조하지 않는다" 규칙은 화면 코드를 두고 하는 말이고, 이건 `globals.css` 안에서 팔레트를 조합하는 장식 배경 유틸리티다 — 골드 solid semantic 토큰이 없어 palette orange 단계를 직접 조합한 `.award-gold`(`globals.css:219-226`)와 같은 성격이다. `color-mix()`로 알파를 깎아 쓸 원시 값이 필요한데 `bg-brand-solid`는 이미 역할이 정해진 solid 값이라 그 자리에 못 들어간다. 여기까지가 예외의 범위이고, 텍스트·아이콘·테두리 색을 팔레트에서 직접 집는 것은 여전히 금지다.
+
+**이름(`spotlight`)과 실제 기하가 어긋난 상태다.** "spotlight"는 한 점에서 퍼지는 radial을 가리키는 말인데 지금 구성은 위에서 내려오는 세로 linear다 — 원래는 ①의 코너 radial이라 이름이 맞았고, 2026-08-25에 기하만 바뀌면서 이름이 남았다. 이 클래스는 디자인시스템 공개 API(`globals.css`의 유틸리티)라 이름을 바꾸면 사용처(`MatchWeekList.tsx`)·다크 변형(`spotlight-glow-brand-strong`)·이 문서가 함께 움직여야 해서, 개명은 사용자 결정 사항으로 남겨 뒀다. 지금 이름은 기하 설명이 아니라 "브랜드 강조용 글로우"라는 **용도 이름**으로 읽어야 한다. (색 쪽 어긋남은 없어졌다 — ②에 있던 cyan 한 색이 빠지고 브랜드 blue 하나만 남았으므로 `-brand`는 이제 정확하다.)
+
+**베이스는 원래 `--sem-bg-page`였고, 2026-08-25에 `--sem-bg-surface`로 바꿨다.** 이 리포의 페이지 배경이 바로 `bg-page`라서(`globals.css:148-149`의 `body`) 글로우 카드와 페이지가 같은 색이 되어 **카드 경계가 아예 사라졌다** — 실사용 화면에서 확인한 문제다. 다음에 이 유틸리티를 쓸 때도 같은 함정을 밟지 않으려면, 베이스는 그 카드가 놓일 배경보다 한 단계 위(흰 면)여야 한다.
+
+베이스가 흰색이 되면서 **컨테이너 안쪽 표면을 뒤집는 예외도 없어졌다.** 베이스가 `bg-page`였을 때는 안쪽 경기 카드만 `bg-surface`로 뒤집어 경계를 만들어야 했지만, 지금은 컨테이너가 흰 면이라 안쪽 카드도 다른 컨테이너와 똑같이 한 단계 낮은 `bg-page`를 쓴다(`MatchWeekList.tsx:290-291`, `:317`).
+
+**테두리는 이 유틸리티가 주지 않는다.** `background`만 정하므로 경계가 필요하면 **호출부가 `border`를 직접 준다** — 글로우만으로는 페이지와의 경계가 생기지 않는다. `MatchWeekList`의 주차 컨테이너는 글로우든 흰 카드든 같은 `border border-neutral-weak`를 쓴다(`MatchWeekList.tsx:226`).
 
 `color-mix()`는 Chrome 111+ / Safari 16.2+ / Firefox 113+에서만 동작한다. 이 프로젝트가 지원하는 브라우저 범위에서 문제없는지는 실제로 화면에 쓰기 전에 한 번 더 확인한다.
 
@@ -62,7 +92,15 @@ import { Meta } from '@storybook/addon-docs/blocks'
 }
 ```
 
-`spotlight-glow-brand`와 같은 기법이지만 베이스가 `bg-neutral-strong`(어두운 중립 배경, Pick One 카드와 같은 색)이다. 어두운 배경 위에서는 같은 opacity의 블루가 라이트 배경보다 훨씬 도드라져 보여서 계수를 20% → 15%로 낮췄다. `MatchdayHero.tsx`(홈 히어로)에 적용됨.
+베이스가 `bg-neutral-strong`(어두운 중립 배경, Pick One 카드와 같은 색)이고, **라이트 쪽이 세로 linear로 바뀐 뒤에도 이쪽은 원래의 코너 radial 방식(`250px at 0% 0%` / `at 100% 0%`, 2단 스톱)을 그대로 쓴다.** `MatchdayHero.tsx:178`(홈 히어로)에 적용됨. 히어로 카드는 높이가 충분해서 라이트에서 문제가 됐던 "반경 > 카드 높이"에 걸리지 않고, 높이가 데이터에 따라 널뛰지도 않아 절대 px 반경이 실제로 문제를 일으키지 않는다.
+
+**이제 기하 자체가 다르다.** 라이트는 **세로 linear 한 겹**(`to bottom`, 25%에서 소멸)이고 다크는 **코너 radial 2겹**이다. 이름이 `-strong` 접미사로 쌍처럼 보이지만 두 클래스는 같은 기법의 밝기 변형이 **아니다** — 위 "왜 radial이 아닌가"는 라이트 쪽 사정이고, 여기에 그대로 적용되지 않는다.
+
+**계수도 서로에서 파생된 값이 아니다.** 다크 15%는 라이트가 20%였을 때 그 값을 낮춰 정한 것이었지만, 라이트가 2026-08-25에 코너 12% → 블롭 15%/14% → 세로 linear 8%로 세 번 바뀌면서 그 관계가 완전히 끊겼다. 지금 두 값은 각 베이스 위에서 독립적으로 정해진 것이므로, 한쪽을 고칠 때 다른 쪽을 따라 맞추지 않는다.
+
+**베이스도 서로 무관하다.** 라이트가 같은 날 `bg-page` → `bg-surface`로 바뀐 것은 그 카드가 놓이는 페이지 배경과 색이 겹쳐서였고, 다크의 `bg-neutral-strong`은 그 사정과 관계가 없어 그대로다.
+
+**색 구성도 갈린다.** 라이트는 `blue-700` **1색**이고, 다크는 `blue-700` + `blue-600` **브랜드 blue 2단계**다(둘 다 브랜드 blue라는 점만 같다). 두 클래스는 이제 이름과 용도만 짝을 이루고 기하·계수·베이스·색 구성이 전부 각각이다 — 한쪽을 보고 다른 쪽 값을 추측하지 않는다.
 
 이 앱은 다크모드 자체가 없어서(라이트 테마 전용, Color.mdx 참고) `text-positive` 같은 상태 색 텍스트는 라이트 배경 기준으로 대비가 맞춰져 있다 — 이 다크 카드 안에서는 그 토큰들을 그대로 쓰지 않고, 이미 `bg-neutral-strong` 카드(`PlayersPageClient.tsx`의 Pick One 카드)가 쓰는 `text-white`(주요 텍스트) / `text-disabled`(보조 텍스트) 조합을 그대로 재사용한다.
 

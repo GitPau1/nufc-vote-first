@@ -165,7 +165,7 @@ test('원정 경기는 상대/스코어가 뒤집혀 우리 관점으로 나온�
   assert.deepEqual(view.actual, [3, 1])
   assert.equal(view.finished, true)
   // 한국시간(UTC+9) 기준 표기
-  assert.equal(view.kickoff, '8/23')
+  assert.equal(view.kickoff, '8월 23일')
   assert.equal(view.kickoffTime, '오후 7:30')
 })
 

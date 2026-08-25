@@ -6,7 +6,7 @@ import * as TeamBadgeStories from './TeamBadge.stories'
 # TeamBadge
 
 승부예측 화면의 팀 엠블럼 한 칸. `src/components/composition/predict/shared.tsx`에 있고, 승부예측 안에서만 쓰인다.
-`logoUrl` / `name` / `size`(기본 48) 세 개만 받는 표시 전용 컴포넌트다 — 팀 ID를 모르고, URL을 만들지도 않는다.
+`logoUrl` / `name` / `size`(기본 48) / `grayscale`(기본 false) 네 개만 받는 표시 전용 컴포넌트다 — 팀 ID를 모르고, URL을 만들지도 않는다.
 
 <Canvas of={TeamBadgeStories.Default} />
 
@@ -42,20 +42,37 @@ fixtures 데이터 자체가 FotMob 동기화 결과라 엠블럼도 같은 CDN�
 
 ## 사용처와 size
 
-5곳에서 쓰이고, **`size`를 넘기는 곳은 한 곳도 없다**(모두 기본값 48).
+5곳에서 쓰이고, **`size`를 넘기는 곳은 목록 화면 한 곳뿐**이다(나머지 넷은 기본값 48).
 
-| 파일 | 감싸는 컴포넌트 | 컨테이너 |
-|---|---|---|
-| `components/composition/predict/MatchWeekList.tsx:307` | `TeamSide` | `w-[84px]` 고정 |
-| `components/composition/predict/PredictionFlowClient.tsx:394` | `TeamColumn` (스코어 입력 단계) | `w-[88px]` |
-| `components/composition/predict/PredictionFlowClient.tsx:403` | `ConfirmTeam` (제출 확인) | `w-[88px]` |
-| `components/composition/predict/PredictionResult.tsx:420` | `MatchupTeam` | `w-[88px]` |
-| `components/composition/predict/PredictionDone.tsx:280` | `MatchupTeam` | `w-[88px]` |
+| 파일 | 감싸는 컴포넌트 | 컨테이너 | size |
+|---|---|---|---|
+| `components/composition/predict/MatchWeekList.tsx:354` | `TeamSide` | `w-20` 고정 | `32` |
+| `components/composition/predict/PredictionFlowClient.tsx:555` | `TeamColumn` (스코어 입력 단계) | `w-[88px]` | 기본 48 |
+| `components/composition/predict/PredictionFlowClient.tsx:564` | `ConfirmTeam` (제출 확인) | `w-[88px]` | 기본 48 |
+| `components/composition/predict/PredictionResult.tsx:419` | `MatchupTeam` | `w-[88px]` | 기본 48 |
+| `components/composition/predict/PredictionDone.tsx:319` | `MatchupTeam` | `w-[88px]` | 기본 48 |
 
-즉 실제 화면에 나오는 크기는 48 하나뿐이고, `size`는 아직 쓰이지 않는 확장 지점이다.
+즉 실제 화면에 나오는 크기는 48과 32 둘뿐이다 — 상세 화면들은 큰 배지(48), 주차 목록은 한 줄에 두 팀을
+넣어야 해서 작은 배지(32)를 쓴다.
 
 <Canvas of={TeamBadgeStories.Sizes} />
 <Canvas of={TeamBadgeStories.LongTeamName} />
+
+## grayscale — 끝난 경기 표시
+
+<Canvas of={TeamBadgeStories.Grayscale} />
+
+`grayscale`은 `filter: grayscale`(Tailwind `grayscale`) 한 줄이고, 판정 단위는 **경기**다 —
+`MatchWeekList`가 `match.finished`를 그대로 내려준다. 한 주차에 끝난 경기와 안 끝난 경기가 섞이면
+로고 톤도 경기마다 갈린다.
+
+<Canvas of={TeamBadgeStories.GrayscaleFallback} />
+
+폴백 경로에도 같은 클래스가 붙지만 **눈에 보이는 변화는 없다** — 폴백 원은 `bg-disabled`(#e9e9ea) +
+`text-neutral-muted`(#666666)로 이미 무채색이라 채도를 뺄 게 없다. 위 스토리는 효과를 보여주는 게
+아니라 prop을 넘겨도 폴백이 깨지지 않는다는 확인용이다. 즉 **끝난 경기라는 신호는 로고가 뜬 경우에만
+로고 톤으로 전달된다** — 폴백으로 떨어진 팀은 톤이 같으므로, 그 신호가 꼭 필요한 자리면 배지 밖(점수·라벨)에서
+따로 표시해야 한다.
 
 ## 알려진 제약
 

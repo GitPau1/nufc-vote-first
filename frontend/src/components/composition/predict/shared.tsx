@@ -3,16 +3,34 @@
 import { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/primitives/avatar'
 import { Button } from '@/components/primitives/button'
+import { cn } from '@/lib/utils'
 
-/** 팀 엠블럼(FotMob CDN URL은 lib/predictions/week.ts의 teamLogoUrl이 만든다). 실패하면 이니셜 원형으로 폴백. */
-export function TeamBadge({ logoUrl, name, size = 48 }: { logoUrl?: string; name: string; size?: number }) {
+/**
+ * 팀 엠블럼(FotMob CDN URL은 lib/predictions/week.ts의 teamLogoUrl이 만든다). 실패하면 이니셜 원형으로 폴백.
+ * `grayscale`은 "이 경기는 끝났다"는 표시다 — 판정은 경기 단위(`match.finished`)라, 한 주차 안에
+ * 끝난 경기와 안 끝난 경기가 섞이면 로고 톤도 경기마다 갈린다.
+ */
+export function TeamBadge({
+  logoUrl,
+  name,
+  size = 48,
+  grayscale = false,
+}: {
+  logoUrl?: string
+  name: string
+  size?: number
+  grayscale?: boolean
+}) {
   const [failed, setFailed] = useState(false)
 
   if (failed || !logoUrl) {
     return (
       <span
         aria-hidden
-        className="flex shrink-0 items-center justify-center rounded-pill bg-disabled text-label-1-normal font-black text-neutral-muted"
+        className={cn(
+          'flex shrink-0 items-center justify-center rounded-pill bg-disabled text-label-1-normal font-black text-neutral-muted',
+          grayscale && 'grayscale'
+        )}
         style={{ width: size, height: size }}
       >
         {name.slice(0, 1)}
@@ -28,7 +46,7 @@ export function TeamBadge({ logoUrl, name, size = 48 }: { logoUrl?: string; name
       width={size}
       height={size}
       onError={() => setFailed(true)}
-      className="shrink-0 object-contain"
+      className={cn('shrink-0 object-contain', grayscale && 'grayscale')}
       style={{ width: size, height: size }}
     />
   )

@@ -44,7 +44,7 @@ export type MatchView = {
   /** 상대팀 FotMob team id — 엠블럼 URL 구성용 */
   opponentId: number
   isHome: boolean
-  /** '8/23' */
+  /** '8월 23일' */
   kickoff: string
   /** '오후 8:00' */
   kickoffTime: string
@@ -154,7 +154,7 @@ export function toMatchView(fixture: FixtureRow, now: number): MatchView {
     opponent: isHome ? fixture.away_name : fixture.home_name,
     opponentId: isHome ? fixture.away_id : fixture.home_id,
     isHome,
-    kickoff: kst ? `${kst.getUTCMonth() + 1}/${kst.getUTCDate()}` : '',
+    kickoff: kst ? `${kst.getUTCMonth() + 1}월 ${kst.getUTCDate()}일` : '',
     kickoffTime: kst ? formatKickoffTime(kst) : '',
     kickoffAt: fixture.kickoff_at,
     locked: isMatchLocked(fixture, now),
