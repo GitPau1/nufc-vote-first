@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
+import { unstable_cache } from 'next/cache'
+import { createClient, createPublicClient, getCurrentUser } from '@/lib/supabase/server'
 import { IS_MOCK } from '@/lib/config'
 import type { Position } from '@/lib/predictions/candidates'
 import { MOCK_RANKING, MOCK_RESULTS } from '@/lib/mock/data'
@@ -50,9 +51,10 @@ function toMyPrediction(row: PredictionQueryRow): MyPrediction {
 export async function getMyPredictions(): Promise<MyPredictionMap> {
   if (IS_MOCK) return getMockPredictions()
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) return {}
+
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('predictions')
@@ -128,29 +130,49 @@ type SeasonRankingQueryRow = {
   rank: number
 }
 
+const SEASON_RANKING_COLUMNS = 'user_id, display_name, avatar_url, total_points, rank'
+
+/**
+ * 주차·시즌 랭킹이 같은 태그를 쓴다 — 둘 다 prediction_results에서 나오므로 한쪽이 바뀌면
+ * 다른 쪽도 바뀐다. 평점이 저장될 때 lib/actions/fixture-ratings.ts가 이 태그를 비운다.
+ */
+const RANKING_TAG = 'prediction-rankings'
+
 /**
  * 주차 랭킹 전체 — 결과 화면 "전체 결과" 탭은 "전체보기"로 참여자를 다 펼칠 수 있어야 하므로
  * 자르지 않고 그 주차 참여자를 전부 내려준다. 랭킹은 참여 여부와 무관하게 공개된다(미참여자도 조회 가능).
  * 로그인 상태면 내 행에 isMe가 붙어 하이라이트된다.
  */
+// view 조회 자체는 전원 공용 데이터라 캐시한다. 개인화(isMe)는 캐시 밖에서 붙인다 —
+// 캐시된 값에 사용자별 필드가 섞이면 남의 isMe가 보인다.
+// createClient(쿠키 기반)가 아니라 createPublicClient를 쓰는 이유: unstable_cache 안에서는
+// 요청 쿠키를 읽을 수 없다. 뷰는 security_invoker지만 밑단에 `predictions: public read`
+// 정책이 있어 익명 클라이언트로도 같은 행이 나온다.
+const getWeekRankingRows = unstable_cache(
+  async (weekKey: string): Promise<WeekRankingQueryRow[]> => {
+    const supabase = createPublicClient()
+    const { data, error } = await supabase
+      .from('week_leaderboard')
+      .select('user_id, display_name, avatar_url, match_points, pick_points, total_points, rank')
+      .eq('week_key', weekKey)
+      .order('rank')
+
+    if (error) {
+      console.error('getWeekRanking error:', error)
+      return []
+    }
+    return (data ?? []) as unknown as WeekRankingQueryRow[]
+  },
+  ['week-ranking'],
+  { revalidate: 60, tags: [RANKING_TAG] },
+)
+
 export async function getWeekRanking(weekKey: string): Promise<RankingRow[]> {
   if (IS_MOCK) return mockRanking(true)
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const [rows, user] = await Promise.all([getWeekRankingRows(weekKey), getCurrentUser()])
 
-  const { data, error } = await supabase
-    .from('week_leaderboard')
-    .select('user_id, display_name, avatar_url, match_points, pick_points, total_points, rank')
-    .eq('week_key', weekKey)
-    .order('rank')
-
-  if (error) {
-    console.error('getWeekRanking error:', error)
-    return []
-  }
-
-  return (data ?? []).map((row: WeekRankingQueryRow) => ({
+  return rows.map(row => ({
     userId: row.user_id,
     rank: row.rank,
     name: row.display_name ?? ANONYMOUS_NAME,
@@ -166,27 +188,48 @@ export async function getWeekRanking(weekKey: string): Promise<RankingRow[]> {
  * 시즌 누적 랭킹 — 목록 화면 우측 카드 두 개(TOP N / 내 순위)가 같은 배열을 쓴다.
  * 내 순위가 TOP N 밖이면 상위권 조회에 안 걸리므로 내 행만 따로 한 번 더 읽어 뒤에 붙인다.
  */
+// 상위권은 공개 데이터라 캐시하고, 내 순위 행은 사용자별이라 캐시 밖에 남긴다.
+const getSeasonTopRows = unstable_cache(
+  async (limit: number): Promise<SeasonRankingQueryRow[]> => {
+    const supabase = createPublicClient()
+    const { data, error } = await supabase
+      .from('season_leaderboard')
+      .select(SEASON_RANKING_COLUMNS)
+      .order('rank')
+      .limit(limit)
+
+    if (error) {
+      console.error('getSeasonRanking error:', error)
+      return []
+    }
+    return (data ?? []) as unknown as SeasonRankingQueryRow[]
+  },
+  ['season-ranking'],
+  { revalidate: 60, tags: [RANKING_TAG] },
+)
+
+/** 내 시즌 순위 한 줄. TOP N 밖이면 상위권 조회에 안 걸려서 따로 읽는다. */
+async function getMySeasonRow(userId: string): Promise<SeasonRankingQueryRow | null> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('season_leaderboard')
+    .select(SEASON_RANKING_COLUMNS)
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  return (data ?? null) as unknown as SeasonRankingQueryRow | null
+}
+
 export async function getSeasonRanking(limit = 3): Promise<RankingRow[]> {
   if (IS_MOCK) return mockRanking(false).slice(0, limit + 1)
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  const columns = 'user_id, display_name, avatar_url, total_points, rank'
-
-  const [top, mine] = await Promise.all([
-    supabase.from('season_leaderboard').select(columns).order('rank').limit(limit),
-    user
-      ? supabase.from('season_leaderboard').select(columns).eq('user_id', user.id).maybeSingle()
-      : Promise.resolve({ data: null, error: null }),
+  const user = await getCurrentUser()
+  const [top, myRow] = await Promise.all([
+    getSeasonTopRows(limit),
+    user ? getMySeasonRow(user.id) : Promise.resolve(null),
   ])
 
-  if (top.error) {
-    console.error('getSeasonRanking error:', top.error)
-    return []
-  }
-
-  const rows = [...((top.data ?? []) as unknown as SeasonRankingQueryRow[])]
-  const myRow = mine.data as unknown as SeasonRankingQueryRow | null
+  const rows = [...top]
   if (myRow && !rows.some(row => row.user_id === myRow.user_id)) rows.push(myRow)
 
   return rows.map(row => ({
@@ -256,9 +299,10 @@ type ResultQueryRow = {
 export async function getMyResults(): Promise<MyResultMap> {
   if (IS_MOCK) return MOCK_RESULTS
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) return {}
+
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('prediction_results')

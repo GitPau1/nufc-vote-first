@@ -11,7 +11,7 @@ function source(file) {
 }
 
 test('public Supabase query modules use Next cache for first-request TTFB', () => {
-  for (const file of ['polls.ts', 'player-pick-one.ts', 'fixtures.ts']) {
+  for (const file of ['polls.ts', 'player-pick-one.ts', 'fixtures.ts', 'predictions.ts']) {
     assert.match(source(file), /unstable_cache/, `${file} should use unstable_cache`)
   }
 })
