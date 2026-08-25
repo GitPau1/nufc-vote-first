@@ -90,21 +90,16 @@ async function getRatingParticipantCounts(
 ): Promise<Map<string, number>> {
   if (pollIds.length === 0) return new Map()
 
+  // 행 전량을 받아 JS로 세면 PostgREST db-max-rows=1000에 잘린다(참여자 1명이 선수 수만큼 행을 남김).
+  // view가 DB에서 count(distinct user_id)까지 끝내므로 응답은 poll당 1행이다.
   const { data, error } = await supabase
-    .from('rating_votes')
-    .select('poll_id, user_id')
-    .in('poll_id', pollIds) as { data: Array<{ poll_id: string; user_id: string }> | null; error: AnyRow }
+    .from('rating_poll_participants')
+    .select('poll_id, participant_count')
+    .in('poll_id', pollIds) as { data: Array<{ poll_id: string; participant_count: number }> | null; error: AnyRow }
 
   if (error || !data) return new Map()
 
-  const counts = new Map<string, Set<string>>()
-  for (const row of data) {
-    const userIds = counts.get(row.poll_id) ?? new Set<string>()
-    userIds.add(row.user_id)
-    counts.set(row.poll_id, userIds)
-  }
-
-  return new Map(Array.from(counts, ([pollId, userIds]) => [pollId, userIds.size]))
+  return new Map(data.map(row => [row.poll_id, row.participant_count]))
 }
 
 function isMissingColumnError(error: AnyRow): boolean {
@@ -424,15 +419,17 @@ export async function getVoteCounts(pollId: string): Promise<VoteCountMap> {
   if (IS_MOCK) return mockGetVoteCounts(pollId)
   const supabase = await createClient()
 
+  // 행을 다 끌어와 JS로 세면 PostgREST db-max-rows(1,000)에 조용히 잘린다 — 에러 없이 틀린 숫자가 나온다.
+  // DB가 세서 숫자만 받는다. votes↔poll_options FK가 두 개(option_id / option_matches_poll)라 힌트가 필요하다.
   const { data, error } = await supabase
-    .from('votes')
-    .select('option_id')
-    .eq('poll_id', pollId) as { data: { option_id: string }[] | null; error: AnyRow }
+    .from('poll_options')
+    .select('id, vote_count:votes!votes_option_id_fkey(count)')
+    .eq('poll_id', pollId) as { data: { id: string; vote_count: { count: number }[] }[] | null; error: AnyRow }
 
   if (error || !data) return {}
 
   return data.reduce<VoteCountMap>((acc, row) => {
-    acc[row.option_id] = (acc[row.option_id] ?? 0) + 1
+    acc[row.id] = row.vote_count?.[0]?.count ?? 0
     return acc
   }, {})
 }
