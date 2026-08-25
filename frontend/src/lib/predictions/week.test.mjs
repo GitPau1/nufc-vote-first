@@ -13,8 +13,15 @@ function loadWeekModule() {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, strict: true },
   }).outputText
 
+  // week.ts를 소스 그대로 transpile해서 돌리는 harness라 모듈 해석기가 없다 —
+  // 값으로 쓰는 import는 여기에 등록해줘야 한다(타입 전용 import는 컴파일에서 사라진다).
+  const requireShim = (id) => {
+    if (id === '@/lib/config') return { SUPABASE_URL: 'https://stub.supabase.co' }
+    throw new Error(`week.test.mjs: 등록되지 않은 의존성 ${id}`)
+  }
+
   const cjsModule = { exports: {} }
-  new Function('exports', 'module', compiled)(cjsModule.exports, cjsModule)
+  new Function('exports', 'module', 'require', compiled)(cjsModule.exports, cjsModule, requireShim)
   return cjsModule.exports
 }
 
@@ -213,7 +220,8 @@ test('toPredictWeeks: 원정 경기 스코어는 [홈, 원정] 순서로 되돌�
   // MatchView는 [우리, 상대] = [3, 1] → PredictWeekMatch는 [홈, 원정] = [1, 3]
   assert.deepEqual(week.matches[0].actual, [1, 3])
   assert.equal(week.matches[0].isHome, false)
-  assert.match(week.matches[0].opponentLogoUrl, /teamlogo\/8586\.png$/)
+  // 엠블럼은 Storage public 버킷(team-logos/{FotMob 팀 id}.png)에서 온다 — 팀 id가 곧 파일명이다.
+  assert.match(week.matches[0].opponentLogoUrl, /\/player-photos\/team-logos\/8586\.png$/)
   assert.equal(week.matches[0].myResult, undefined)
 })
 

@@ -3,6 +3,8 @@
  * 후보 목록/배당은 DB(season_squads)에서 오고 조회는 lib/queries/squads.ts가 담당한다.
  */
 
+import { SUPABASE_URL } from '@/lib/config'
+
 export const POSITIONS = ['DEF', 'MID', 'FWD'] as const
 export type Position = (typeof POSITIONS)[number]
 
@@ -25,9 +27,15 @@ export type Candidate = {
   photoUrl: string | null
 }
 
-/** fixtures 엠블럼과 같은 FotMob CDN. 없는 선수는 404라 <img> onError 폴백에 맡긴다. */
-export function playerPhotoUrl(fotmobPlayerId: number): string {
-  return `https://images.fotmob.com/image_resources/playerimages/${fotmobPlayerId}.png`
+/**
+ * 엠블럼과 같은 public `player-photos` 버킷의 `players/{fotmob_player_id}.png`. 현재 스쿼드
+ * 25명은 전부 올라와 있고, 빠진 선수(평점에만 있는 이적/유스 선수)는 400이라 PlayerPhoto의
+ * onError 실루엣 폴백에 맡긴다. mock 모드(주소 없음)에서는 곧바로 null.
+ */
+export function playerPhotoUrl(fotmobPlayerId: number): string | null {
+  return SUPABASE_URL
+    ? `${SUPABASE_URL}/storage/v1/object/public/player-photos/players/${fotmobPlayerId}.png`
+    : null
 }
 
 export function isPickPosition(position: string): position is Position {

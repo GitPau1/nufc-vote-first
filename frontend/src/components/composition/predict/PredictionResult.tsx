@@ -413,7 +413,7 @@ function PickResultCard({ position, pick }: { position: Position; pick: Resolved
   )
 }
 
-function MatchupTeam({ logoUrl, name }: { logoUrl: string; name: string }) {
+function MatchupTeam({ logoUrl, name }: { logoUrl: string | null; name: string }) {
   return (
     <div className="flex w-[88px] shrink-0 flex-col items-center gap-1.5">
       <TeamBadge logoUrl={logoUrl} name={name} />

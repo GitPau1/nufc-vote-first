@@ -31,7 +31,7 @@ export interface PredictWeekMatch {
   finished: boolean
   /** [홈팀 점수, 원정팀 점수] — isHome과 무관하게 항상 이 순서. finished일 때만 존재 */
   actual?: [number, number]
-  opponentLogoUrl?: string
+  opponentLogoUrl?: string | null
   /**
    * 이 경기에 대한 내 예측. predicted만 있고 totalPoints가 없으면
    * "제출은 했지만 아직 결과(점수) 발표 전" 상태를 뜻한다.
@@ -63,7 +63,7 @@ interface MatchWeekListProps {
   /** 우리 팀 이름(기본 "뉴캐슬") — isHome에 따라 좌/우 중 한쪽에 표기된다 */
   homeTeamName?: string
   /** 우리 팀 로고 — 매치마다 바뀌지 않으므로 리스트 단위로 한 번만 받는다 */
-  homeTeamLogoUrl?: string
+  homeTeamLogoUrl?: string | null
   onSelectWeek?: (week: PredictWeek) => void
   onPrevMonth?: () => void
   onNextMonth?: () => void
@@ -208,7 +208,7 @@ function WeekSessionCard({
 }: {
   week: PredictWeek
   homeTeamName: string
-  homeTeamLogoUrl?: string
+  homeTeamLogoUrl?: string | null
   delayMs: number
   onSelect?: (week: PredictWeek) => void
 }) {
@@ -299,7 +299,7 @@ function MatchInfoCard({
   match: PredictWeekMatch
   dimmed: boolean
   homeTeamName: string
-  homeTeamLogoUrl?: string
+  homeTeamLogoUrl?: string | null
 }) {
   // 좌측 = 홈, 우측 = 원정 — isHome이 false면(원정 경기) 우리 팀이 우측으로 간다.
   const us = { name: homeTeamName, logoUrl: homeTeamLogoUrl }
@@ -409,7 +409,7 @@ function TeamSide({
   side,
 }: {
   name: string
-  logoUrl?: string
+  logoUrl?: string | null
   grayscale: boolean
   /** 팀명 색 — 카드가 계산한 톤(dimmed 여부)을 그대로 받는다 */
   nameClassName: string

@@ -4,6 +4,12 @@
  */
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 
+/**
+ * 이미지 URL 조립용 프로젝트 주소. mock 모드에서는 빈 문자열이라, 조립하는 쪽에서
+ * falsy 검사로 null을 내고 컴포넌트 폴백(이니셜 원형 / 실루엣)에 맡긴다.
+ */
+export const SUPABASE_URL = url
+
 export const IS_MOCK =
   !url ||
   url.trim() === '' ||

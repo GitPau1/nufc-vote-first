@@ -2,19 +2,19 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
 import { TeamBadge } from '@/components/composition/predict/shared'
 
-// 실제 logoUrl은 lib/predictions/week.ts의 teamLogoUrl(teamId)이 FotMob CDN 주소
-// (images.fotmob.com/image_resources/logo/teamlogo/{teamId}.png)로 조립한다. 스토리에서 그 주소를
-// 그대로 쓰면 스토리 결과가 외부 CDN 상태에 묶이므로, 다른 예측 mock과 같은 placehold.co를 쓴다.
+// 실제 logoUrl은 lib/predictions/week.ts의 teamLogoUrl(teamId)이 Supabase Storage public 주소
+// (.../player-photos/team-logos/{teamId}.png)로 조립한다. 스토리에서 그 주소를 그대로 쓰면
+// 스토리 결과가 프로젝트 env에 묶이므로, 다른 예측 mock과 같은 placehold.co를 쓴다.
 const PLACEHOLDER_LOGO = 'https://placehold.co/48x48/2a2f36/8a929c?text=NU'
 
 // grayscale 스토리 전용. 위 PLACEHOLDER_LOGO는 회청색(#2a2f36 / #8a929c)이라 채도가 거의 없어서
-// filter: grayscale을 걸어도 Default와 눈으로 구분되지 않는다 — 실제 FotMob 엠블럼은 팀 컬러라
+// filter: grayscale을 걸어도 Default와 눈으로 구분되지 않는다 — 실제 엠블럼은 팀 컬러라
 // 채도가 높으니, 효과를 실제 크기로 보여주려면 유채색 샘플이 따로 필요하다.
 const SATURATED_PLACEHOLDER_LOGO = 'https://placehold.co/48x48/d81920/f5d000?text=NU'
 
 // `.invalid`는 예약 TLD(RFC 2606)라 어떤 환경에서도 절대 해석되지 않는다 — 네트워크 상태와 무관하게
 // onError가 반드시 한 번 뜨므로 폴백 경로를 결정적으로 보여줄 수 있다.
-const BROKEN_LOGO = 'https://images.fotmob.invalid/image_resources/logo/teamlogo/999999.png'
+const BROKEN_LOGO = 'https://storage.invalid/storage/v1/object/public/player-photos/team-logos/999999.png'
 
 const meta = {
   title: 'Composition/Predict/TeamBadge',
@@ -53,7 +53,7 @@ export const NoLogo: Story = {
 }
 
 /**
- * **이 컴포넌트의 핵심 동작.** URL은 있는데 요청이 실패하는 경우(FotMob에 그 팀 엠블럼이 없거나
+ * **이 컴포넌트의 핵심 동작.** URL은 있는데 요청이 실패하는 경우(버킷에 그 팀 ID 파일이 없거나
  * CDN이 죽은 경우)를 실제로 재현한다 — `onError`가 `failed` 상태를 세워서 깨진 이미지 아이콘이 아니라
  * 이니셜 원형으로 떨어져야 한다. 위 NoLogo와 결과가 같아야 정상이다.
  */

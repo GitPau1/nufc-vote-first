@@ -344,7 +344,8 @@ export const MOCK_FIXTURES: FixtureRow[] = [
 ]
 
 // ── 승부예측 선수 픽 후보 (season_squads 행과 같은 모양) ─────────────────────
-// FotMob player id는 실제 값 — 목 모드에서도 선수 사진이 CDN에서 그대로 뜬다.
+// FotMob player id는 실제 값이지만 옛 스쿼드라 Storage 버킷(players/{id}.png)에는 없다 —
+// 목 모드는 애초에 NEXT_PUBLIC_SUPABASE_URL이 없어 photoUrl이 null이므로 전부 실루엣으로 뜬다.
 const squadMember = (
   fotmobPlayerId: number,
   name: string,

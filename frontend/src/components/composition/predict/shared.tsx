@@ -6,7 +6,7 @@ import { Button } from '@/components/primitives/button'
 import { cn } from '@/lib/utils'
 
 /**
- * 팀 엠블럼(FotMob CDN URL은 lib/predictions/week.ts의 teamLogoUrl이 만든다). 실패하면 이니셜 원형으로 폴백.
+ * 팀 엠블럼(Storage public URL은 lib/predictions/week.ts의 teamLogoUrl이 만든다). 없거나 실패하면 이니셜 원형으로 폴백.
  * `grayscale`은 "이 경기는 끝났다"는 표시다 — 판정은 경기 단위(`match.finished`)라, 한 주차 안에
  * 끝난 경기와 안 끝난 경기가 섞이면 로고 톤도 경기마다 갈린다.
  */
@@ -16,7 +16,7 @@ export function TeamBadge({
   size = 48,
   grayscale = false,
 }: {
-  logoUrl?: string
+  logoUrl?: string | null
   name: string
   size?: number
   grayscale?: boolean
@@ -68,8 +68,8 @@ export function Silhouette({ className }: { className?: string }) {
 
 /**
  * 선수 사진 자리 — 사진이 없거나 **로드에 실패해도** 실루엣 원형으로 떨어진다.
- * `ui/avatar.tsx`(Radix Avatar)를 쓰므로 onError 핸들러가 필요 없다: FotMob CDN 주소가
- * 404/403인 선수(사진이 아예 없는 신입·유스)도 깨진 이미지 대신 실루엣이 남는다.
+ * `ui/avatar.tsx`(Radix Avatar)를 쓰므로 onError 핸들러가 필요 없다: 버킷에 파일이 없어
+ * Storage가 400을 주는 선수(사진이 아직 없는 신입·유스)도 깨진 이미지 대신 실루엣이 남는다.
  * 크기는 Avatar 기본값(h-10 w-10)을 인라인 스타일로 덮어써서 임의 px를 그대로 받는다.
  */
 export function PlayerPhoto({ url, size = 64 }: { url: string | null; size?: number }) {

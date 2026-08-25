@@ -6,6 +6,7 @@
 import type { PredictWeek } from '@/components/composition/predict/MatchWeekList'
 import type { MyPredictionMap } from '@/lib/queries/predictions'
 import type { Position } from '@/lib/predictions/candidates'
+import { SUPABASE_URL } from '@/lib/config'
 
 export type FixtureRow = {
   fixture_id: number
@@ -73,9 +74,14 @@ export type WeekGroup = {
 /** 예측 플로우/완료 화면이 다루는 세션 하나 = 주차 하나. */
 export type WeekSession = WeekGroup
 
-/** fixtures가 FotMob 동기화 데이터라 엠블럼도 같은 CDN을 쓴다. */
-export function teamLogoUrl(teamId: number): string {
-  return `https://images.fotmob.com/image_resources/logo/teamlogo/${teamId}.png`
+/**
+ * 엠블럼은 public `player-photos` 버킷의 `team-logos/{FotMob 팀 id}.png`다 — fixtures의 팀 id가
+ * 그대로 파일명이라 별도 매핑이 없다. mock 모드(주소 없음)에서는 null → TeamBadge 이니셜 폴백.
+ */
+export function teamLogoUrl(teamId: number): string | null {
+  return SUPABASE_URL
+    ? `${SUPABASE_URL}/storage/v1/object/public/player-photos/team-logos/${teamId}.png`
+    : null
 }
 
 /** UTC 시각을 한국 기준 달력 날짜로 옮긴 Date(한국은 DST 없음). */

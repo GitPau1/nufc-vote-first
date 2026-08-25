@@ -6,7 +6,7 @@ import { Modal } from '@/components/primitives/modal/Modal'
 import { PlayerPickContent, type PlayerPickCandidate } from '@/components/primitives/modal/contents/PlayerPick'
 
 // 실제 photoUrl은 lib/predictions/candidates.ts의 playerPhotoUrl(fotmobPlayerId)로 조립되는데,
-// 진짜 FotMob 선수 ID가 아니면 403이라 실루엣으로 떨어진다 — 다른 mock과 같은 placehold.co를 쓴다.
+// Storage 버킷(players/{id}.png)에 파일이 없으면 400이라 실루엣으로 떨어진다 — 다른 mock과 같은 placehold.co를 쓴다.
 const PLACEHOLDER_PHOTO = 'https://placehold.co/88x88/2a2f36/8a929c?text=%20'
 
 // 목록 스크롤 높이는 껍데기가 정하지 않으므로 호출부에서 Modal className으로 준다(실사용과 동일).
