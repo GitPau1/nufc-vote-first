@@ -66,7 +66,7 @@ export function AdminSyncButton() {
         <p
           className={cn(
             'mt-2 text-label-2',
-            message.tone === 'ok' ? 'text-positive' : 'text-negative',
+            message.tone === 'ok' ? 'text-positive' : 'text-critical',
           )}
         >
           {message.text}

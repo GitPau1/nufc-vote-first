@@ -140,8 +140,8 @@ export function PredictionDone({
                   {/* 끝난 경기는 실제 스코어와 적중 여부만 보여준다 — 점수·랭킹은 그 주차가 다
                       끝난 뒤에 공개된다(prediction_results의 정산 게이트). */}
                   {match.finished && (
-                    <div className="mt-4 rounded-md bg-background px-4 py-3 text-center">
-                      <p className="text-caption-1 text-gray-2">실제 결과</p>
+                    <div className="mt-4 rounded-md bg-page px-4 py-3 text-center">
+                      <p className="text-caption-1 text-neutral-muted">실제 결과</p>
                       <p className="text-label-1-normal font-extrabold">
                         {match.actual ? match.actual.join(' – ') : '스코어 집계 중'}
                       </p>
@@ -305,7 +305,7 @@ function HitBadge({ hit }: { hit: MatchHit }) {
     <span
       className={cn(
         'mt-2 inline-flex rounded-pill px-[9px] py-[3px] text-caption-2 font-bold',
-        hit === 'miss' ? 'bg-negative-dim text-negative' : 'bg-positive-dim text-positive',
+        hit === 'miss' ? 'bg-critical-weak text-critical' : 'bg-positive-weak text-positive',
       )}
     >
       {HIT_LABEL[hit]}
