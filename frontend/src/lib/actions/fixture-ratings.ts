@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { IS_MOCK } from '@/lib/config'
 import { requireAdminClient } from '@/lib/supabase/admin'
 
@@ -54,5 +54,8 @@ export async function saveFixtureRatings(
   }
 
   revalidatePath('/admin/ratings')
+  // 평점이 바뀌면 week_leaderboard/season_leaderboard가 다시 계산돼야 한다.
+  // 크론(Edge Function) 적재 경로는 이 액션을 안 거치므로 그쪽은 revalidate 60초로 따라온다.
+  revalidateTag('prediction-rankings')
   return { success: true, saved: ratings.length }
 }
