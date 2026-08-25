@@ -1,6 +1,6 @@
 'use client'
 
-// 사용 도메인: polls (투표 제출 확인 — Modal 껍데기에 끼워 쓴다)
+// 사용 도메인: polls (투표 제출 확인), predict (승부예측 제출 확인) — Modal 껍데기에 끼워 쓴다
 
 import { SheetHeader, SheetTitle, SheetDescription } from '../sheet'
 import { Button } from '@/components/primitives/button'

@@ -56,11 +56,22 @@ export function StepTrack({ current }: { current: StepKey }) {
   )
 }
 
-/** 모바일 전용 — 현재 단계 타이틀/설명. */
-export function StepHero({ current, multi = false }: { current: StepKey; multi?: boolean }) {
+/**
+ * 현재 단계 타이틀/설명. 기본 바깥 여백은 `mt-5`(트랙 바로 아래 붙는 자리 기준) —
+ * 펼친 스텝 카드 안에 넣는 등 자리가 다르면 `className`으로 여백만 덮어써서 재사용한다.
+ */
+export function StepHero({
+  current,
+  multi = false,
+  className,
+}: {
+  current: StepKey
+  multi?: boolean
+  className?: string
+}) {
   const step = STEP_META.find(s => s.key === current)!
   return (
-    <div className="mt-5 text-left">
+    <div className={cn('text-left', className ?? 'mt-5')}>
       <p className="text-headline-1 font-extrabold text-brand">{step.name}</p>
       <p className="mt-1 text-label-2 text-neutral-muted">{stepDesc(step, multi)}</p>
     </div>

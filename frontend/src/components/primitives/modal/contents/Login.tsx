@@ -32,6 +32,13 @@ interface LoginContentProps {
   /** 문구를 가르는 값이라 기본값을 두지 않는다 — 호출부가 자기 맥락을 명시해야 한다. */
   triggerAction: LoginTrigger
   onClose: () => void
+  /**
+   * 로그인(모의 로그인)이 그 자리에서 성공적으로 끝났을 때만 호출된다 — 실제 Google OAuth는
+   * 리다이렉트로 페이지를 떠나 콜백으로 돌아오므로 이 콜백을 못 받는다(그 경로는 페이지가
+   * 새로 마운트돼 컴포넌트 상태가 유지되지 않는다). 호출부가 "로그인 성공 직후 하려던 동작을
+   * 이어간다"를 표현할 때 쓴다(예: 예측 제출 확인 모달을 다시 연다). 없으면 onClose만 호출된다.
+   */
+  onLoginSuccess?: () => void
 }
 
 /**
@@ -39,7 +46,7 @@ interface LoginContentProps {
  * 호출부는 `<Modal form="default"><LoginContent .../></Modal>`로 조립한다 —
  * 로그인은 모바일에서도 중앙 모달(default)로 띄운다.
  */
-export function LoginContent({ triggerAction, onClose }: LoginContentProps) {
+export function LoginContent({ triggerAction, onClose, onLoginSuccess }: LoginContentProps) {
   const pathname = usePathname()
 
   // 이 컴포넌트는 Modal이 열렸을 때만 마운트되므로(닫히면 Radix가 언마운트) 마운트 시 = 열림 시 전송.
@@ -57,6 +64,7 @@ export function LoginContent({ triggerAction, onClose }: LoginContentProps) {
         source_page: getSourcePage(pathname),
         method: 'mock',
       })
+      onLoginSuccess?.()
       onClose()
       return
     }
