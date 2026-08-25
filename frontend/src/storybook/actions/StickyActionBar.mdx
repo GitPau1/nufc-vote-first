@@ -29,7 +29,7 @@ import * as StickyActionBarStories from './StickyActionBar.stories'
 
 ## 안에 들어가는 버튼
 
-투표 3곳은 [Button](?path=/docs/primitives-button--docs)의 **`variant="default"`(1차 CTA) 1개**를 `className="h-12 w-full"`로 꽉 채워 넣는다. 예측 플로우는 같은 버튼을 모바일에선 `w-full`, 데스크탑에선 `sm:w-[200px]` 고정폭으로 두는 차이만 있다. 버튼 2개를 나란히 두거나 부가 텍스트를 함께 넣는 사용처는 현재 없다 — 새로 그런 형태가 필요하면 이 문서에 형태를 추가하고 나서 쓴다.
+투표 3곳은 [Button](?path=/docs/primitives-button--docs)의 **`variant="default"`(1차 CTA) 1개**를 `size="lg" className="w-full"`로 꽉 채워 넣는다. 높이(48px)는 `size` 토큰이 주는 값이라 `className`에 `h-12`를 직접 박지 않는다 — 그러면 `size=default`의 좌우 패딩(`px-4`)이 남아 토큰과 어긋난다. 예측 플로우는 같은 버튼을 모바일에선 `w-full`, 데스크탑에선 `sm:w-[200px]` 고정폭으로 두는 차이만 있다. 버튼 2개를 나란히 두거나 부가 텍스트를 함께 넣는 사용처는 현재 없다 — 새로 그런 형태가 필요하면 이 문서에 형태를 추가하고 나서 쓴다.
 
 <Canvas of={StickyActionBarStories.RatingStepNext} />
 
