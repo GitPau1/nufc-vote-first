@@ -399,7 +399,7 @@ function MenuSkeleton() {
         <SkeletonBlock className="mt-1 h-[18px] w-64 max-w-full rounded-xs" />
       </div>
 
-      {/* MenuActions: flex flex-col gap-2 + size="lg" justify-start 버튼들(로그인 여부에 따라 2~4개) */}
+      {/* MenuActions: flex flex-col gap-2 + h-12 justify-start 버튼들(로그인 여부에 따라 2~4개) */}
       <div className="flex flex-col gap-2">
         {[0, 1, 2].map(index => (
           <div key={index} className="flex h-12 items-center gap-2 rounded-sm border border-neutral-weak px-4">

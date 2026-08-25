@@ -28,7 +28,7 @@ export function MenuLogoutButton() {
     <Button
       type="button"
       variant="outline"
-      size="lg" className="justify-start text-critical hover:text-critical"
+      className="h-12 justify-start text-critical hover:text-critical"
       onClick={handleLogout}
     >
       <LogOut className="h-4 w-4" />

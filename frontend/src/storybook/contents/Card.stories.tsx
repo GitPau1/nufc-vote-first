@@ -61,7 +61,7 @@ export const ContentOnly: Story = {
           <img
             src="https://placehold.co/44x44/0c2340/41b6e6?text=9"
             alt="알렉산더 이삭"
-            className="h-11 w-11 flex-shrink-0 rounded-pill object-cover"
+            className="h-11 w-11 flex-shrink-0 rounded-full object-cover"
           />
           <div>
             <p className="text-label-1-normal font-bold text-neutral">알렉산더 이삭</p>

@@ -81,7 +81,7 @@ export function LoginContent({ triggerAction, onClose, onLoginSuccess }: LoginCo
   return (
     <>
       <div className="text-center mb-6">
-        <div className="w-14 h-14 rounded-pill bg-brand-weak flex items-center justify-center mx-auto mb-4">
+        <div className="w-14 h-14 rounded-full bg-brand-weak flex items-center justify-center mx-auto mb-4">
           <Lock className="h-6 w-6 text-brand" />
         </div>
         <SheetHeader>
@@ -94,7 +94,7 @@ export function LoginContent({ triggerAction, onClose, onLoginSuccess }: LoginCo
 
       {/* 원탭 로그인 CTA — outline이 아니라 default(브랜드 채움)로 둬서
           "여기를 누르면 바로 로그인된다"는 게 시각적으로 분명하게 드러나야 한다. */}
-      <Button size="lg" className="w-full font-semibold mb-2" onClick={handleLogin}>
+      <Button className="w-full h-12 font-semibold gap-2 mb-2" onClick={handleLogin}>
         {IS_MOCK ? (
           <>
             <span className="text-headline-1">⚡</span>

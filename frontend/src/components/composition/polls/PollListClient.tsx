@@ -17,7 +17,7 @@ type PollTab = 'all' | 'active' | 'scheduled' | 'closed'
 function Spinner() {
   return (
     <div className="flex justify-center py-6">
-      <div className="w-5 h-5 rounded-pill border-2 border-neutral-weak border-t-brand-solid animate-spin" />
+      <div className="w-5 h-5 rounded-full border-2 border-neutral-weak border-t-brand-solid animate-spin" />
     </div>
   )
 }

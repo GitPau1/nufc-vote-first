@@ -89,9 +89,7 @@ test('login CTA uses the filled default button, not the outline/secondary style'
     contentSource.indexOf('닫기')
   )
   assert.doesNotMatch(ctaBlock, /variant="outline"/)
-  // 높이 48px은 이제 className이 아니라 Button의 size 토큰이 준다(button.tsx의 lg: "h-12 px-6").
-  assert.match(ctaBlock, /<Button size="lg" className="w-full/)
-  assert.doesNotMatch(ctaBlock, /className="w-full h-12/)
+  assert.match(ctaBlock, /<Button className="w-full h-12/)
 })
 
 test('Modal shell switches between sheet (mobile) and center (desktop) for responsive by viewport width', () => {

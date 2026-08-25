@@ -185,7 +185,7 @@ export function CommentsSection({
           />
           <Button
             size="icon"
-            className="flex-shrink-0 rounded-pill bg-disabled text-neutral-muted hover:bg-disabled disabled:opacity-100"
+            className="h-10 w-10 flex-shrink-0 rounded-full bg-disabled text-neutral-muted hover:bg-disabled disabled:opacity-100"
             onClick={handleSubmit}
             disabled={!text.trim() || isPending}
           >

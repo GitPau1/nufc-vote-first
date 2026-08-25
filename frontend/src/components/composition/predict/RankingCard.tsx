@@ -81,7 +81,7 @@ function RankRow({ entry }: { entry: RankingEntry }) {
         <RankDelta delta={entry.delta} />
       </span>
 
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-pill bg-disabled text-neutral-subtle">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-disabled text-neutral-subtle">
         {entry.avatarUrl ? (
           <img src={entry.avatarUrl} alt="" className="h-full w-full object-cover" />
         ) : (

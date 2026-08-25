@@ -19,7 +19,7 @@ export function OnboardingForm() {
 
   return (
     <div className="min-h-[calc(100vh-56px)] flex flex-col items-center justify-center px-6 py-12">
-      <div className="w-16 h-16 rounded-pill bg-disabled flex items-center justify-center mb-5 text-title-2 border-2 border-neutral-weak">
+      <div className="w-16 h-16 rounded-full bg-disabled flex items-center justify-center mb-5 text-title-2 border-2 border-neutral-weak">
         🧑
       </div>
 
@@ -45,7 +45,7 @@ export function OnboardingForm() {
           {error && <span className="text-caption-1 text-critical font-medium">{error}</span>}
         </div>
 
-        <Button type="submit" disabled={isPending} size="lg" className="w-full mt-2">
+        <Button type="submit" disabled={isPending} className="w-full h-12 mt-2">
           {isPending ? '저장 중...' : '시작하기 →'}
         </Button>
       </form>

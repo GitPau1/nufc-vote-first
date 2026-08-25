@@ -326,7 +326,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
         )}
 
         {message && <p className="rounded-sm bg-critical-weak px-3 py-2 text-caption-1 font-semibold text-critical">{message}</p>}
-        <Button type="submit" disabled={isPending} size="lg" className="w-full">
+        <Button type="submit" disabled={isPending} className="w-full h-12">
           {isPending ? '생성 중...' : '투표 생성'}
         </Button>
       </form>
@@ -362,7 +362,7 @@ function EmptySelection({ label }: { label: string }) {
 function PlayerSummary({ player }: { player: PollFormPlayer }) {
   return (
     <div className="flex items-center gap-3 rounded-md border border-neutral-weak bg-disabled px-3 py-2">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-pill bg-surface text-caption-1 font-black text-brand">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface text-caption-1 font-black text-brand">
         {player.photo_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={player.photo_url} alt="" className="h-full w-full object-cover" />
