@@ -27,7 +27,7 @@ export async function uploadPollImage(formData: FormData): Promise<{ url?: strin
 
     const { error } = await serviceSupabase.storage
       .from('player-photos')
-      .upload(path, optimized.bytes, { contentType: optimized.contentType, upsert: true })
+      .upload(path, optimized.bytes, { contentType: optimized.contentType, upsert: true, cacheControl: '31536000' })
 
     if (error) return { error: error.message }
 
