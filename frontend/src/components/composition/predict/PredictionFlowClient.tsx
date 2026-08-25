@@ -12,7 +12,7 @@ import { LoginContent } from '@/components/primitives/modal/contents/Login'
 import { PlayerPickContent } from '@/components/primitives/modal/contents/PlayerPick'
 import { PredictionDone } from './PredictionDone'
 import { PlayerPhoto, TeamBadge } from './shared'
-import { StepHero, StepTrack, STEP_META, type StepKey } from './steps'
+import { StepHero, StepTrack, StepTrackVertical, type StepKey } from './steps'
 import { POSITIONS, POSITION_LABEL, type Candidate, type Position } from '@/lib/predictions/candidates'
 import { MAX_SCORE } from '@/lib/predictions/submit'
 import { submitWeekPrediction, type SubmitPredictionResult } from '@/lib/actions/predictions'
@@ -67,10 +67,6 @@ export function PredictionFlowClient({
 }) {
   const router = useLoadingRouter()
   const [step, setStep] = useState<StepKey>('score')
-  /** 도달한 단계 중 가장 먼 것 — 되돌아가도 이미 지나온 단계 카드는 접힌 채로 계속 보여야 해서
-   * 필요하다(C안 카드 접기/펼치기). `step`은 "지금 펼쳐진 카드"만 가리키고, 이 상태가
-   * "몇 번째 카드까지 그렸는지"를 담당한다. */
-  const [maxReachedStep, setMaxReachedStep] = useState<StepKey>('score')
   const [scores, setScores] = useState<Scores>(() =>
     Object.fromEntries(pending.map(match => [match.id, [0, 0] as [number, number]])),
   )
@@ -111,7 +107,6 @@ export function PredictionFlowClient({
   const visibleError = scoreRangeError ?? error
   // 더블 매치위크 = 이번에 제출할 경기가 2개 이상 — 스코어 입력이 경기별로 쌓이므로 안내 문구가 갈린다.
   const isMulti = pending.length > 1
-  const maxReachedIndex = STEP_META.findIndex(s => s.key === maxReachedStep)
   /** 히스토리 가드(AI-004)를 걸지 판단하는 기준 — 스코어를 한 번이라도 건드렸거나(0-0에서
    * 벗어났거나) 픽을 하나라도 골랐으면 참이다. 스코어 쪽은 completeStep의 untouched_score_count와
    * 같은 신호(0-0인 채인지)를 그대로 재사용한다 — 둘 다 "만졌는지"를 값으로만 판단한다. */
@@ -186,11 +181,6 @@ export function PredictionFlowClient({
         : { used_copy_picks: copyUsedRef.current }),
     })
     setStep(next)
-    // 카드 접기/펼치기(C안)에서 "가장 멀리 도달한 단계"를 갱신한다 — 되돌아가서 다시 완료해도
-    // (이미 더 먼 단계에 도달했으므로) 줄어들지 않는다.
-    setMaxReachedStep(prev =>
-      STEP_META.findIndex(s => s.key === next) > STEP_META.findIndex(s => s.key === prev) ? next : prev,
-    )
   }
 
   function changeScore(fixtureId: string, side: 0 | 1, delta: number) {
@@ -258,31 +248,6 @@ export function PredictionFlowClient({
     })
   }
 
-  /**
-   * 접힌 카드에 보여줄 "내가 작성한 결과"(C안 카드 접기/펼치기). score는 팀명+스코어,
-   * pick은 고른 선수 이름(포지션 순) — 둘 다 더블 매치위크면 경기별로 한 줄씩.
-   * confirm은 스코어·픽 요약을 또 반복하지 않도록 자기 줄이 없다 — 접힌 확인 카드는 이름만 보인다.
-   */
-  function stepSummaryLines(key: StepKey): string[] {
-    if (key === 'score') {
-      return pending.map((match, i) => {
-        const [our, their] = scores[match.id] ?? [0, 0]
-        const prefix = isMulti ? `경기 ${i + 1} · ` : ''
-        return `${prefix}${NUFC_LABEL} ${our} : ${their} ${match.opponent}`
-      })
-    }
-    if (key === 'pick') {
-      return pending.map((match, i) => {
-        const prefix = isMulti ? `경기 ${i + 1} · ` : ''
-        const names = POSITIONS.map(position => picks[match.id]?.[position]?.name)
-          .filter(Boolean)
-          .join(' · ')
-        return `${prefix}${names}`
-      })
-    }
-    return []
-  }
-
   if (submitted) {
     return <PredictionDone week={week} prediction={submitted} candidates={candidates} />
   }
@@ -297,46 +262,73 @@ export function PredictionFlowClient({
         ‹ 목록으로
       </button>
 
-      {/* 좌측 세로 사이드바(StepTrackVertical)를 걷어내고 모바일·데스크탑 공통 단일 컬럼으로
-          바꾼 뒤(2026-08-25 재지시) 상단 가로 트랙만 전체 진행률 표시로 남는다. */}
-      <div className="mb-7">
-        <StepTrack current={step} />
-      </div>
+      <div className="sm:grid sm:grid-cols-[200px_1fr] sm:gap-x-10">
+        <div className="mb-7 sm:mb-0">
+          <div className="sm:hidden">
+            <StepTrack current={step} />
+            <StepHero current={step} multi={isMulti} />
+          </div>
+          <div className="hidden sm:block">
+            <StepTrackVertical current={step} multi={isMulti} />
+          </div>
+        </div>
 
-      <div className="flex flex-col gap-4">
-        {STEP_META.map((meta, index) => {
-          // 도달한 단계까지만 카드를 그린다(C안) — 아직 안 간 단계는 위 트랙이 진행률로만 보여준다.
-          if (index > maxReachedIndex) return null
-          const isCurrent = meta.key === step
+        <div>
+          {step !== 'confirm' && (
+          <div className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
+            {step === 'score' && (
+              // 더블 매치위크는 경기별 입력 블록이 세로로 쌓인다 — 픽은 주 단위라 다음 스텝에서 한 번만.
+              <div className="flex flex-col gap-7">
+                {pending.map((match, i) => (
+                  <div key={match.id}>
+                    {isMulti && <MatchLabel index={i} opponent={match.opponent} />}
+                    <MatchMeta weekNo={week.weekNo} match={match} />
+                    <div className="mt-5 flex items-center justify-center gap-5">
+                      <TeamColumn logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
+                      <ScoreStepper
+                        value={scores[match.id]?.[0] ?? 0}
+                        onChange={delta => changeScore(match.id, 0, delta)}
+                      />
+                      <ScoreStepper
+                        value={scores[match.id]?.[1] ?? 0}
+                        onChange={delta => changeScore(match.id, 1, delta)}
+                      />
+                      <TeamColumn logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
-          if (!isCurrent) {
-            // 접힌 카드 — 전체가 탭 타겟이고, 그 단계에서 내가 작성한 결과를 보여준다.
-            return (
-              <button
-                key={meta.key}
-                type="button"
-                onClick={() => setStep(meta.key)}
-                className="w-full rounded-lg border border-neutral-weak bg-surface px-4 py-5 text-left transition-colors duration-micro hover:border-neutral-strong"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-body-2-normal font-bold">{meta.name}</span>
-                  <span aria-hidden className="text-neutral-muted">⌄</span>
+            {step === 'pick' &&
+              // 경기마다 포지션 3장씩 따로 고른다. 두 번째 경기부터는 첫 경기 픽을 그대로 복사할 수 있다.
+              pending.map((match, i) => (
+                <div key={match.id} className={cn(i > 0 && 'mt-7')}>
+                  {isMulti && (
+                    <div className="mb-2 flex items-center justify-between">
+                      <MatchLabel index={i} opponent={match.opponent} />
+                      {i > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => copyPicks(pending[0].id, match.id)}
+                          className="text-label-2 font-bold text-brand"
+                        >
+                          그대로 적용
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  <PositionRow
+                    picks={picks[match.id] ?? {}}
+                    onOpen={position => setPickTarget({ matchId: match.id, position })}
+                  />
                 </div>
-                <div className="mt-2 flex flex-col gap-1">
-                  {stepSummaryLines(meta.key).map((line, i) => (
-                    <p key={i} className="text-label-2 text-neutral-muted">
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              </button>
-            )
-          }
+              ))}
+          </div>
+          )}
 
-          if (meta.key === 'confirm') {
-            return (
-              <div key={meta.key}>
-                <StepHero current={meta.key} multi={isMulti} className="mb-5" />
+          {step === 'confirm' && (
+              <>
                 {/* 더블 매치위크는 경기마다 별도 카드로 나눈다(퍼블리싱 확인 — 한 컨테이너에 합치지 않음).
                     선수 픽은 주 단위 1세트라 마지막 카드 아래에 한 번만 붙는다. */}
                 {pending.map((match, i) => (
@@ -366,102 +358,46 @@ export function PredictionFlowClient({
                 <p className="mt-4 text-center text-caption-1 text-neutral-muted">
                   제출한 예측은 수정할 수 없어요
                 </p>
-              </div>
-            )
-          }
+              </>
+          )}
 
-          return (
-            <div key={meta.key} className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
-              <StepHero current={meta.key} multi={isMulti} className="mb-5" />
+          {visibleError && (
+            <p role="alert" className="mt-3 text-center text-label-2 font-bold text-critical">
+              {visibleError}
+            </p>
+          )}
 
-              {meta.key === 'score' && (
-                // 더블 매치위크는 경기별 입력 블록이 세로로 쌓인다 — 픽은 주 단위라 다음 스텝에서 한 번만.
-                <div className="flex flex-col gap-7">
-                  {pending.map((match, i) => (
-                    <div key={match.id}>
-                      {isMulti && <MatchLabel index={i} opponent={match.opponent} />}
-                      <MatchMeta weekNo={week.weekNo} match={match} />
-                      <div className="mt-5 flex items-center justify-center gap-5">
-                        <TeamColumn logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
-                        <ScoreStepper
-                          value={scores[match.id]?.[0] ?? 0}
-                          onChange={delta => changeScore(match.id, 0, delta)}
-                        />
-                        <ScoreStepper
-                          value={scores[match.id]?.[1] ?? 0}
-                          onChange={delta => changeScore(match.id, 1, delta)}
-                        />
-                        <TeamColumn logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {meta.key === 'pick' &&
-                // 경기마다 포지션 3장씩 따로 고른다. 두 번째 경기부터는 첫 경기 픽을 그대로 복사할 수 있다.
-                pending.map((match, i) => (
-                  <div key={match.id} className={cn(i > 0 && 'mt-7')}>
-                    {isMulti && (
-                      <div className="mb-2 flex items-center justify-between">
-                        <MatchLabel index={i} opponent={match.opponent} />
-                        {i > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => copyPicks(pending[0].id, match.id)}
-                            className="text-label-2 font-bold text-brand"
-                          >
-                            그대로 적용
-                          </button>
-                        )}
-                      </div>
-                    )}
-                    <PositionRow
-                      picks={picks[match.id] ?? {}}
-                      onOpen={position => setPickTarget({ matchId: match.id, position })}
-                    />
-                  </div>
-                ))}
-            </div>
-          )
-        })}
+          {/* 하단 제출 바는 투표 화면과 같은 StickyActionBar를 쓴다 — 예측 플로우는 폭이 더 좁고
+              (모바일 shell / 데스크탑 560) 데스크탑에서 버튼을 가운데 고정폭으로 두는 차이만 override. */}
+          <StickyActionBar className="max-w-shell border-neutral-weak sm:mt-8 sm:flex sm:max-w-[560px] sm:justify-center sm:pb-0">
+            {step === 'score' && (
+              <Button
+                size="lg"
+                className="w-full sm:w-[200px]"
+                disabled={!!scoreRangeError}
+                onClick={() => completeStep('score', 'pick')}
+              >
+                다음
+              </Button>
+            )}
+            {step === 'pick' && (
+              <Button size="lg" className="w-full sm:w-[200px]" disabled={!allPicked} onClick={() => completeStep('pick', 'confirm')}>
+                다음
+              </Button>
+            )}
+            {step === 'confirm' && (
+              <Button
+                size="lg"
+                className="w-full sm:w-[200px]"
+                disabled={submitting || !!scoreRangeError}
+                onClick={() => setSubmitConfirmOpen(true)}
+              >
+                {submitting ? '제출 중…' : '이대로 제출하기'}
+              </Button>
+            )}
+          </StickyActionBar>
+        </div>
       </div>
-
-      {visibleError && (
-        <p role="alert" className="mt-3 text-center text-label-2 font-bold text-critical">
-          {visibleError}
-        </p>
-      )}
-
-      {/* 하단 제출 바는 투표 화면과 같은 StickyActionBar를 쓴다 — 예측 플로우는 폭이 더 좁고
-          (모바일 shell / 데스크탑 560) 데스크탑에서 버튼을 가운데 고정폭으로 두는 차이만 override. */}
-      <StickyActionBar className="max-w-shell border-neutral-weak sm:mt-8 sm:flex sm:max-w-[560px] sm:justify-center sm:pb-0">
-        {step === 'score' && (
-          <Button
-            size="lg"
-            className="w-full sm:w-[200px]"
-            disabled={!!scoreRangeError}
-            onClick={() => completeStep('score', 'pick')}
-          >
-            다음
-          </Button>
-        )}
-        {step === 'pick' && (
-          <Button size="lg" className="w-full sm:w-[200px]" disabled={!allPicked} onClick={() => completeStep('pick', 'confirm')}>
-            다음
-          </Button>
-        )}
-        {step === 'confirm' && (
-          <Button
-            size="lg"
-            className="w-full sm:w-[200px]"
-            disabled={submitting || !!scoreRangeError}
-            onClick={() => setSubmitConfirmOpen(true)}
-          >
-            {submitting ? '제출 중…' : '이대로 제출하기'}
-          </Button>
-        )}
-      </StickyActionBar>
 
       {/* 껍데기가 아니라 목록만 스크롤한다(타이틀·드래그 핸들 고정) — 세로 flex로 높이를 나눠주고
           스크롤은 PlayerPickContent 내부 목록이 맡는다. */}
