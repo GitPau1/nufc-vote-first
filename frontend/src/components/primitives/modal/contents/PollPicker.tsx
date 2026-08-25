@@ -135,7 +135,7 @@ export function PollPickerContent({
                       onClick={() => onToggle(player.id)}
                       className={`flex w-full items-center gap-3 rounded-sm border px-3 py-2 text-left transition-opacity hover:opacity-70 ${selected ? 'border-brand-solid bg-brand-weak' : 'border-neutral-weak bg-surface'}`}
                     >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-disabled text-caption-1 font-black text-brand">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-pill bg-disabled text-caption-1 font-black text-brand">
                         {player.photo_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={player.photo_url} alt="" className="h-full w-full object-cover" />
@@ -147,7 +147,7 @@ export function PollPickerContent({
                         <p className="truncate text-label-2 font-black text-neutral">{player.name}</p>
                         <p className="mt-0.5 text-caption-2 font-semibold text-neutral-muted">{getPlayerMeta(player)}</p>
                       </div>
-                      <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${selected ? 'border-brand-solid bg-brand-solid text-on-solid' : 'border-neutral-weak text-transparent'}`}>
+                      <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-pill border ${selected ? 'border-brand-solid bg-brand-solid text-on-solid' : 'border-neutral-weak text-transparent'}`}>
                         <Check className="h-3.5 w-3.5" />
                       </span>
                     </button>
@@ -160,7 +160,7 @@ export function PollPickerContent({
       </div>
       {mode === 'multiple' && (
         <div className="border-t border-neutral-weak bg-surface px-4 py-3">
-          <Button type="button" onClick={onDone} className="w-full h-12">
+          <Button type="button" onClick={onDone} size="lg" className="w-full">
             {selectedIds.length}명 선택 완료
           </Button>
         </div>

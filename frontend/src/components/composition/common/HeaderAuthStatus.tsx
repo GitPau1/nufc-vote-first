@@ -26,7 +26,7 @@ export function HeaderAuthStatus({ auth: initialAuth }: { auth?: HeaderAuth | nu
   }, [initialAuth])
 
   if (auth === undefined) {
-    return <div className="h-8 w-8 rounded-full bg-disabled" aria-hidden="true" />
+    return <div className="h-8 w-8 rounded-pill bg-disabled" aria-hidden="true" />
   }
 
   if (!auth) return <LoginButton />

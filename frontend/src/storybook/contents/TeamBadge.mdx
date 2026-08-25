@@ -60,7 +60,7 @@ fixtures 데이터 자체가 FotMob 동기화 결과라 엠블럼도 같은 CDN�
 ## 알려진 제약
 
 - **`MatchdayHero`에 같은 이름의 다른 구현이 있다.** `components/composition/predict/MatchdayHero.tsx:70`의 로컬 `TeamBadge`는 `id`/`name`/`align`을 받고 URL도 파일 안의 `crestUrl(teamId)`로 따로 만든다(`teamLogoUrl`과 문자열은 같다). 크기는 `h-11 w-11` 고정이고 **폴백이 없어서 로드 실패 시 깨진 이미지가 남는다.** 이름만 같은 별개 컴포넌트이므로 [MatchdayHero](?path=/docs/composition-predict-matchdayhero--docs)를 고칠 때 이 문서의 동작을 가정하면 안 된다.
-- **같은 파일의 [PlayerPhoto](?path=/docs/composition-predict-playerphoto--docs)는 [Avatar](?path=/docs/primitives-avatar--docs)로 옮겼는데 이쪽은 아직 생 `<img>` + 직접 `onError`다.** 그대로 옮길 수 없어서다 — `Avatar` 루트가 `rounded-full overflow-hidden`이라 세로/가로가 긴 엠블럼이 원형으로 잘린다. 지금은 `object-contain`으로 비율을 유지한다.
+- **같은 파일의 [PlayerPhoto](?path=/docs/composition-predict-playerphoto--docs)는 [Avatar](?path=/docs/primitives-avatar--docs)로 옮겼는데 이쪽은 아직 생 `<img>` + 직접 `onError`다.** 그대로 옮길 수 없어서다 — `Avatar` 루트가 `rounded-pill overflow-hidden`이라 세로/가로가 긴 엠블럼이 원형으로 잘린다. 지금은 `object-contain`으로 비율을 유지한다.
 - 폴백 글자 크기는 `text-label-1-normal` 고정이라 `size`를 키워도 함께 커지지 않는다(위 Sizes 참고).
 - `next/image`가 아니라 `<img>`를 직접 쓴다(`alt=""`, eslint-disable 주석 포함). FotMob CDN은 `next.config.mjs`의 이미지 도메인 설정 대상이 아니다.
 - 폴백 마크업 중복은 정리됐다 — 예측 화면 세 곳이 복제하던 실루엣 원은 모두 `<PlayerPhoto url={null} size={40} />`로 모였고, `Silhouette`은 `PlayerPhoto` 폴백 전용이 됐다. 남은 중복은 위의 `MatchdayHero` 로컬 `TeamBadge` 하나뿐이다.

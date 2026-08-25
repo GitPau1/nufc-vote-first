@@ -133,7 +133,7 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
                               <Button
                                 type="button"
                                 variant="outline"
-                                className="h-9 w-full rounded-lg text-label-2 font-bold"
+                                size="sm" className="w-full"
                                 onClick={() => setExpandedPlayerId(result.player.id)}
                               >
                                 전체 코멘트 보기

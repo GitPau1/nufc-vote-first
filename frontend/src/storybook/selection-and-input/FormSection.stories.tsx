@@ -50,7 +50,7 @@ export const PickerSelected: Story = {
         </button>
       </div>
       <div className="flex items-center gap-3 rounded-md border border-neutral-weak bg-disabled px-3 py-2">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface text-caption-1 font-black text-brand">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-pill bg-surface text-caption-1 font-black text-brand">
           손흥
         </div>
         <div className="min-w-0">

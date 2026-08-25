@@ -34,21 +34,21 @@ export default async function AdminPage() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <Button asChild className="h-12 justify-start">
+          <Button asChild size="lg" className="justify-start">
             <Link href="/polls/create">
               <PlusCircle className="h-4 w-4" />
               투표 만들기
             </Link>
           </Button>
 
-          <Button asChild variant="outline" className="h-12 justify-start">
+          <Button asChild variant="outline" size="lg" className="justify-start">
             <Link href="/polls">
               <BarChart3 className="h-4 w-4" />
               투표 목록 보기
             </Link>
           </Button>
 
-          <Button asChild variant="outline" className="h-12 justify-start">
+          <Button asChild variant="outline" size="lg" className="justify-start">
             <Link href="/admin/ratings">
               <Star className="h-4 w-4" />
               경기별 선수 평점 입력

@@ -26,7 +26,7 @@ export function MenuActions({ isLoggedIn, isAdmin }: MenuActionsProps) {
   return (
     <>
       <div className="flex flex-col gap-2">
-        <Button asChild variant="outline" className="h-12 justify-start">
+        <Button asChild variant="outline" size="lg" className="justify-start">
           <Link href="/my/feedback">
             <MessageSquareText className="h-4 w-4" />
             피드백 남기기
@@ -35,7 +35,7 @@ export function MenuActions({ isLoggedIn, isAdmin }: MenuActionsProps) {
 
         {isLoggedIn ? (
           <>
-            <Button asChild className="h-12 justify-start">
+            <Button asChild size="lg" className="justify-start">
               <Link href="/my">
                 <UserRound className="h-4 w-4" />
                 내 정보
@@ -43,7 +43,7 @@ export function MenuActions({ isLoggedIn, isAdmin }: MenuActionsProps) {
             </Button>
 
             {isAdmin && (
-              <Button asChild variant="secondary" className="h-12 justify-start">
+              <Button asChild variant="secondary" size="lg" className="justify-start">
                 <Link href="/admin">
                   <ShieldCheck className="h-4 w-4" />
                   관리자 페이지
@@ -56,7 +56,7 @@ export function MenuActions({ isLoggedIn, isAdmin }: MenuActionsProps) {
         ) : (
           <Button
             type="button"
-            className="h-12 justify-start"
+            size="lg" className="justify-start"
             onClick={() => setLoginOpen(true)}
           >
             <LogIn className="h-4 w-4" />

@@ -90,7 +90,7 @@ const SheetContent = React.forwardRef<
       {...props}
     >
       {showDragHandle && (
-        <div className="mx-auto mb-6 h-1.5 w-10 rounded-full bg-disabled" />
+        <div className="mx-auto mb-6 h-1.5 w-10 rounded-pill bg-disabled" />
       )}
       {children}
       {showCloseButton && (

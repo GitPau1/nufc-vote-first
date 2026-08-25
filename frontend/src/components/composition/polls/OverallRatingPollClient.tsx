@@ -168,7 +168,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
                 type="button"
                 onClick={() => index <= stepIndex && setStepIndex(index)}
                 className={cn(
-                  'rounded-full px-3 py-1.5 text-label-2 font-bold whitespace-nowrap',
+                  'rounded-pill px-3 py-1.5 text-label-2 font-bold whitespace-nowrap',
                   index === stepIndex ? 'bg-brand-solid text-white' : 'bg-disabled text-neutral-muted'
                 )}
               >
@@ -247,11 +247,11 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
 
       <StickyActionBar>
         {isLastStep ? (
-          <Button className="h-12 w-full rounded-lg text-body-2-normal font-bold" disabled={isPending || completedCount !== totalRequired} onClick={requestSubmit}>
+          <Button size="lg" className="w-full" disabled={isPending || completedCount !== totalRequired} onClick={requestSubmit}>
             {isPending ? <><Loader2 className="h-4 w-4 animate-spin" />제출 중...</> : '전체 평가 제출'}
           </Button>
         ) : (
-          <Button className="h-12 w-full rounded-lg text-body-2-normal font-bold" disabled={!currentComplete} onClick={handleNext}>
+          <Button size="lg" className="w-full" disabled={!currentComplete} onClick={handleNext}>
             다음 포지션 평가
           </Button>
         )}

@@ -39,6 +39,9 @@ test('menu page applies the mobile layout foundation', () => {
 
   assert.match(file, /bg-page px-5 pt-6 pb-24/)
   assert.match(actions, /flex flex-col gap-2/)
-  assert.match(actions, /className="h-12 justify-start"/)
+  // 높이 48px은 이제 className이 아니라 Button의 size 토큰이 준다(button.tsx의 lg: "h-12 px-6").
+  // h-12를 직접 박으면 size=default의 px-4가 남아 좌우 패딩이 토큰과 어긋난다.
+  assert.match(actions, /size="lg" className="justify-start"/)
+  assert.doesNotMatch(actions, /className="h-12 justify-start"/)
   assert.doesNotMatch(file, /bg-\[#f4f4f5\]/)
 })

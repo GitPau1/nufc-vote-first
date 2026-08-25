@@ -158,7 +158,7 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
                     src={poll.player.photo_url
                       ?? `https://placehold.co/44x44/0c2340/41b6e6?text=${poll.player.squad_number}`}
                     alt={poll.player.name}
-                    className="w-11 h-11 rounded-full object-cover flex-shrink-0"
+                    className="w-11 h-11 rounded-pill object-cover flex-shrink-0"
                   />
                   <div>
                     <p className="text-label-1-normal font-bold text-neutral">{poll.player.name}</p>
@@ -178,7 +178,8 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
       {/* 하단 고정 제출 버튼 */}
       <StickyActionBar>
         <Button
-          className="w-full h-12 text-body-2-normal font-bold"
+          size="lg"
+          className="w-full"
           disabled={!selectedId || isPending}
           onClick={handleSubmitClick}
         >
