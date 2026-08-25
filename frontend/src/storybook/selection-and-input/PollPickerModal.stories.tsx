@@ -11,7 +11,9 @@ const PLACEHOLDER_PHOTO = 'https://placehold.co/88x88/2a2f36/8a929c?text=%20'
 
 // 전체높이 시트 클래스 — 껍데기(Modal)는 높이를 정하지 않으므로 호출부가 준다.
 // 실사용(UserPollCreateForm)의 Modal className을 그대로 옮겼다.
-const PICKER_MODAL_CLASS = 'flex h-[82vh] max-h-[82vh] flex-col overflow-hidden p-0'
+// px-0은 검색블록 border-b·목록 행이 시트 폭 끝까지 닿게 하려는 것이고, pt-5는 껍데기 드래그 핸들의
+// 상단 여백이다(`p-0`으로 통째로 지우면 핸들이 시트 최상단에 붙는다).
+const PICKER_MODAL_CLASS = 'flex h-[82vh] max-h-[82vh] flex-col overflow-hidden px-0 pb-0 pt-5'
 
 function mockPlayer(overrides: Partial<PollFormPlayer>): PollFormPlayer {
   return {

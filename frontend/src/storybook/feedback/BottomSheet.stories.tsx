@@ -41,12 +41,12 @@ export const Default: Story = {
   render: () => <Demo form="responsive" />,
 }
 
-/** 항상 바텀시트(드래그 핸들 포함). */
+/** 항상 바텀시트 — 닫기 어포던스는 상단 드래그 핸들이고, 우측 상단 X는 뜨지 않는다. */
 export const Sheet: Story = {
   render: () => <Demo form="sheet" />,
 }
 
-/** 항상 중앙 모달 — 로그인처럼 모바일에서도 중앙으로 띄울 때. */
+/** 항상 중앙 모달 — 로그인처럼 모바일에서도 중앙으로 띄울 때. 이 상태에서만 우측 상단 X가 있다. */
 export const CenterDefault: Story = {
   render: () => <Demo form="default" />,
 }

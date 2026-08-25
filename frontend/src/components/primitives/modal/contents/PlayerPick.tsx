@@ -37,8 +37,11 @@ interface PlayerPickContentProps {
 
 /**
  * 포지션별 선수 선택 모달의 **내용**(타이틀 + 목록). 껍데기(Modal)는 호출부가 씌운다.
- * 목록 스크롤 높이는 껍데기 골격이 정하지 않으므로 호출부에서 Modal의 className으로 주입한다
- * (`max-h-[78vh] overflow-y-auto hide-scrollbar sm:max-h-[80vh]`).
+ *
+ * 스크롤은 **목록 영역만** 한다 — 타이틀(과 시트의 드래그 핸들)은 제자리에 고정된다.
+ * 그래서 껍데기 쪽 높이 제한은 `overflow-y-auto`가 아니라 세로 flex + `overflow-hidden`으로 주입한다
+ * (`flex max-h-[78vh] flex-col overflow-hidden sm:max-h-[80vh]`, PollPicker와 같은 구조).
+ * 껍데기가 통째로 스크롤되면 목록을 내려볼 때 타이틀·핸들까지 화면 밖으로 밀려 올라간다.
  */
 export function PlayerPickContent({
   positionLabel,
@@ -48,24 +51,28 @@ export function PlayerPickContent({
 }: PlayerPickContentProps) {
   return (
     <>
-      <SheetTitle className="mb-3 text-headline-2 font-extrabold text-neutral">{positionLabel} 선택</SheetTitle>
+      <SheetTitle className="mb-3 shrink-0 text-headline-2 font-extrabold text-neutral">{positionLabel} 선택</SheetTitle>
 
-      {players.length === 0 ? (
-        <p className="py-8 text-center text-caption-1 text-neutral-muted">
-          선택할 수 있는 선수가 없어요
-        </p>
-      ) : (
-        <div className="flex flex-col gap-2">
-          {players.map(player => (
-            <PlayerPickRow
-              key={player.id}
-              player={player}
-              selected={player.id === selectedPlayerId}
-              onSelect={() => onSelect(player)}
-            />
-          ))}
-        </div>
-      )}
+      {/* 스크롤 영역 — 타이틀·드래그 핸들은 밖에 두어 고정된다. min-h-0이 없으면
+          flex 항목의 min-content 하한 때문에 목록이 줄지 않고 시트가 넘친다. */}
+      <div className="min-h-0 flex-1 overflow-y-auto hide-scrollbar">
+        {players.length === 0 ? (
+          <p className="py-8 text-center text-caption-1 text-neutral-muted">
+            선택할 수 있는 선수가 없어요
+          </p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {players.map(player => (
+              <PlayerPickRow
+                key={player.id}
+                player={player}
+                selected={player.id === selectedPlayerId}
+                onSelect={() => onSelect(player)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </>
   )
 }

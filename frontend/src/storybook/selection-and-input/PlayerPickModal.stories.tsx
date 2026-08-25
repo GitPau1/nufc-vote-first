@@ -10,7 +10,8 @@ import { PlayerPickContent, type PlayerPickCandidate } from '@/components/primit
 const PLACEHOLDER_PHOTO = 'https://placehold.co/88x88/2a2f36/8a929c?text=%20'
 
 // 목록 스크롤 높이는 껍데기가 정하지 않으므로 호출부에서 Modal className으로 준다(실사용과 동일).
-const PICK_MODAL_CLASS = 'max-h-[78vh] overflow-y-auto hide-scrollbar sm:max-h-[80vh]'
+// 세로 flex + overflow-hidden — 스크롤은 content 내부 목록만 하고 타이틀·드래그 핸들은 고정된다.
+const PICK_MODAL_CLASS = 'flex max-h-[78vh] flex-col overflow-hidden sm:max-h-[80vh]'
 
 function mockCandidate(overrides: Partial<PlayerPickCandidate>): PlayerPickCandidate {
   return {
