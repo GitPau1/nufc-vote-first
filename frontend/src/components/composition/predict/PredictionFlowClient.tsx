@@ -514,11 +514,16 @@ function ConfirmTeam({ logoUrl, name }: { logoUrl: string | null; name: string }
  * "경기 통찰력" — 뉴캐슬 최근 5경기에서 뽑은 사실 한 문장(lib/predictions/insight).
  * 스텝 트랙과 같은 사이드바 열에 살고, 스코어를 정하는 동안에만 뜬다.
  * 상대팀 폼은 DB에 없어서(뉴캐슬 경기만 동기화) 문장도 뉴캐슬 얘기만 한다.
+ *
+ * 색은 magic 인텐트다 — 이 리포에서 magic을 처음 쓰는 자리이고, "AI가 만든 것"을 가리키는
+ * 용도로 배정했다. positive(초록)를 쓰지 않는 이유는 문장이 좋은 소식만 담지 않기 때문이고
+ * ("4경기 연속 무승"도 나온다), brand(파랑)를 쓰지 않는 이유는 같은 화면의 제출 버튼·단계
+ * 트랙이 이미 브랜드색이라 카드가 묻히기 때문이다.
  */
 function MatchInsight({ text }: { text: string }) {
   return (
-    <div className="mt-5 rounded-lg bg-positive-weak px-4 py-3.5 sm:mt-7">
-      <p className="flex items-center gap-1.5 text-label-2 font-bold text-positive">
+    <div className="mt-5 rounded-lg bg-magic-weak px-4 py-3.5 sm:mt-7">
+      <p className="flex items-center gap-1.5 text-label-2 font-bold text-magic">
         <Sparkles aria-hidden className="h-4 w-4" />
         경기 통찰력
       </p>
