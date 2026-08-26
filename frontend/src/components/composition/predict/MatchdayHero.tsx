@@ -20,6 +20,8 @@ import type { MatchdayFixture, MatchdayRatedPlayer, MatchdayPositionLeader } fro
  */
 export type { MatchdayFixture }
 
+// 시각까지 찍으므로 timeZone을 빼면 서버(UTC)와 브라우저(KST)가 9시간 어긋나 매번 예외 없이
+// hydration mismatch가 난다. 아래 useCountdown이 막아둔 것과 같은 종류의 문제다.
 function formatKickoff(iso: string) {
   return new Date(iso).toLocaleString('ko-KR', {
     month: 'long',
@@ -27,6 +29,7 @@ function formatKickoff(iso: string) {
     weekday: 'short',
     hour: 'numeric',
     minute: '2-digit',
+    timeZone: 'Asia/Seoul',
   })
 }
 

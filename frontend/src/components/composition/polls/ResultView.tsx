@@ -40,6 +40,7 @@ export function formatPollDate(dateStr?: string | null): string | null {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+    timeZone: 'Asia/Seoul',
   }).format(new Date(dateStr))
 }
 
