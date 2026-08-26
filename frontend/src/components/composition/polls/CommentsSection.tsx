@@ -35,7 +35,7 @@ function formatRelative(dateStr: string): string {
   if (h < 24)    return `${h}시간 전`
   const d = Math.floor(h / 24)
   if (d < 30)    return `${d}일 전`
-  return new Date(dateStr).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
+  return new Date(dateStr).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', timeZone: 'Asia/Seoul' })
 }
 
 type LocalComment = CommentItem & { _local?: boolean }

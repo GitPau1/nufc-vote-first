@@ -10,6 +10,7 @@ function formatDate(dateStr: string): string {
   return new Intl.DateTimeFormat('ko-KR', {
     month: 'long',
     day: 'numeric',
+    timeZone: 'Asia/Seoul',
   }).format(new Date(dateStr))
 }
 

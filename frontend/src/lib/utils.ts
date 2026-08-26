@@ -51,9 +51,17 @@ export function formatScheduled(scheduledAt: string): string {
   return days >= 1 ? `D-${days} 공개 예정` : '오늘 공개 예정'
 }
 
-/** 날짜 → "YYYY.MM.DD" */
+/**
+ * 날짜 → "YYYY.MM.DD"
+ *
+ * `timeZone`을 빼면 서버(Vercel 런타임 = UTC)와 브라우저(사용자 로컬 = 보통 KST)가 서로 다른
+ * 문자열을 만들어 hydration mismatch(React #425)가 나고, root 전체가 클라이언트 렌더로
+ * 넘어간다(#423). UTC 15:00 이후 생성분은 날짜까지 하루 밀려 표시 자체가 틀린다.
+ * 한국어 전용 서비스라 브라우저 로컬 추종이 아니라 KST 고정이 맞다 —
+ * 이 파일의 다른 날짜 포맷터도 전부 같은 이유로 KST를 명시한다.
+ */
 export function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('ko-KR', {
-    year: 'numeric', month: '2-digit', day: '2-digit',
+    year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Seoul',
   }).replace(/\. /g, '.').replace(/\.$/, '')
 }

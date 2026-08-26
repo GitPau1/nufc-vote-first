@@ -21,7 +21,7 @@ interface MyPageClientProps {
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('ko-KR', {
-    year: 'numeric', month: 'long', day: 'numeric',
+    year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Seoul',
   })
 }
 
