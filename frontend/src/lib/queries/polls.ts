@@ -417,7 +417,14 @@ export async function getPollById(id: string): Promise<PollDetail | null> {
 
 export async function getVoteCounts(pollId: string): Promise<VoteCountMap> {
   if (IS_MOCK) return mockGetVoteCounts(pollId)
-  const supabase = await createClient()
+
+  // votes는 본인 행만 RLS로 열려 있어(votes: select own) 사용자 세션 클라이언트로는
+  // 집계가 본인 표만 세게 된다. 선택지별 전체 집계는 service_role로 서버에서만 읽는다.
+  const { createClient: createServiceClient } = await import('@supabase/supabase-js')
+  const supabase = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  )
 
   // 행을 다 끌어와 JS로 세면 PostgREST db-max-rows(1,000)에 조용히 잘린다 — 에러 없이 틀린 숫자가 나온다.
   // DB가 세서 숫자만 받는다. votes↔poll_options FK가 두 개(option_id / option_matches_poll)라 힌트가 필요하다.
