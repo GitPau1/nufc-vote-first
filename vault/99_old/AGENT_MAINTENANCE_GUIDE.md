@@ -49,6 +49,7 @@ DB나 Supabase 연동을 건드릴 때:
 - `frontend/src/types/database.ts`는 수동 관리라 실제 DB와 drift가 생기기 쉽습니다.
 - `players.squad_status`, `polls.thumbnail_url` 관련 fallback query가 있어 스키마 불일치가 숨겨질 수 있습니다.
 - `player-photos` Storage bucket은 `20260529_public_profiles_storage_vote_guards.sql`에서 public bucket으로 생성/보정합니다.
+- **Storage에 파일을 대시보드/스크립트로 직접 올리면 `Cache-Control`이 빠지거나 잘못 들어갑니다.** 코드 경로(`lib/actions/images.ts:30`)는 `cacheControl: '31536000'`을 붙이지만, `team-logos/*.png`는 수동 업로드라 헤더값이 `max-age=` 없는 `31536000`(무효 → 브라우저가 캐시 안 함)으로 들어가 있었습니다(2026-08-26에 32개 일괄 수정). 수동 업로드 시 `cache-control: max-age=31536000`을 직접 지정하고, 어긋나면 `node --env-file=frontend/.env.local scripts/fix-storage-cache-control.mjs`(기본 dry-run, `--apply`로 반영)로 정리합니다.
 - `club_status`, `player_season_stats`의 DB write policy는 넓게 열려 있습니다.
 - 댓글 작성자 표시는 `public_profiles`를 사용해야 합니다. `users` 전체 공개로 해결하지 않습니다.
 - `votes`는 `20260529_public_profiles_storage_vote_guards.sql` 이후 option-poll 복합 FK로 보강됩니다.
