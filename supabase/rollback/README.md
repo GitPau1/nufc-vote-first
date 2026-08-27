@@ -28,3 +28,4 @@
 | `revert_seasons_anon_write.sql` | Vuln 3 — seasons 익명 쓰기 복원 |
 | `revert_player_season_stats_anon_write.sql` | Vuln 4 — player_season_stats 익명 쓰기 복원 |
 | `revert_predictions_pre_kickoff.sql` | Vuln 5 — predictions 전체 공개 읽기 복원 |
+| `revert_leaderboards_public_profiles.sql` | 후속 수정(20260827130000) — 리더보드 뷰의 public_profiles join을 users join으로 복원. Vuln 1 원복과 세트로만 의미 있음 |
