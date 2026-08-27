@@ -102,6 +102,32 @@ async function getRatingParticipantCounts(
   return new Map(data.map(row => [row.poll_id, row.participant_count]))
 }
 
+/**
+ * 일반 투표(overall_rating 제외)의 poll별 총 투표 수를 센다.
+ *
+ * votes는 본인 행만 RLS로 열려 있어(votes: select own) 목록에 쓰는 anon 세션(createPublicClient)으로
+ * 임베드 집계(votes(count))를 하면 방문자 본인 표만 세어 대부분 0이 나온다. 선택지별 전체 집계
+ * (getVoteCounts)와 같은 이유로 service_role로 서버에서만 읽는다 — 교차조회를 anon에 노출하지 않는다.
+ */
+async function getPollVoteCounts(pollIds: string[]): Promise<Map<string, number>> {
+  if (pollIds.length === 0) return new Map()
+
+  const { createClient: createServiceClient } = await import('@supabase/supabase-js')
+  const supabase = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  )
+
+  const { data, error } = await supabase
+    .from('polls')
+    .select('id, vote_count:votes(count)')
+    .in('id', pollIds) as { data: { id: string; vote_count: { count: number }[] }[] | null; error: AnyRow }
+
+  if (error || !data) return new Map()
+
+  return new Map(data.map(row => [row.id, row.vote_count?.[0]?.count ?? 0]))
+}
+
 function isMissingColumnError(error: AnyRow): boolean {
   const message = String(error?.message ?? '')
   return (
@@ -177,17 +203,17 @@ export async function getPollFormPlayers(): Promise<PollFormPlayer[]> {
   }))
 }
 
+// vote_count는 여기 임베드하지 않는다 — votes RLS(본인 행 전용)로 anon 목록 세션에선 0이 되기 때문.
+// poll별 총계는 mapPollRows에서 service_role로 getPollVoteCounts가 따로 센다.
 const POLL_LIST_SELECT = `
   id, type, title, description, status, thumbnail_url, closes_at, scheduled_at, created_at, player_id, created_by,
   player:players(id, name, position, squad_number, photo_url, is_active, squad_status),
-  poll_options(id, poll_id, label, description, player_id, image_url, display_order, created_at),
-  vote_count:votes(count)
+  poll_options(id, poll_id, label, description, player_id, image_url, display_order, created_at)
 `
 const POLL_LIST_SELECT_FALLBACK = `
   id, type, title, description, status, closes_at, scheduled_at, created_at, player_id, created_by,
   player:players(id, name, position, squad_number, photo_url, is_active),
-  poll_options(id, poll_id, label, player_id, display_order, created_at),
-  vote_count:votes(count)
+  poll_options(id, poll_id, label, player_id, display_order, created_at)
 `
 
 /** poll row → PollListItem 매핑. creator_name·overall_rating 참여자 수 조회까지 여기서 같이 한다. */
@@ -199,9 +225,13 @@ async function mapPollRows(
   const overallRatingPollIds = rows
     .filter((row: AnyRow) => row.type === 'overall_rating')
     .map((row: AnyRow) => row.id as string)
-  const [creatorNames, ratingParticipantCounts] = await Promise.all([
+  const regularPollIds = rows
+    .filter((row: AnyRow) => row.type !== 'overall_rating')
+    .map((row: AnyRow) => row.id as string)
+  const [creatorNames, ratingParticipantCounts, regularVoteCounts] = await Promise.all([
     getCreatorNamesById(rows.map((row: AnyRow) => row.created_by as string)),
     getRatingParticipantCounts(supabase, overallRatingPollIds),
+    getPollVoteCounts(regularPollIds),
   ])
 
   return rows.map((row: AnyRow) => ({
@@ -225,7 +255,7 @@ async function mapPollRows(
     poll_options: (row.poll_options as PollOptionRow[]) ?? [],
     vote_count: row.type === 'overall_rating'
       ? ratingParticipantCounts.get(row.id as string) ?? 0
-      : (row.vote_count as { count: number }[])?.[0]?.count ?? 0,
+      : regularVoteCounts.get(row.id as string) ?? 0,
   }))
 }
 
