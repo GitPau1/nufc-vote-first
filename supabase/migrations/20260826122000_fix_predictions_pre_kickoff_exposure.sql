@@ -16,6 +16,9 @@
 -- 정산된 주차 랭킹은 로그인·비로그인 모두 그대로 계산된다. 킥오프 전 픽만 가려진다.
 
 drop policy if exists "predictions: public read" on "public"."predictions";
+-- 이 파일이 원격에 히스토리 기록 없이 이미 적용된 적이 있어(2026-08-27 db push에서 42710),
+-- 새 정책 이름도 먼저 지운다 — 재실행해도 같은 결과가 되게.
+drop policy if exists "predictions: read own or locked fixtures" on "public"."predictions";
 
 create policy "predictions: read own or locked fixtures"
   on "public"."predictions"
