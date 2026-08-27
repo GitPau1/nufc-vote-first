@@ -1,4 +1,5 @@
 import remarkGfm from 'remark-gfm'
+import tsconfigPaths from 'vite-tsconfig-paths'
 import type { StorybookConfig } from '@storybook/nextjs-vite'
 
 // 스토리와 규칙 MDX는 모두 src/storybook/ 아래에만 둔다.
@@ -27,6 +28,13 @@ const config: StorybookConfig = {
     '@storybook/addon-a11y',
   ],
   framework: '@storybook/nextjs-vite',
+  // nextjs-vite 프리셋의 viteFinal은 styled-jsx alias만 얹고 tsconfig의 `@/*` 경로는
+  // vite에 연결하지 않는다 — 그래서 스토리의 `@/components/...` import가 전부 해석에
+  // 실패한다. tsconfig(paths의 source of truth)를 그대로 읽는 플러그인을 붙여 맞춘다.
+  viteFinal: async (config) => {
+    config.plugins = [...(config.plugins ?? []), tsconfigPaths()]
+    return config
+  },
 }
 
 export default config
