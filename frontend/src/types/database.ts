@@ -199,6 +199,9 @@ export interface Database {
           id: string
           user_id: string
           content: string
+          category: 'vote' | 'prediction' | 'player' | 'etc'
+          rating: number | null
+          page_path: string | null
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['user_feedback']['Row'], 'id' | 'created_at'>
