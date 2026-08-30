@@ -68,13 +68,15 @@ async function getPickCandidatesUncached(): Promise<PickCandidates> {
 
   const supabase = createPublicClient()
 
-  const { data: season } = (await supabase
+  const { data: season, error: seasonError } = (await supabase
     .from('seasons')
     .select('id')
     .eq('is_current', true)
-    .maybeSingle()) as { data: { id: string } | null }
+    .maybeSingle()) as { data: { id: string } | null; error: unknown }
 
-  // 현재 시즌 표시가 없으면 후보를 만들 근거가 없다 — 화면은 "선택할 수 있는 선수가 없어요"로 떨어진다.
+  // 조회 실패는 던진다 — unstable_cache가 실패 결과를 캐시하지 않게 한다(다음 요청서 재시도).
+  if (seasonError) throw seasonError
+  // 현재 시즌 표시가 진짜로 없는 건 정상 상태(에러 아님) — 화면은 "선택할 수 있는 선수가 없어요"로 떨어진다.
   if (!season) return EMPTY
 
   const { data, error } = await supabase
@@ -83,14 +85,26 @@ async function getPickCandidatesUncached(): Promise<PickCandidates> {
     .eq('season_id', season.id)
     .in('position', ['DEF', 'MID', 'FWD'])
 
-  if (error) {
-    console.error('getPickCandidates error:', error)
-    return EMPTY
-  }
+  // 조회 실패는 던진다(위와 같은 이유) — 빈 목록으로 굳지 않게.
+  if (error) throw error
 
   return toPickCandidates((data ?? []) as unknown as SquadCandidateRow[], now)
 }
 
-export const getPickCandidates = unstable_cache(getPickCandidatesUncached, ['pick-candidates'], {
+const getPickCandidatesCached = unstable_cache(getPickCandidatesUncached, ['pick-candidates'], {
   revalidate: 3600,
 })
+
+/**
+ * 조회 '실패'는 캐시하지 않는다 — 한 번의 오류(예: 마이그레이션 직후 PostgREST 스키마 캐시 어긋남)가
+ * 빈 선수 목록으로 1시간 굳는 걸 막는다. 성공한 결과만 unstable_cache에 남고(빠른 TTFB 유지),
+ * 실패는 여기서 잡아 EMPTY를 캐시 밖에서 돌려줘 다음 요청이 곧바로 재시도한다.
+ */
+export async function getPickCandidates(): Promise<PickCandidates> {
+  try {
+    return await getPickCandidatesCached()
+  } catch (error) {
+    console.error('getPickCandidates error:', error)
+    return EMPTY
+  }
+}
