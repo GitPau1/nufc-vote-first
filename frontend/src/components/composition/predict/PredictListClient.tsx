@@ -2,6 +2,12 @@
 
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/primitives/accordion'
 import { useLoadingRouter } from '@/components/primitives/navigation-loading'
 import { trackEvent } from '@/lib/analytics/mixpanel'
 import { MatchWeekList } from './MatchWeekList'
@@ -19,7 +25,17 @@ import type { MyPredictionMap, RankingRow } from '@/lib/queries/predictions'
  * 플레이 방법 — 승부예측 규칙(docs/superpowers/specs/승부예측-규칙.md)의 핵심.
  * 제목 + 설명 쌍으로 항상 펼쳐 보여준다. 배점·규칙이 바뀌면 그 문서와 함께 고친다.
  */
-const PLAY_GUIDE = [
+/** 대회별 배점 — 규칙 문서(승부예측-규칙.md)의 표와 같은 값. total 행은 강조한다. */
+const SCORE_TABLE: Array<{ label: string; league: string; cup: string; total?: boolean }> = [
+  { label: '스코어 정확', league: '8', cup: '5' },
+  { label: '스코어 승무패', league: '5', cup: '3' },
+  { label: '픽 1위', league: '4', cup: '3' },
+  { label: '픽 2위', league: '2', cup: '2' },
+  { label: '픽 3위', league: '1', cup: '1' },
+  { label: '경기 만점', league: '20', cup: '14', total: true },
+]
+
+const PLAY_GUIDE: Array<{ title: string; desc?: string; scoreTable?: boolean }> = [
   {
     title: '다가오는 경기의 스코어를 예측하세요',
     desc: '포지션별로 활약할 선수 세 명도 함께 고릅니다. 수비수·미드필더·공격수 각 한 명이에요.',
@@ -34,7 +50,8 @@ const PLAY_GUIDE = [
   },
   {
     title: '리그는 정식 배점, 컵은 보너스 라운드',
-    desc: '스코어 정확 리그 8점·컵 5점, 승무패 리그 5점·컵 3점. 선수 픽 평점 1위 리그 4점·컵 3점(2·3위 차등).',
+    desc: '컵 대회는 점수가 더 낮은 보너스 라운드예요.',
+    scoreTable: true,
   },
   {
     title: '제출한 예측은 수정할 수 없어요',
@@ -42,20 +59,44 @@ const PLAY_GUIDE = [
   },
 ]
 
-/** 이미지 참고 스타일 — 제목(굵게) + 설명(연한 회색) 쌍을 간격 두고 쌓는다(접이식 아님). */
+/** 플레이 방법 — 접이식(아코디언). 펼치면 제목+설명 쌍과 배점 표가 나온다. */
 function PlayGuide({ className }: { className?: string }) {
   return (
-    <section className={cn('rounded-lg border border-neutral-weak bg-surface p-5', className)}>
-      <h3 className="text-caption-1 font-bold text-neutral-muted">플레이 방법</h3>
-      <div className="mt-4 flex flex-col gap-5">
-        {PLAY_GUIDE.map(({ title, desc }) => (
-          <div key={title}>
-            <p className="text-body-2-normal font-bold text-neutral">{title}</p>
-            <p className="mt-1.5 text-label-2 text-neutral-muted">{desc}</p>
+    <Accordion type="single" collapsible className={className}>
+      <AccordionItem value="play-guide">
+        <AccordionTrigger>플레이 방법</AccordionTrigger>
+        <AccordionContent>
+          <div className="flex flex-col gap-5 pt-1">
+            {PLAY_GUIDE.map(({ title, desc, scoreTable }) => (
+              <div key={title}>
+                <p className="text-body-2-normal font-bold text-neutral">{title}</p>
+                {desc && <p className="mt-1.5 text-label-2 text-neutral-muted">{desc}</p>}
+                {scoreTable && (
+                  <table className="mt-3 w-full text-label-2 tabular-nums">
+                    <thead>
+                      <tr className="text-caption-1 text-neutral-muted">
+                        <th className="pb-1.5 text-left font-semibold">항목</th>
+                        <th className="pb-1.5 text-right font-semibold">리그</th>
+                        <th className="pb-1.5 text-right font-semibold">컵</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {SCORE_TABLE.map(({ label, league, cup, total }) => (
+                        <tr key={label} className="border-t border-neutral-weak">
+                          <td className={cn('py-1.5 text-neutral', total && 'font-bold')}>{label}</td>
+                          <td className={cn('py-1.5 text-right text-neutral', total && 'font-bold')}>{league}</td>
+                          <td className={cn('py-1.5 text-right text-neutral', total && 'font-bold')}>{cup}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-    </section>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   )
 }
 
@@ -115,9 +156,9 @@ export function PredictListClient({
         />
 
         <div className="hidden flex-col gap-4 sm:flex">
+          <PlayGuide />
           <RankingCard variant="top3" entries={ranking} />
           <RankingCard variant="mine" entries={ranking} />
-          <PlayGuide />
         </div>
       </div>
 
