@@ -23,9 +23,9 @@ function loadSubmitModule() {
 const { buildPredictionRows } = loadSubmitModule()
 
 const CANDIDATES = {
-  DEF: [{ id: 4, name: '보트만', position: 'DEF', multiplier: 2.1 }],
-  MID: [{ id: 39, name: '기마랑이스', position: 'MID', multiplier: 1.7 }],
-  FWD: [{ id: 14, name: '이사크', position: 'FWD', multiplier: 1.3 }],
+  DEF: [{ id: 4, name: '보트만', position: 'DEF', multiplier: 2.1, cost: 2 }],
+  MID: [{ id: 39, name: '기마랑이스', position: 'MID', multiplier: 1.7, cost: 2 }],
+  FWD: [{ id: 14, name: '이사크', position: 'FWD', multiplier: 1.3, cost: 1 }],
 }
 
 const PICKS = { DEF: 4, MID: 39, FWD: 14 }
@@ -69,13 +69,18 @@ test('경기 1개인 주차 = 1행. 배당은 후보 목록에서 스냅샷된�
     [result.rows[0].def_multiplier, result.rows[0].mid_multiplier, result.rows[0].fwd_multiplier],
     [2.1, 1.7, 1.3],
   )
+  // 비용도 후보 목록에서 스냅샷된다(점수엔 무관, 예산·기록용).
+  assert.deepEqual(
+    [result.rows[0].def_cost, result.rows[0].mid_cost, result.rows[0].fwd_cost],
+    [2, 2, 1],
+  )
   assert.equal(result.rows[0].def_player_id, 4)
 })
 
 test('더블 매치위크 = 2행. 픽은 경기별로 따로 들어간다', () => {
   const candidates = {
     ...CANDIDATES,
-    FWD: [...CANDIDATES.FWD, { id: 10, name: '고든', position: 'FWD', multiplier: 1.6 }],
+    FWD: [...CANDIDATES.FWD, { id: 10, name: '고든', position: 'FWD', multiplier: 1.6, cost: 1 }],
   }
   const result = buildPredictionRows(
     DOUBLE,
@@ -185,7 +190,7 @@ test('마감/미완성/범위초과/모르는 선수는 전부 거절된다', ()
 test('같은 선수를 두 포지션에 넣으면 거절된다 (DB check와 같은 규칙)', () => {
   const candidates = {
     ...CANDIDATES,
-    MID: [...CANDIDATES.MID, { id: 4, name: '보트만', position: 'MID', multiplier: 2.1 }],
+    MID: [...CANDIDATES.MID, { id: 4, name: '보트만', position: 'MID', multiplier: 2.1, cost: 2 }],
   }
   const result = buildPredictionRows(
     SINGLE,
@@ -194,4 +199,27 @@ test('같은 선수를 두 포지션에 넣으면 거절된다 (DB check와 같�
   )
 
   assert.deepEqual(result, { error: 'duplicate_picks' })
+})
+
+test('한 경기 3픽 비용 합이 5툰을 넘으면 거절된다 (경기별 예산)', () => {
+  const candidates = {
+    DEF: [{ id: 4, name: '보트만', position: 'DEF', multiplier: 2.1, cost: 3 }],
+    MID: [{ id: 39, name: '기마랑이스', position: 'MID', multiplier: 1.7, cost: 3 }],
+    FWD: [{ id: 14, name: '이사크', position: 'FWD', multiplier: 1.3, cost: 1 }],
+  }
+  // 3 + 3 + 1 = 7 > 5
+  assert.deepEqual(
+    buildPredictionRows(SINGLE, { scores: { 9001: [2, 1] }, picks: picksFor('9001') }, candidates),
+    { error: 'over_budget' },
+  )
+})
+
+test('비용 합이 정확히 5툰이면 통과한다 (경계값)', () => {
+  const candidates = {
+    DEF: [{ id: 4, name: '보트만', position: 'DEF', multiplier: 2.1, cost: 3 }],
+    MID: [{ id: 39, name: '기마랑이스', position: 'MID', multiplier: 1.7, cost: 1 }],
+    FWD: [{ id: 14, name: '이사크', position: 'FWD', multiplier: 1.3, cost: 1 }],
+  }
+  const result = buildPredictionRows(SINGLE, { scores: { 9001: [2, 1] }, picks: picksFor('9001') }, candidates)
+  assert.ok(!('error' in result), JSON.stringify(result))
 })

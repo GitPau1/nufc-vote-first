@@ -21,6 +21,8 @@ export type Candidate = {
   position: Position
   /** 제출 시 서버가 DB 값을 다시 읽어 스냅샷한다 — 화면 표시용으로만 믿는다 */
   multiplier: number
+  /** 툰 비용(1~3). 순수 예산 제약이며 점수와 무관. 서버가 제출 시 재확인·스냅샷한다. */
+  cost: number
   squadNumber: number | null
   nationality: string | null
   age: number | null

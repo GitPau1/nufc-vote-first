@@ -14,7 +14,7 @@ import type { SeasonSquadRow } from '@/types/database'
 export type PickCandidates = Record<Position, Candidate[]>
 
 const SQUAD_COLUMNS =
-  'fotmob_player_id, name, name_ko, shirt_number, position, nationality_name, date_of_birth, prediction_multiplier'
+  'fotmob_player_id, name, name_ko, shirt_number, position, nationality_name, date_of_birth, prediction_multiplier, pick_cost'
 
 type SquadCandidateRow = Pick<
   SeasonSquadRow,
@@ -26,6 +26,7 @@ type SquadCandidateRow = Pick<
   | 'nationality_name'
   | 'date_of_birth'
   | 'prediction_multiplier'
+  | 'pick_cost'
 >
 
 const EMPTY: PickCandidates = { DEF: [], MID: [], FWD: [] }
@@ -41,6 +42,7 @@ export function toPickCandidates(rows: SquadCandidateRow[], now: number): PickCa
       name: row.name_ko?.trim() || row.name,
       position: row.position,
       multiplier: Number(row.prediction_multiplier),
+      cost: Number(row.pick_cost),
       squadNumber: row.shirt_number,
       nationality: row.nationality_name,
       age: ageFrom(row.date_of_birth, now),

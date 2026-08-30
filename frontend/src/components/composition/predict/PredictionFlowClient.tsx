@@ -43,6 +43,7 @@ const ERROR_MESSAGE: Record<SubmitError, string> = {
   invalid_score: '스코어는 0~20 사이로 입력해주세요',
   duplicate_picks: '포지션마다 서로 다른 선수를 골라주세요',
   unknown_player: '고를 수 없는 선수예요. 새로고침 후 다시 시도해주세요.',
+  over_budget: '한 경기 선수 3명의 비용 합이 5툰을 넘을 수 없어요',
   setup_required: '예측 제출 준비가 아직 끝나지 않았어요',
   failed: '제출에 실패했어요. 잠시 후 다시 시도해주세요.',
 }

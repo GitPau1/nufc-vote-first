@@ -20,6 +20,7 @@ export type SubmitPredictionResult =
         | 'invalid_score'
         | 'duplicate_picks'
         | 'unknown_player'
+        | 'over_budget'
         | 'setup_required'
         | 'failed'
     }

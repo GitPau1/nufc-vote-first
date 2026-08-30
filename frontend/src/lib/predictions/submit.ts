@@ -13,6 +13,9 @@ import type { WeekStatus } from './week'
 
 export const MAX_SCORE = 20
 
+/** 한 경기 3픽 비용의 합 상한(툰). 설계: 툰 예산제. */
+export const BUDGET = 5
+
 /** 화면이 모으는 값은 항상 뉴캐슬 관점([우리, 상대])이다. 홈/원정 변환은 여기서 한다. */
 export type PredictionInput = {
   /** fixture_id(문자열) → [우리, 상대] 예측 스코어. 그 주 **아직 안 잠긴** 경기 전부가 있어야 한다. */
@@ -31,6 +34,9 @@ export type PredictionInsertRow = {
   def_multiplier: number
   mid_multiplier: number
   fwd_multiplier: number
+  def_cost: number
+  mid_cost: number
+  fwd_cost: number
 }
 
 export type SubmitValidationError =
@@ -39,6 +45,7 @@ export type SubmitValidationError =
   | 'invalid_score'
   | 'duplicate_picks'
   | 'unknown_player'
+  | 'over_budget'
 
 /** 제출 대상 주차 — WeekSession 중 검증에 필요한 부분만. */
 type WeekTarget = {
@@ -73,6 +80,9 @@ export function buildPredictionRows(
     if ('error' in resolved) return { error: resolved.error }
     const { def, mid, fwd } = resolved
 
+    // 경기별 예산: 3픽 비용 합이 5툰을 넘으면 제출 불가.
+    if (def.cost + mid.cost + fwd.cost > BUDGET) return { error: 'over_budget' }
+
     rows.push({
       fixture_id: Number(match.id),
       home_score: match.isHome ? ourScore : theirScore,
@@ -83,6 +93,9 @@ export function buildPredictionRows(
       def_multiplier: def.multiplier,
       mid_multiplier: mid.multiplier,
       fwd_multiplier: fwd.multiplier,
+      def_cost: def.cost,
+      mid_cost: mid.cost,
+      fwd_cost: fwd.cost,
     })
   }
 

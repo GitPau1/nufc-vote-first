@@ -267,6 +267,7 @@ export interface Database {
           date_of_birth: string | null
           transfer_value: number | null
           prediction_multiplier: number
+          pick_cost: number
           synced_at: string
         }
         Insert: Database['public']['Tables']['season_squads']['Row']
@@ -286,6 +287,9 @@ export interface Database {
           def_multiplier: number
           mid_multiplier: number
           fwd_multiplier: number
+          def_cost: number
+          mid_cost: number
+          fwd_cost: number
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['predictions']['Row'], 'id' | 'created_at'>

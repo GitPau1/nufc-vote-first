@@ -60,8 +60,8 @@ const CANDIDATES = {
 DOUBLE 테스트의 추가 후보 고든(`:78`)과 중복 테스트의 추가 보트만(`:188`)에도 `cost`를 넣는다:
 
 ```js
-  // :78 고든
-  FWD: [...CANDIDATES.FWD, { id: 10, name: '고든', position: 'FWD', multiplier: 1.6, cost: 2 }],
+  // :78 고든 (cost 1 — 더블 매치위크 9002 경기가 DEF2+MID2+고든 ≤ 5툰 예산에 들어가야 함)
+  FWD: [...CANDIDATES.FWD, { id: 10, name: '고든', position: 'FWD', multiplier: 1.6, cost: 1 }],
   // :188 보트만(MID로 중복)
   MID: [...CANDIDATES.MID, { id: 4, name: '보트만', position: 'MID', multiplier: 2.1, cost: 2 }],
 ```

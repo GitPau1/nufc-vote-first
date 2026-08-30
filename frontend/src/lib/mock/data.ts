@@ -369,6 +369,7 @@ const squadMember = (
   date_of_birth: dateOfBirth,
   transfer_value: null,
   prediction_multiplier: multiplier,
+  pick_cost: multiplier >= 2.0 ? 3 : multiplier >= 1.5 ? 2 : 1,
   synced_at: new Date().toISOString(),
 })
 
