@@ -20,15 +20,16 @@ create or replace function public.prediction_match_points(
   end;
 $$;
 
--- ── 순위 → 점수 (새 integer 오버로드) ──────────────────────────────
+-- ── 순위 → 점수 (새 bigint 오버로드) ──────────────────────────────
+-- pos_rank 인자는 bigint다 — rank() 윈도우가 bigint를 반환하기 때문(int는 자동 확장돼 들어옴).
 -- 옛 (numeric,numeric) 오버로드와 잠시 공존한다(아래에서 view 교체 후 drop).
-create or replace function public.prediction_pick_points(pos_rank integer)
+create or replace function public.prediction_pick_points(pos_rank bigint)
 returns integer language sql immutable as $$
   select case pos_rank when 1 then 4 when 2 then 2 when 3 then 1 else 0 end;
 $$;
 
-comment on function public.prediction_pick_points(integer) is
-  '포지션 후보 평점 순위(표준 경쟁 순위 rank) → 점수. 1위4/2위2/3위1/그외·미출전 0.';
+comment on function public.prediction_pick_points(bigint) is
+  '포지션 후보 평점 순위(표준 경쟁 순위 rank, bigint) → 점수. 1위4/2위2/3위1/그외·미출전 0.';
 
 -- ── 결과 view 재작성: 픽 점수만 순위 기반으로, 컬럼·정산 게이트는 그대로 ──
 create or replace view public.prediction_results

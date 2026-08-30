@@ -53,5 +53,5 @@ where f.finished
         = date_trunc('week', f.kickoff_at  at time zone 'Asia/Seoul')
   );
 
--- 새 integer 오버로드 제거
-drop function if exists public.prediction_pick_points(integer);
+-- 새 bigint 오버로드 제거
+drop function if exists public.prediction_pick_points(bigint);
