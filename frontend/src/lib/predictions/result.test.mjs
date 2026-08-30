@@ -96,9 +96,9 @@ test('matchResultState: 같은 주차 안에서도 경기별로 상태가 갈린
 })
 
 test('matchHit: DB prediction_match_points와 같은 3단계로 갈린다', () => {
-  // 스코어까지 정확 (3점)
+  // 스코어까지 정확 (8점)
   assert.equal(matchHit([2, 1], [2, 1]), 'exact')
-  // 승패만 적중 (2점)
+  // 승패만 적중 (5점)
   assert.equal(matchHit([3, 1], [2, 1]), 'outcome')
   // 무승부 예측 + 무승부 결과는 스코어가 달라도 적중
   assert.equal(matchHit([1, 1], [2, 2]), 'outcome')

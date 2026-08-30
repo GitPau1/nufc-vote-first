@@ -10,8 +10,8 @@ import type { MatchView, WeekGroup } from '@/lib/predictions/week'
 export type RatingTier = 'good' | 'mid' | 'bad'
 
 /**
- * 픽 점수가 붙는 기준(`prediction_pick_points`)은 7.0이고, 6.0~6.9는 점수는 0이지만
- * "나쁘지 않았다"는 표시를 위해 중간 색을 쓴다. 평점이 없으면(미출전/미집계) 색을 정할 수 없다.
+ * 평점 배지 색만 정한다(퍼블리싱 3단계). 픽 점수는 더 이상 평점 임계값이 아니라
+ * 포지션 후보 순위로 매겨지므로(prediction_results view), 이 7.0/6.0 경계는 표시 전용이다.
  */
 export function ratingTier(rating: number | null): RatingTier | null {
   if (rating === null) return null
@@ -23,8 +23,8 @@ export function ratingTier(rating: number | null): RatingTier | null {
 export type MatchHit = 'exact' | 'outcome' | 'miss'
 
 /**
- * DB `prediction_match_points`(20260821120000_create_predictions.sql)와 같은 기준이다:
- * 스코어까지 정확하면 3점(exact), 승/무/패만 맞으면 2점(outcome), 아니면 0점(miss).
+ * DB `prediction_match_points`(20260830120000_toon_rank_scoring.sql)와 같은 기준이다:
+ * 스코어까지 정확하면 8점(exact), 승/무/패만 맞으면 5점(outcome), 아니면 0점(miss).
  * 한쪽 기준만 바꾸면 화면 배지와 실제 점수가 어긋나니 둘을 같이 고칠 것.
  *
  * 두 인자는 같은 순서여야 한다 — 화면은 [우리, 상대], DB는 [홈, 원정]이라 섞어 넣으면 안 된다.
