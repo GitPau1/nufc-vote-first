@@ -23,9 +23,10 @@ export function ratingTier(rating: number | null): RatingTier | null {
 export type MatchHit = 'exact' | 'outcome' | 'miss'
 
 /**
- * DB `prediction_match_points`(20260830120000_toon_rank_scoring.sql)와 같은 기준이다:
- * 스코어까지 정확하면 8점(exact), 승/무/패만 맞으면 5점(outcome), 아니면 0점(miss).
- * 한쪽 기준만 바꾸면 화면 배지와 실제 점수가 어긋나니 둘을 같이 고칠 것.
+ * DB `prediction_match_points`와 같은 등급 기준이다: 스코어까지 정확하면 exact,
+ * 승/무/패만 맞으면 outcome, 아니면 miss. 실제 점수 값은 대회별로 다르다(리그 8/5·컵 5/3,
+ * 20260830150000_toon_cup_scoring.sql) — 이 함수는 값이 아니라 등급만 내므로 대회와 무관하다.
+ * 등급 경계를 바꾸면 화면 배지와 실제 점수가 어긋나니 DB와 같이 고칠 것.
  *
  * 두 인자는 같은 순서여야 한다 — 화면은 [우리, 상대], DB는 [홈, 원정]이라 섞어 넣으면 안 된다.
  */
