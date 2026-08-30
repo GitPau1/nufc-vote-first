@@ -4,7 +4,6 @@ import { PredictionFlowClient } from '@/components/composition/predict/Predictio
 import { PredictionResult } from '@/components/composition/predict/PredictionResult'
 import { getFixtureWeeks } from '@/lib/queries/fixtures'
 import { findWeekPrediction, findWeekSession, submittableMatches } from '@/lib/predictions/week'
-import { getWeekInsight } from '@/lib/predictions/insight'
 import { getPickCandidates } from '@/lib/queries/squads'
 import { getMyPredictions, getMyResults, getWeekRanking } from '@/lib/queries/predictions'
 
@@ -46,9 +45,6 @@ export default async function PredictionFlowPage({ params }: { params: { weekKey
   // 남은(아직 안 잠긴) 경기 중 미제출이 있으면 그것만 입력받고, 없으면 완료 화면.
   const pending = submittableMatches(week).filter(match => !myPredictions[match.id])
 
-  // 스코어 단계 참고 문장. 실패해도 null이 와서 카드만 빠진다 — 예측 자체는 영향받지 않는다.
-  const insight = pending.length > 0 ? await getWeekInsight(weeks) : null
-
   return (
     <>
       <AppHeader mobileBack />
@@ -58,7 +54,6 @@ export default async function PredictionFlowPage({ params }: { params: { weekKey
           pending={pending}
           candidates={candidates}
           submitted={pending.length === 0 ? findWeekPrediction(week, myPredictions) : undefined}
-          insight={insight}
         />
       </main>
     </>

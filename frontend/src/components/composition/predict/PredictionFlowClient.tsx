@@ -26,7 +26,6 @@ import {
 } from '@/lib/predictions/week'
 import type { PickCandidates } from '@/lib/queries/squads'
 import { cn } from '@/lib/utils'
-import { Sparkles } from 'lucide-react'
 
 /** fixture_id → 그 경기의 포지션별 픽. 픽은 경기별로 따로 고른다(2026-08-23 확정). */
 type Picks = Record<string, Partial<Record<Position, Candidate>>>
@@ -59,7 +58,6 @@ export function PredictionFlowClient({
   pending,
   candidates,
   submitted,
-  insight,
 }: {
   week: WeekSession
   /** 이번에 제출할 경기 — 그 주에서 아직 안 잠기고 미제출인 것들 */
@@ -67,8 +65,6 @@ export function PredictionFlowClient({
   candidates: PickCandidates
   /** 남은 경기를 다 제출했으면 내 제출 내역(경기별 스코어 + 주 단위 픽) */
   submitted?: WeekPrediction
-  /** 스코어 단계에 띄우는 뉴캐슬 최근 폼 한 문장(lib/predictions/insight). 없으면 카드를 안 그린다. */
-  insight?: string | null
 }) {
   const router = useLoadingRouter()
   const [step, setStep] = useState<StepKey>('score')
@@ -276,7 +272,6 @@ export function PredictionFlowClient({
           <div className="hidden sm:block">
             <StepTrackVertical current={step} multi={isMulti} />
           </div>
-          {step === 'score' && insight && <MatchInsight text={insight} />}
         </div>
 
         <div>
@@ -524,28 +519,6 @@ function ConfirmTeam({ logoUrl, name }: { logoUrl: string | null; name: string }
     <div className="flex w-[88px] shrink-0 flex-col items-center gap-1.5">
       <TeamBadge logoUrl={logoUrl} name={name} />
       <span className="text-label-2 font-bold text-neutral-muted">{name}</span>
-    </div>
-  )
-}
-
-/**
- * "경기 통찰력" — 뉴캐슬 최근 5경기에서 뽑은 사실 한 문장(lib/predictions/insight).
- * 스텝 트랙과 같은 사이드바 열에 살고, 스코어를 정하는 동안에만 뜬다.
- * 상대팀 폼은 DB에 없어서(뉴캐슬 경기만 동기화) 문장도 뉴캐슬 얘기만 한다.
- *
- * 색은 magic 인텐트다 — 이 리포에서 magic을 처음 쓰는 자리이고, "AI가 만든 것"을 가리키는
- * 용도로 배정했다. positive(초록)를 쓰지 않는 이유는 문장이 좋은 소식만 담지 않기 때문이고
- * ("4경기 연속 무승"도 나온다), brand(파랑)를 쓰지 않는 이유는 같은 화면의 제출 버튼·단계
- * 트랙이 이미 브랜드색이라 카드가 묻히기 때문이다.
- */
-function MatchInsight({ text }: { text: string }) {
-  return (
-    <div className="mt-5 rounded-lg bg-magic-weak px-4 py-3.5 sm:mt-7">
-      <p className="flex items-center gap-1.5 text-label-2 font-bold text-magic">
-        <Sparkles aria-hidden className="h-4 w-4" />
-        경기 통찰력
-      </p>
-      <p className="mt-2 text-label-1-normal text-neutral">{text}</p>
     </div>
   )
 }
