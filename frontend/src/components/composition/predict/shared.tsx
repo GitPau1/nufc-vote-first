@@ -1,8 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import * as Progress from '@radix-ui/react-progress'
+import { Coins } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/primitives/avatar'
 import { Button } from '@/components/primitives/button'
+import { badgeVariants } from '@/components/primitives/badge'
 import { cn } from '@/lib/utils'
 
 /**
@@ -101,5 +104,46 @@ export function ShareButton() {
     <Button className="w-40" onClick={copyLink}>
       {copied ? '링크 복사 완료' : '↗ 공유하기'}
     </Button>
+  )
+}
+
+/**
+ * 툰 비용 배지 — Coins 아이콘 + 숫자. 픽 카드·픽 모달에서 옛 배당(×N.N) 자리를 대체한다.
+ * 색은 기존 Badge default(brand-weak/brand)를 그대로 쓴다.
+ */
+export function ToonCost({ cost, className }: { cost: number; className?: string }) {
+  return (
+    <span
+      aria-label={`${cost}툰`}
+      className={cn(badgeVariants(), 'inline-flex items-center gap-1', className)}
+    >
+      <Coins size={12} aria-hidden />
+      {cost}
+    </span>
+  )
+}
+
+/**
+ * 5툰 예산 사용량 바(가로 프로그레스). spent/total 비율로 채운다.
+ * 초과는 선택 단계에서 막으므로(초과 선수 선택 불가) 여기서 over 상태는 그리지 않는다 — 최대 100%.
+ */
+export function BudgetBar({ spent, total = 5 }: { spent: number; total?: number }) {
+  const percent = total > 0 ? Math.min(100, (spent / total) * 100) : 0
+  return (
+    <div className="flex items-center gap-2">
+      <span className="shrink-0 text-caption-1 font-bold text-neutral-muted">예산</span>
+      <Progress.Root
+        value={percent}
+        className="relative h-2 flex-1 overflow-hidden rounded-pill bg-disabled"
+      >
+        <Progress.Indicator
+          className="h-full rounded-pill bg-brand-solid transition-transform duration-micro"
+          style={{ transform: `translateX(-${100 - percent}%)` }}
+        />
+      </Progress.Root>
+      <span className="shrink-0 text-caption-1 font-bold text-brand tabular-nums">
+        {spent}/{total}툰
+      </span>
+    </div>
   )
 }

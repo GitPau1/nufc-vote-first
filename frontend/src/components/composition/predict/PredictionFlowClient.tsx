@@ -11,10 +11,10 @@ import { ConfirmContent } from '@/components/primitives/modal/contents/Confirm'
 import { LoginContent } from '@/components/primitives/modal/contents/Login'
 import { PlayerPickContent } from '@/components/primitives/modal/contents/PlayerPick'
 import { PredictionDone } from './PredictionDone'
-import { PlayerPhoto, TeamBadge } from './shared'
+import { PlayerPhoto, TeamBadge, ToonCost, BudgetBar } from './shared'
 import { StepHero, StepTrack, StepTrackVertical, type StepKey } from './steps'
 import { POSITIONS, POSITION_LABEL, type Candidate, type Position } from '@/lib/predictions/candidates'
-import { MAX_SCORE } from '@/lib/predictions/submit'
+import { MAX_SCORE, BUDGET } from '@/lib/predictions/submit'
 import { submitWeekPrediction, type SubmitPredictionResult } from '@/lib/actions/predictions'
 import {
   NUFC_LABEL,
@@ -324,10 +324,18 @@ export function PredictionFlowClient({
                       )}
                     </div>
                   )}
-                  <PositionRow
-                    picks={picks[match.id] ?? {}}
-                    onOpen={position => setPickTarget({ matchId: match.id, position })}
+                  <BudgetBar
+                    spent={POSITIONS.reduce(
+                      (sum, position) => sum + (picks[match.id]?.[position]?.cost ?? 0),
+                      0,
+                    )}
                   />
+                  <div className="mt-2.5">
+                    <PositionRow
+                      picks={picks[match.id] ?? {}}
+                      onOpen={position => setPickTarget({ matchId: match.id, position })}
+                    />
+                  </div>
                 </div>
               ))}
           </div>
@@ -415,6 +423,15 @@ export function PredictionFlowClient({
         <PlayerPickContent
           positionLabel={pickTarget ? POSITION_LABEL[pickTarget.position] : ''}
           players={pickTarget ? candidates[pickTarget.position] : []}
+          remainingBudget={
+            pickTarget
+              ? BUDGET -
+                POSITIONS.filter(position => position !== pickTarget.position).reduce(
+                  (sum, position) => sum + (picks[pickTarget.matchId]?.[position]?.cost ?? 0),
+                  0,
+                )
+              : BUDGET
+          }
           selectedPlayerId={pickTarget ? picks[pickTarget.matchId]?.[pickTarget.position]?.id ?? null : null}
           onSelect={player => {
             if (!pickTarget) return
@@ -609,7 +626,7 @@ function PositionRow({
               <div className="flex flex-1 flex-col items-center justify-center gap-1">
                 <PlayerPhoto url={picked.photoUrl} />
                 <p className="mt-0.5 text-center text-label-2 font-extrabold">{picked.name}</p>
-                <span className="text-caption-1 font-bold text-brand">×{picked.multiplier.toFixed(1)}</span>
+                <ToonCost cost={picked.cost} />
               </div>
             ) : (
               <div className="flex flex-1 flex-col items-center justify-center gap-2">

@@ -374,9 +374,6 @@ function PickResultRow({ position, pick }: { position: Position; pick: ResolvedP
         </div>
         {pick && (
           <div className="flex shrink-0 flex-col items-end gap-[3px]">
-            {pick.multiplier !== null && (
-              <span className="text-caption-2 font-bold text-neutral-muted">×{pick.multiplier.toFixed(1)}</span>
-            )}
             <span className="text-body-2-normal font-black text-brand">{pick.points}점</span>
           </div>
         )}

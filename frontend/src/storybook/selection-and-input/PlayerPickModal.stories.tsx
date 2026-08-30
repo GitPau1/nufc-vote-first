@@ -21,17 +21,17 @@ function mockCandidate(overrides: Partial<PlayerPickCandidate>): PlayerPickCandi
     photoUrl: PLACEHOLDER_PHOTO,
     nationality: '브라질',
     age: 28,
-    multiplier: 1.7,
+    cost: 2,
     ...overrides,
   }
 }
 
 const MID_CANDIDATES: PlayerPickCandidate[] = [
   mockCandidate({}),
-  mockCandidate({ id: 1002, name: '브루노', squadNumber: 7, nationality: '포르투갈', age: 24, multiplier: 1.3 }),
-  mockCandidate({ id: 1003, name: '윌록', squadNumber: 28, nationality: '잉글랜드', age: 26, multiplier: 1.5 }),
-  mockCandidate({ id: 1004, name: '토날리', squadNumber: 8, nationality: '이탈리아', age: 25, multiplier: 1.4 }),
-  mockCandidate({ id: 1005, name: '조엘린톤', squadNumber: 24, nationality: '브라질', age: 29, multiplier: 1.9 }),
+  mockCandidate({ id: 1002, name: '브루노', squadNumber: 7, nationality: '포르투갈', age: 24, cost: 1 }),
+  mockCandidate({ id: 1003, name: '윌록', squadNumber: 28, nationality: '잉글랜드', age: 26, cost: 2 }),
+  mockCandidate({ id: 1004, name: '토날리', squadNumber: 8, nationality: '이탈리아', age: 25, cost: 1 }),
+  mockCandidate({ id: 1005, name: '조엘린톤', squadNumber: 24, nationality: '브라질', age: 29, cost: 3 }),
 ]
 
 type PickArgs = {
@@ -111,7 +111,7 @@ export const ManyCandidates: Story = {
         id: 2000 + i,
         name: `후보 선수 ${i + 1}`,
         squadNumber: i + 2,
-        multiplier: 1 + (i % 9) / 10,
+        cost: (i % 3) + 1,
       })
     ),
   },
@@ -147,7 +147,7 @@ export const SelectAndClose: Story = {
           미드필더 선택 모달 열기
         </button>
         <p className="text-caption-1 text-neutral-muted">
-          {picked ? `선택: ${picked.name} (×${picked.multiplier.toFixed(1)})` : '아직 선택 없음'}
+          {picked ? `선택: ${picked.name} (${picked.cost}툰)` : '아직 선택 없음'}
         </p>
         <Modal open={open} onOpenChange={setOpen} className={PICK_MODAL_CLASS}>
           <PlayerPickContent

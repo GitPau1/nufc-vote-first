@@ -255,9 +255,6 @@ function PickResultList({ picks }: { picks: PickedPlayer[] }) {
                 {pick.name ?? '선수 정보 없음'}
               </p>
             </div>
-            <div className="flex shrink-0 flex-col items-end gap-[3px]">
-              <span className="text-caption-2 font-bold text-neutral-muted">×{pick.multiplier.toFixed(1)}</span>
-            </div>
           </div>
         </div>
       ))}
@@ -284,7 +281,6 @@ function PickCard({ pick }: { pick: PickedPlayer }) {
             <p className="mt-0.5 text-center text-label-2 font-extrabold text-neutral-muted">선수 정보 없음</p>
           </>
         )}
-        <span className="text-caption-1 font-bold text-brand">×{pick.multiplier.toFixed(1)}</span>
       </div>
     </div>
   )

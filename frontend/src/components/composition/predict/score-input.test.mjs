@@ -21,7 +21,8 @@ test('score stepper guards both bounds, not just the lower one', () => {
   const file = source('components/composition/predict/PredictionFlowClient.tsx')
 
   // 서버 검증과 같은 상수를 공유한다 — 20을 하드코딩하지 않는다
-  assert.match(file, /import \{ MAX_SCORE \} from '@\/lib\/predictions\/submit'/)
+  // (같은 import에 BUDGET 등 다른 상수가 함께 와도 된다 — 툰 예산제에서 BUDGET을 추가로 가져온다)
+  assert.match(file, /import \{[^}]*\bMAX_SCORE\b[^}]*\} from '@\/lib\/predictions\/submit'/)
   assert.doesNotMatch(file, /value >= 20/)
 
   // 버튼 가드가 +/− 대칭

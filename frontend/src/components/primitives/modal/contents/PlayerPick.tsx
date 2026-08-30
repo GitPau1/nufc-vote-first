@@ -3,9 +3,8 @@
 // 사용 도메인: predict (승부예측 포지션별 선수 선택 — Modal 껍데기에 끼워 쓴다)
 // 참고: predict 도메인의 PlayerPhoto를 쓰므로 이 content는 composition/predict에 의존한다(사용자 결정 b안).
 
-import { PlayerPhoto } from '@/components/composition/predict/shared'
+import { PlayerPhoto, ToonCost } from '@/components/composition/predict/shared'
 import { cn } from '@/lib/utils'
-import { badgeVariants } from '@/components/primitives/badge'
 import { SheetTitle } from '../sheet'
 
 export interface PlayerPickCandidate {
@@ -18,8 +17,8 @@ export interface PlayerPickCandidate {
   photoUrl: string | null
   nationality: string | null
   age: number | null
-  /** 선택 시 점수 배당(예: ×1.7) */
-  multiplier: number
+  /** 툰 비용(1~3). 옛 배당을 대체한다. */
+  cost: number
 }
 
 interface PlayerPickContentProps {
@@ -28,6 +27,11 @@ interface PlayerPickContentProps {
   players: PlayerPickCandidate[]
   /** 이미 이 포지션에 픽한 선수가 있으면(재오픈 케이스) 하이라이트 */
   selectedPlayerId?: number | null
+  /**
+   * 이 포지션에 쓸 수 있는 남은 툰(= 5 − 다른 두 포지션 비용 합). 비용이 이보다 큰 후보는
+   * 선택 불가(흐림)로 막는다. 생략 시 제한 없음(Storybook 등).
+   */
+  remainingBudget?: number
   /**
    * 선수를 선택했을 때 호출된다. 선택과 동시에 닫지 않으므로,
    * 호출부에서 상태 반영 후 onOpenChange(false)까지 함께 호출해줘야 한다.
@@ -47,6 +51,7 @@ export function PlayerPickContent({
   positionLabel,
   players,
   selectedPlayerId,
+  remainingBudget = Infinity,
   onSelect,
 }: PlayerPickContentProps) {
   return (
@@ -67,6 +72,8 @@ export function PlayerPickContent({
                 key={player.id}
                 player={player}
                 selected={player.id === selectedPlayerId}
+                // 현재 선택된 선수는 예산을 넘겨도 다시 고를 수 있어야 한다(재오픈).
+                disabled={player.cost > remainingBudget && player.id !== selectedPlayerId}
                 onSelect={() => onSelect(player)}
               />
             ))}
@@ -80,20 +87,27 @@ export function PlayerPickContent({
 function PlayerPickRow({
   player,
   selected,
+  disabled,
   onSelect,
 }: {
   player: PlayerPickCandidate
   selected: boolean
+  disabled: boolean
   onSelect: () => void
 }) {
   return (
     <button
       type="button"
       onClick={onSelect}
+      disabled={disabled}
       aria-pressed={selected}
       className={cn(
         'flex w-full items-center justify-between gap-2.5 rounded-md border border-neutral-weak bg-surface px-3.5 py-2.5 text-left transition-[border-color,background-color,transform] duration-micro',
-        selected ? 'border-brand-solid bg-brand-weak' : 'hover:-translate-y-px hover:border-neutral-strong'
+        selected
+          ? 'border-brand-solid bg-brand-weak'
+          : disabled
+            ? 'cursor-not-allowed opacity-50'
+            : 'hover:-translate-y-px hover:border-neutral-strong',
       )}
     >
       <span className="flex min-w-0 items-center gap-2.5">
@@ -110,8 +124,7 @@ function PlayerPickRow({
           </p>
         </span>
       </span>
-      {/* 행 전체가 <button>이라 Badge(div) 대신 badgeVariants()를 span에 얹는다. */}
-      <span className={cn(badgeVariants(), 'shrink-0')}>×{player.multiplier.toFixed(1)}</span>
+      <ToonCost cost={player.cost} className="shrink-0" />
     </button>
   )
 }
