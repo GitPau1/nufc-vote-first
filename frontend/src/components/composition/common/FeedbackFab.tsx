@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, X } from 'lucide-react'
 import { getHeaderAuth, type HeaderAuth } from '@/lib/actions/auth'
 import { Modal } from '@/components/primitives/modal/Modal'
 import { FeedbackContent } from '@/components/primitives/modal/contents/Feedback'
@@ -43,9 +43,17 @@ export function FeedbackFab() {
         <div
           role="status"
           aria-hidden={!showTooltip || open}
-          className={`whitespace-nowrap rounded-lg bg-neutral-strong px-3 py-2 text-label-2 font-medium text-on-solid shadow-w200 transition-opacity duration-enter ${showTooltip && !open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+          className={`relative whitespace-nowrap rounded-lg bg-neutral-strong px-3 py-2 text-label-2 font-medium text-on-solid shadow-w200 transition-opacity duration-enter ${showTooltip && !open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
         >
           이용에 아쉬운 점이 있나요?
+          <button
+            type="button"
+            aria-label="안내 닫기"
+            onClick={() => setShowTooltip(false)}
+            className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-pill bg-neutral-strong text-on-solid shadow-w200"
+          >
+            <X className="h-3 w-3" />
+          </button>
         </div>
 
         <button
