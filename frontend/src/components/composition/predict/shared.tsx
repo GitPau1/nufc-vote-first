@@ -1,11 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import * as Progress from '@radix-ui/react-progress'
-import { Coins } from 'lucide-react'
+import { Coins, Wallet, CircleHelp } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/primitives/avatar'
 import { Button } from '@/components/primitives/button'
-import { badgeVariants } from '@/components/primitives/badge'
 import { cn } from '@/lib/utils'
 
 /**
@@ -109,13 +107,24 @@ export function ShareButton() {
 
 /**
  * 툰 비용 배지 — Coins 아이콘 + 숫자. 픽 카드·픽 모달에서 옛 배당(×N.N) 자리를 대체한다.
- * 색은 기존 Badge default(brand-weak/brand)를 그대로 쓴다.
+ * 가격마다 색이 다르다: 1툰 회색(neutral) · 2툰 파랑(brand) · 3툰 보라(magic).
+ * 배지 형태(rounded-pill/px/py/caption-2)는 primitives/badge와 같게 맞춘다.
  */
+const TOON_TIER: Record<number, string> = {
+  1: 'bg-neutral-weak text-neutral-muted',
+  2: 'bg-brand-weak text-brand',
+  3: 'bg-magic-weak text-magic',
+}
+
 export function ToonCost({ cost, className }: { cost: number; className?: string }) {
   return (
     <span
       aria-label={`${cost}툰`}
-      className={cn(badgeVariants(), 'inline-flex items-center gap-1', className)}
+      className={cn(
+        'inline-flex items-center gap-1 rounded-pill px-[9px] py-[3px] text-caption-2 font-semibold',
+        TOON_TIER[cost] ?? TOON_TIER[2],
+        className,
+      )}
     >
       <Coins size={12} aria-hidden />
       {cost}
@@ -124,26 +133,42 @@ export function ToonCost({ cost, className }: { cost: number; className?: string
 }
 
 /**
- * 5툰 예산 사용량 바(가로 프로그레스). spent/total 비율로 채운다.
- * 초과는 선택 단계에서 막으므로(초과 선수 선택 불가) 여기서 over 상태는 그리지 않는다 — 최대 100%.
+ * 5툰 예산 게이지 — 좌측 예산(지갑) 아이콘 · 5칸 세그먼트(툰만큼 채움) · 우측 도움말(?).
+ * 도움말은 호버(데스크탑)나 탭(모바일)으로 열린다. 숫자 텍스트는 두지 않는다 — 채워진 칸으로 읽는다.
+ * 초과는 선택 단계에서 막으므로 여기서 over 상태는 없다.
  */
 export function BudgetBar({ spent, total = 5 }: { spent: number; total?: number }) {
-  const percent = total > 0 ? Math.min(100, (spent / total) * 100) : 0
+  const [helpOpen, setHelpOpen] = useState(false)
   return (
-    <div className="flex items-center gap-2">
-      <span className="shrink-0 text-caption-1 font-bold text-neutral-muted">예산</span>
-      <Progress.Root
-        value={percent}
-        className="relative h-2 flex-1 overflow-hidden rounded-pill bg-disabled"
-      >
-        <Progress.Indicator
-          className="h-full rounded-pill bg-brand-solid transition-transform duration-micro"
-          style={{ transform: `translateX(-${100 - percent}%)` }}
-        />
-      </Progress.Root>
-      <span className="shrink-0 text-caption-1 font-bold text-brand tabular-nums">
-        {spent}/{total}툰
-      </span>
+    <div className="flex items-center gap-2.5">
+      <Wallet size={16} aria-hidden className="shrink-0 text-neutral-muted" />
+      <div className="flex flex-1 gap-1.5" role="img" aria-label={`${total}툰 중 ${spent}툰 사용`}>
+        {Array.from({ length: total }, (_, i) => (
+          <span
+            key={i}
+            className={cn('h-2 flex-1 rounded-pill', i < spent ? 'bg-brand-solid' : 'bg-disabled')}
+          />
+        ))}
+      </div>
+      <div className="group relative shrink-0">
+        <button
+          type="button"
+          aria-label="예산 도움말"
+          onClick={() => setHelpOpen(open => !open)}
+          className="flex h-5 w-5 items-center justify-center text-neutral-subtle transition-colors duration-micro hover:text-brand"
+        >
+          <CircleHelp size={16} aria-hidden />
+        </button>
+        <span
+          role="tooltip"
+          className={cn(
+            'pointer-events-none absolute right-0 top-full z-10 mt-2 w-52 rounded-md bg-neutral-strong px-3 py-2.5 text-caption-2 font-medium text-on-solid shadow-w200 transition-opacity duration-micro group-hover:opacity-100',
+            helpOpen ? 'opacity-100' : 'opacity-0',
+          )}
+        >
+          선수마다 1~3툰의 가격이 있어요. 한 경기에서 5툰 예산 안으로 세 명을 골라요.
+        </span>
+      </div>
     </div>
   )
 }
