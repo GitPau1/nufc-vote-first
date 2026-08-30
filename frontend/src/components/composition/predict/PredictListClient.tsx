@@ -27,11 +27,11 @@ import type { MyPredictionMap, RankingRow } from '@/lib/queries/predictions'
  */
 /** 대회별 배점 — 규칙 문서(승부예측-규칙.md)의 표와 같은 값. total 행은 강조한다. */
 const SCORE_TABLE: Array<{ label: string; league: string; cup: string; total?: boolean }> = [
-  { label: '스코어 정확', league: '8', cup: '5' },
-  { label: '스코어 승무패', league: '5', cup: '3' },
-  { label: '픽 1위', league: '4', cup: '3' },
-  { label: '픽 2위', league: '2', cup: '2' },
-  { label: '픽 3위', league: '1', cup: '1' },
+  { label: '스코어 예측 성공', league: '8', cup: '5' },
+  { label: '승무패 예측 성공', league: '5', cup: '3' },
+  { label: '포지션 평점 1위', league: '4', cup: '3' },
+  { label: '포지션 평점 2위', league: '2', cup: '2' },
+  { label: '포지션 평점 3위', league: '1', cup: '1' },
   { label: '경기 만점', league: '20', cup: '14', total: true },
 ]
 
