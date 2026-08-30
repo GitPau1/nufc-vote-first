@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Explanation } from '@/components/composition/common/Explanation'
+import { cn } from '@/lib/utils'
 import { useLoadingRouter } from '@/components/primitives/navigation-loading'
 import { trackEvent } from '@/lib/analytics/mixpanel'
 import { MatchWeekList } from './MatchWeekList'
@@ -16,17 +16,48 @@ import {
 import type { MyPredictionMap, RankingRow } from '@/lib/queries/predictions'
 
 /**
- * 플레이 방법 — 승부예측 규칙(docs/superpowers/specs/승부예측-규칙.md)의 핵심을 짧게 추린다.
- * 배점·규칙이 바뀌면 그 문서와 함께 고친다.
+ * 플레이 방법 — 승부예측 규칙(docs/superpowers/specs/승부예측-규칙.md)의 핵심.
+ * 제목 + 설명 쌍으로 항상 펼쳐 보여준다. 배점·규칙이 바뀌면 그 문서와 함께 고친다.
  */
 const PLAY_GUIDE = [
-  '다가오는 경기의 최종 스코어를 예측하고, 포지션별 선수 3명(수비·미드필더·공격)을 고르세요',
-  '선수마다 1~3툰 — 한 경기 5툰 예산 안에서 세 명을 골라요 (가격은 매달 갱신)',
-  '스코어 정확: 리그 8점·컵 5점 / 승무패만 맞혀도 리그 5점·컵 3점',
-  '포지션 평점 1위를 맞히면 리그 4점·컵 3점 (2·3위 차등, 미출전 0점)',
-  '컵 대회는 보너스 라운드라 점수가 낮아요 · 연장·승부차기는 무승부로 채점',
-  '킥오프 전까지 예측 가능 · 제출 후 수정 불가 · 주 경기가 다 끝나면 점수·순위 공개',
+  {
+    title: '다가오는 경기의 스코어를 예측하세요',
+    desc: '포지션별로 활약할 선수 세 명도 함께 고릅니다. 수비수·미드필더·공격수 각 한 명이에요.',
+  },
+  {
+    title: '5툰 예산 안에서 선수를 고르세요',
+    desc: '선수마다 1~3툰의 가격이 있어요. 가격은 매달 최근 평점에 따라 바뀝니다.',
+  },
+  {
+    title: '경기 결과로 채점됩니다',
+    desc: '연장에서 갈리면 그 결과대로, 승부차기로 갈리면 무승부예요. 승부차기가 예상되면 무승부를 예측하세요.',
+  },
+  {
+    title: '리그는 정식 배점, 컵은 보너스 라운드',
+    desc: '스코어 정확 리그 8점·컵 5점, 승무패 리그 5점·컵 3점. 선수 픽 평점 1위 리그 4점·컵 3점(2·3위 차등).',
+  },
+  {
+    title: '제출한 예측은 수정할 수 없어요',
+    desc: '킥오프 전이라면 예측할 수 있습니다. 주 경기가 다 끝나면 점수와 순위가 공개돼요.',
+  },
 ]
+
+/** 이미지 참고 스타일 — 제목(굵게) + 설명(연한 회색) 쌍을 간격 두고 쌓는다(접이식 아님). */
+function PlayGuide({ className }: { className?: string }) {
+  return (
+    <section className={cn('rounded-lg border border-neutral-weak bg-surface p-5', className)}>
+      <h3 className="text-caption-1 font-bold text-neutral-muted">플레이 방법</h3>
+      <div className="mt-4 flex flex-col gap-5">
+        {PLAY_GUIDE.map(({ title, desc }) => (
+          <div key={title}>
+            <p className="text-body-2-normal font-bold text-neutral">{title}</p>
+            <p className="mt-1.5 text-label-2 text-neutral-muted">{desc}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
 
 export function PredictListClient({
   weeks,
@@ -86,12 +117,12 @@ export function PredictListClient({
         <div className="hidden flex-col gap-4 sm:flex">
           <RankingCard variant="top3" entries={ranking} />
           <RankingCard variant="mine" entries={ranking} />
-          <Explanation title="플레이 방법" items={PLAY_GUIDE} />
+          <PlayGuide />
         </div>
       </div>
 
       {/* 우측 열이 모바일에서 숨겨지므로(위 sm:flex) 플레이 방법만 목록 맨 아래에 한 번 더 둔다. */}
-      <Explanation title="플레이 방법" items={PLAY_GUIDE} className="mt-4 sm:hidden" />
+      <PlayGuide className="mt-4 sm:hidden" />
     </div>
   )
 }
