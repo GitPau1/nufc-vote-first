@@ -15,7 +15,7 @@ export function MyFeedbackForm() {
 
     startTransition(async () => {
       const { submitFeedback } = await import('@/lib/actions/feedback')
-      const result = await submitFeedback(content)
+      const result = await submitFeedback({ content })
       if (result.error) {
         setMessage(result.error)
         return

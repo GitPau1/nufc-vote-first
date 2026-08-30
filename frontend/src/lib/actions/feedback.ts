@@ -2,12 +2,30 @@
 
 import { IS_MOCK } from '@/lib/config'
 import { createClient } from '@/lib/supabase/server'
+import { isFeedbackCategory, type FeedbackCategory } from '@/lib/feedback/categories'
 
-export async function submitFeedback(content: string): Promise<{ error?: string }> {
-  const trimmed = content.trim()
+export type SubmitFeedbackInput = {
+  content: string
+  category?: FeedbackCategory
+  rating?: number | null
+  pagePath?: string | null
+}
+
+export async function submitFeedback(input: SubmitFeedbackInput): Promise<{ error?: string }> {
+  const trimmed = input.content.trim()
 
   if (!trimmed) return { error: '피드백을 입력해주세요.' }
   if (trimmed.length > 500) return { error: '피드백은 500자 이하로 입력해주세요.' }
+
+  // 카테고리는 허용 집합만 인정, 아니면 'etc'로 흡수(/my/feedback은 category 없이 호출).
+  const category: FeedbackCategory = isFeedbackCategory(input.category) ? input.category : 'etc'
+
+  const rating = input.rating ?? null
+  if (rating !== null && (!Number.isInteger(rating) || rating < 1 || rating > 5)) {
+    return { error: '만족도 값이 올바르지 않아요.' }
+  }
+
+  const pagePath = input.pagePath ?? null
 
   if (IS_MOCK) return {}
 
@@ -21,6 +39,9 @@ export async function submitFeedback(content: string): Promise<{ error?: string 
     .insert({
       user_id: user.id,
       content: trimmed,
+      category,
+      rating,
+      page_path: pagePath,
     })
 
   if (error) {
