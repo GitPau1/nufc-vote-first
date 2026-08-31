@@ -21,8 +21,10 @@ import { cn } from '@/lib/utils'
 import { badgeVariants } from '@/components/primitives/badge'
 
 /**
- * 주차 결과 화면(퍼블리싱 `renderResult`). 히어로(등수·점수) → 내 예측(경기별 비교 + 선수 픽) → 주차 랭킹.
- * 모바일은 "내 예측 / 전체 결과" 세그먼트로 둘 중 하나만, 데스크탑은 세로로 둘 다 보여준다.
+ * 주차 결과 화면(퍼블리싱 `renderResult`). 맨 상단의 "내 예측 / 전체 결과" 세그먼트로 탭을 고른다 —
+ * "내 예측"은 경기별 비교 + 선수 픽, "전체 결과"는 히어로(등수·점수) + 주차 랭킹.
+ * 첫 진입 기본 탭은 "전체 결과"다(내 점수·순위가 먼저 보이도록 — 사용자 확정).
+ * 모바일·데스크탑 모두 같은 탭 구조다(TEA-6에서 데스크탑 세로 스택을 없앴다).
  *
  * 랭킹은 참여 여부와 무관하게 공개된다 — 예측하지 않은 주차도 이 화면으로 들어와 "미참여" 안내와
  * 랭킹을 볼 수 있다(퍼블리싱 `buildLeaderboardNoParticipation`).
@@ -43,7 +45,7 @@ export function PredictionResult({
   candidates: PickCandidates
   ranking: RankingRow[]
 }) {
-  const [tab, setTab] = useState<'mine' | 'rank'>('mine')
+  const [tab, setTab] = useState<'mine' | 'rank'>('rank')
   const summary = aggregateWeekResult(week, results, ranking)
   const participated = summary !== null
 
@@ -65,10 +67,8 @@ export function PredictionResult({
   return (
     <div className="mx-auto max-w-[860px] px-4 pb-16 pt-4 sm:px-6 sm:pt-8">
       <Card className="p-5 sm:p-7">
-        <Hero weekNo={week.weekNo} summary={summary} />
-
-        {/* 모바일 전용 토글 — 데스크탑은 두 섹션을 세로로 다 보여준다 */}
-        <div className="mb-5 flex gap-0.5 rounded-pill bg-disabled p-1 sm:hidden">
+        {/* 탭 세그먼트 — 모든 뷰포트 공통. 순위(통합) 탭(TEA-11)은 여기에 버튼 하나를 더 붙인다. */}
+        <div className="mb-5 flex gap-0.5 rounded-pill bg-disabled p-1">
           <SegmentButton active={tab === 'mine'} onClick={() => setTab('mine')}>
             내 예측
           </SegmentButton>
@@ -77,7 +77,7 @@ export function PredictionResult({
           </SegmentButton>
         </div>
 
-        <div className={cn(tab === 'mine' ? 'block' : 'hidden', 'sm:block')}>
+        <div className={cn(tab === 'mine' ? 'block' : 'hidden')}>
           {week.matches.map((match, i) => (
             <div key={match.id}>
               {week.matches.length > 1 && (
@@ -103,7 +103,8 @@ export function PredictionResult({
           )}
         </div>
 
-        <div className={cn(tab === 'rank' ? 'block' : 'hidden', 'sm:mt-6 sm:block')}>
+        <div className={cn(tab === 'rank' ? 'block' : 'hidden')}>
+          <Hero weekNo={week.weekNo} summary={summary} />
           {/* 모바일은 화면 높이만큼만 노출하고, 데스크탑은 10명까지만 그린 뒤 "전체보기"로 펼친다 */}
           <WeekRankCard weekNo={week.weekNo} entries={ranking} className="sm:hidden" />
           <WeekRankCard weekNo={week.weekNo} entries={ranking} capped className="hidden sm:block" />
