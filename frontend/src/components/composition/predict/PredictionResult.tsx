@@ -137,7 +137,12 @@ function SegmentButton({
   )
 }
 
-/** 다크 히어로 — 주차 등수와 점수 구성. 미참여 주차는 안내 문구만. */
+/**
+ * 히어로 — 주차 등수(내 단계)와 점수 구성. 미참여 주차는 안내 문구만.
+ * 흰 Card 안의 첫 요소라 다크 배경 대신 WeekRankCard·제출 화면 SummarySection과 같은
+ * "카드 안 회색 패널(bg-page)"을 쓴다(WeekRankCard의 이중 프레임 방지 규칙과 동일).
+ * 위계: 등수(title-2·brand) > 총점(title-3·카운트업) > 경기예측/선수픽(보조, HeroStat).
+ */
 function Hero({
   weekNo,
   summary,
@@ -149,9 +154,9 @@ function Hero({
 
   if (!summary) {
     return (
-      <div className="mb-4 rounded-lg bg-neutral-strong px-4 py-5 text-center">
-        <p className="text-caption-1 text-on-solid-muted">{weekNo}주차 결과</p>
-        <p className="mt-2 text-label-1-normal font-medium text-on-solid">
+      <div className="mb-4 rounded-lg bg-page px-4 py-5 text-center">
+        <p className="text-caption-1 text-neutral-muted">{weekNo}주차 결과</p>
+        <p className="mt-2 text-label-1-normal font-medium text-neutral">
           이 기간에는 예측에 참여하지 않았어요
         </p>
       </div>
@@ -159,32 +164,47 @@ function Hero({
   }
 
   return (
-    <div className="mb-4 rounded-lg bg-neutral-strong px-4 py-5 text-center">
-      <p className="text-caption-1 text-on-solid-muted">{weekNo}주차 결과</p>
-      <p className="mt-1.5 flex items-baseline justify-center gap-1.5">
-        {/* 등수는 랭킹 집계가 끝나야 나온다 — 아직이면 순위 자리를 비워두고 점수만 보여준다 */}
-        <span className="text-title-2 font-semibold text-on-solid">
+    <div className="mb-4 rounded-lg bg-page px-4 py-6 text-center">
+      <p className="text-caption-1 text-neutral-muted">{weekNo}주차 결과</p>
+
+      {/* 등수는 랭킹 집계가 끝나야 나온다 — 아직이면 "집계 중"으로 자리를 지킨다.
+          내 등수의 brand 색은 WeekRankCard의 내 행(isMe) 강조와 같은 규칙이다. */}
+      <p className="mt-2 flex items-baseline justify-center gap-1.5">
+        <span
+          className={cn(
+            'text-title-2 font-semibold',
+            summary.rank === null ? 'text-neutral' : 'text-brand',
+          )}
+        >
           {summary.rank === null ? '집계 중' : `${summary.rank}위`}
         </span>
         {summary.rank !== null && (
-          <span className="text-label-2 text-on-solid-muted">/ {summary.totalEntries}명</span>
+          <span className="text-label-1-normal font-medium text-neutral-muted">
+            / {summary.totalEntries}명
+          </span>
         )}
       </p>
 
-      <div className="mt-4 flex justify-center gap-5 rounded-md bg-on-solid-strong px-4 py-4">
+      {/* 총점 — 등수 다음 위계. 0에서 굴러 올라간다(useCountUp). */}
+      <p className="mt-1 flex items-baseline justify-center gap-1.5">
+        <span className="text-caption-1 text-neutral-muted">총점</span>
+        <span className="text-title-3 font-semibold text-neutral">{total}점</span>
+      </p>
+
+      <div className="mx-auto mt-5 flex max-w-[320px] justify-center gap-5 border-t border-neutral-weak pt-4">
         <HeroStat label="경기예측" value={`${summary.matchPoints}점`} />
         <HeroStat label="선수픽" value={`${summary.pickPoints}점`} />
-        <HeroStat label="총점" value={`${total}점`} />
       </div>
     </div>
   )
 }
 
+/** 점수 구성의 보조 항목(경기예측/선수픽) — 총점보다 한 단계 작은 위계. */
 function HeroStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0 flex-1">
-      <p className="text-caption-1 text-on-solid-muted">{label}</p>
-      <p className="mt-1 text-label-1-normal font-medium text-on-solid">{value}</p>
+      <p className="text-caption-1 text-neutral-muted">{label}</p>
+      <p className="mt-1 text-label-1-normal font-medium text-neutral">{value}</p>
     </div>
   )
 }
