@@ -75,7 +75,7 @@ export function PredictionResult({
         <Hero weekNo={week.weekNo} summary={summary} />
 
         {/* 모바일 전용 토글 — 데스크탑은 두 섹션을 세로로 다 보여준다 */}
-        <div className="mb-5 flex gap-0.5 rounded-pill bg-disabled p-[3px] sm:hidden">
+        <div className="mb-5 flex gap-0.5 rounded-pill bg-disabled p-1 sm:hidden">
           <SegmentButton active={tab === 'mine'} onClick={() => setTab('mine')}>
             내 예측
           </SegmentButton>
@@ -366,14 +366,14 @@ function PickResultRow({ position, pick }: { position: Position; pick: ResolvedP
       <p className="mb-2 text-caption-2 font-medium text-neutral-muted">{POSITION_LABEL[position]}</p>
       <div className="flex items-center gap-2.5">
         <PlayerPhoto url={pick?.photoUrl ?? null} size={48} />
-        <div className="flex min-w-0 flex-1 flex-col items-start gap-[3px]">
+        <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
           <p className={cn('truncate text-label-1-normal font-medium', !pick && 'text-neutral-muted')}>
             {pick ? pick.name ?? '선수 정보 없음' : '선택하지 않았어요'}
           </p>
           {pick && <RatingBadge rating={pick.rating} />}
         </div>
         {pick && (
-          <div className="flex shrink-0 flex-col items-end gap-[3px]">
+          <div className="flex shrink-0 flex-col items-end gap-1">
             <span className="text-body-2-normal font-semibold text-brand">{pick.points}점</span>
           </div>
         )}

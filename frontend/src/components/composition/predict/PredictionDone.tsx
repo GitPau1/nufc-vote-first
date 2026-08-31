@@ -215,7 +215,7 @@ function Countdown({ targetIso, pendingCount }: { targetIso: string | null; pend
         ]
 
   return (
-    <div className="mb-4 rounded-lg bg-neutral-strong px-4 pb-[18px] pt-5 text-center">
+    <div className="mb-4 rounded-lg bg-neutral-strong px-4 pb-5 pt-5 text-center">
       <p className="mb-2.5 text-caption-1 font-medium text-on-solid-muted">
         결과 반영까지{pendingCount > 1 && ' (늦은 경기 종료 기준)'}
       </p>
@@ -223,7 +223,7 @@ function Countdown({ targetIso, pendingCount }: { targetIso: string | null; pend
         {segments.map((segment, i) => (
           <div key={segment.unit} className="flex items-start gap-2.5">
             {i > 0 && <span className="mt-px text-heading-2 font-semibold text-on-solid-muted">:</span>}
-            <div className="flex min-w-[34px] flex-col items-center gap-[3px]">
+            <div className="flex min-w-[34px] flex-col items-center gap-1">
               <span className="text-title-3 font-semibold tabular-nums text-on-solid">{segment.value}</span>
               <span className="text-caption-2 text-on-solid-muted">{segment.unit}</span>
             </div>
@@ -250,7 +250,7 @@ function PickResultList({ picks }: { picks: PickedPlayer[] }) {
           <p className="mb-2 text-caption-2 font-medium text-neutral-muted">{POSITION_LABEL[pick.position]}</p>
           <div className="flex items-center gap-2.5">
             <PlayerPhoto url={pick.photoUrl} size={48} />
-            <div className="flex min-w-0 flex-1 flex-col items-start gap-[3px]">
+            <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
               <p className="truncate text-label-1-normal font-medium text-neutral">
                 {pick.name ?? '선수 정보 없음'}
               </p>

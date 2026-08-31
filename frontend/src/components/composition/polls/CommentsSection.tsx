@@ -179,7 +179,7 @@ export function CommentsSection({
             }}
             placeholder="이번 투표에 대한 생각을 남겨주세요…"
             rows={2}
-            className="h-[62px] flex-1 resize-none rounded-lg border border-neutral-weak bg-surface px-[13px] py-[11px]
+            className="h-[62px] flex-1 resize-none rounded-lg border border-neutral-weak bg-surface px-3 py-3
                        text-label-1-reading text-neutral placeholder:text-neutral-muted
                        focus:border-brand-solid focus:outline-none"
           />
