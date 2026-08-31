@@ -20,7 +20,7 @@ function Demo({ form }: { form: ModalForm }) {
       <Button onClick={() => setOpen(true)}>다시 열기</Button>
       <Modal open={open} onOpenChange={setOpen} form={form}>
         <SheetHeader className="mb-5 text-left">
-          <SheetTitle className="text-body-1-normal">이 선택으로 투표하시겠어요?</SheetTitle>
+          <SheetTitle className="text-headline-1">이 선택으로 투표하시겠어요?</SheetTitle>
           <SheetDescription>제출 후에는 변경할 수 없습니다</SheetDescription>
         </SheetHeader>
         <div className="flex gap-2">

@@ -62,7 +62,7 @@ export function PlayerPickContent({
           flex 항목의 min-content 하한 때문에 목록이 줄지 않고 시트가 넘친다. */}
       <div className="min-h-0 flex-1 overflow-y-auto hide-scrollbar">
         {players.length === 0 ? (
-          <p className="py-8 text-center text-caption-1 text-neutral-muted">
+          <p className="py-8 text-center text-label-1-normal font-medium text-neutral">
             선택할 수 있는 선수가 없어요
           </p>
         ) : (
