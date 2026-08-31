@@ -5,6 +5,7 @@ import { Coins, Wallet, CircleHelp } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/primitives/avatar'
 import { Button } from '@/components/primitives/button'
 import { cn } from '@/lib/utils'
+import { badgeVariants } from '@/components/primitives/badge'
 
 /**
  * 팀 엠블럼(Storage public URL은 lib/predictions/week.ts의 teamLogoUrl이 만든다). 없거나 실패하면 이니셜 원형으로 폴백.
@@ -121,7 +122,8 @@ export function ToonCost({ cost, className }: { cost: number; className?: string
     <span
       aria-label={`${cost}툰`}
       className={cn(
-        'inline-flex items-center gap-1 rounded-pill px-[9px] py-[3px] text-caption-2 font-medium',
+        badgeVariants({ variant: 'bare' }),
+        'gap-1',
         TOON_TIER[cost] ?? TOON_TIER[2],
         className,
       )}

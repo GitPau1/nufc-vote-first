@@ -334,7 +334,7 @@ function CommentOptionBadge({
       className={[
         // 이 뱃지의 caption-2 + font-semibold(600)는 Figma 계약이 못박은 값이다 —
         // 소형 텍스트 강조 표준(500)의 예외. result-view-figma-contract.test.mjs가 고정한다.
-        'inline-flex items-center rounded-pill border-0 bg-brand-weak px-[9px] py-[3px] text-caption-2 font-semibold text-brand pointer-events-none',
+        'inline-flex items-center rounded-pill border-0 bg-brand-weak px-2 py-1 text-caption-2 font-semibold text-brand pointer-events-none',
         className,
       ].filter(Boolean).join(' ')}
     >

@@ -18,6 +18,7 @@ import { NUFC_LABEL, NUFC_TEAM_ID, teamLogoUrl, type MatchView, type WeekSession
 import type { MyPredictionMap, MyResult, MyResultMap, RankingRow } from '@/lib/queries/predictions'
 import type { PickCandidates } from '@/lib/queries/squads'
 import { cn } from '@/lib/utils'
+import { badgeVariants } from '@/components/primitives/badge'
 
 /**
  * 주차 결과 화면(퍼블리싱 `renderResult`). 히어로(등수·점수) → 내 예측(경기별 비교 + 선수 픽) → 주차 랭킹.
@@ -337,7 +338,7 @@ function RatingBadge({ rating }: { rating: number | null }) {
   const tier = ratingTier(rating)
   if (tier === null || rating === null) return null
   return (
-    <span className={cn('inline-flex rounded-pill px-[9px] py-[3px] text-caption-2 font-medium', TIER_BADGE[tier])}>
+    <span className={cn(badgeVariants({ variant: 'bare' }), TIER_BADGE[tier])}>
       {rating.toFixed(1)}
     </span>
   )
@@ -354,7 +355,7 @@ function PointsBadge({ matchPoints }: { matchPoints: number | null }) {
   const label = matchPoints === null ? '미참여' : matchPoints > 0 ? `+${matchPoints}점` : '0점'
 
   return (
-    <span className={cn('mb-4 inline-flex rounded-pill px-[9px] py-[3px] text-caption-2 font-medium', style)}>
+    <span className={cn(badgeVariants({ variant: 'bare' }), 'mb-4', style)}>
       {label}
     </span>
   )

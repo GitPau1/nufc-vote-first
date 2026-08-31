@@ -36,7 +36,7 @@ test('comments use the Figma thumbs-up reaction treatment', () => {
 test('comment option badges use the compact caption component', () => {
   assert.match(commentsSection, /function CommentOptionBadge/)
   assert.match(commentsSection, /<CommentOptionBadge/)
-  assert.match(commentsSection, /px-\[9px\] py-\[3px\] text-caption-2 font-semibold/)
+  assert.match(commentsSection, /px-2 py-1 text-caption-2 font-semibold/)
   assert.match(commentsSection, /inline-flex items-center rounded-pill/)
   assert.doesNotMatch(commentsSection, /<Badge/)
   assert.doesNotMatch(commentsSection, /px-1\.5 py-0/)

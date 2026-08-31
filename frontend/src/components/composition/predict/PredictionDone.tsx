@@ -14,6 +14,7 @@ import {
 } from '@/lib/predictions/week'
 import type { PickCandidates } from '@/lib/queries/squads'
 import { cn } from '@/lib/utils'
+import { badgeVariants } from '@/components/primitives/badge'
 
 /** 완료 화면이 그리는 픽 하나 — 후보 목록에서 못 찾은 선수(스쿼드 이탈)도 배당은 스냅샷으로 남는다. */
 type PickedPlayer = {
@@ -300,7 +301,8 @@ function HitBadge({ hit }: { hit: MatchHit }) {
   return (
     <span
       className={cn(
-        'mt-2 inline-flex rounded-pill px-[9px] py-[3px] text-caption-2 font-medium',
+        badgeVariants({ variant: 'bare' }),
+        'mt-2',
         hit === 'miss' ? 'bg-critical-weak text-critical' : 'bg-positive-weak text-positive',
       )}
     >
