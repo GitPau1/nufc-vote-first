@@ -39,7 +39,7 @@ export function HomeClient({ sections, fixture }: HomeClientProps) {
         </>
       ) : (
         <div className="flex flex-col items-center justify-center py-24 gap-2">
-          <p className="text-label-1-normal font-semibold text-neutral">투표가 없습니다</p>
+          <p className="text-label-1-normal font-medium text-neutral">투표가 없습니다</p>
           <p className="text-caption-1 text-neutral-muted">곧 새로운 투표가 공개될 예정입니다</p>
         </div>
       )}

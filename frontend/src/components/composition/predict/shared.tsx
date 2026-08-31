@@ -29,7 +29,7 @@ export function TeamBadge({
       <span
         aria-hidden
         className={cn(
-          'flex shrink-0 items-center justify-center rounded-pill bg-disabled text-label-1-normal font-black text-neutral-muted',
+          'flex shrink-0 items-center justify-center rounded-pill bg-disabled text-label-1-normal font-medium text-neutral-muted',
           grayscale && 'grayscale'
         )}
         style={{ width: size, height: size }}
@@ -121,7 +121,7 @@ export function ToonCost({ cost, className }: { cost: number; className?: string
     <span
       aria-label={`${cost}툰`}
       className={cn(
-        'inline-flex items-center gap-1 rounded-pill px-[9px] py-[3px] text-caption-2 font-semibold',
+        'inline-flex items-center gap-1 rounded-pill px-[9px] py-[3px] text-caption-2 font-medium',
         TOON_TIER[cost] ?? TOON_TIER[2],
         className,
       )}

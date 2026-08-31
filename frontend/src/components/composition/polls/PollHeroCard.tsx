@@ -28,7 +28,7 @@ export function PollHeroCard({ poll }: { poll: PollListItem }) {
       <div className="banner-text-overlay absolute inset-0" />
       <div className="absolute inset-x-4 bottom-4 flex flex-col gap-1">
         <div className="flex items-center gap-2">
-          <span className="inline-flex h-[21px] items-center rounded-pill bg-brand-solid/55 px-[9px] text-caption-2 font-semibold text-white backdrop-blur-[2px]">
+          <span className="inline-flex h-[21px] items-center rounded-pill bg-brand-solid/55 px-[9px] text-caption-2 font-medium text-white backdrop-blur-[2px]">
             {poll.status === 'active' ? formatTimeLeft(poll.closes_at) : getStatusLabel(poll)}
           </span>
           <span className="inline-flex items-center gap-1 text-caption-2 text-white">
@@ -36,7 +36,7 @@ export function PollHeroCard({ poll }: { poll: PollListItem }) {
             {poll.vote_count.toLocaleString()}명
           </span>
         </div>
-        <p className="truncate text-headline-2 sm:text-headline-1 font-bold text-white">{poll.title}</p>
+        <p className="truncate text-headline-2 sm:text-headline-1 font-semibold text-white">{poll.title}</p>
         {poll.description && (
           <p className="mt-1 truncate text-caption-1 text-white/75">{poll.description}</p>
         )}

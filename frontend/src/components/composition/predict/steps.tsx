@@ -22,7 +22,7 @@ function nodeState(index: number, currentIndex: number): NodeState {
 function StepCircle({ state }: { state: NodeState }) {
   if (state === 'done') {
     return (
-      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-pill bg-brand-solid text-caption-2 font-black text-on-solid">
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-pill bg-brand-solid text-caption-2 font-medium text-on-solid">
         ✓
       </span>
     )
@@ -61,7 +61,7 @@ export function StepHero({ current, multi = false }: { current: StepKey; multi?:
   const step = STEP_META.find(s => s.key === current)!
   return (
     <div className="mt-5 text-left">
-      <p className="text-headline-1 font-extrabold text-brand">{step.name}</p>
+      <p className="text-headline-1 font-semibold text-brand">{step.name}</p>
       <p className="mt-1 text-label-2 text-neutral-muted">{stepDesc(step, multi)}</p>
     </div>
   )
@@ -81,7 +81,7 @@ export function StepTrackVertical({ current, multi = false }: { current: StepKey
               <div>
                 <span
                   className={cn(
-                    'text-label-1-normal font-bold',
+                    'text-label-1-normal font-medium',
                     state === 'pending' ? 'text-neutral-muted' : 'text-neutral',
                   )}
                 >

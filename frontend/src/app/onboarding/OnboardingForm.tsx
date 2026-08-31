@@ -23,7 +23,7 @@ export function OnboardingForm() {
         🧑
       </div>
 
-      <h1 className="text-heading-2 font-black text-neutral text-center mb-1.5">
+      <h1 className="text-heading-2 font-semibold text-neutral text-center mb-1.5">
         팬 이름을 정해주세요
       </h1>
       <p className="text-label-2 text-neutral-muted text-center mb-9">
@@ -33,7 +33,7 @@ export function OnboardingForm() {
 
       <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
         <div className="flex flex-col gap-1.5">
-          <label className="text-label-2 font-semibold text-neutral">닉네임</label>
+          <label className="text-label-2 font-medium text-neutral">닉네임</label>
           <input
             name="displayName"
             className="w-full px-3.5 py-3 rounded-sm border border-neutral-weak text-body-1-normal text-neutral bg-surface outline-none focus:border-brand-solid placeholder:text-placeholder"

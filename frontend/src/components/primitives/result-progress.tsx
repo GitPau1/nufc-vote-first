@@ -49,7 +49,7 @@ const ResultProgress = React.forwardRef<
     >
       <div className="flex min-w-0 items-center gap-2">
         {thumb ? (
-          <div className="flex size-[40px] shrink-0 items-center justify-center overflow-hidden rounded-pill bg-brand-solid text-caption-1 font-bold text-white">
+          <div className="flex size-[40px] shrink-0 items-center justify-center overflow-hidden rounded-pill bg-brand-solid text-caption-1 font-medium text-white">
             {thumb.url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={thumb.url} alt={thumb.label} className="h-full w-full object-cover" />

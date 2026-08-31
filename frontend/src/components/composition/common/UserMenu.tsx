@@ -57,7 +57,7 @@ export function UserMenu({ avatarUrl, displayName, isAdmin }: UserMenuProps) {
       >
         <Avatar className="h-8 w-8">
           <AvatarImage src={avatarUrl} alt={displayName ?? 'profile'} />
-          <AvatarFallback className="bg-brand-weak text-brand text-caption-1 font-bold">
+          <AvatarFallback className="bg-brand-weak text-brand text-caption-1 font-medium">
             {displayName?.[0]?.toUpperCase() ?? 'U'}
           </AvatarFallback>
         </Avatar>

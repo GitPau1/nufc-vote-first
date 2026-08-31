@@ -258,7 +258,7 @@ export function PredictionFlowClient({
       <button
         type="button"
         onClick={requestLeave}
-        className="hidden text-label-1-normal font-bold text-neutral-muted sm:mb-7 sm:inline-flex sm:items-center sm:gap-1.5"
+        className="hidden text-label-1-normal font-medium text-neutral-muted sm:mb-7 sm:inline-flex sm:items-center sm:gap-1.5"
       >
         ‹ 목록으로
       </button>
@@ -312,7 +312,7 @@ export function PredictionFlowClient({
                         <button
                           type="button"
                           onClick={() => copyPicks(pending[0].id, match.id)}
-                          className="text-label-2 font-bold text-brand"
+                          className="text-label-2 font-medium text-brand"
                         >
                           그대로 적용
                         </button>
@@ -347,7 +347,7 @@ export function PredictionFlowClient({
                       <SectionHead title="경기 예측" onEdit={() => setStep('score')} />
                       <div className="flex items-center justify-center gap-2 sm:gap-6">
                         <ConfirmTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
-                        <span className="text-title-2 font-black">
+                        <span className="text-title-2 font-semibold">
                           {scores[match.id]?.[0] ?? 0} – {scores[match.id]?.[1] ?? 0}
                         </span>
                         <ConfirmTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
@@ -371,7 +371,7 @@ export function PredictionFlowClient({
           )}
 
           {visibleError && (
-            <p role="alert" className="mt-3 text-center text-label-2 font-bold text-critical">
+            <p role="alert" className="mt-3 text-center text-label-2 font-medium text-critical">
               {visibleError}
             </p>
           )}
@@ -486,7 +486,7 @@ export function PredictionFlowClient({
 /** 더블 매치위크에서 이 블록이 어느 경기인지 — 예측/확인/완료/결과 화면이 같은 모양을 쓴다. */
 function MatchLabel({ index, opponent }: { index: number; opponent: string }) {
   return (
-    <p className="mb-2 text-label-2 font-extrabold text-neutral-muted">
+    <p className="mb-2 text-label-2 font-medium text-neutral-muted">
       경기 {index + 1} · {NUFC_LABEL} vs {opponent}
     </p>
   )
@@ -495,7 +495,7 @@ function MatchLabel({ index, opponent }: { index: number; opponent: string }) {
 function MatchMeta({ weekNo, match }: { weekNo: number; match: MatchView }) {
   return (
     <div className="text-center">
-      <p className="mb-1 text-label-2 font-extrabold text-neutral-muted">
+      <p className="mb-1 text-label-2 font-medium text-neutral-muted">
         {match.competition} · {weekNo}라운드
       </p>
       <p className="text-label-2 text-neutral-muted">
@@ -509,7 +509,7 @@ function TeamColumn({ logoUrl, name }: { logoUrl: string | null; name: string })
   return (
     <div className="flex w-[88px] flex-col items-center gap-2">
       <TeamBadge logoUrl={logoUrl} name={name} />
-      <span className="text-center text-label-1-normal font-extrabold">{name}</span>
+      <span className="text-center text-label-1-normal font-medium">{name}</span>
     </div>
   )
 }
@@ -518,7 +518,7 @@ function ConfirmTeam({ logoUrl, name }: { logoUrl: string | null; name: string }
   return (
     <div className="flex w-[88px] shrink-0 flex-col items-center gap-1.5">
       <TeamBadge logoUrl={logoUrl} name={name} />
-      <span className="text-label-2 font-bold text-neutral-muted">{name}</span>
+      <span className="text-label-2 font-medium text-neutral-muted">{name}</span>
     </div>
   )
 }
@@ -544,7 +544,7 @@ function ScoreStepper({ value, onChange }: { value: number; onChange: (delta: nu
       >
         +
       </button>
-      <div className="flex h-[52px] items-center justify-center border-y border-neutral-weak text-title-3 font-black">
+      <div className="flex h-[52px] items-center justify-center border-y border-neutral-weak text-title-3 font-semibold">
         {value}
       </div>
       <button
@@ -563,8 +563,8 @@ function ScoreStepper({ value, onChange }: { value: number; onChange: (delta: nu
 function SectionHead({ title, onEdit }: { title: string; onEdit: () => void }) {
   return (
     <div className="mb-2.5 flex items-center justify-between">
-      <span className="text-body-2-normal font-bold">{title}</span>
-      <button type="button" onClick={onEdit} className="text-label-2 font-bold text-brand">
+      <span className="text-body-2-normal font-semibold">{title}</span>
+      <button type="button" onClick={onEdit} className="text-label-2 font-medium text-brand">
         수정
       </button>
     </div>
@@ -593,19 +593,19 @@ function PositionRow({
               picked ? 'bg-surface' : 'bg-page',
             )}
           >
-            <span className="text-caption-1 font-extrabold text-neutral-muted">{POSITION_LABEL[position]}</span>
+            <span className="text-caption-1 font-medium text-neutral-muted">{POSITION_LABEL[position]}</span>
             <div className="my-2.5 h-px bg-neutral-weak" />
             {picked ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-1">
                 <PlayerPhoto url={picked.photoUrl} />
-                <p className="mt-0.5 text-center text-label-2 font-extrabold">{picked.name}</p>
+                <p className="mt-0.5 text-center text-label-2 font-medium">{picked.name}</p>
                 <ToonCost cost={picked.cost} />
               </div>
             ) : (
               <div className="flex flex-1 flex-col items-center justify-center gap-2">
                 {/* 손으로 조립한 실루엣 원 대신 PlayerPhoto의 폴백을 그대로 쓴다 — 폴백 톤이 한 곳에서만 정해진다. */}
                 <PlayerPhoto url={null} size={40} />
-                <span className="text-center text-caption-2 font-bold text-neutral-muted">
+                <span className="text-center text-caption-2 font-medium text-neutral-muted">
                   선수를
                   <br />
                   선택해요

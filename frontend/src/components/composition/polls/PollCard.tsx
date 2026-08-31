@@ -117,7 +117,7 @@ function PollFeedCard({ poll }: { poll: PollListItem }) {
             gap-3: justify-between이 만드는 여백은 row가 다른 카드보다 안 길면 0에 가까워질 수
             있어서, 제목/부제 묶음과 메타 줄 사이 최소 간격을 gap으로 따로 보장한다. */}
         <div className="flex min-w-0 flex-1 flex-col justify-between gap-3 self-stretch">
-          <p className="min-w-0 line-clamp-2 text-headline-2 font-bold text-neutral">{poll.title}</p>
+          <p className="min-w-0 line-clamp-2 text-headline-2 font-semibold text-neutral">{poll.title}</p>
           <div className="flex items-center justify-between text-caption-1 text-neutral-muted">
             <span className="inline-flex items-center gap-1">
               <Users className="h-3.5 w-3.5" />
@@ -161,7 +161,7 @@ function PollGridCard({ poll }: { poll: PollListItem }) {
           텍스트끼리 붙어 보일 수 있어서, 최소 간격을 gap으로 따로 보장한다. */}
       <div className="flex flex-1 flex-col justify-between gap-3 p-3.5">
         <div>
-          <p className="truncate text-headline-2 font-bold text-neutral">{poll.title}</p>
+          <p className="truncate text-headline-2 font-semibold text-neutral">{poll.title}</p>
           <p className="mt-0.5 line-clamp-2 text-label-1-normal text-neutral-muted">
             {poll.description || getOptionPreview(poll)}
           </p>

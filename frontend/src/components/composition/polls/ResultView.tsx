@@ -102,7 +102,7 @@ export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultVie
 
             <div className="px-4 pb-6 pt-2">
               <div className="flex flex-col items-center gap-1 pt-4 text-center">
-                <h1 className="break-keep text-heading-2 sm:text-heading-1 font-bold text-neutral">
+                <h1 className="break-keep text-heading-2 sm:text-heading-1 font-semibold text-neutral">
                   {poll.title}
                 </h1>
                 <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-caption-1 text-neutral-muted">
@@ -115,7 +115,7 @@ export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultVie
             <div className="mx-4 h-px bg-neutral-weak" />
 
             <div className="flex flex-col items-center gap-5 py-5">
-              <p className="text-center text-label-2 font-semibold text-neutral-strong">
+              <p className="text-center text-label-2 font-medium text-neutral-strong">
                 {isClosed ? '최종 결과' : '현재 결과'}
               </p>
 

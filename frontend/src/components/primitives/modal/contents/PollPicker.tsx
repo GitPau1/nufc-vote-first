@@ -85,7 +85,7 @@ export function PollPickerContent({
   return (
     <>
       <SheetHeader className="sr-only">
-        <SheetTitle className="text-body-1-normal font-black">선수 선택</SheetTitle>
+        <SheetTitle className="text-body-1-normal font-semibold">선수 선택</SheetTitle>
         <SheetDescription className="text-caption-1">
           {mode === 'single' ? '투표 대상 선수 1명을 선택합니다.' : '투표 후보로 올릴 선수를 선택합니다.'}
         </SheetDescription>
@@ -98,7 +98,7 @@ export function PollPickerContent({
           <input
             value={query}
             onChange={event => setQuery(event.target.value)}
-            className="min-w-0 flex-1 bg-transparent text-label-2 font-semibold outline-none"
+            className="min-w-0 flex-1 bg-transparent text-label-2 font-medium outline-none"
             placeholder="선수 검색"
           />
         </div>
@@ -110,7 +110,7 @@ export function PollPickerContent({
                 key={filter.id}
                 type="button"
                 onClick={() => setPlayerFilter(filter.id)}
-                className={`shrink-0 rounded-pill border px-2.5 py-1 text-caption-2 font-black transition-opacity hover:opacity-70 ${selected ? 'border-brand-solid bg-brand-solid text-on-solid' : 'border-neutral-weak bg-surface text-neutral-muted'}`}
+                className={`shrink-0 rounded-pill border px-2.5 py-1 text-caption-2 font-medium transition-opacity hover:opacity-70 ${selected ? 'border-brand-solid bg-brand-solid text-on-solid' : 'border-neutral-weak bg-surface text-neutral-muted'}`}
               >
                 {filter.label}
               </button>
@@ -120,12 +120,12 @@ export function PollPickerContent({
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto hide-scrollbar px-4 py-3">
         {positionGroups.length === 0 ? (
-          <p className="py-12 text-center text-label-2 font-semibold text-neutral-muted">검색 결과가 없습니다.</p>
+          <p className="py-12 text-center text-label-2 font-medium text-neutral-muted">검색 결과가 없습니다.</p>
         ) : (
           <div className="space-y-4">
             {positionGroups.map(positionGroup => (
               <section key={positionGroup.key} className="space-y-1.5">
-                <p className="px-0.5 text-caption-1 font-bold text-neutral-muted">{positionGroup.label}</p>
+                <p className="px-0.5 text-caption-1 font-medium text-neutral-muted">{positionGroup.label}</p>
                 {positionGroup.players.map(player => {
                   const selected = selectedIds.includes(player.id)
                   return (
@@ -135,7 +135,7 @@ export function PollPickerContent({
                       onClick={() => onToggle(player.id)}
                       className={`flex w-full items-center gap-3 rounded-sm border px-3 py-2 text-left transition-opacity hover:opacity-70 ${selected ? 'border-brand-solid bg-brand-weak' : 'border-neutral-weak bg-surface'}`}
                     >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-pill bg-disabled text-caption-1 font-black text-brand">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-pill bg-disabled text-caption-1 font-medium text-brand">
                         {player.photo_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={player.photo_url} alt="" className="h-full w-full object-cover" />
@@ -144,8 +144,8 @@ export function PollPickerContent({
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-label-2 font-black text-neutral">{player.name}</p>
-                        <p className="mt-0.5 text-caption-2 font-semibold text-neutral-muted">{getPlayerMeta(player)}</p>
+                        <p className="truncate text-label-2 font-medium text-neutral">{player.name}</p>
+                        <p className="mt-0.5 text-caption-2 font-medium text-neutral-muted">{getPlayerMeta(player)}</p>
                       </div>
                       <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-pill border ${selected ? 'border-brand-solid bg-brand-solid text-on-solid' : 'border-neutral-weak text-transparent'}`}>
                         <Check className="h-3.5 w-3.5" />

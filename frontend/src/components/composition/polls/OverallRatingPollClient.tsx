@@ -146,10 +146,10 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
           <div className="banner-text-overlay absolute inset-0" />
           <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
             <div className="mb-2 flex items-center gap-1.5">
-              <Badge className="border-0 bg-white/20 text-caption-2 font-semibold text-white backdrop-blur-sm pointer-events-none">전체 평가</Badge>
-              <Badge className="border-0 bg-brand-solid text-caption-2 font-semibold text-white hover:bg-brand-solid pointer-events-none">{completedCount}/{totalRequired} 완료</Badge>
+              <Badge className="border-0 bg-white/20 text-caption-2 font-medium text-white backdrop-blur-sm pointer-events-none">전체 평가</Badge>
+              <Badge className="border-0 bg-brand-solid text-caption-2 font-medium text-white hover:bg-brand-solid pointer-events-none">{completedCount}/{totalRequired} 완료</Badge>
             </div>
-            <h1 className="text-headline-2 sm:text-headline-1 font-black text-white">{poll.title}</h1>
+            <h1 className="text-headline-2 sm:text-headline-1 font-semibold text-white">{poll.title}</h1>
           </div>
         </div>
 
@@ -168,7 +168,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
                 type="button"
                 onClick={() => index <= stepIndex && setStepIndex(index)}
                 className={cn(
-                  'rounded-pill px-3 py-1.5 text-label-2 font-bold whitespace-nowrap',
+                  'rounded-pill px-3 py-1.5 text-label-2 font-medium whitespace-nowrap',
                   index === stepIndex ? 'bg-brand-solid text-white' : 'bg-disabled text-neutral-muted'
                 )}
               >
@@ -180,7 +180,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
           {currentGroup && (
             <section className="space-y-3">
               <div>
-                <p className="text-caption-2 font-bold uppercase text-brand">
+                <p className="text-caption-2 font-medium uppercase text-brand">
                   {POSITION_LABELS[currentGroup.position]}
                 </p>
                 <p className="mt-0.5 text-label-1-reading text-neutral-muted">
@@ -201,9 +201,9 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
                           className="h-12 w-12 rounded-md object-cover"
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-label-1-normal font-black text-neutral">{player.name}</p>
+                          <p className="truncate text-label-1-normal font-medium text-neutral">{player.name}</p>
                           <p className="text-caption-1 text-neutral-muted">{player.position} · #{player.squad_number ?? '-'}</p>
-                          <p className="mt-1 text-caption-2 font-semibold text-neutral-muted">
+                          <p className="mt-1 text-caption-2 font-medium text-neutral-muted">
                             출장 {stats?.appearances ?? 0} · 득점 {stats?.goals ?? 0} · 어시스트 {stats?.assists ?? 0}
                           </p>
                         </div>
@@ -218,7 +218,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
                               type="button"
                               onClick={() => setScore(player.id, option.score)}
                               className={cn(
-                                'rounded-lg border py-2 text-center text-caption-1 font-black transition-colors',
+                                'rounded-lg border py-2 text-center text-caption-1 font-medium transition-colors',
                                 selected ? 'border-brand-solid bg-brand-solid text-white' : 'border-neutral-weak bg-surface text-neutral'
                               )}
                             >

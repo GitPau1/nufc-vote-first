@@ -78,7 +78,7 @@ function CropControlsReplica() {
   const [crop, setCrop] = useState({ zoom: 1, x: 50, y: 50 })
   return (
     <div className="rounded-lg border border-dashed border-neutral-weak px-3 py-2">
-      <p className="text-label-1-normal font-semibold text-neutral-muted">대표 이미지 크롭</p>
+      <p className="text-label-1-normal font-medium text-neutral-muted">대표 이미지 크롭</p>
       <input type="file" accept="image/*" className="mt-2 block w-full text-caption-1" />
       <div className="mt-3 space-y-2">
         {/* 원본은 <canvas>. 실데이터 없이 비율만 보여주면 되므로 다른 스토리와 같은 placehold.co를 쓴다. */}
@@ -87,7 +87,7 @@ function CropControlsReplica() {
           alt=""
           className="aspect-[3/1] w-full rounded-lg bg-brand-solid object-cover"
         />
-        <label className="block text-label-1-normal font-bold text-neutral">
+        <label className="block text-label-1-normal font-medium text-neutral">
           확대
           <input
             type="range"
@@ -99,7 +99,7 @@ function CropControlsReplica() {
             className="mt-1 w-full"
           />
         </label>
-        <label className="block text-label-1-normal font-bold text-neutral">
+        <label className="block text-label-1-normal font-medium text-neutral">
           가로 위치
           <input
             type="range"
@@ -110,7 +110,7 @@ function CropControlsReplica() {
             className="mt-1 w-full"
           />
         </label>
-        <label className="block text-label-1-normal font-bold text-neutral">
+        <label className="block text-label-1-normal font-medium text-neutral">
           세로 위치
           <input
             type="range"

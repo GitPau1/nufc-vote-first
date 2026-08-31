@@ -59,7 +59,7 @@ export function AdminRatingsForm({
 
   return (
     <div>
-      <label className="block text-label-2 font-bold text-neutral-muted" htmlFor="fixture">
+      <label className="block text-label-2 font-medium text-neutral-muted" htmlFor="fixture">
         경기
       </label>
       <select
@@ -78,7 +78,7 @@ export function AdminRatingsForm({
       <div className="mt-6 flex flex-col gap-5">
         {POSITIONS.map(position => (
           <div key={position}>
-            <p className="mb-2 text-label-2 font-extrabold text-neutral">{POSITION_LABEL[position]}</p>
+            <p className="mb-2 text-label-2 font-medium text-neutral">{POSITION_LABEL[position]}</p>
             <div className="overflow-hidden rounded-lg border border-neutral-weak">
               {candidates[position].map((candidate, i) => (
                 <div
@@ -87,10 +87,10 @@ export function AdminRatingsForm({
                     i < candidates[position].length - 1 ? 'border-b border-neutral-weak' : ''
                   }`}
                 >
-                  <span className="w-7 shrink-0 text-center text-label-2 font-bold text-neutral-muted">
+                  <span className="w-7 shrink-0 text-center text-label-2 font-medium text-neutral-muted">
                     {candidate.squadNumber ?? '-'}
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-label-1-normal font-bold text-neutral">
+                  <span className="min-w-0 flex-1 truncate text-label-1-normal font-medium text-neutral">
                     {candidate.name}
                   </span>
                   <input
@@ -120,7 +120,7 @@ export function AdminRatingsForm({
       {message && (
         <p
           role="status"
-          className={`mt-4 text-center text-label-2 font-bold ${
+          className={`mt-4 text-center text-label-2 font-medium ${
             message.tone === 'ok' ? 'text-positive' : 'text-critical'
           }`}
         >

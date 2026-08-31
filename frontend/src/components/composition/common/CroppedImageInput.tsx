@@ -87,13 +87,13 @@ export function CroppedImageInput({
 
   return (
     <div className="rounded-lg border border-dashed border-neutral-weak px-3 py-2">
-      <p className="text-label-1-normal font-semibold text-neutral-muted">{label}</p>
+      <p className="text-label-1-normal font-medium text-neutral-muted">{label}</p>
       <input type="file" accept="image/*" onChange={handleSourceChange} className="mt-2 block w-full text-caption-1" />
       <input ref={hiddenFileRef} name={name} type="file" accept="image/webp" className="hidden" tabIndex={-1} />
       {sourceUrl && (
         <div className="mt-3 space-y-2">
           <canvas ref={previewRef} className={`${previewClassName} w-full rounded-lg bg-brand-solid object-cover`} />
-          <label className="block text-label-1-normal font-bold text-neutral">
+          <label className="block text-label-1-normal font-medium text-neutral">
             확대
             <input
               type="range"
@@ -105,7 +105,7 @@ export function CroppedImageInput({
               className="mt-1 w-full"
             />
           </label>
-          <label className="block text-label-1-normal font-bold text-neutral">
+          <label className="block text-label-1-normal font-medium text-neutral">
             가로 위치
             <input
               type="range"
@@ -116,7 +116,7 @@ export function CroppedImageInput({
               className="mt-1 w-full"
             />
           </label>
-          <label className="block text-label-1-normal font-bold text-neutral">
+          <label className="block text-label-1-normal font-medium text-neutral">
             세로 위치
             <input
               type="range"

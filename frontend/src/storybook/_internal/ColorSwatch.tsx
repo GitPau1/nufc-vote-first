@@ -46,7 +46,7 @@ export function ColorSwatch({ className, name, note, bordered, readProperty = 'b
           isBorder ? 'bg-surface' : bordered ? 'border border-neutral-weak' : ''
         }`}
       />
-      <div className="mt-2 text-label-2 font-bold text-neutral">{name}</div>
+      <div className="mt-2 text-label-2 font-medium text-neutral">{name}</div>
       <div className="mt-0.5 font-mono text-caption-2 text-neutral-muted">{value || '—'}</div>
       {note ? <div className="mt-1 text-caption-2 text-neutral-muted">{note}</div> : null}
     </div>
@@ -74,11 +74,11 @@ export function TextSwatch({ className, name, note }: Omit<ColorSwatchProps, 'bo
   return (
     <div className="w-32 font-sans">
       <div className="flex h-20 w-full items-center justify-center rounded-md border border-neutral-weak bg-surface">
-        <span ref={ref} className={`text-heading-2 font-bold ${className}`}>
+        <span ref={ref} className={`text-heading-2 font-semibold ${className}`}>
           Ag 가
         </span>
       </div>
-      <div className="mt-2 text-label-2 font-bold text-neutral">{name}</div>
+      <div className="mt-2 text-label-2 font-medium text-neutral">{name}</div>
       <div className="mt-0.5 font-mono text-caption-2 text-neutral-muted">{value || '—'}</div>
       {note ? <div className="mt-1 text-caption-2 text-neutral-muted">{note}</div> : null}
     </div>

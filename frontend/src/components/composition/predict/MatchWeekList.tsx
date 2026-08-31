@@ -153,7 +153,7 @@ export function MatchWeekList({
   return (
     <div className={className}>
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-title-3 font-black text-neutral">{monthLabel}</span>
+        <span className="text-title-3 font-semibold text-neutral">{monthLabel}</span>
         <div className="flex gap-0.5">
           <button
             type="button"
@@ -230,7 +230,7 @@ function WeekSessionCard({
       )}
     >
       <div className="mb-3 flex items-center gap-2">
-        <p className="text-headline-1 font-extrabold text-neutral">{week.weekNo}주차</p>
+        <p className="text-headline-1 font-semibold text-neutral">{week.weekNo}주차</p>
         {/* Badge 4종 variant는 전부 "옅은 틴트 배경 + 700단계 텍스트"라(badge.tsx:11-17)
             대비가 배지 안에서 닫혀 있다 — 글로우 컨테이너 위에서도 그대로 읽힌다. */}
         {!isEmpty && <Badge variant={badge.variant}>{badge.label}</Badge>}
@@ -320,7 +320,7 @@ function MatchInfoCard({
         카드 배경 위에서 AA(4.5:1) 미달이다(bg-page 2.37:1). 가라앉는 효과는 아래
         일자·시각·팀명 톤과 로고 흑백이 나르고 있다.
       */}
-      <p className={cn('mb-3 text-caption-1 font-bold', mutedText)}>
+      <p className={cn('mb-3 text-caption-1 font-medium', mutedText)}>
         {match.competition ?? '프리미어리그'}
       </p>
 
@@ -352,11 +352,11 @@ function MatchInfoCard({
           */}
           <span className={cn('text-caption-2', mutedText)}>{match.kickoff}</span>
           {match.finished ? (
-            <span className={cn('text-heading-1 font-black', dimmed ? mutedText : strongText)}>
+            <span className={cn('text-heading-1 font-semibold', dimmed ? mutedText : strongText)}>
               {match.actual?.[0]} : {match.actual?.[1]}
             </span>
           ) : (
-            <span className={cn('text-label-1-normal font-extrabold', dimmed ? mutedText : strongText)}>
+            <span className={cn('text-label-1-normal font-medium', dimmed ? mutedText : strongText)}>
               {match.kickoffTime}
             </span>
           )}
@@ -380,7 +380,7 @@ function MatchInfoCard({
         >
           예측 {match.myResult.predicted[0]}-{match.myResult.predicted[1]}
           {hasScore && (
-            <span className="font-extrabold text-brand">
+            <span className="font-medium text-brand">
               {' '}
               +{match.myResult.totalPoints}점
             </span>
@@ -418,7 +418,7 @@ function TeamSide({
 }) {
   const logo = <TeamBadge logoUrl={logoUrl} name={name} size={32} grayscale={grayscale} />
   const label = (
-    <span className={cn('min-w-0 truncate text-caption-1 font-bold', nameClassName)}>{name}</span>
+    <span className={cn('min-w-0 truncate text-caption-1 font-medium', nameClassName)}>{name}</span>
   )
 
   return (

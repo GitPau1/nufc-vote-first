@@ -71,7 +71,7 @@ export function PlayersPageClient({ players }: PlayersPageClientProps) {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center gap-1 py-20">
-            <p className="text-label-1-normal font-semibold text-neutral">검색 결과가 없습니다</p>
+            <p className="text-label-1-normal font-medium text-neutral">검색 결과가 없습니다</p>
             <p className="text-caption-1 text-neutral-muted">다른 이름이나 포지션으로 찾아보세요</p>
           </div>
         )}
@@ -286,11 +286,11 @@ function PickOneSection({ players }: { players: PlayerListItem[] }) {
   return (
     <section className="mb-3 overflow-hidden rounded-lg border border-neutral-weak bg-surface">
       <div className="flex justify-center border-b border-neutral-weak px-3.5 pb-3 pt-3">
-        <p className="whitespace-nowrap text-body-1-normal font-bold text-neutral-strong">
+        <p className="whitespace-nowrap text-body-1-normal font-semibold text-neutral-strong">
           여러분의 선택은?
         </p>
       </div>
-      <div className="flex items-center justify-center px-4 pt-3 text-caption-1 font-semibold text-neutral-muted">
+      <div className="flex items-center justify-center px-4 pt-3 text-caption-1 font-medium text-neutral-muted">
         {getRemainingChoiceLabel(choiceStatusLoaded, remainingChoices)}
       </div>
 
@@ -332,7 +332,7 @@ function PickOneSection({ players }: { players: PlayerListItem[] }) {
       <Link
         href="/players/changes"
         onClick={() => trackEvent('player_rating_changes_clicked', { source_page: 'players' })}
-        className="mx-4 mb-4 flex h-10 items-center justify-center rounded-md bg-disabled text-body-2-normal font-bold text-neutral-strong active:bg-disabled"
+        className="mx-4 mb-4 flex h-10 items-center justify-center rounded-md bg-disabled text-body-2-normal font-semibold text-neutral-strong active:bg-disabled"
       >
         이번주 변경 내역
       </Link>
@@ -432,11 +432,11 @@ function PickOneCard({
         {player.photoUrl ? (
           <img src={player.photoUrl} alt="" className="h-full w-full object-cover" />
         ) : (
-          <span className="text-caption-1 font-semibold text-brand">{player.position}</span>
+          <span className="text-caption-1 font-medium text-brand">{player.position}</span>
         )}
       </div>
       <div className="w-full text-center">
-        <p className="truncate text-label-1-normal font-semibold text-white">
+        <p className="truncate text-label-1-normal font-medium text-white">
           {player.name}
         </p>
         <div className="flex items-center justify-center gap-3 text-caption-2 text-disabled">
@@ -454,7 +454,7 @@ function PlayerRow({ player }: { player: PlayerListItem }) {
   return (
     <div className="flex h-[68px] items-center gap-2.5 px-3.5 py-2.5">
       <div className="relative h-6 w-6 flex-shrink-0">
-        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-label-2 font-semibold text-neutral-muted">
+        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-label-2 font-medium text-neutral-muted">
           {player.rank}
         </span>
       </div>
@@ -468,7 +468,7 @@ function PlayerRow({ player }: { player: PlayerListItem }) {
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-label-1-normal font-semibold text-neutral">
+        <p className="truncate text-label-1-normal font-medium text-neutral">
           {player.name}
         </p>
         <div className="flex items-center gap-3 text-caption-2 text-neutral-muted">

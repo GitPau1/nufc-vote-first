@@ -47,12 +47,12 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
           <div className="banner-text-overlay absolute inset-0" />
           <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
             <div className="mb-2 flex items-center gap-1.5">
-              <Badge className="border-0 bg-white/20 text-caption-2 font-semibold text-white backdrop-blur-sm pointer-events-none">전체 평가</Badge>
+              <Badge className="border-0 bg-white/20 text-caption-2 font-medium text-white backdrop-blur-sm pointer-events-none">전체 평가</Badge>
               {hasVoted && (
-                <Badge className="border-0 bg-brand-solid text-caption-2 font-semibold text-white hover:bg-brand-solid pointer-events-none">평가 완료</Badge>
+                <Badge className="border-0 bg-brand-solid text-caption-2 font-medium text-white hover:bg-brand-solid pointer-events-none">평가 완료</Badge>
               )}
             </div>
-            <h1 className="text-headline-2 sm:text-headline-1 font-black text-white">{poll.title}</h1>
+            <h1 className="text-headline-2 sm:text-headline-1 font-semibold text-white">{poll.title}</h1>
           </div>
         </div>
 
@@ -65,12 +65,12 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
             <section key={group.value} className="space-y-3">
               <div className="flex items-end justify-between">
                 <div>
-                  <p className="text-caption-2 font-bold uppercase text-brand">
+                  <p className="text-caption-2 font-medium uppercase text-brand">
                     {group.value}
                   </p>
-                  <h2 className="text-body-1-normal font-black text-neutral">{group.label}</h2>
+                  <h2 className="text-body-1-normal font-semibold text-neutral">{group.label}</h2>
                 </div>
-                <p className="text-caption-1 font-semibold text-neutral-muted">
+                <p className="text-caption-1 font-medium text-neutral-muted">
                   {group.results.length}명
                 </p>
               </div>
@@ -91,12 +91,12 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
                             className="h-[52px] w-[52px] rounded-md object-cover"
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-label-1-normal font-black text-neutral">{result.player.name}</p>
+                            <p className="truncate text-label-1-normal font-medium text-neutral">{result.player.name}</p>
                             <p className="text-caption-1 text-neutral-muted">{result.player.position} · #{result.player.squad_number ?? '-'}</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-body-1-normal font-black text-brand">{result.grade}</p>
-                            <p className="text-caption-2 font-semibold text-neutral-muted">
+                            <p className="text-body-1-normal font-semibold text-brand">{result.grade}</p>
+                            <p className="text-caption-2 font-medium text-neutral-muted">
                               평균 {result.average_score.toFixed(1)} · {result.vote_count}명
                             </p>
                           </div>
@@ -104,11 +104,11 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
 
                         {visibleComments.length > 0 && (
                           <div className="space-y-2">
-                            <p className="text-caption-2 font-bold uppercase text-brand">팬 코멘트</p>
+                            <p className="text-caption-2 font-medium uppercase text-brand">팬 코멘트</p>
                             {visibleComments.map(comment => (
                               <div key={comment.id} className="rounded-md bg-disabled/70 px-3 py-2.5">
                                 <div className="mb-1 flex items-center justify-between gap-2">
-                                  <span className="text-caption-2 font-bold text-neutral-muted">
+                                  <span className="text-caption-2 font-medium text-neutral-muted">
                                     {comment.user.display_name ?? '뉴캐슬 팬'} · {comment.grade}
                                   </span>
                                   <button
@@ -118,7 +118,7 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
                                       await toggleRatingCommentLike(comment.id, poll.id)
                                     })}
                                     className={cn(
-                                      'flex items-center gap-1 text-caption-2 font-bold',
+                                      'flex items-center gap-1 text-caption-2 font-medium',
                                       comment.is_liked ? 'text-brand' : 'text-neutral-muted'
                                     )}
                                   >

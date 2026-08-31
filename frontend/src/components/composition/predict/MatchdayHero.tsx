@@ -74,7 +74,7 @@ function TeamBadge({ id, name, align }: { id: number; name: string; align: 'star
       className={`flex w-[88px] flex-col items-center gap-1.5 ${align === 'end' ? 'justify-self-end' : 'justify-self-start'}`}
     >
       {logoUrl && <img src={logoUrl} alt="" className="h-11 w-11 object-contain" />}
-      <p className="max-w-[88px] truncate text-caption-1 font-semibold text-on-solid">{name}</p>
+      <p className="max-w-[88px] truncate text-caption-1 font-medium text-on-solid">{name}</p>
     </div>
   )
 }
@@ -82,7 +82,7 @@ function TeamBadge({ id, name, align }: { id: number; name: string; align: 'star
 function CountdownBox({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex w-14 flex-col items-center gap-0.5 rounded-sm bg-on-solid-strong py-1.5">
-      <p className="text-headline-1 font-black tabular-nums text-on-solid">{String(value).padStart(2, '0')}</p>
+      <p className="text-headline-1 font-semibold tabular-nums text-on-solid">{String(value).padStart(2, '0')}</p>
       <p className="text-caption-2 text-on-solid-muted">{label}</p>
     </div>
   )
@@ -118,11 +118,11 @@ function RatingCard({
       </div>
       <div className="min-w-0 flex-1">
         <p className={`text-caption-2 ${isAward ? 'text-neutral-strong' : 'text-on-solid-muted'}`}>{label}</p>
-        <p className={`truncate text-label-1-normal font-bold ${isAward ? 'text-neutral' : 'text-on-solid'}`}>
+        <p className={`truncate text-label-1-normal font-medium ${isAward ? 'text-neutral' : 'text-on-solid'}`}>
           {player.name}
         </p>
       </div>
-      <p className={`text-headline-1 font-black tabular-nums ${isAward ? 'text-neutral' : 'text-on-solid'}`}>
+      <p className={`text-headline-1 font-semibold tabular-nums ${isAward ? 'text-neutral' : 'text-on-solid'}`}>
         {player.rating.toFixed(1)}
       </p>
     </div>
@@ -178,7 +178,7 @@ export function MatchdayHero({ fixture, href }: { fixture: MatchdayFixture; href
   return (
     <div className="spotlight-glow-brand-strong relative overflow-hidden rounded-lg px-4 pb-4 pt-5">
       {fixture.competitionName && (
-        <p className="text-center text-caption-2 font-semibold text-on-solid-muted">
+        <p className="text-center text-caption-2 font-medium text-on-solid-muted">
           {fixture.competitionName}
         </p>
       )}
@@ -193,9 +193,9 @@ export function MatchdayHero({ fixture, href }: { fixture: MatchdayFixture; href
             <p className="text-caption-2 text-on-solid-muted">승부차기({fixture.shootoutScore})</p>
           )}
           {displayScore ? (
-            <p className="text-title-3 font-black tabular-nums text-on-solid">{displayScore}</p>
+            <p className="text-title-3 font-semibold tabular-nums text-on-solid">{displayScore}</p>
           ) : (
-            <p className="text-headline-1 font-bold text-on-solid-muted">{fixture.finished ? '종료' : 'VS'}</p>
+            <p className="text-headline-1 font-semibold text-on-solid-muted">{fixture.finished ? '종료' : 'VS'}</p>
           )}
         </div>
         <TeamBadge id={fixture.awayId} name={fixture.awayName} align="start" />

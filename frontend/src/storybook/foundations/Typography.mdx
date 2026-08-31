@@ -17,7 +17,7 @@ export const VALUE_COLUMNS = ['크기', '행간', '자간']
 
 폰트는 **Pretendard Variable**이다. 타입 스케일은 Wanted Design Library의 역할 기반 스케일을 그대로 쓴다 — 크기가 아니라 **역할**로 고른다.
 
-크기와 굵기는 독립된 축이다. `text-body-1-normal`로 크기를 정하고 `font-bold`로 굵기를 따로 정한다.
+크기와 굵기는 독립된 축이다 — `text-body-1-normal`로 크기를 정하고, 굵기는 아래 [굵기(Weight)](#굵기-weight) 4단계에서 따로 고른다.
 
 **`1`/`2` 접미사는 화면 단위(데스크탑/모바일)를 뜻하는 경우가 많다** — 위계가 다른 별개의 역할이 아니라, **같은 역할을 어떤 화면 크기에서 쓰느냐**의 구분이다.
 - `heading-1`(데스크탑) ↔ `heading-2`(모바일) — 둘 다 "섹션 제목" 역할, 화면 크기만 다르다.
@@ -31,6 +31,29 @@ export const VALUE_COLUMNS = ['크기', '행간', '자간']
 | 그다음 단계 | `title-2` | `title-3` |
 
 그래서 `title-1`은 **이중 역할**이다 — 모바일에서는 `display-1`(데스크탑)과 같은 최상위 히어로, 데스크탑에서는 `title-2`(모바일)와 같은 한 단계 작은 역할이다. `title-2`도 마찬가지로 이중 역할.
+
+## 굵기 (Weight)
+
+크기와 굵기는 **독립된 축**이다 — 크기 토큰(`text-heading-2` 등)으로 크기를 정하고, 굵기는 아래 **4단계에서만** 고른다. 이 4개 밖의 굵기(`font-thin`·`font-extralight`·`font-light`·`font-extrabold`·`font-black`)는 쓰지 않는다.
+
+| 유틸 | 값 | 언제 쓰나 |
+|---|---|---|
+| `font-normal` | 400 | 모든 본문·라벨·캡션의 **기본값** (대개 굵기 클래스를 아예 안 붙인 상태) |
+| `font-medium` | 500 | label·caption처럼 **작은 텍스트를 살짝 강조**할 때 |
+| `font-semibold` | 600 | 제목류·버튼·본문 강조 — **일반적인 "굵게"는 여기서 끝난다** |
+| `font-bold` | 700 | **Display 전용.** `display-1`·`display-2` 밖에서는 쓰지 않는다 |
+
+**역할별 표준 굵기** — 어떤 크기 토큰엔 어떤 굵기가 기본인지:
+
+| 역할 | 표준 굵기 |
+|---|---|
+| Display (`display-1`, `display-2`) | `font-bold` (700) |
+| 제목류 (`title-1/2/3`, `heading-1/2`, `headline-1/2`) | `font-semibold` (600) |
+| 버튼·투표 옵션 (`body-2-normal`) | `font-semibold` (600) — 버튼 primitive가 기본으로 준다 |
+| 본문 (`body-1-*`, `body-2-reading`) | 기본 `font-normal`(400) / 강조 시 `font-semibold`(600) |
+| 라벨·캡션 (`label-*`, `caption-*`) | 기본 `font-normal`(400) / 강조 시 `font-medium`(500) |
+
+이 규칙은 `design-foundation.test.mjs`가 강제한다 — **Display 밖의 `font-bold`**, 그리고 `font-extrabold`·`font-black`은 테스트가 막는다.
 
 ## Display · Title
 
@@ -93,10 +116,11 @@ export const VALUE_COLUMNS = ['크기', '행간', '자간']
 1. 이 텍스트의 **역할**이 무엇인가 — 제목인가, 본문인가, 라벨인가, 메타인가
 2. 그 역할이 **데스크탑용인가 모바일용인가** — `heading-1`/`heading-2`, `headline-1`/`headline-2`, `display-1`/`title-1`처럼 같은 역할의 화면 단위별 짝이 있으면 그중에서 고른다
 3. 여러 줄로 흐르는가? → `reading` 변형이 있으면 그걸 쓴다
-4. 강조가 필요하면 **크기를 올리지 말고** `font-bold`를 쓴다
+4. 강조가 필요하면 **크기를 올리지 말고** 굵기를 올린다 — 제목·본문은 `font-semibold`(600), 라벨·캡션은 `font-medium`(500). ([굵기(Weight)](#굵기-weight) 참고)
 
 ## 하지 말 것
 
 - `text-[15px]`, `leading-[22px]`, `tracking-[-0.5px]` 같은 임의값을 만들지 않는다.
 - Tailwind 기본 크기(`text-sm`, `text-lg` 등)를 쓰지 않는다 — 우리 스케일과 값이 다르다.
-- 위 두 항목은 `design-foundation.test.mjs`가 막는다.
+- `font-extrabold`·`font-black`을 쓰지 않는다. `font-bold`(700)는 Display 밖에서 쓰지 않는다 — 굵기 4단계에서만 고른다.
+- 위 항목들은 `design-foundation.test.mjs`가 막는다.

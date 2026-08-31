@@ -41,7 +41,7 @@ export function ConfirmContent({
           블록에 내가 고른 선택지를 텍스트로만 보여준다. */}
       <div className="rounded-sm bg-page px-4 py-3.5 mb-5">
         <p className="text-caption-2 text-neutral-muted mb-0.5">{summaryCaption}</p>
-        <p className="text-label-1-normal font-semibold text-neutral">{selectedLabel}</p>
+        <p className="text-label-1-normal font-medium text-neutral">{selectedLabel}</p>
       </div>
 
       {/* 버튼 */}

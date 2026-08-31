@@ -31,14 +31,14 @@ export function TokenList({ items, valueColumns = ['값'] }: { items: Array<Toke
       <table className="w-full border-collapse text-left">
         <thead>
           <tr className="border-b border-neutral-weak">
-            <th className="w-32 py-2 pr-3 text-label-2 font-bold text-neutral-muted">샘플</th>
+            <th className="w-32 py-2 pr-3 text-label-2 font-medium text-neutral-muted">샘플</th>
             {valueColumns.map((label) => (
-              <th key={label} className="w-32 py-2 pr-3 text-label-2 font-bold text-neutral-muted">
+              <th key={label} className="w-32 py-2 pr-3 text-label-2 font-medium text-neutral-muted">
                 {label}
               </th>
             ))}
-            <th className="w-56 py-2 pr-3 text-label-2 font-bold text-neutral-muted">이름</th>
-            <th className="py-2 text-label-2 font-bold text-neutral-muted">언제 쓰는가</th>
+            <th className="w-56 py-2 pr-3 text-label-2 font-medium text-neutral-muted">이름</th>
+            <th className="py-2 text-label-2 font-medium text-neutral-muted">언제 쓰는가</th>
           </tr>
         </thead>
         <tbody>

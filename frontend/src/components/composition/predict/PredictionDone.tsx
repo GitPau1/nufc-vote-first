@@ -81,7 +81,7 @@ export function PredictionDone({
 
   const intro = (align: 'center' | 'left') => (
     <div className={align === 'center' ? 'text-center' : 'text-left'}>
-      <p className="text-headline-1 font-extrabold text-neutral">{week.weekNo}주차 제출 완료</p>
+      <p className="text-headline-1 font-semibold text-neutral">{week.weekNo}주차 제출 완료</p>
       <p className="mt-1 text-label-2 text-neutral-muted">킥오프 전까지 언제든 결과를 확인하러 다시 와주세요</p>
     </div>
   )
@@ -103,12 +103,12 @@ export function PredictionDone({
           {missedMatches.map(match => (
             <div key={match.id} className="mb-4">
               {isMulti && (
-                <p className="mb-2 text-label-2 font-extrabold text-neutral-muted">
+                <p className="mb-2 text-label-2 font-medium text-neutral-muted">
                   {NUFC_LABEL} vs {match.opponent}
                 </p>
               )}
               <div className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
-                <p className="mb-2.5 text-body-2-normal font-bold">경기 예측</p>
+                <p className="mb-2.5 text-body-2-normal font-semibold">경기 예측</p>
                 <p className="px-4 pb-4 pt-5 text-center text-label-1-normal text-neutral-muted">
                   이 경기는 예측 마감 시간이 지나 참여하지 못했어요
                 </p>
@@ -123,15 +123,15 @@ export function PredictionDone({
             return (
               <div key={match.id} className={cn(i > 0 && 'mt-4')}>
                 {isMulti && (
-                  <p className="mb-2 text-label-2 font-extrabold text-neutral-muted">
+                  <p className="mb-2 text-label-2 font-medium text-neutral-muted">
                     경기 {i + 1} · {NUFC_LABEL} vs {match.opponent}
                   </p>
                 )}
                 <div className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
-                  <p className="mb-2.5 text-body-2-normal font-bold">경기 예측</p>
+                  <p className="mb-2.5 text-body-2-normal font-semibold">경기 예측</p>
                   <div className="flex items-center justify-center gap-2 sm:gap-6">
                     <MatchupTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
-                    <span className="text-title-2 font-black">
+                    <span className="text-title-2 font-semibold">
                       {ourScore} – {theirScore}
                     </span>
                     <MatchupTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
@@ -142,7 +142,7 @@ export function PredictionDone({
                   {match.finished && (
                     <div className="mt-4 rounded-md bg-page px-4 py-3 text-center">
                       <p className="text-caption-1 text-neutral-muted">실제 결과</p>
-                      <p className="text-label-1-normal font-extrabold">
+                      <p className="text-label-1-normal font-medium">
                         {match.actual ? match.actual.join(' – ') : '스코어 집계 중'}
                       </p>
                       {match.actual && (
@@ -151,7 +151,7 @@ export function PredictionDone({
                     </div>
                   )}
 
-                  <p className="mb-2.5 mt-7 text-body-2-normal font-bold">내 선수 픽</p>
+                  <p className="mb-2.5 mt-7 text-body-2-normal font-semibold">내 선수 픽</p>
                   {/* 모바일은 행 리스트, 데스크탑은 포지션 카드 3개 (퍼블리싱 동일) */}
                   <div className="sm:hidden">
                     <PickResultList picks={picks} />
@@ -216,15 +216,15 @@ function Countdown({ targetIso, pendingCount }: { targetIso: string | null; pend
 
   return (
     <div className="mb-4 rounded-lg bg-neutral-strong px-4 pb-[18px] pt-5 text-center">
-      <p className="mb-2.5 text-caption-1 font-bold text-on-solid-muted">
+      <p className="mb-2.5 text-caption-1 font-medium text-on-solid-muted">
         결과 반영까지{pendingCount > 1 && ' (늦은 경기 종료 기준)'}
       </p>
       <div className="flex items-start justify-center gap-2.5">
         {segments.map((segment, i) => (
           <div key={segment.unit} className="flex items-start gap-2.5">
-            {i > 0 && <span className="mt-px text-heading-2 font-black text-on-solid-muted">:</span>}
+            {i > 0 && <span className="mt-px text-heading-2 font-semibold text-on-solid-muted">:</span>}
             <div className="flex min-w-[34px] flex-col items-center gap-[3px]">
-              <span className="text-title-3 font-black tabular-nums text-on-solid">{segment.value}</span>
+              <span className="text-title-3 font-semibold tabular-nums text-on-solid">{segment.value}</span>
               <span className="text-caption-2 text-on-solid-muted">{segment.unit}</span>
             </div>
           </div>
@@ -247,11 +247,11 @@ function PickResultList({ picks }: { picks: PickedPlayer[] }) {
           key={pick.position}
           className={cn('bg-surface p-3', i < picks.length - 1 && 'border-b border-neutral-weak')}
         >
-          <p className="mb-2 text-caption-2 font-bold text-neutral-muted">{POSITION_LABEL[pick.position]}</p>
+          <p className="mb-2 text-caption-2 font-medium text-neutral-muted">{POSITION_LABEL[pick.position]}</p>
           <div className="flex items-center gap-2.5">
             <PlayerPhoto url={pick.photoUrl} size={48} />
             <div className="flex min-w-0 flex-1 flex-col items-start gap-[3px]">
-              <p className="truncate text-label-1-normal font-extrabold text-neutral">
+              <p className="truncate text-label-1-normal font-medium text-neutral">
                 {pick.name ?? '선수 정보 없음'}
               </p>
             </div>
@@ -266,19 +266,19 @@ function PickResultList({ picks }: { picks: PickedPlayer[] }) {
 function PickCard({ pick }: { pick: PickedPlayer }) {
   return (
     <div className="flex min-h-[196px] min-w-0 flex-1 flex-col rounded-lg border border-neutral-weak bg-surface p-3">
-      <span className="text-caption-1 font-extrabold text-neutral-muted">{POSITION_LABEL[pick.position]}</span>
+      <span className="text-caption-1 font-medium text-neutral-muted">{POSITION_LABEL[pick.position]}</span>
       <div className="my-2.5 h-px bg-neutral-weak" />
       <div className="flex flex-1 flex-col items-center justify-center gap-1">
         {pick.name ? (
           <>
             <PlayerPhoto url={pick.photoUrl} />
-            <p className="mt-0.5 text-center text-label-2 font-extrabold">{pick.name}</p>
+            <p className="mt-0.5 text-center text-label-2 font-medium">{pick.name}</p>
           </>
         ) : (
           <>
             {/* 손으로 조립한 실루엣 원 대신 PlayerPhoto의 폴백을 그대로 쓴다 — 폴백 톤이 한 곳에서만 정해진다. */}
             <PlayerPhoto url={null} size={40} />
-            <p className="mt-0.5 text-center text-label-2 font-extrabold text-neutral-muted">선수 정보 없음</p>
+            <p className="mt-0.5 text-center text-label-2 font-medium text-neutral-muted">선수 정보 없음</p>
           </>
         )}
       </div>
@@ -300,7 +300,7 @@ function HitBadge({ hit }: { hit: MatchHit }) {
   return (
     <span
       className={cn(
-        'mt-2 inline-flex rounded-pill px-[9px] py-[3px] text-caption-2 font-bold',
+        'mt-2 inline-flex rounded-pill px-[9px] py-[3px] text-caption-2 font-medium',
         hit === 'miss' ? 'bg-critical-weak text-critical' : 'bg-positive-weak text-positive',
       )}
     >
@@ -313,7 +313,7 @@ function MatchupTeam({ logoUrl, name }: { logoUrl: string | null; name: string }
   return (
     <div className="flex w-[88px] shrink-0 flex-col items-center gap-1.5">
       <TeamBadge logoUrl={logoUrl} name={name} />
-      <span className="text-label-2 font-bold text-neutral-muted">{name}</span>
+      <span className="text-label-2 font-medium text-neutral-muted">{name}</span>
     </div>
   )
 }
