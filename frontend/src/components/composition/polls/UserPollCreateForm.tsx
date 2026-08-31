@@ -212,7 +212,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
           </div>
         </section>
 
-        <section className="space-y-2.5 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
+        <section className="space-y-3 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
           <p className="text-label-1-normal font-medium text-neutral">기본 정보</p>
           <input name="title" required className="input-field" placeholder="투표 제목" />
           <input name="description" className="input-field" placeholder="설명(선택)" />
@@ -229,7 +229,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
         </section>
 
         {pollType === 'subject_options' ? (
-          <section className="space-y-2.5 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
+          <section className="space-y-3 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
             <div className="flex items-center justify-between gap-3">
               <p className="text-label-1-normal font-medium text-neutral">대상 선수</p>
               <button type="button" onClick={() => openPlayerPicker('single')} className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-disabled px-2.5 text-caption-1 font-medium text-neutral">
@@ -255,7 +255,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
             )}
           </section>
         ) : pollType === 'free_choice' ? (
-          <section className="space-y-2.5 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
+          <section className="space-y-3 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
             <p className="text-label-1-normal font-medium text-neutral">선택지</p>
             <div className="space-y-1.5">
               {freeOptions.map((option, index) => (
@@ -301,7 +301,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
             )}
           </section>
         ) : (
-          <section className="space-y-2.5 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
+          <section className="space-y-3 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-label-1-normal font-medium text-neutral">{pollType === 'overall_rating' ? '평가 대상 선수' : '후보 선수'}</p>

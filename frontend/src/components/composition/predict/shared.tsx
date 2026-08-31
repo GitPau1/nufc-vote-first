@@ -162,7 +162,7 @@ export function BudgetBar({ spent, total = 5 }: { spent: number; total?: number 
         <span
           role="tooltip"
           className={cn(
-            'pointer-events-none absolute right-0 top-full z-10 mt-2 w-52 rounded-md bg-neutral-strong px-3 py-2.5 text-caption-2 font-medium text-on-solid shadow-w200 transition-opacity duration-micro group-hover:opacity-100',
+            'pointer-events-none absolute right-0 top-full z-10 mt-2 w-52 rounded-md bg-neutral-strong px-3 py-2 text-caption-2 font-medium text-on-solid shadow-w200 transition-opacity duration-micro group-hover:opacity-100',
             helpOpen ? 'opacity-100' : 'opacity-0',
           )}
         >

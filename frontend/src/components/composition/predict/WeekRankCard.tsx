@@ -71,7 +71,7 @@ export function WeekRankCard({
             <button
               type="button"
               onClick={() => setExpanded(true)}
-              className="mt-3 flex w-full items-center justify-center rounded-md border border-neutral-weak p-2.5 text-label-2 font-medium text-neutral-muted transition-colors duration-micro hover:border-neutral-strong"
+              className="mt-3 flex w-full items-center justify-center rounded-md border border-neutral-weak p-3 text-label-2 font-medium text-neutral-muted transition-colors duration-micro hover:border-neutral-strong"
             >
               전체보기 · {entries.length}명
             </button>
@@ -84,7 +84,7 @@ export function WeekRankCard({
 
 function HeaderRow() {
   return (
-    <div className="sticky top-0 z-[1] flex items-center gap-2 bg-surface px-1 pb-2.5">
+    <div className="sticky top-0 z-[1] flex items-center gap-2 bg-surface px-1 pb-2">
       <span className="w-8 shrink-0 text-center text-caption-2 font-medium text-neutral-muted">순위</span>
       <span className="h-7 w-7 shrink-0" />
       <span className="min-w-0 flex-1" />
@@ -99,7 +99,7 @@ function RankRow({ entry }: { entry: RankingRow }) {
   return (
     <div
       className={cn(
-        'flex items-center gap-2 border-b border-neutral-weak px-1 py-2.5 last:border-b-0',
+        'flex items-center gap-2 border-b border-neutral-weak px-1 py-3 last:border-b-0',
         entry.isMe && 'rounded-md border-b-0 bg-brand-weak px-2',
       )}
     >

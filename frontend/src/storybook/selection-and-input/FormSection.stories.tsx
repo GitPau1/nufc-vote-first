@@ -10,7 +10,7 @@ type Story = StoryObj<typeof meta>
 
 export const Shell: Story = {
   render: () => (
-    <section className="w-96 space-y-2.5 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
+    <section className="w-96 space-y-3 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
       <p className="text-label-1-normal font-medium text-neutral">기본 정보</p>
       <input className="input-field" placeholder="투표 제목" />
       <input className="input-field" placeholder="설명(선택)" />
@@ -20,7 +20,7 @@ export const Shell: Story = {
 
 export const PickerEmpty: Story = {
   render: () => (
-    <section className="w-96 space-y-2.5 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
+    <section className="w-96 space-y-3 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
       <div className="flex items-center justify-between gap-3">
         <p className="text-label-1-normal font-medium text-neutral">대상 선수</p>
         <button
@@ -39,7 +39,7 @@ export const PickerEmpty: Story = {
 
 export const PickerSelected: Story = {
   render: () => (
-    <section className="w-96 space-y-2.5 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
+    <section className="w-96 space-y-3 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
       <div className="flex items-center justify-between gap-3">
         <p className="text-label-1-normal font-medium text-neutral">대상 선수</p>
         <button

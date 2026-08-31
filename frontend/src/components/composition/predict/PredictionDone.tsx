@@ -108,7 +108,7 @@ export function PredictionDone({
                 </p>
               )}
               <div className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
-                <p className="mb-2.5 text-body-2-normal font-semibold">경기 예측</p>
+                <p className="mb-3 text-body-2-normal font-semibold">경기 예측</p>
                 <p className="px-4 pb-4 pt-5 text-center text-label-1-normal text-neutral-muted">
                   이 경기는 예측 마감 시간이 지나 참여하지 못했어요
                 </p>
@@ -128,7 +128,7 @@ export function PredictionDone({
                   </p>
                 )}
                 <div className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
-                  <p className="mb-2.5 text-body-2-normal font-semibold">경기 예측</p>
+                  <p className="mb-3 text-body-2-normal font-semibold">경기 예측</p>
                   <div className="flex items-center justify-center gap-2 sm:gap-6">
                     <MatchupTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
                     <span className="text-title-2 font-semibold">
@@ -151,12 +151,12 @@ export function PredictionDone({
                     </div>
                   )}
 
-                  <p className="mb-2.5 mt-7 text-body-2-normal font-semibold">내 선수 픽</p>
+                  <p className="mb-3 mt-7 text-body-2-normal font-semibold">내 선수 픽</p>
                   {/* 모바일은 행 리스트, 데스크탑은 포지션 카드 3개 (퍼블리싱 동일) */}
                   <div className="sm:hidden">
                     <PickResultList picks={picks} />
                   </div>
-                  <div className="hidden sm:flex sm:gap-2.5">
+                  <div className="hidden sm:flex sm:gap-2">
                     {picks.map(pick => (
                       <PickCard key={pick.position} pick={pick} />
                     ))}
@@ -216,7 +216,7 @@ function Countdown({ targetIso, pendingCount }: { targetIso: string | null; pend
 
   return (
     <div className="mb-4 rounded-lg bg-neutral-strong px-4 pb-5 pt-5 text-center">
-      <p className="mb-2.5 text-caption-1 font-medium text-on-solid-muted">
+      <p className="mb-2 text-caption-1 font-medium text-on-solid-muted">
         결과 반영까지{pendingCount > 1 && ' (늦은 경기 종료 기준)'}
       </p>
       <div className="flex items-start justify-center gap-2.5">
@@ -267,7 +267,7 @@ function PickCard({ pick }: { pick: PickedPlayer }) {
   return (
     <div className="flex min-h-[196px] min-w-0 flex-1 flex-col rounded-lg border border-neutral-weak bg-surface p-3">
       <span className="text-caption-1 font-medium text-neutral-muted">{POSITION_LABEL[pick.position]}</span>
-      <div className="my-2.5 h-px bg-neutral-weak" />
+      <div className="my-2 h-px bg-neutral-weak" />
       <div className="flex flex-1 flex-col items-center justify-center gap-1">
         {pick.name ? (
           <>

@@ -111,7 +111,7 @@ export function PollHomeSection({ title, polls, action }: PollHomeSectionProps) 
         <button
           type="button"
           onClick={() => setMobileVisible(v => v + MOBILE_STEP)}
-          className="mt-3 w-full rounded-md border border-neutral-weak py-2.5 text-label-2 font-medium text-neutral-muted transition-opacity hover:opacity-70 sm:hidden"
+          className="mt-3 w-full rounded-md border border-neutral-weak py-3 text-label-2 font-medium text-neutral-muted transition-opacity hover:opacity-70 sm:hidden"
         >
           더보기
         </button>

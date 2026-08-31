@@ -36,7 +36,7 @@ export function OnboardingForm() {
           <label className="text-label-2 font-medium text-neutral">닉네임</label>
           <input
             name="displayName"
-            className="w-full px-3.5 py-3 rounded-sm border border-neutral-weak text-body-1-normal text-neutral bg-surface outline-none focus:border-brand-solid placeholder:text-placeholder"
+            className="w-full px-4 py-3 rounded-sm border border-neutral-weak text-body-1-normal text-neutral bg-surface outline-none focus:border-brand-solid placeholder:text-placeholder"
             placeholder="예: 까치사랑해"
             maxLength={12}
             autoFocus

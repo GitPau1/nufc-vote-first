@@ -325,7 +325,7 @@ export function PredictionFlowClient({
                       0,
                     )}
                   />
-                  <div className="mt-2.5">
+                  <div className="mt-3">
                     <PositionRow
                       picks={picks[match.id] ?? {}}
                       onOpen={position => setPickTarget({ matchId: match.id, position })}
@@ -562,7 +562,7 @@ function ScoreStepper({ value, onChange }: { value: number; onChange: (delta: nu
 
 function SectionHead({ title, onEdit }: { title: string; onEdit: () => void }) {
   return (
-    <div className="mb-2.5 flex items-center justify-between">
+    <div className="mb-3 flex items-center justify-between">
       <span className="text-body-2-normal font-semibold">{title}</span>
       <button type="button" onClick={onEdit} className="text-label-2 font-medium text-brand">
         수정
@@ -580,7 +580,7 @@ function PositionRow({
   onOpen: (position: Position) => void
 }) {
   return (
-    <div className="flex gap-2.5">
+    <div className="flex gap-2">
       {POSITIONS.map(position => {
         const picked = picks[position]
         return (
@@ -594,7 +594,7 @@ function PositionRow({
             )}
           >
             <span className="text-caption-1 font-medium text-neutral-muted">{POSITION_LABEL[position]}</span>
-            <div className="my-2.5 h-px bg-neutral-weak" />
+            <div className="my-2 h-px bg-neutral-weak" />
             {picked ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-1">
                 <PlayerPhoto url={picked.photoUrl} />

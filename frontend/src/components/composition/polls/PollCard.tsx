@@ -159,7 +159,7 @@ function PollGridCard({ poll }: { poll: PollListItem }) {
           메타 줄만 패널 바닥까지 밀어내 남는 세로 공간을 전부 쓴다.
           gap-3: 같은 행 카드들 높이가 다 비슷하면 justify-between의 여백이 0에 가까워져
           텍스트끼리 붙어 보일 수 있어서, 최소 간격을 gap으로 따로 보장한다. */}
-      <div className="flex flex-1 flex-col justify-between gap-3 p-3.5">
+      <div className="flex flex-1 flex-col justify-between gap-3 p-4">
         <div>
           <p className="truncate text-headline-2 font-semibold text-neutral">{poll.title}</p>
           <p className="mt-0.5 line-clamp-2 text-label-1-normal text-neutral-muted">

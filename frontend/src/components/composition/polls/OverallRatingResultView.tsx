@@ -106,7 +106,7 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
                           <div className="space-y-2">
                             <p className="text-caption-1 font-medium uppercase text-brand">팬 코멘트</p>
                             {visibleComments.map(comment => (
-                              <div key={comment.id} className="rounded-md bg-disabled/70 px-3 py-2.5">
+                              <div key={comment.id} className="rounded-md bg-disabled/70 px-3 py-2">
                                 <div className="mb-1 flex items-center justify-between gap-2">
                                   <span className="text-caption-2 font-medium text-neutral-muted">
                                     {comment.user.display_name ?? '뉴캐슬 팬'} · {comment.grade}

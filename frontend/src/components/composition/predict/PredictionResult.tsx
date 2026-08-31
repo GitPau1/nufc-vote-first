@@ -134,7 +134,7 @@ function SegmentButton({
       type="button"
       onClick={onClick}
       className={cn(
-        'flex-1 rounded-pill px-1 py-2.5 text-label-2 font-medium transition-colors duration-micro',
+        'flex-1 rounded-pill px-1 py-2 text-label-2 font-medium transition-colors duration-micro',
         active ? 'bg-brand-solid text-on-solid' : 'text-neutral-muted',
       )}
     >
@@ -157,7 +157,7 @@ function Hero({
     return (
       <div className="mb-4 rounded-lg bg-neutral-strong px-4 py-5 text-center">
         <p className="text-caption-1 text-on-solid-muted">{weekNo}주차 결과</p>
-        <p className="mt-2.5 text-label-1-normal font-medium text-on-solid">
+        <p className="mt-2 text-label-1-normal font-medium text-on-solid">
           이 기간에는 예측에 참여하지 않았어요
         </p>
       </div>
@@ -177,7 +177,7 @@ function Hero({
         )}
       </p>
 
-      <div className="mt-4 flex justify-center gap-5 rounded-md bg-on-solid-strong px-4 py-3.5">
+      <div className="mt-4 flex justify-center gap-5 rounded-md bg-on-solid-strong px-4 py-4">
         <HeroStat label="경기예측" value={`${summary.matchPoints}점`} />
         <HeroStat label="선수픽" value={`${summary.pickPoints}점`} />
         <HeroStat label="총점" value={`${total}점`} />
@@ -228,7 +228,7 @@ function MatchResultBlock({
   if (state.kind === 'pending') {
     return (
       <>
-        <p className="mb-2.5 text-body-2-normal font-semibold">경기 예측</p>
+        <p className="mb-3 text-body-2-normal font-semibold">경기 예측</p>
         <div className="px-4 pb-4 pt-5 text-center">
           <p className="text-label-1-normal text-neutral-muted">
             {match.kickoff} {match.kickoffTime} 예정 · 아직 시작하지 않은 경기예요
@@ -242,7 +242,7 @@ function MatchResultBlock({
 
   return (
     <>
-      <p className="mb-2.5 text-body-2-normal font-semibold">경기 예측</p>
+      <p className="mb-3 text-body-2-normal font-semibold">경기 예측</p>
       <div className="px-4 pb-4 pt-5 text-center">
         <PointsBadge matchPoints={scored?.matchPoints ?? null} />
 
@@ -269,7 +269,7 @@ function MatchResultBlock({
         </div>
       </div>
 
-      <p className="mb-2.5 mt-7 text-body-2-normal font-semibold">내 선수 픽</p>
+      <p className="mb-3 mt-7 text-body-2-normal font-semibold">내 선수 픽</p>
       {/* 모바일은 세로 행 리스트, 데스크탑은 포지션 카드 3장(퍼블리싱과 동일) */}
       <div className="overflow-hidden rounded-lg border border-neutral-weak sm:hidden">
         {POSITIONS.map(position => (
@@ -280,7 +280,7 @@ function MatchResultBlock({
           />
         ))}
       </div>
-      <div className="hidden sm:flex sm:gap-2.5">
+      <div className="hidden sm:flex sm:gap-2">
         {POSITIONS.map(position => (
           <PickResultCard
             key={position}
@@ -386,7 +386,7 @@ function PickResultCard({ position, pick }: { position: Position; pick: Resolved
   return (
     <div className="flex min-h-[196px] min-w-0 flex-1 flex-col rounded-lg border border-neutral-weak bg-surface p-3">
       <span className="text-caption-1 font-medium text-neutral-muted">{POSITION_LABEL[position]}</span>
-      <div className="my-2.5 h-px bg-neutral-weak" />
+      <div className="my-2 h-px bg-neutral-weak" />
       {pick ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-1">
           <PlayerPhoto url={pick.photoUrl} />

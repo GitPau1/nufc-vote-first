@@ -86,7 +86,7 @@ export function FeedbackContent({ onClose }: FeedbackContentProps) {
         value={category}
         onChange={e => setCategory(e.target.value as FeedbackCategory)}
         aria-label="피드백 카테고리"
-        className="w-full rounded-sm border border-neutral-weak bg-surface px-3.5 py-3 text-body-1-reading text-neutral outline-none focus:border-brand-solid"
+        className="w-full rounded-sm border border-neutral-weak bg-surface px-4 py-3 text-body-1-reading text-neutral outline-none focus:border-brand-solid"
       >
         {FEEDBACK_CATEGORIES.map(c => (
           <option key={c} value={c}>{FEEDBACK_CATEGORY_LABELS[c]}</option>
@@ -97,7 +97,7 @@ export function FeedbackContent({ onClose }: FeedbackContentProps) {
       <textarea
         value={content}
         onChange={e => setContent(e.target.value.slice(0, 500))}
-        className="min-h-[140px] w-full resize-none rounded-sm border border-neutral-weak bg-surface px-3.5 py-3 text-body-1-reading text-neutral outline-none placeholder:text-placeholder focus:border-brand-solid"
+        className="min-h-[140px] w-full resize-none rounded-sm border border-neutral-weak bg-surface px-4 py-3 text-body-1-reading text-neutral outline-none placeholder:text-placeholder focus:border-brand-solid"
         placeholder="자세한 내용을 남겨주세요."
         maxLength={500}
       />

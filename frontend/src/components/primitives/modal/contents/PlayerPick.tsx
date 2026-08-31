@@ -102,7 +102,7 @@ function PlayerPickRow({
       disabled={disabled}
       aria-pressed={selected}
       className={cn(
-        'flex w-full items-center justify-between gap-2.5 rounded-md border border-neutral-weak bg-surface px-3.5 py-2.5 text-left transition-[border-color,background-color,transform] duration-micro',
+        'flex w-full items-center justify-between gap-2.5 rounded-md border border-neutral-weak bg-surface px-4 py-3 text-left transition-[border-color,background-color,transform] duration-micro',
         selected
           ? 'border-brand-solid bg-brand-weak'
           : disabled

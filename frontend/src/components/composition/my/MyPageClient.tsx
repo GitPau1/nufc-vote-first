@@ -162,7 +162,7 @@ export function MyPageClient({
                   <div key={item.pollId}>
                     {i > 0 && <Separator />}
                     <Link href={`/polls/${item.pollId}`} className="block active:bg-disabled transition-colors">
-                      <div className="flex items-center gap-3 px-4 py-3.5 hover:bg-disabled/50 transition-colors">
+                      <div className="flex items-center gap-3 px-4 py-4 hover:bg-disabled/50 transition-colors">
                         <div className="flex-1 min-w-0">
                           <p className="text-label-1-normal font-medium text-neutral line-clamp-1">
                             {item.pollTitle}

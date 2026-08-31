@@ -55,7 +55,7 @@ export function PlayersPageClient({ players }: PlayersPageClientProps) {
       </div>
 
       <div className="overflow-hidden rounded-lg border border-neutral-weak bg-surface">
-        <div className="flex items-center justify-between border-b border-neutral-weak px-3.5 pb-2 pt-3 text-caption-2 font-medium text-neutral-subtle">
+        <div className="flex items-center justify-between border-b border-neutral-weak px-4 pb-2 pt-3 text-caption-2 font-medium text-neutral-subtle">
           <div className="flex items-center gap-[66px]">
             <span>순위</span>
             <span>이름</span>
@@ -285,7 +285,7 @@ function PickOneSection({ players }: { players: PlayerListItem[] }) {
 
   return (
     <section className="mb-3 overflow-hidden rounded-lg border border-neutral-weak bg-surface">
-      <div className="flex justify-center border-b border-neutral-weak px-3.5 pb-3 pt-3">
+      <div className="flex justify-center border-b border-neutral-weak px-4 pb-3 pt-3">
         <p className="whitespace-nowrap text-body-1-normal font-semibold text-neutral-strong">
           여러분의 선택은?
         </p>
@@ -452,7 +452,7 @@ function PlayerRow({ player }: { player: PlayerListItem }) {
   const tone = positionTone[player.position] ?? 'bg-disabled text-neutral-muted'
 
   return (
-    <div className="flex h-[68px] items-center gap-2.5 px-3.5 py-2.5">
+    <div className="flex h-[68px] items-center gap-2.5 px-4 py-3">
       <div className="relative h-6 w-6 flex-shrink-0">
         <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-label-2 font-medium text-neutral-muted">
           {player.rank}

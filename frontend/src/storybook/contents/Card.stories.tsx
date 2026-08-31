@@ -91,7 +91,7 @@ export const ListContainer: Story = {
         {['이번 시즌 최고의 활약을 펼친 선수는?', '다음 경기 선발 골키퍼는?'].map((title, i) => (
           <div key={title}>
             {i > 0 && <Separator />}
-            <div className="flex items-center gap-3 px-4 py-3.5">
+            <div className="flex items-center gap-3 px-4 py-4">
               <div className="min-w-0 flex-1">
                 <p className="line-clamp-1 text-label-1-normal font-medium text-neutral">{title}</p>
                 <p className="mt-1 text-caption-2 text-neutral-muted">알렉산더 이삭 · 2026.08.20</p>
