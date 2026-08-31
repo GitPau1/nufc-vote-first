@@ -85,7 +85,9 @@ export function PredictionResult({
                   경기 {i + 1} · {NUFC_LABEL} vs {match.opponent}
                 </p>
               )}
-              <div className="animate-enter rounded-lg border border-neutral-weak bg-surface px-4 py-5 text-left">
+              {/* 흰 Card 안이라 보더 카드를 겹치면 이중 프레임이 된다 — WeekRankCard·히어로·제출 화면
+                  SummarySection과 같은 "카드 안 회색 패널(bg-page)"로 맞춘다. */}
+              <div className="animate-enter rounded-lg bg-page px-4 py-5 text-left">
                 <MatchResultBlock
                   match={match}
                   state={matchResultState(match, results)}
@@ -243,7 +245,9 @@ function MatchResultBlock({
     return (
       <>
         <p className="mb-3 text-body-2-normal font-semibold">경기 예측</p>
-        <div className="px-4 pb-4 pt-5 text-center">
+        {/* 스코어보드가 들어갈 자리 — 아직 비교할 값이 없어도 같은 흰 패널을 써서
+            한 주차에 끝난 경기와 안 끝난 경기가 섞여도 블록 모양이 흔들리지 않게 한다. */}
+        <div className="rounded-md bg-surface px-4 py-6 text-center">
           <p className="text-label-1-normal text-neutral-muted">
             {match.kickoff} {match.kickoffTime} 예정 · 아직 시작하지 않은 경기예요
           </p>
@@ -257,35 +261,37 @@ function MatchResultBlock({
   return (
     <>
       <p className="mb-3 text-body-2-normal font-semibold">경기 예측</p>
-      <div className="px-4 pb-4 pt-5 text-center">
-        <PointsBadge matchPoints={scored?.matchPoints ?? null} />
-
-        <div className="flex items-center justify-center gap-2 sm:gap-6">
+      {/* 스코어보드 — 회색 블록 위의 흰 패널(페이지 위 Card와 같은 관계)이라 안쪽 "실제" 행이
+          다시 bg-page로 눌릴 수 있다. 팀을 열로 세우고 "내 예측"과 "실제"를 같은 열에 위아래로
+          붙여, 두 스코어가 세로로 맞물려 읽히게 한다(전에는 배지 사이 스코어와 별도 박스로 떨어져 있었다).
+          왼쪽 열이 뉴캐슬 — `ourScoreOrder`와 `MatchView.actual` 둘 다 [우리, 상대] 순서다. */}
+      <div className="rounded-md bg-surface p-3 sm:p-4">
+        <div className="flex items-center gap-2 px-2">
+          <span aria-hidden className={SCORE_LABEL_CELL_CLASS} />
           <MatchupTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
-          <div className="flex min-w-0 flex-col items-center gap-0.5">
-            <span className="whitespace-nowrap text-caption-1 text-neutral-muted">내 예측</span>
-            {scored ? (
-              <span className="whitespace-nowrap text-heading-1 font-semibold">
-                {ourScoreOrder(scored.predicted, match.isHome).join(' – ')}
-              </span>
-            ) : (
-              <span className="whitespace-nowrap text-label-1-normal font-medium">미참여</span>
-            )}
-          </div>
+          <span aria-hidden className={SCORE_DIVIDER_CELL_CLASS} />
           <MatchupTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
         </div>
 
-        <div className="mt-6 rounded-md bg-page px-4 py-3">
-          <p className="text-caption-1 text-neutral-muted">실제 결과</p>
-          <p className="text-label-1-normal font-medium">
-            {match.actual ? match.actual.join(' – ') : '스코어 집계 중'}
-          </p>
-        </div>
+        {/* 미참여는 배지 하나로만 말한다 — 스코어 칸까지 "미참여"를 반복하면 한 행에 같은 말이 두 번 나온다. */}
+        <ScoreCompareRow
+          label="내 예측"
+          badge={<PointsBadge matchPoints={scored?.matchPoints ?? null} />}
+          score={scored ? ourScoreOrder(scored.predicted, match.isHome) : null}
+          fallback="–"
+        />
+        <ScoreCompareRow
+          label="실제 결과"
+          score={match.actual}
+          fallback="스코어 집계 중"
+          className="rounded-md bg-page"
+        />
       </div>
 
       <p className="mb-3 mt-7 text-body-2-normal font-semibold">내 선수 픽</p>
-      {/* 모바일은 세로 행 리스트, 데스크탑은 포지션 카드 3장(퍼블리싱과 동일) */}
-      <div className="overflow-hidden rounded-lg border border-neutral-weak sm:hidden">
+      {/* 모바일은 세로 행 리스트, 데스크탑은 포지션 카드 3장(퍼블리싱과 동일).
+          회색 블록 위라 흰 행/카드 자체가 경계를 만든다 — 보더는 얹지 않는다(이중 프레임 방지). */}
+      <div className="overflow-hidden rounded-lg sm:hidden">
         {POSITIONS.map(position => (
           <PickResultRow
             key={position}
@@ -368,9 +374,62 @@ function PointsBadge({ matchPoints }: { matchPoints: number | null }) {
   const label = matchPoints === null ? '미참여' : matchPoints > 0 ? `+${matchPoints}점` : '0점'
 
   return (
-    <span className={cn(badgeVariants({ variant: 'bare' }), 'mb-4', style)}>
+    <span className={cn(badgeVariants({ variant: 'bare' }), style)}>
       {label}
     </span>
+  )
+}
+
+/**
+ * 스코어보드의 열 폭 — 팀 축(헤더)과 스코어 행이 **같은 상수**를 참조해야 숫자가 세로로 맞물린다.
+ * 한쪽만 고치면 정렬이 조용히 어긋나므로 리터럴을 양쪽에 복제하지 마라.
+ */
+const SCORE_LABEL_CELL_CLASS = 'w-16 shrink-0 sm:w-24'
+const SCORE_DIVIDER_CELL_CLASS = 'w-4 shrink-0'
+/** 숫자 한 칸 — 팀 축 칸과 같은 flex-1이라 팀과 스코어가 한 열로 읽힌다. */
+const SCORE_CELL_CLASS = 'min-w-0 flex-1 text-center text-heading-1 font-semibold text-neutral'
+
+/**
+ * 스코어보드 한 행 — 왼쪽 라벨(내 예측 행은 그 아래 적중 배지) + 팀별 숫자 두 칸.
+ * 값이 없으면 숫자 칸 자리를 `fallback`이 대신한다. 상태를 무엇이 말하는지는 호출부가 정한다:
+ * 내 예측 행은 배지가 "미참여"를 말하므로 중립 대시, 배지가 없는 실제 결과 행은 "스코어 집계 중" 문구.
+ */
+function ScoreCompareRow({
+  label,
+  badge,
+  score,
+  fallback,
+  className,
+}: {
+  label: string
+  badge?: React.ReactNode
+  score: [number, number] | null
+  fallback: string
+  className?: string
+}) {
+  return (
+    <div className={cn('mt-2 flex items-center gap-2 px-2 py-2', className)}>
+      <div className={SCORE_LABEL_CELL_CLASS}>
+        <p className="break-keep text-caption-1 text-neutral-muted">{label}</p>
+        {badge && <div className="mt-1">{badge}</div>}
+      </div>
+      {score ? (
+        <>
+          <span className={SCORE_CELL_CLASS}>{score[0]}</span>
+          <span
+            aria-hidden
+            className={cn(SCORE_DIVIDER_CELL_CLASS, 'text-center text-body-2-normal text-neutral-subtle')}
+          >
+            –
+          </span>
+          <span className={SCORE_CELL_CLASS}>{score[1]}</span>
+        </>
+      ) : (
+        <p className="min-w-0 flex-1 text-center text-label-1-normal font-medium text-neutral-muted">
+          {fallback}
+        </p>
+      )}
+    </div>
   )
 }
 
@@ -398,7 +457,7 @@ function PickResultRow({ position, pick }: { position: Position; pick: ResolvedP
 
 function PickResultCard({ position, pick }: { position: Position; pick: ResolvedPick }) {
   return (
-    <div className="flex min-h-[196px] min-w-0 flex-1 flex-col rounded-lg border border-neutral-weak bg-surface p-3">
+    <div className="flex min-h-[196px] min-w-0 flex-1 flex-col rounded-lg bg-surface p-3">
       <span className="text-caption-1 font-medium text-neutral-muted">{POSITION_LABEL[position]}</span>
       <div className="my-2 h-px bg-neutral-weak" />
       {pick ? (
@@ -424,11 +483,13 @@ function PickResultCard({ position, pick }: { position: Position; pick: Resolved
   )
 }
 
+/** 스코어보드 팀 축 한 칸 — 아래 스코어 칸과 같은 폭(flex-1)이라 팀과 숫자가 한 열로 읽힌다. */
 function MatchupTeam({ logoUrl, name }: { logoUrl: string | null; name: string }) {
   return (
-    <div className="flex w-[88px] shrink-0 flex-col items-center gap-1.5">
+    <div className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
       <TeamBadge logoUrl={logoUrl} name={name} />
-      <span className="text-label-2 font-medium text-neutral-muted">{name}</span>
+      {/* 모바일에서 칸이 좁아 접힐 수 있다 — 자르지 않고 어절 단위로 줄바꿈한다(라벨 칸과 같은 규칙). */}
+      <span className="break-keep text-center text-label-2 font-medium text-neutral-muted">{name}</span>
     </div>
   )
 }
