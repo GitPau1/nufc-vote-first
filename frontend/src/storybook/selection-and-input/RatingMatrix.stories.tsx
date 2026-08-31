@@ -24,7 +24,7 @@ function RatingRow({ initial }: { initial: number | null }) {
             type="button"
             onClick={() => setScore(option.score)}
             className={cn(
-              'rounded-lg border py-2 text-center text-caption-1 font-black transition-colors',
+              'rounded-lg border py-2 text-center font-medium transition-colors',
               selected ? 'border-brand-solid bg-brand-solid text-white' : 'border-neutral-weak bg-surface text-neutral'
             )}
           >

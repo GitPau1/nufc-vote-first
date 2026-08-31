@@ -31,7 +31,7 @@ export default async function PlayerRatingChangesPage() {
       <AppHeader showAuth={false} />
       <main className="mx-auto min-h-[calc(100vh-56px)] max-w-shell bg-page px-4 pb-24 pt-4">
         <div className="mb-3">
-          <Link href="/players" className="inline-flex items-center gap-1.5 text-label-1-normal font-semibold text-neutral-muted">
+          <Link href="/players" className="inline-flex items-center gap-1.5 text-label-1-normal font-medium text-neutral-muted">
             <ChevronLeft className="h-4 w-4" />
             역대 선수
           </Link>
@@ -39,8 +39,8 @@ export default async function PlayerRatingChangesPage() {
 
         <section className="overflow-hidden rounded-lg border border-neutral-weak bg-surface">
           <div className="border-b border-neutral-weak px-4 py-4">
-            <h1 className="text-heading-2 font-bold text-neutral">이번주 변경 내역</h1>
-            <p className="mt-1 text-caption-1 text-neutral-muted">
+            <h1 className="text-heading-2 sm:text-heading-1 font-semibold text-neutral">이번주 변경 내역</h1>
+            <p className="mt-1 text-label-1-reading text-neutral-muted">
               {week
                 ? `${formatDate(week.weekStartAt)} - ${formatDate(week.weekEndAt)} 반영 결과`
                 : '아직 공개된 변경 내역이 없습니다'}
@@ -62,20 +62,20 @@ export default async function PlayerRatingChangesPage() {
                     className="grid min-h-[70px] grid-cols-[minmax(0,1fr)_54px_54px_44px] items-center gap-2 px-4 py-3"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-label-1-normal font-semibold text-neutral">
+                      <p className="truncate text-label-1-normal font-medium text-neutral">
                         {change.playerName}
                       </p>
                       <p className="mt-0.5 text-caption-2 text-neutral-muted">
                         {change.position} · {change.wins}승 {change.losses}패
                       </p>
                     </div>
-                    <span className="text-center text-label-1-normal font-semibold text-neutral-muted">
+                    <span className="text-center text-label-1-normal font-medium text-neutral-muted">
                       {change.previousOverall}
                     </span>
-                    <span className="text-center text-label-1-normal font-semibold text-neutral">
+                    <span className="text-center text-label-1-normal font-medium text-neutral">
                       {change.newOverall}
                     </span>
-                    <span className={`text-right text-label-1-normal font-bold ${change.delta > 0 ? 'text-positive' : change.delta < 0 ? 'text-critical' : 'text-neutral-muted'}`}>
+                    <span className={`text-right text-label-1-normal font-medium ${change.delta > 0 ? 'text-positive' : change.delta < 0 ? 'text-critical' : 'text-neutral-muted'}`}>
                       {formatDelta(change.delta)}
                     </span>
                   </div>
@@ -84,7 +84,7 @@ export default async function PlayerRatingChangesPage() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center gap-2 px-4 py-20 text-center">
-              <p className="text-label-1-normal font-semibold text-neutral">아직 공개된 변경 내역이 없습니다</p>
+              <p className="text-label-1-normal font-medium text-neutral">아직 공개된 변경 내역이 없습니다</p>
               <p className="text-caption-1 text-neutral-muted">
                 매주 일요일 00:00에 지난 한 주의 선택이 반영됩니다.
               </p>

@@ -57,7 +57,7 @@ export function UserMenu({ avatarUrl, displayName, isAdmin }: UserMenuProps) {
       >
         <Avatar className="h-8 w-8">
           <AvatarImage src={avatarUrl} alt={displayName ?? 'profile'} />
-          <AvatarFallback className="bg-brand-weak text-brand text-caption-1 font-bold">
+          <AvatarFallback className="bg-brand-weak text-brand text-caption-1 font-medium">
             {displayName?.[0]?.toUpperCase() ?? 'U'}
           </AvatarFallback>
         </Avatar>
@@ -68,7 +68,7 @@ export function UserMenu({ avatarUrl, displayName, isAdmin }: UserMenuProps) {
           <Link
             href="/my"
             onClick={() => setOpen(false)}
-            className="block px-4 py-2.5 text-label-2 font-medium text-neutral border-b border-neutral-weak hover:bg-disabled"
+            className="block px-4 py-3 text-label-2 font-medium text-neutral border-b border-neutral-weak hover:bg-disabled"
           >
             마이페이지
           </Link>
@@ -76,7 +76,7 @@ export function UserMenu({ avatarUrl, displayName, isAdmin }: UserMenuProps) {
           <Link
             href="/my/feedback"
             onClick={() => setOpen(false)}
-            className="block px-4 py-2.5 text-label-2 font-medium text-neutral border-b border-neutral-weak hover:bg-disabled"
+            className="block px-4 py-3 text-label-2 font-medium text-neutral border-b border-neutral-weak hover:bg-disabled"
           >
             피드백 남기기
           </Link>
@@ -85,7 +85,7 @@ export function UserMenu({ avatarUrl, displayName, isAdmin }: UserMenuProps) {
             <Link
               href="/admin"
               onClick={() => setOpen(false)}
-              className="block px-4 py-2.5 text-label-2 font-medium text-neutral border-b border-neutral-weak hover:bg-disabled"
+              className="block px-4 py-3 text-label-2 font-medium text-neutral border-b border-neutral-weak hover:bg-disabled"
             >
               관리자 페이지
             </Link>
@@ -93,7 +93,7 @@ export function UserMenu({ avatarUrl, displayName, isAdmin }: UserMenuProps) {
 
           <button
             onClick={handleLogout}
-            className="block w-full text-left px-4 py-2.5 text-label-2 font-medium text-critical hover:bg-critical-weak"
+            className="block w-full text-left px-4 py-3 text-label-2 font-medium text-critical hover:bg-critical-weak"
           >
             로그아웃
           </button>

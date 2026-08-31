@@ -5,6 +5,7 @@ import { Coins, Wallet, CircleHelp } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/primitives/avatar'
 import { Button } from '@/components/primitives/button'
 import { cn } from '@/lib/utils'
+import { badgeVariants } from '@/components/primitives/badge'
 
 /**
  * 팀 엠블럼(Storage public URL은 lib/predictions/week.ts의 teamLogoUrl이 만든다). 없거나 실패하면 이니셜 원형으로 폴백.
@@ -29,7 +30,7 @@ export function TeamBadge({
       <span
         aria-hidden
         className={cn(
-          'flex shrink-0 items-center justify-center rounded-pill bg-disabled text-label-1-normal font-black text-neutral-muted',
+          'flex shrink-0 items-center justify-center rounded-pill bg-disabled text-label-1-normal font-medium text-neutral-muted',
           grayscale && 'grayscale'
         )}
         style={{ width: size, height: size }}
@@ -121,7 +122,8 @@ export function ToonCost({ cost, className }: { cost: number; className?: string
     <span
       aria-label={`${cost}툰`}
       className={cn(
-        'inline-flex items-center gap-1 rounded-pill px-[9px] py-[3px] text-caption-2 font-semibold',
+        badgeVariants({ variant: 'bare' }),
+        'gap-1',
         TOON_TIER[cost] ?? TOON_TIER[2],
         className,
       )}
@@ -162,7 +164,7 @@ export function BudgetBar({ spent, total = 5 }: { spent: number; total?: number 
         <span
           role="tooltip"
           className={cn(
-            'pointer-events-none absolute right-0 top-full z-10 mt-2 w-52 rounded-md bg-neutral-strong px-3 py-2.5 text-caption-2 font-medium text-on-solid shadow-w200 transition-opacity duration-micro group-hover:opacity-100',
+            'pointer-events-none absolute right-0 top-full z-10 mt-2 w-52 rounded-md bg-neutral-strong px-3 py-2 text-caption-2 font-medium text-on-solid shadow-w200 transition-opacity duration-micro group-hover:opacity-100',
             helpOpen ? 'opacity-100' : 'opacity-0',
           )}
         >

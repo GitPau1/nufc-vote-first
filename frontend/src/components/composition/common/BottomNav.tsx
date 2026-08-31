@@ -37,7 +37,7 @@ export function BottomNav() {
               key={href}
               href={href}
               prefetch={false}
-              className={`flex flex-1 flex-col items-center gap-0.5 text-label-2 font-semibold transition-colors ${isActive ? 'text-brand' : 'text-neutral-muted'}`}
+              className={`flex flex-1 flex-col items-center gap-0.5 text-label-2 font-medium transition-colors ${isActive ? 'text-brand' : 'text-neutral-muted'}`}
             >
               <Icon className="h-5 w-5" />
               <span>{label}</span>

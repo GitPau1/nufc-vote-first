@@ -85,7 +85,7 @@ export function LoginContent({ triggerAction, onClose, onLoginSuccess }: LoginCo
           <Lock className="h-6 w-6 text-brand" />
         </div>
         <SheetHeader>
-          <SheetTitle className="text-body-1-normal">로그인이 필요해요</SheetTitle>
+          <SheetTitle className="text-headline-1">로그인이 필요해요</SheetTitle>
           {/* 문구는 IS_MOCK이 아니라 진입 맥락으로 갈린다 — 데모 모드라는 사실은
               아래 CTA 라벨("데모로 바로 로그인")이 이미 말해준다. */}
           <SheetDescription>{TRIGGER_DESCRIPTION[triggerAction]}</SheetDescription>

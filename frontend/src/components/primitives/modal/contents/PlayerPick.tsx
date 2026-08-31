@@ -56,13 +56,13 @@ export function PlayerPickContent({
 }: PlayerPickContentProps) {
   return (
     <>
-      <SheetTitle className="mb-3 shrink-0 text-headline-2 font-extrabold text-neutral">{positionLabel} 선택</SheetTitle>
+      <SheetTitle className="mb-3 shrink-0 text-headline-1 font-semibold text-neutral">{positionLabel} 선택</SheetTitle>
 
       {/* 스크롤 영역 — 타이틀·드래그 핸들은 밖에 두어 고정된다. min-h-0이 없으면
           flex 항목의 min-content 하한 때문에 목록이 줄지 않고 시트가 넘친다. */}
       <div className="min-h-0 flex-1 overflow-y-auto hide-scrollbar">
         {players.length === 0 ? (
-          <p className="py-8 text-center text-caption-1 text-neutral-muted">
+          <p className="py-8 text-center text-label-1-normal font-medium text-neutral">
             선택할 수 있는 선수가 없어요
           </p>
         ) : (
@@ -102,7 +102,7 @@ function PlayerPickRow({
       disabled={disabled}
       aria-pressed={selected}
       className={cn(
-        'flex w-full items-center justify-between gap-2.5 rounded-md border border-neutral-weak bg-surface px-3.5 py-2.5 text-left transition-[border-color,background-color,transform] duration-micro',
+        'flex w-full items-center justify-between gap-2.5 rounded-md border border-neutral-weak bg-surface px-4 py-3 text-left transition-[border-color,background-color,transform] duration-micro',
         selected
           ? 'border-brand-solid bg-brand-weak'
           : disabled
@@ -111,12 +111,12 @@ function PlayerPickRow({
       )}
     >
       <span className="flex min-w-0 items-center gap-2.5">
-        <span className="w-5 shrink-0 text-center text-label-2 font-extrabold text-neutral-muted">
+        <span className="w-5 shrink-0 text-center text-label-2 font-medium text-neutral-muted">
           {player.squadNumber ?? '–'}
         </span>
         <PlayerPhoto url={player.photoUrl} />
         <span className="min-w-0">
-          <p className="m-0 truncate text-body-2-normal font-bold text-neutral">{player.name}</p>
+          <p className="m-0 truncate text-label-2 font-medium text-neutral">{player.name}</p>
           <p className="m-0 mt-px text-caption-1 text-neutral-muted">
             {[player.nationality, player.age === null ? null : `${player.age}세`]
               .filter(Boolean)

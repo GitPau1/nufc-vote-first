@@ -39,7 +39,7 @@ const STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]
 export function PaletteRow({ family, label }: { family: string; label: string }) {
   return (
     <div className="my-4 font-sans">
-      <div className="mb-1.5 text-label-2 font-bold text-neutral">{label}</div>
+      <div className="mb-1.5 text-label-2 font-medium text-neutral">{label}</div>
       <div className="flex gap-1.5">
         {STEPS.map((step) => (
           <Step key={step} family={family} step={step} />

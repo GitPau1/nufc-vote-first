@@ -25,7 +25,7 @@ export function DesktopNavLinks({ className }: { className?: string }) {
             key={href}
             href={href}
             className={cn(
-              'flex h-[56px] items-center gap-1.5 border-b-2 text-body-2-normal font-bold transition-colors',
+              'flex h-[56px] items-center gap-1.5 border-b-2 text-body-2-normal font-semibold transition-colors',
               isActive ? 'border-brand-solid text-brand' : 'border-transparent text-neutral-muted hover:text-neutral'
             )}
           >

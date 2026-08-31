@@ -31,31 +31,34 @@ export function TokenList({ items, valueColumns = ['값'] }: { items: Array<Toke
       <table className="w-full border-collapse text-left">
         <thead>
           <tr className="border-b border-neutral-weak">
-            <th className="w-32 py-2 pr-3 text-label-2 font-bold text-neutral-muted">샘플</th>
+            <th className="w-32 py-2 pr-3 text-label-2 font-medium text-neutral-muted">샘플</th>
             {valueColumns.map((label) => (
-              <th key={label} className="w-32 py-2 pr-3 text-label-2 font-bold text-neutral-muted">
+              <th key={label} className="w-32 py-2 pr-3 text-label-2 font-medium text-neutral-muted">
                 {label}
               </th>
             ))}
-            <th className="w-56 py-2 pr-3 text-label-2 font-bold text-neutral-muted">이름</th>
-            <th className="py-2 text-label-2 font-bold text-neutral-muted">언제 쓰는가</th>
+            <th className="w-56 py-2 pr-3 text-label-2 font-medium text-neutral-muted">이름</th>
+            <th className="py-2 text-label-2 font-medium text-neutral-muted">언제 쓰는가</th>
           </tr>
         </thead>
         <tbody>
           {items.map((item) => {
             const values = Array.isArray(item.value) ? item.value : [item.value]
             return (
-              <tr key={item.name} className="border-b border-neutral-weak align-middle">
-                <td className="py-2.5 pr-3">{item.sample}</td>
+              // vertical-align은 table-row(<tr>)에는 적용되지 않고 table-cell(<td>)에만 먹는다.
+              // 그래서 각 <td>에 align-middle을 준다 — <tr>에 주면 무시돼 셀이 baseline 정렬로
+              // 떨어지고, 큰 샘플 글자가 작은 값 텍스트 밑선에 맞춰져 위로 쏠려 보인다.
+              <tr key={item.name} className="border-b border-neutral-weak">
+                <td className="py-2.5 pr-3 align-middle">{item.sample}</td>
                 {valueColumns.map((label, i) => (
-                  <td key={label} className="py-2.5 pr-3 font-mono text-caption-2 text-neutral-muted">
+                  <td key={label} className="py-2.5 pr-3 align-middle font-mono text-caption-2 text-neutral-muted">
                     {values[i] ?? '—'}
                   </td>
                 ))}
-                <td className="py-2.5 pr-3">
+                <td className="py-2.5 pr-3 align-middle">
                   <code className="text-label-2 text-neutral">{item.name}</code>
                 </td>
-                <td className="py-2.5 text-label-1-reading text-neutral-muted">{item.usage ?? '—'}</td>
+                <td className="py-2.5 align-middle text-label-1-reading text-neutral-muted">{item.usage ?? '—'}</td>
               </tr>
             )
           })}

@@ -197,6 +197,52 @@ test('primary tab surfaces do not use arbitrary typography classes', () => {
   }
 })
 
+test('typography weight stays on the 4-step scale (font-bold is Display-only)', () => {
+  // 굵기 정책: font-normal(400) / font-medium(500) / font-semibold(600) 넷 중 셋 +
+  // font-bold(700)는 Display(display-1/2) 전용. 그 밖의 굵기(extrabold/black/thin/light 등)는
+  // 금지. Foundations/Typography의 "굵기(Weight)" 섹션이 근거다.
+  // duration/opacity 검사처럼 파일 목록을 하드코딩하지 않고 src 전체(tsx/ts)를 훑는다 —
+  // 새 화면도 자동으로 걸린다. .mdx는 제외한다: Typography.mdx가 금지 이름을 본문에서 인용한다.
+  const FORBIDDEN = ['thin', 'extralight', 'light', 'extrabold', 'black']
+  const entries = fs.readdirSync(root, { recursive: true })
+  const offenders = []
+
+  for (const entry of entries) {
+    if (typeof entry !== 'string' || !/\.(tsx|ts)$/.test(entry)) continue
+    if (/\.test\./.test(entry)) continue
+    const full = path.join(root, entry)
+    if (!fs.statSync(full).isFile()) continue
+
+    const content = fs.readFileSync(full, 'utf8')
+    const bad = new Set()
+
+    // ① 팔레트 밖 굵기: 어디서도 금지
+    for (const w of FORBIDDEN) {
+      if (new RegExp(`\\bfont-${w}\\b`).test(content)) bad.add(`font-${w}`)
+    }
+
+    // ② font-bold(700)는 display-1/display-2 토큰과 같은 className 문자열에서만 허용.
+    //    크기 토큰 없이 홀로 있는 font-bold(cn()의 조건부 'font-bold' 포함)도 여기서 걸린다.
+    const strRe = /(["'`])((?:\\.|(?!\1).)*)\1/gs
+    let m
+    while ((m = strRe.exec(content))) {
+      const chunk = m[2]
+      if (!/\bfont-bold\b/.test(chunk)) continue
+      if (!/\btext-display-[12]\b/.test(chunk)) bad.add('font-bold(Display 밖)')
+    }
+
+    if (bad.size) offenders.push(`${entry} → ${[...bad].join(', ')}`)
+  }
+
+  assert.deepEqual(
+    offenders,
+    [],
+    '허용 굵기 밖의 값을 쓰는 파일이 있다. font-normal / font-medium / font-semibold 중에서 고르고,\n' +
+      'font-bold는 display-1·display-2에만 쓴다 (Foundations/Typography 참고):\n' +
+      offenders.join('\n')
+  )
+})
+
 // 승부예측(predict) 화면 — main에서 병합돼 들어올 때 구세대 flat 토큰(--c-*)을 쓰고 있어서
 // 이 화면만 옛 하늘색(#41b6e6)으로 튀었다. semantic 토큰으로 옮긴 뒤 되돌아가지 않게
 // 아래 두 검사(임의값 금지 + 구세대 토큰 금지)에 이 목록을 함께 건다.

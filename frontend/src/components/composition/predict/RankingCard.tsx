@@ -35,7 +35,7 @@ export function RankingCard({ variant, entries, limit = 3, className }: RankingC
 
   return (
     <div className={cn('rounded-lg border border-neutral-weak bg-surface p-4 text-left', className)}>
-      <p className="m-0 mb-3 text-body-2-normal font-bold text-neutral">{title}</p>
+      <p className="m-0 mb-3 text-body-2-normal font-semibold text-neutral">{title}</p>
 
       {rows.length === 0 ? (
         <p className="m-0 text-caption-1 text-neutral-muted">{emptyMessage}</p>
@@ -57,11 +57,11 @@ function entriesOf(entry: RankingEntry | undefined): RankingEntry[] {
 
 function RankHeaderRow() {
   return (
-    <div className="flex items-center gap-2 px-1 pb-2.5">
-      <span className="w-8 shrink-0 text-center text-caption-2 font-bold text-neutral-muted">순위</span>
+    <div className="flex items-center gap-2 px-1 pb-2">
+      <span className="w-8 shrink-0 text-center text-caption-2 font-medium text-neutral-muted">순위</span>
       <span className="h-7 w-7 shrink-0" />
       <span className="min-w-0 flex-1" />
-      <span className="w-12 shrink-0 text-center text-caption-2 font-bold text-neutral-muted">총점</span>
+      <span className="w-12 shrink-0 text-center text-caption-2 font-medium text-neutral-muted">총점</span>
     </div>
   )
 }
@@ -70,12 +70,12 @@ function RankRow({ entry }: { entry: RankingEntry }) {
   return (
     <div
       className={cn(
-        'flex items-center gap-2 border-b border-neutral-weak px-1 py-2.5 last:border-b-0',
+        'flex items-center gap-2 border-b border-neutral-weak px-1 py-3 last:border-b-0',
         entry.isMe && 'rounded-md border-b-0 bg-brand-weak px-2'
       )}
     >
       <span className="flex w-8 shrink-0 flex-col items-center">
-        <span className={cn('text-body-1-normal font-black text-neutral', entry.isMe && 'text-brand')}>
+        <span className={cn('text-body-1-normal font-semibold text-neutral', entry.isMe && 'text-brand')}>
           {entry.rank}
         </span>
         <RankDelta delta={entry.delta} />
@@ -89,9 +89,9 @@ function RankRow({ entry }: { entry: RankingEntry }) {
         )}
       </span>
 
-      <span className="min-w-0 flex-1 truncate text-label-2 font-bold text-neutral">{entry.name}</span>
+      <span className="min-w-0 flex-1 truncate text-label-1-normal font-medium text-neutral">{entry.name}</span>
 
-      <span className="w-12 shrink-0 text-center text-body-2-normal font-black text-brand">
+      <span className="w-12 shrink-0 text-center text-body-2-normal font-semibold text-brand">
         {entry.totalPoints}점
       </span>
     </div>
@@ -104,8 +104,8 @@ function RankDelta({ delta }: { delta: RankingEntry['delta'] }) {
   // text-critical("되돌릴 수 없는 동작·위험"용 적색)이 "상승"에 쓰이는 점은 이름과 용법이
   // 어긋나 보일 수 있어 그대로 남겨둔다(Foundations/Color의 유일한 예외 사용처).
   return delta >= 0 ? (
-    <span className="text-caption-2 font-bold text-critical">▲{delta}</span>
+    <span className="text-caption-2 font-medium text-critical">▲{delta}</span>
   ) : (
-    <span className="text-caption-2 font-bold text-neutral-subtle">▼{Math.abs(delta)}</span>
+    <span className="text-caption-2 font-medium text-neutral-subtle">▼{Math.abs(delta)}</span>
   )
 }

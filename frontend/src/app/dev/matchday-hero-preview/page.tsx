@@ -173,7 +173,7 @@ const LONG_NAME: MatchdayFixture = {
 export default function MatchdayHeroPreviewPage() {
   return (
     <div className="min-h-screen bg-page px-4 py-8">
-      <h1 className="mb-1 text-title-3 font-black">홈 히어로(승부예측) 프리뷰</h1>
+      <h1 className="mb-1 text-title-3 font-semibold">홈 히어로(승부예측) 프리뷰</h1>
       <p className="mb-8 text-caption-1 text-neutral-muted">
         실데이터 연동 전 임시 확인용 페이지 — /dev/matchday-hero-preview.
         모바일 폭(358px) 섹션은 브라우저 창 폭과 무관하게 고정, 맨 아래 &ldquo;넓은 화면&rdquo; 섹션만 창 폭을 그대로 쓴다.
@@ -181,39 +181,39 @@ export default function MatchdayHeroPreviewPage() {
 
       <div className="mx-auto flex w-full max-w-[358px] flex-col gap-6">
         <section>
-          <p className="mb-2 text-label-1-normal font-bold text-neutral-muted">예정 경기 (카운트다운)</p>
+          <p className="mb-2 text-label-1-normal font-medium text-neutral-muted">예정 경기 (카운트다운)</p>
           <MatchdayHero fixture={UPCOMING} />
         </section>
 
         <section>
-          <p className="mb-2 text-label-1-normal font-bold text-neutral-muted">진행 중 (버튼 없음)</p>
+          <p className="mb-2 text-label-1-normal font-medium text-neutral-muted">진행 중 (버튼 없음)</p>
           <MatchdayHero fixture={LIVE} />
         </section>
 
         <section>
-          <p className="mb-2 text-label-1-normal font-bold text-neutral-muted">종료 (결과 + 포지션별 최고 평점)</p>
+          <p className="mb-2 text-label-1-normal font-medium text-neutral-muted">종료 (결과 + 포지션별 최고 평점)</p>
           <MatchdayHero fixture={FINISHED} />
         </section>
 
         <section>
-          <p className="mb-2 text-label-1-normal font-bold text-neutral-muted">종료 (0-0 무승부 + 포지션별 최고 평점)</p>
+          <p className="mb-2 text-label-1-normal font-medium text-neutral-muted">종료 (0-0 무승부 + 포지션별 최고 평점)</p>
           <MatchdayHero fixture={DRAW_0_0} />
         </section>
 
         <section>
-          <p className="mb-2 text-label-1-normal font-bold text-neutral-muted">종료 (승부차기 — 결과는 1-1, 캡션에 5-4)</p>
+          <p className="mb-2 text-label-1-normal font-medium text-neutral-muted">종료 (승부차기 — 결과는 1-1, 캡션에 5-4)</p>
           <MatchdayHero fixture={PENALTY_SHOOTOUT} />
         </section>
 
         <section>
-          <p className="mb-2 text-label-1-normal font-bold text-neutral-muted">팀명 길이 차이 큰 경우 (모바일 폭)</p>
+          <p className="mb-2 text-label-1-normal font-medium text-neutral-muted">팀명 길이 차이 큰 경우 (모바일 폭)</p>
           <MatchdayHero fixture={LONG_NAME} />
         </section>
 
         <hr className="my-2 border-neutral-weak" />
 
         <section>
-          <p className="mb-2 text-label-1-normal font-bold text-neutral-muted">
+          <p className="mb-2 text-label-1-normal font-medium text-neutral-muted">
             아래 진행 중인 투표 섹션까지 스크롤 없이 살짝 보이는지 확인용 더미
           </p>
           <div className="h-[120px] rounded-lg bg-disabled" />
@@ -223,7 +223,7 @@ export default function MatchdayHeroPreviewPage() {
       <hr className="my-10 border-neutral-weak" />
 
       <section>
-        <p className="mb-2 text-label-1-normal font-bold text-neutral-muted">
+        <p className="mb-2 text-label-1-normal font-medium text-neutral-muted">
           넓은 화면에서도 팀 배지가 VS 근처에 붙어 있는지 확인 (창 폭 그대로 — 좁히거나 넓혀서 확인)
         </p>
         <MatchdayHero fixture={LONG_NAME} />
@@ -232,7 +232,7 @@ export default function MatchdayHeroPreviewPage() {
       <hr className="my-10 border-neutral-weak" />
 
       <section>
-        <p className="mb-2 text-label-1-normal font-bold text-neutral-muted">
+        <p className="mb-2 text-label-1-normal font-medium text-neutral-muted">
           종료 경기 — 넓은 화면(창 폭 그대로): 평점 카드가 md~에서 가로로 나란히 펼쳐지는지 확인
         </p>
         <MatchdayHero fixture={FINISHED} />

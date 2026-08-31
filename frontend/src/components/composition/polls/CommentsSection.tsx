@@ -179,7 +179,7 @@ export function CommentsSection({
             }}
             placeholder="이번 투표에 대한 생각을 남겨주세요…"
             rows={2}
-            className="h-[62px] flex-1 resize-none rounded-lg border border-neutral-weak bg-surface px-[13px] py-[11px]
+            className="h-[62px] flex-1 resize-none rounded-lg border border-neutral-weak bg-surface px-3 py-3
                        text-label-1-reading text-neutral placeholder:text-neutral-muted
                        focus:border-brand-solid focus:outline-none"
           />
@@ -220,7 +220,7 @@ export function CommentsSection({
       {/* 댓글 목록 */}
       <div className="overflow-hidden rounded-lg border border-neutral-weak bg-surface shadow-g200">
         <div className="px-4 pb-3 pt-5">
-          <p className="text-label-2 font-bold text-neutral-strong">
+          <p className="text-label-2 font-medium text-neutral-strong">
             댓글
           </p>
           {/* 입력창이 없는 이유를 알려준다 — 마감 여부에 따라 되돌릴 수 있는 상태인지가 다르다 */}
@@ -248,7 +248,7 @@ export function CommentsSection({
                 <div key={comment.id}>
                   <div className="flex gap-2 px-4 py-3">
                     <Avatar className="h-8 w-8 flex-shrink-0 mt-0.5">
-                      <AvatarFallback className="bg-disabled text-caption-1 font-bold text-neutral-strong">
+                      <AvatarFallback className="bg-disabled text-caption-1 font-medium text-neutral-strong">
                         {initial}
                       </AvatarFallback>
                     </Avatar>
@@ -256,7 +256,7 @@ export function CommentsSection({
                     <div className="flex-1 min-w-0">
                       <div className="mb-1 flex items-start justify-between gap-3">
                         <div className="flex min-w-0 flex-wrap items-center gap-1.5 leading-none">
-                          <span className="text-caption-1 font-semibold text-neutral leading-none">{name}</span>
+                          <span className="text-caption-1 font-medium text-neutral leading-none">{name}</span>
                           {/* 댓글 작성자의 투표 항목 칩 */}
                           {comment.voted_option_label && (
                             <CommentOptionBadge className="flex-shrink-0">
@@ -271,7 +271,7 @@ export function CommentsSection({
                           )}
                         </div>
                         {comment.is_mine && !isEditing && (
-                          <div className="flex flex-shrink-0 gap-2 text-label-2 font-semibold text-neutral-muted">
+                          <div className="flex flex-shrink-0 gap-2 text-label-2 font-medium text-neutral-muted">
                             <button type="button" onClick={() => startEditing(comment)} className="hover:text-neutral">
                               수정
                             </button>
@@ -332,7 +332,9 @@ function CommentOptionBadge({
   return (
     <span
       className={[
-        'inline-flex items-center rounded-pill border-0 bg-brand-weak px-[9px] py-[3px] text-caption-2 font-semibold text-brand pointer-events-none',
+        // 이 뱃지의 caption-2 + font-semibold(600)는 Figma 계약이 못박은 값이다 —
+        // 소형 텍스트 강조 표준(500)의 예외. result-view-figma-contract.test.mjs가 고정한다.
+        'inline-flex items-center rounded-pill border-0 bg-brand-weak px-2 py-1 text-caption-2 font-semibold text-brand pointer-events-none',
         className,
       ].filter(Boolean).join(' ')}
     >

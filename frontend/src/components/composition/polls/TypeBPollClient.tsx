@@ -116,7 +116,7 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
 
             {/* 글 컨테이너 — 타이틀 · 세부 정보 · 본문 */}
             <section className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
-              <h1 className="break-keep text-heading-2 sm:text-heading-1 font-bold text-neutral">
+              <h1 className="break-keep text-heading-2 sm:text-heading-1 font-semibold text-neutral">
                 {poll.title}
               </h1>
 
@@ -149,7 +149,7 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
 
           {/* 고르는 자리 */}
           <div className="flex flex-col gap-3">
-            <p className="text-label-2 font-semibold text-neutral-strong">
+            <p className="text-label-2 font-medium text-neutral-strong">
               선택지 {options.length}개 · 하나만 고를 수 있어요
             </p>
 
@@ -172,7 +172,7 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
                     onClick={() => setSelectedId(option.id)}
                   >
                     {hasAnyThumb && (
-                      <span className="flex size-[40px] shrink-0 items-center justify-center overflow-hidden rounded-pill bg-brand-solid text-caption-1 font-bold text-white">
+                      <span className="flex size-[40px] shrink-0 items-center justify-center overflow-hidden rounded-pill bg-brand-solid text-caption-1 font-medium text-white">
                         {thumb?.url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={thumb.url} alt="" className="h-full w-full object-cover" />

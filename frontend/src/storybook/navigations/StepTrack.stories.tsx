@@ -27,7 +27,7 @@ function renderOnly(current: StepKey) {
 function StepRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="mb-2 text-caption-1 font-bold text-neutral-muted">{label}</p>
+      <p className="mb-2 text-caption-1 font-medium text-neutral-muted">{label}</p>
       {children}
     </div>
   )
@@ -159,7 +159,7 @@ export const MobileLayout: Story = {
       <StepTrack current="pick" />
       <StepHero current="pick" />
       <div className="mt-7 rounded-lg border border-neutral-weak bg-surface px-4 py-5">
-        <p className="text-label-1-normal font-bold text-neutral">스텝 본문 카드</p>
+        <p className="text-label-1-normal font-medium text-neutral">스텝 본문 카드</p>
       </div>
     </div>
   ),
@@ -175,7 +175,7 @@ export const DesktopLayout: Story = {
     <div className="grid grid-cols-[200px_1fr] gap-x-10">
       <StepTrackVertical current="pick" />
       <div className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
-        <p className="text-label-1-normal font-bold text-neutral">스텝 본문 카드</p>
+        <p className="text-label-1-normal font-medium text-neutral">스텝 본문 카드</p>
         <p className="mt-1 text-caption-1 text-neutral-muted">
           왼쪽 트랙이 본문 높이와 무관하게 상단 정렬로 남는지 확인용
         </p>

@@ -89,24 +89,24 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
           <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
             {/* 칩 (제목 위) */}
             <div className="flex items-center gap-1.5 mb-2">
-              <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm text-caption-2 font-semibold pointer-events-none">
+              <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm text-caption-2 font-medium pointer-events-none">
                 평가
               </Badge>
               {daysLeft > 0 ? (
-                <Badge className="bg-brand-solid text-white border-0 text-caption-2 font-semibold hover:bg-brand-solid pointer-events-none">
+                <Badge className="bg-brand-solid text-white border-0 text-caption-2 font-medium hover:bg-brand-solid pointer-events-none">
                   D-{daysLeft} 마감
                 </Badge>
               ) : (
-                <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm text-caption-2 font-semibold pointer-events-none">
+                <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm text-caption-2 font-medium pointer-events-none">
                   마감
                 </Badge>
               )}
             </div>
             {/* 제목 */}
             <div className="flex items-end justify-between gap-3">
-              <p className="min-w-0 flex-1 text-headline-2 sm:text-headline-1 font-black text-white">{poll.title}</p>
+              <p className="min-w-0 flex-1 text-headline-2 sm:text-headline-1 font-semibold text-white">{poll.title}</p>
               {poll.creator_name && (
-                <span className="max-w-[38%] truncate text-right text-caption-1 font-bold text-white/80">{poll.creator_name}</span>
+                <span className="max-w-[38%] truncate text-right text-caption-1 font-medium text-white/80">{poll.creator_name}</span>
               )}
             </div>
           </div>
@@ -150,7 +150,7 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
           {poll.player && (
             <Card className="mt-1">
               <CardContent className="p-4">
-                <p className="text-caption-1 font-semibold text-neutral-muted uppercase mb-3">
+                <p className="text-caption-1 font-medium text-neutral-muted uppercase mb-3">
                   선수 정보
                 </p>
                 <div className="flex items-center gap-3">
@@ -161,7 +161,7 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
                     className="w-11 h-11 rounded-pill object-cover flex-shrink-0"
                   />
                   <div>
-                    <p className="text-label-1-normal font-bold text-neutral">{poll.player.name}</p>
+                    <p className="text-label-1-normal font-medium text-neutral">{poll.player.name}</p>
                     <p className="text-caption-1 text-neutral-muted mt-0.5">
                       {poll.player.position}
                       <span className="mx-1.5">·</span>

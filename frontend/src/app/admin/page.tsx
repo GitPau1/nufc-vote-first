@@ -27,7 +27,7 @@ export default async function AdminPage() {
       <AppHeader auth={auth} />
       <main className="mx-auto min-h-[calc(100vh-56px)] max-w-shell bg-page px-4 pt-6 pb-24">
         <div className="mb-5">
-          <p className="text-heading-2 font-black text-neutral">관리자 페이지</p>
+          <p className="text-heading-2 sm:text-heading-1 font-semibold text-neutral">관리자 페이지</p>
           <p className="mt-1 text-label-1-reading text-neutral-muted">
             투표 생성·목록과 경기 결과·선수 평점을 관리할 수 있어요.
           </p>

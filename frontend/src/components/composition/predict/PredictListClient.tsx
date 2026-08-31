@@ -69,7 +69,7 @@ function PlayGuide({ className }: { className?: string }) {
           <div className="flex flex-col gap-5 pt-1">
             {PLAY_GUIDE.map(({ title, desc, scoreTable }) => (
               <div key={title}>
-                <p className="text-body-2-normal font-bold text-neutral">{title}</p>
+                <p className="text-body-2-normal font-semibold text-neutral">{title}</p>
                 {desc && <p className="mt-1.5 text-label-2 text-neutral-muted">{desc}</p>}
                 {scoreTable && (
                   <table className="mt-3 w-full text-label-2 tabular-nums">
@@ -83,9 +83,9 @@ function PlayGuide({ className }: { className?: string }) {
                     <tbody>
                       {SCORE_TABLE.map(({ label, league, cup, total }) => (
                         <tr key={label} className="border-t border-neutral-weak">
-                          <td className={cn('py-1.5 text-neutral', total && 'font-bold')}>{label}</td>
-                          <td className={cn('py-1.5 text-right text-neutral', total && 'font-bold')}>{league}</td>
-                          <td className={cn('py-1.5 text-right text-neutral', total && 'font-bold')}>{cup}</td>
+                          <td className={cn('py-1.5 text-neutral', total && 'font-medium')}>{label}</td>
+                          <td className={cn('py-1.5 text-right text-neutral', total && 'font-medium')}>{league}</td>
+                          <td className={cn('py-1.5 text-right text-neutral', total && 'font-medium')}>{cup}</td>
                         </tr>
                       ))}
                     </tbody>

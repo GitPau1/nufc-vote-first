@@ -43,13 +43,13 @@ const ResultProgress = React.forwardRef<
     />
     <div
       className={cn(
-        "relative flex min-h-[48px] items-center justify-between gap-3 py-[4px] pr-[17px]",
+        "relative flex min-h-[48px] items-center justify-between gap-3 py-1 pr-[17px]",
         thumb ? "pl-[5px]" : "pl-[17px]"
       )}
     >
       <div className="flex min-w-0 items-center gap-2">
         {thumb ? (
-          <div className="flex size-[40px] shrink-0 items-center justify-center overflow-hidden rounded-pill bg-brand-solid text-caption-1 font-bold text-white">
+          <div className="flex size-[40px] shrink-0 items-center justify-center overflow-hidden rounded-pill bg-brand-solid text-caption-1 font-medium text-white">
             {thumb.url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={thumb.url} alt={thumb.label} className="h-full w-full object-cover" />

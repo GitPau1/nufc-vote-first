@@ -142,7 +142,7 @@ export const SelectAndClose: Story = {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="rounded-sm bg-brand-solid px-4 py-3 text-body-2-normal font-bold text-on-solid"
+          className="rounded-sm bg-brand-solid px-4 py-3 text-body-2-normal font-semibold text-on-solid"
         >
           미드필더 선택 모달 열기
         </button>

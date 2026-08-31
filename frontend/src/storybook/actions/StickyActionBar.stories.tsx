@@ -20,15 +20,15 @@ function PollDetailFrame({ children }: { children: React.ReactNode }) {
       <div className="mx-auto w-full max-w-detail flex-1 overflow-y-auto hide-scrollbar pb-[88px] sm:flex-none sm:overflow-visible sm:pb-0">
         <div className="relative h-[140px] overflow-hidden bg-brand-solid">
           <div className="absolute bottom-0 left-0 right-0 p-4">
-            <p className="text-caption-2 font-semibold text-white/80">평가 · D-3 마감</p>
-            <p className="text-heading-2 font-bold text-white">스크롤되는 투표 상세 본문</p>
+            <p className="text-caption-2 font-medium text-white/80">평가 · D-3 마감</p>
+            <p className="text-heading-2 font-semibold text-white">스크롤되는 투표 상세 본문</p>
           </div>
         </div>
 
         <div className="flex flex-col gap-2 p-4">
           {Array.from({ length: 7 }, (_, i) => (
             <div key={i} className="rounded-lg border border-neutral-weak bg-surface p-4">
-              <p className="text-label-1-normal font-semibold text-neutral">보기 {i + 1}</p>
+              <p className="text-label-1-normal font-medium text-neutral">보기 {i + 1}</p>
               <p className="text-caption-1 text-neutral-muted">
                 액션바가 이 목록 위에 떠 있는지 확인하기 위한 더미 콘텐츠
               </p>

@@ -63,13 +63,13 @@ export function PollHomeSection({ title, polls, action }: PollHomeSectionProps) 
   return (
     <section>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-heading-2 font-bold text-neutral">{title}</h2>
+        <h2 className="text-heading-2 font-semibold text-neutral">{title}</h2>
         <div className="flex items-center gap-3">
           {action && (
             <Link
               href={action.href}
               prefetch={false}
-              className="text-label-2 font-semibold text-neutral-muted transition-opacity hover:opacity-70"
+              className="text-label-2 font-medium text-neutral-muted transition-opacity hover:opacity-70"
             >
               {action.label}
             </Link>
@@ -111,7 +111,7 @@ export function PollHomeSection({ title, polls, action }: PollHomeSectionProps) 
         <button
           type="button"
           onClick={() => setMobileVisible(v => v + MOBILE_STEP)}
-          className="mt-3 w-full rounded-md border border-neutral-weak py-2.5 text-label-2 font-semibold text-neutral-muted transition-opacity hover:opacity-70 sm:hidden"
+          className="mt-3 w-full rounded-md border border-neutral-weak py-3 text-label-2 font-medium text-neutral-muted transition-opacity hover:opacity-70 sm:hidden"
         >
           더보기
         </button>

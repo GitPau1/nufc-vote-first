@@ -56,7 +56,7 @@ export const CenteredInResultFooter: Story = {
   render: () => (
     <div style={{ maxWidth: 358 }}>
       <div className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
-        <p className="text-label-1-normal font-bold text-neutral">예측 결과 카드</p>
+        <p className="text-label-1-normal font-medium text-neutral">예측 결과 카드</p>
         <p className="mt-1 text-caption-1 text-neutral-muted">
           버튼이 이 블록 아래 가운데에 놓이는지 확인하기 위한 더미 콘텐츠
         </p>

@@ -34,7 +34,7 @@ export function AppHeader({ auth, showAuth = true, mobileBack = false }: AppHead
           {mobileBack ? (
             <button
               onClick={() => router.back()}
-              className="absolute left-4 flex items-center gap-1.5 text-label-1-normal font-semibold text-neutral-muted
+              className="absolute left-4 flex items-center gap-1.5 text-label-1-normal font-medium text-neutral-muted
                          hover:text-neutral active:opacity-50 transition-all duration-micro focus:outline-none"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -42,7 +42,7 @@ export function AppHeader({ auth, showAuth = true, mobileBack = false }: AppHead
             </button>
           ) : (
             <Link href="/" className="flex items-center">
-              <span className="text-title-3 font-black text-neutral">NUFCVOTE</span>
+              <span className="text-title-3 font-semibold text-neutral">NUFCVOTE</span>
             </Link>
           )}
 
@@ -56,7 +56,7 @@ export function AppHeader({ auth, showAuth = true, mobileBack = false }: AppHead
         {/* 데스크탑 전용 레이어 — 화면과 무관하게 항상 동일 */}
         <div className="hidden w-full items-center sm:flex">
           <Link href="/" className="flex items-center">
-            <span className="text-title-3 font-black text-neutral">NUFCVOTE</span>
+            <span className="text-title-3 font-semibold text-neutral">NUFCVOTE</span>
           </Link>
           <DesktopNavLinks className="ml-14" />
           <div className="ml-auto">

@@ -79,7 +79,7 @@ export function MyPageClient({
       <div className="mx-auto max-w-shell px-4 pt-6 pb-10 flex flex-col gap-5">
 
         <div>
-          <p className="text-caption-1 font-semibold text-neutral-muted uppercase mb-3">
+          <p className="text-caption-1 font-medium text-neutral-muted uppercase mb-3">
             내 계정 정보
           </p>
 
@@ -87,7 +87,7 @@ export function MyPageClient({
             <CardContent className="flex items-center gap-4 p-4">
               <Avatar className="h-16 w-16">
                 <AvatarImage src={avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-brand-weak text-brand text-heading-2 font-black">
+                <AvatarFallback className="bg-brand-weak text-brand text-heading-2 font-semibold">
                   {initial}
                 </AvatarFallback>
               </Avatar>
@@ -102,7 +102,7 @@ export function MyPageClient({
                         if (e.key === 'Enter') handleSaveName()
                         if (e.key === 'Escape') cancelEdit()
                       }}
-                      className="text-body-1-normal font-black text-neutral bg-transparent border-b-2 border-brand-solid outline-none w-32 pb-0.5"
+                      className="text-body-1-normal font-semibold text-neutral bg-transparent border-b-2 border-brand-solid outline-none w-32 pb-0.5"
                       autoFocus
                       maxLength={20}
                     />
@@ -123,7 +123,7 @@ export function MyPageClient({
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <p className="text-headline-2 font-black text-neutral truncate">{nameValue}</p>
+                    <p className="text-headline-2 font-semibold text-neutral truncate">{nameValue}</p>
                       <button
                         onClick={startEdit}
                         className="flex-shrink-0 text-neutral-muted hover:text-neutral transition-colors"
@@ -147,7 +147,7 @@ export function MyPageClient({
 
         {/* 참여한 투표 */}
         <div>
-          <p className="text-caption-1 font-semibold text-neutral-muted uppercase mb-3">
+          <p className="text-caption-1 font-medium text-neutral-muted uppercase mb-3">
             참여한 투표 · {participatedPolls.length}개
           </p>
 
@@ -162,9 +162,9 @@ export function MyPageClient({
                   <div key={item.pollId}>
                     {i > 0 && <Separator />}
                     <Link href={`/polls/${item.pollId}`} className="block active:bg-disabled transition-colors">
-                      <div className="flex items-center gap-3 px-4 py-3.5 hover:bg-disabled/50 transition-colors">
+                      <div className="flex items-center gap-3 px-4 py-4 hover:bg-disabled/50 transition-colors">
                         <div className="flex-1 min-w-0">
-                          <p className="text-label-1-normal font-semibold text-neutral line-clamp-1">
+                          <p className="text-label-1-normal font-medium text-neutral line-clamp-1">
                             {item.pollTitle}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
