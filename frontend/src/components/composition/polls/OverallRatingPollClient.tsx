@@ -218,7 +218,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
                               type="button"
                               onClick={() => setScore(player.id, option.score)}
                               className={cn(
-                                'rounded-lg border py-2 text-center text-caption-1 font-medium transition-colors',
+                                'rounded-lg border py-2 text-center font-medium transition-colors',
                                 selected ? 'border-brand-solid bg-brand-solid text-white' : 'border-neutral-weak bg-surface text-neutral'
                               )}
                             >

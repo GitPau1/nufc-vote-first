@@ -43,7 +43,7 @@ const ResultProgress = React.forwardRef<
     />
     <div
       className={cn(
-        "relative flex min-h-[48px] items-center justify-between gap-3 py-[4px] pr-[17px]",
+        "relative flex min-h-[48px] items-center justify-between gap-3 py-1 pr-[17px]",
         thumb ? "pl-[5px]" : "pl-[17px]"
       )}
     >
