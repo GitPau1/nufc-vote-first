@@ -20,6 +20,9 @@ export interface ResultProgressProps
  * 투표 결과 한 줄(선수·선택지 이름 + 득표율 막대 + 퍼센트).
  * Radix `Progress` 위에 얹어 `role="progressbar"`·`aria-valuenow` 등 접근성 속성을
  * 기본으로 받는다 — 이전 `ResultView`의 직접 구현엔 이게 없었다.
+ *
+ * 보더 없음: 이 막대는 항상 카드 안 회색 패널(bg-page) 위에서만 그려진다 — 흰 막대(bg-surface)가
+ * 회색 배경 위에 있는 것만으로 경계가 생겨, 보더를 얹으면 이중 프레임이 된다.
  */
 const ResultProgress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
@@ -29,7 +32,7 @@ const ResultProgress = React.forwardRef<
     ref={ref}
     value={percent}
     className={cn(
-      "relative min-h-[50px] overflow-hidden rounded-pill border border-neutral-weak bg-surface",
+      "relative min-h-[50px] overflow-hidden rounded-pill bg-surface",
       className
     )}
     {...props}

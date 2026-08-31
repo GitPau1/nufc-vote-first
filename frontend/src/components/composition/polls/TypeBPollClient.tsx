@@ -98,7 +98,9 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
     <div className="flex min-h-screen flex-col bg-page">
       <PollPageHeader />
 
-      {/* 폭은 결과 화면과 맞춘다 — ResultView도 max-w-detail + px-4다. */}
+      {/* 폭은 max-w-detail(680px)로 둔다. 결과 화면(ResultView)은 제출 화면 컨벤션에 맞춰
+          max-w-[860px]로 바뀌어 더 이상 이 폭과 같지 않다 — 여기서 맞추는 건 커버 이미지 처리
+          (overflow-hidden rounded-lg bg-disabled)뿐이다: 참여 전후로 커버 톤이 갈리면 안 된다. */}
       <main className="mx-auto w-full max-w-detail px-4 pb-[88px] pt-4 animate-enter sm:pb-10">
         {/* 모바일·데스크탑 모두 한 컬럼. 읽는 덩어리 → 고르는 덩어리 순서로 세로로 쌓는다. */}
         <div className="flex flex-col gap-6">

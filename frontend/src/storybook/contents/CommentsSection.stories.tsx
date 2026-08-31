@@ -44,8 +44,9 @@ const COMMENTS: CommentItem[] = [
 const meta = {
   title: 'Composition/Polls/CommentsSection',
   component: CommentsSection,
-  // 실제로는 결과 화면(max-w-detail 680px, px-4) 안에 들어가는 블록이라 그 폭으로 맞춘다.
-  decorators: [(Story: () => React.JSX.Element) => <div style={{ maxWidth: 648 }}><Story /></div>],
+  // 실제로는 결과 화면(mx-auto max-w-[860px], sm:px-6) 안에서 Card와 나란히 놓이는
+  // 블록이라 그 실측 폭(860 - 24*2 = 812px)으로 맞춘다.
+  decorators: [(Story: () => React.JSX.Element) => <div style={{ maxWidth: 812 }}><Story /></div>],
   args: {
     pollId: 'poll-1',
     pollType: 'selection',
