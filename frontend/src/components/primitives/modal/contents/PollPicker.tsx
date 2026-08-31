@@ -85,7 +85,7 @@ export function PollPickerContent({
   return (
     <>
       <SheetHeader className="sr-only">
-        <SheetTitle className="text-body-1-normal font-semibold">선수 선택</SheetTitle>
+        <SheetTitle className="text-headline-1 font-semibold">선수 선택</SheetTitle>
         <SheetDescription className="text-caption-1">
           {mode === 'single' ? '투표 대상 선수 1명을 선택합니다.' : '투표 후보로 올릴 선수를 선택합니다.'}
         </SheetDescription>
@@ -120,7 +120,7 @@ export function PollPickerContent({
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto hide-scrollbar px-4 py-3">
         {positionGroups.length === 0 ? (
-          <p className="py-12 text-center text-label-2 font-medium text-neutral-muted">검색 결과가 없습니다.</p>
+          <p className="py-12 text-center text-label-1-normal font-medium text-neutral">검색 결과가 없습니다.</p>
         ) : (
           <div className="space-y-4">
             {positionGroups.map(positionGroup => (

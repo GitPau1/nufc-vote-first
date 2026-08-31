@@ -39,8 +39,8 @@ export default async function PlayerRatingChangesPage() {
 
         <section className="overflow-hidden rounded-lg border border-neutral-weak bg-surface">
           <div className="border-b border-neutral-weak px-4 py-4">
-            <h1 className="text-heading-2 font-semibold text-neutral">이번주 변경 내역</h1>
-            <p className="mt-1 text-caption-1 text-neutral-muted">
+            <h1 className="text-heading-2 sm:text-heading-1 font-semibold text-neutral">이번주 변경 내역</h1>
+            <p className="mt-1 text-label-1-reading text-neutral-muted">
               {week
                 ? `${formatDate(week.weekStartAt)} - ${formatDate(week.weekEndAt)} 반영 결과`
                 : '아직 공개된 변경 내역이 없습니다'}

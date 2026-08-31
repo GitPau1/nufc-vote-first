@@ -180,7 +180,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
           {currentGroup && (
             <section className="space-y-3">
               <div>
-                <p className="text-caption-2 font-medium uppercase text-brand">
+                <p className="text-caption-1 font-medium uppercase text-brand">
                   {POSITION_LABELS[currentGroup.position]}
                 </p>
                 <p className="mt-0.5 text-label-1-reading text-neutral-muted">

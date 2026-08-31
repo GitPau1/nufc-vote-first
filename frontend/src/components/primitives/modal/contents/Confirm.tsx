@@ -32,7 +32,7 @@ export function ConfirmContent({
   return (
     <>
       <SheetHeader className="text-left mb-5">
-        <SheetTitle className="text-body-1-normal">{title}</SheetTitle>
+        <SheetTitle className="text-headline-1">{title}</SheetTitle>
         <SheetDescription>제출 후에는 변경할 수 없습니다</SheetDescription>
       </SheetHeader>
 

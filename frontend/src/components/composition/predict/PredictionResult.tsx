@@ -363,7 +363,7 @@ function PointsBadge({ matchPoints }: { matchPoints: number | null }) {
 function PickResultRow({ position, pick }: { position: Position; pick: ResolvedPick }) {
   return (
     <div className="border-b border-neutral-weak bg-surface p-3 last:border-b-0">
-      <p className="mb-2 text-caption-2 font-medium text-neutral-muted">{POSITION_LABEL[position]}</p>
+      <p className="mb-2 text-caption-1 font-medium text-neutral-muted">{POSITION_LABEL[position]}</p>
       <div className="flex items-center gap-2.5">
         <PlayerPhoto url={pick?.photoUrl ?? null} size={48} />
         <div className="flex min-w-0 flex-1 flex-col items-start gap-1">

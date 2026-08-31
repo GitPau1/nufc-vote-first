@@ -61,7 +61,7 @@ export function FeedbackContent({ onClose }: FeedbackContentProps) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <SheetHeader className="text-left">
-        <SheetTitle className="text-body-1-normal">의견을 들려주세요</SheetTitle>
+        <SheetTitle className="text-headline-1">의견을 들려주세요</SheetTitle>
         <SheetDescription>불편했던 점이나 개선 아이디어를 알려주세요.</SheetDescription>
       </SheetHeader>
 

@@ -62,7 +62,7 @@ export default async function AdminRatingsPage({
         </Link>
 
         <div className="mb-5 mt-3">
-          <p className="text-heading-2 font-semibold text-neutral">경기별 선수 평점</p>
+          <p className="text-heading-2 sm:text-heading-1 font-semibold text-neutral">경기별 선수 평점</p>
           {/* 페이지 제목 아래 설명문은 읽기용 토큰(text-label-1-reading)으로 통일한다 —
               admin/menu/폼 페이지가 전부 이 토큰을 쓴다. */}
           <p className="mt-1 text-label-1-reading text-neutral-muted">

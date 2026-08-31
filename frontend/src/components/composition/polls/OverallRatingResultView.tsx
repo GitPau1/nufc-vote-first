@@ -65,10 +65,10 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
             <section key={group.value} className="space-y-3">
               <div className="flex items-end justify-between">
                 <div>
-                  <p className="text-caption-2 font-medium uppercase text-brand">
+                  <p className="text-caption-1 font-medium uppercase text-brand">
                     {group.value}
                   </p>
-                  <h2 className="text-body-1-normal font-semibold text-neutral">{group.label}</h2>
+                  <h2 className="text-headline-2 font-semibold text-neutral">{group.label}</h2>
                 </div>
                 <p className="text-caption-1 font-medium text-neutral-muted">
                   {group.results.length}명
@@ -104,7 +104,7 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
 
                         {visibleComments.length > 0 && (
                           <div className="space-y-2">
-                            <p className="text-caption-2 font-medium uppercase text-brand">팬 코멘트</p>
+                            <p className="text-caption-1 font-medium uppercase text-brand">팬 코멘트</p>
                             {visibleComments.map(comment => (
                               <div key={comment.id} className="rounded-md bg-disabled/70 px-3 py-2.5">
                                 <div className="mb-1 flex items-center justify-between gap-2">

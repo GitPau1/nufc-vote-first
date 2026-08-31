@@ -56,7 +56,7 @@ export function PlayerPickContent({
 }: PlayerPickContentProps) {
   return (
     <>
-      <SheetTitle className="mb-3 shrink-0 text-headline-2 font-semibold text-neutral">{positionLabel} 선택</SheetTitle>
+      <SheetTitle className="mb-3 shrink-0 text-headline-1 font-semibold text-neutral">{positionLabel} 선택</SheetTitle>
 
       {/* 스크롤 영역 — 타이틀·드래그 핸들은 밖에 두어 고정된다. min-h-0이 없으면
           flex 항목의 min-content 하한 때문에 목록이 줄지 않고 시트가 넘친다. */}
@@ -116,7 +116,7 @@ function PlayerPickRow({
         </span>
         <PlayerPhoto url={player.photoUrl} />
         <span className="min-w-0">
-          <p className="m-0 truncate text-body-2-normal font-semibold text-neutral">{player.name}</p>
+          <p className="m-0 truncate text-label-2 font-medium text-neutral">{player.name}</p>
           <p className="m-0 mt-px text-caption-1 text-neutral-muted">
             {[player.nationality, player.age === null ? null : `${player.age}세`]
               .filter(Boolean)

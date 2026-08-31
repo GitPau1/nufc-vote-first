@@ -78,7 +78,7 @@ export function AdminRatingsForm({
       <div className="mt-6 flex flex-col gap-5">
         {POSITIONS.map(position => (
           <div key={position}>
-            <p className="mb-2 text-label-2 font-medium text-neutral">{POSITION_LABEL[position]}</p>
+            <p className="mb-2 text-caption-1 font-medium text-neutral">{POSITION_LABEL[position]}</p>
             <div className="overflow-hidden rounded-lg border border-neutral-weak">
               {candidates[position].map((candidate, i) => (
                 <div

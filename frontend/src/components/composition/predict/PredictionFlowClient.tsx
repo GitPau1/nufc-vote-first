@@ -445,7 +445,7 @@ export function PredictionFlowClient({
           존재하는 이유) 이탈 확인에는 맞지 않는다 — 그래서 같은 Sheet 조각으로 직접 구성한다. */}
       <Modal open={leaveConfirmOpen} onOpenChange={o => { if (!o) setLeaveConfirmOpen(false) }}>
         <SheetHeader className="mb-5 text-left">
-          <SheetTitle className="text-body-1-normal">예측을 그만두시겠어요?</SheetTitle>
+          <SheetTitle className="text-headline-1">예측을 그만두시겠어요?</SheetTitle>
           <SheetDescription>지금까지 입력한 스코어와 선수 픽이 저장되지 않고 사라집니다.</SheetDescription>
         </SheetHeader>
         <div className="flex gap-2">

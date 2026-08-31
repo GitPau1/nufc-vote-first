@@ -23,7 +23,7 @@ export function OnboardingForm() {
         🧑
       </div>
 
-      <h1 className="text-heading-2 font-semibold text-neutral text-center mb-1.5">
+      <h1 className="text-heading-2 sm:text-heading-1 font-semibold text-neutral text-center mb-1.5">
         팬 이름을 정해주세요
       </h1>
       <p className="text-label-2 text-neutral-muted text-center mb-9">

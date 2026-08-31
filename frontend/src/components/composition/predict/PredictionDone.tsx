@@ -247,7 +247,7 @@ function PickResultList({ picks }: { picks: PickedPlayer[] }) {
           key={pick.position}
           className={cn('bg-surface p-3', i < picks.length - 1 && 'border-b border-neutral-weak')}
         >
-          <p className="mb-2 text-caption-2 font-medium text-neutral-muted">{POSITION_LABEL[pick.position]}</p>
+          <p className="mb-2 text-caption-1 font-medium text-neutral-muted">{POSITION_LABEL[pick.position]}</p>
           <div className="flex items-center gap-2.5">
             <PlayerPhoto url={pick.photoUrl} size={48} />
             <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
