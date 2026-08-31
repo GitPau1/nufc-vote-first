@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect, useRef, useState, useTransition } from 'react'
+import { CircleHelp } from 'lucide-react'
 import { useLoadingRouter } from '@/components/primitives/navigation-loading'
 import { trackEvent } from '@/lib/analytics/mixpanel'
 import { Button } from '@/components/primitives/button'
+import { Card } from '@/components/primitives/card'
 import { StickyActionBar } from '@/components/primitives/sticky-action-bar'
 import { Modal } from '@/components/primitives/modal/Modal'
 import { SheetHeader, SheetTitle, SheetDescription } from '@/components/primitives/modal/sheet'
@@ -11,8 +13,8 @@ import { ConfirmContent } from '@/components/primitives/modal/contents/Confirm'
 import { LoginContent } from '@/components/primitives/modal/contents/Login'
 import { PlayerPickContent } from '@/components/primitives/modal/contents/PlayerPick'
 import { PredictionDone } from './PredictionDone'
-import { PlayerPhoto, TeamBadge, ToonCost, BudgetBar } from './shared'
-import { StepHero, StepTrack, StepTrackVertical, type StepKey } from './steps'
+import { PlayerPhoto, TeamBadge, ToonCost, BudgetBar, Silhouette } from './shared'
+import { STEP_META, ProgressPips, type StepKey } from './steps'
 import { POSITIONS, POSITION_LABEL, type Candidate, type Position } from '@/lib/predictions/candidates'
 import { MAX_SCORE, BUDGET } from '@/lib/predictions/submit'
 import { submitWeekPrediction, type SubmitPredictionResult } from '@/lib/actions/predictions'
@@ -52,6 +54,12 @@ const ERROR_MESSAGE: Record<SubmitError, string> = {
  * 경기마다 각각 입력한 뒤 한 번에 제출한다(2026-08-23 확정 — 픽도 경기별).
  * 첫 경기가 끝난 뒤 들어오면 `pending`에 남은 경기만 담겨 온다 — 그 경기들만 예측한다.
  * 제출 후에는 수정할 수 없어서(DB UNIQUE + UPDATE 정책 없음) 완료 화면으로 고정된다.
+ *
+ * 레이아웃(2026-08-31 개편): 좌측 사이드바 스텝 트랙을 없애고 단일 컬럼 카드로 바꿨다.
+ * 제목/설명은 카드 헤더(좌), 진행 표시는 ProgressPips(우). 데스크탑은 세 스텝을 같은 그리드
+ * 칸에 겹쳐 쌓아 높이를 가장 큰 '확인' 단계에 맞춘다(스텝 전환 시 컨테이너 높이 고정). 버튼은
+ * 데스크탑에서 카드 하단 푸터(우측 이전/다음·제출 + 좌측 상태), 모바일에서 StickyActionBar.
+ * 더블 매치위크는 이번 개편 대상이 아니라 기존 방식(경기별 블록 세로 스택 + BudgetBar)을 유지한다.
  */
 export function PredictionFlowClient({
   week,
@@ -119,8 +127,8 @@ export function PredictionFlowClient({
     Object.values(matchPicks ?? {}).some(Boolean),
   )
   const hasInput = hasScoreInput || hasPickInput
-  /** "돌아가기"는 바로 나가지 않고 확인 모달을 먼저 띄운다 — 실제 이탈은 confirmLeave가 한다. */
-  const requestLeave = () => setLeaveConfirmOpen(true)
+  // 이탈 확인 모달(leaveConfirmOpen)은 뒤로가기 popstate 가드(AI-004)가 직접 띄운다. 개편 전에는
+  // 데스크탑 "목록으로" 버튼도 트리거였지만, 시안에서 그 버튼이 빠지며 트리거는 popstate 하나가 됐다.
   const confirmLeave = () => {
     setLeaveConfirmOpen(false)
     leavingRef.current = true
@@ -253,160 +261,220 @@ export function PredictionFlowClient({
     return <PredictionDone week={week} prediction={submitted} candidates={candidates} />
   }
 
-  return (
-    <div className="mx-auto max-w-[560px] px-4 pb-32 pt-4 sm:max-w-content sm:px-10 sm:pb-16 sm:pt-6">
-      <button
-        type="button"
-        onClick={requestLeave}
-        className="hidden text-label-1-normal font-medium text-neutral-muted sm:mb-7 sm:inline-flex sm:items-center sm:gap-1.5"
+  const stepMeta = STEP_META.find(s => s.key === step)!
+  const stepDesc = isMulti && stepMeta.descMulti ? stepMeta.descMulti : stepMeta.desc
+  const stepOrder = STEP_META.map(s => s.key)
+  const goPrev = () => {
+    const idx = stepOrder.indexOf(step)
+    if (idx > 0) setStep(stepOrder[idx - 1])
+  }
+
+  // 단일 경기 픽 단계의 남은 툰(더블 매치위크는 경기별 BudgetBar가 대신 보여준다).
+  const singleSpent =
+    !isMulti && pending[0]
+      ? POSITIONS.reduce((sum, position) => sum + (picks[pending[0].id]?.[position]?.cost ?? 0), 0)
+      : 0
+
+  // 푸터 좌측(데스크탑) / 카드 하단(모바일)에 붙는 상태. 픽=남은 툰, 확인=수정 불가 안내.
+  const statusNode =
+    step === 'pick' && !isMulti ? (
+      <ToonCounter remaining={BUDGET - singleSpent} total={BUDGET} />
+    ) : step === 'confirm' ? (
+      <span className="text-label-2 text-neutral-muted">제출한 예측은 수정할 수 없어요</span>
+    ) : null
+
+  /** 스텝별 다음/제출 버튼 — 데스크탑 푸터와 모바일 바 양쪽에서 같은 핸들러를 쓴다. */
+  function primaryButton(className: string) {
+    if (step === 'score') {
+      return (
+        <Button size="lg" className={className} disabled={!!scoreRangeError} onClick={() => completeStep('score', 'pick')}>
+          다음
+        </Button>
+      )
+    }
+    if (step === 'pick') {
+      return (
+        <Button size="lg" className={className} disabled={!allPicked} onClick={() => completeStep('pick', 'confirm')}>
+          다음
+        </Button>
+      )
+    }
+    return (
+      <Button
+        size="lg"
+        className={className}
+        disabled={submitting || !!scoreRangeError}
+        onClick={() => setSubmitConfirmOpen(true)}
       >
-        ‹ 목록으로
-      </button>
+        {submitting ? '제출 중…' : '제출하기'}
+      </Button>
+    )
+  }
 
-      <div className="sm:grid sm:grid-cols-[200px_1fr] sm:gap-x-10">
-        <div className="mb-7 sm:mb-0">
-          <div className="sm:hidden">
-            <StepTrack current={step} />
-            <StepHero current={step} multi={isMulti} />
-          </div>
-          <div className="hidden sm:block">
-            <StepTrackVertical current={step} multi={isMulti} />
-          </div>
-        </div>
-
-        <div>
-          {step !== 'confirm' && (
-          <div className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
-            {step === 'score' && (
-              // 더블 매치위크는 경기별 입력 블록이 세로로 쌓인다 — 픽은 주 단위라 다음 스텝에서 한 번만.
-              <div className="flex flex-col gap-7">
-                {pending.map((match, i) => (
-                  <div key={match.id}>
-                    {isMulti && <MatchLabel index={i} opponent={match.opponent} />}
-                    <MatchMeta weekNo={week.weekNo} match={match} />
-                    <div className="mt-5 flex items-center justify-center gap-5">
-                      <TeamColumn logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
-                      <ScoreStepper
-                        value={scores[match.id]?.[0] ?? 0}
-                        onChange={delta => changeScore(match.id, 0, delta)}
-                      />
-                      <ScoreStepper
-                        value={scores[match.id]?.[1] ?? 0}
-                        onChange={delta => changeScore(match.id, 1, delta)}
-                      />
-                      <TeamColumn logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
-                    </div>
-                  </div>
-                ))}
+  /** 스텝별 본문 — 데스크탑에서 세 스텝을 같은 그리드 칸에 겹쳐 쌓아 높이를 최대('확인')에 맞춘다. */
+  function stepBody(key: StepKey) {
+    if (key === 'score') {
+      return (
+        // 더블 매치위크는 경기별 입력 블록이 세로로 쌓인다 — 픽은 주 단위라 다음 스텝에서 한 번만.
+        <div className="flex flex-col gap-8">
+          {pending.map((match, i) => (
+            <div key={match.id}>
+              {isMulti && <MatchLabel index={i} opponent={match.opponent} />}
+              <MatchMeta weekNo={week.weekNo} match={match} />
+              <div className="mt-6 flex items-center justify-center gap-4 sm:gap-6">
+                <TeamColumn logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
+                <ScoreStepper
+                  value={scores[match.id]?.[0] ?? 0}
+                  onChange={delta => changeScore(match.id, 0, delta)}
+                />
+                <ScoreStepper
+                  value={scores[match.id]?.[1] ?? 0}
+                  onChange={delta => changeScore(match.id, 1, delta)}
+                />
+                <TeamColumn logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
               </div>
-            )}
-
-            {step === 'pick' &&
-              // 경기마다 포지션 3장씩 따로 고른다. 두 번째 경기부터는 첫 경기 픽을 그대로 복사할 수 있다.
-              pending.map((match, i) => (
-                <div key={match.id} className={cn(i > 0 && 'mt-7')}>
-                  {isMulti && (
-                    <div className="mb-2 flex items-center justify-between">
-                      <MatchLabel index={i} opponent={match.opponent} />
-                      {i > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => copyPicks(pending[0].id, match.id)}
-                          className="text-label-2 font-medium text-brand"
-                        >
-                          그대로 적용
-                        </button>
-                      )}
-                    </div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+    if (key === 'pick') {
+      return (
+        <div className="flex flex-col gap-7">
+          {pending.map((match, i) => (
+            <div key={match.id}>
+              {isMulti && (
+                <div className="mb-3 flex items-center justify-between">
+                  <MatchLabel index={i} opponent={match.opponent} />
+                  {i > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => copyPicks(pending[0].id, match.id)}
+                      className="text-label-2 font-medium text-brand"
+                    >
+                      그대로 적용
+                    </button>
                   )}
+                </div>
+              )}
+              {/* 더블 매치위크만 경기별 예산 게이지를 인라인으로 둔다 — 단일 경기는 푸터 남은 툰이 대신한다. */}
+              {isMulti && (
+                <div className="mb-3">
                   <BudgetBar
                     spent={POSITIONS.reduce(
                       (sum, position) => sum + (picks[match.id]?.[position]?.cost ?? 0),
                       0,
                     )}
                   />
-                  <div className="mt-3">
-                    <PositionRow
-                      picks={picks[match.id] ?? {}}
-                      onOpen={position => setPickTarget({ matchId: match.id, position })}
-                    />
-                  </div>
                 </div>
-              ))}
-          </div>
-          )}
-
-          {step === 'confirm' && (
-              <>
-                {/* 더블 매치위크는 경기마다 별도 카드로 나눈다(퍼블리싱 확인 — 한 컨테이너에 합치지 않음).
-                    선수 픽은 주 단위 1세트라 마지막 카드 아래에 한 번만 붙는다. */}
-                {pending.map((match, i) => (
-                  <div key={match.id} className={cn(i > 0 && 'mt-5')}>
-                    {isMulti && <MatchLabel index={i} opponent={match.opponent} />}
-                    <div className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
-                      <SectionHead title="경기 예측" onEdit={() => setStep('score')} />
-                      <div className="flex items-center justify-center gap-2 sm:gap-6">
-                        <ConfirmTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
-                        <span className="text-title-2 font-semibold">
-                          {scores[match.id]?.[0] ?? 0} – {scores[match.id]?.[1] ?? 0}
-                        </span>
-                        <ConfirmTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
-                      </div>
-
-                      <div className="mt-6">
-                        <SectionHead title="선수 픽" onEdit={() => setStep('pick')} />
-                      </div>
-                      <PositionRow
-                        picks={picks[match.id] ?? {}}
-                        onOpen={position => setPickTarget({ matchId: match.id, position })}
-                      />
-                    </div>
-                  </div>
-                ))}
-
-                <p className="mt-4 text-center text-caption-1 text-neutral-muted">
-                  제출한 예측은 수정할 수 없어요
-                </p>
-              </>
-          )}
-
-          {visibleError && (
-            <p role="alert" className="mt-3 text-center text-label-2 font-medium text-critical">
-              {visibleError}
-            </p>
-          )}
-
-          {/* 하단 제출 바는 투표 화면과 같은 StickyActionBar를 쓴다 — 예측 플로우는 폭이 더 좁고
-              (모바일 shell / 데스크탑 560) 데스크탑에서 버튼을 가운데 고정폭으로 두는 차이만 override. */}
-          <StickyActionBar className="max-w-shell border-neutral-weak sm:mt-8 sm:flex sm:max-w-[560px] sm:justify-center sm:pb-0">
-            {step === 'score' && (
-              <Button
-                size="lg"
-                className="w-full sm:w-[200px]"
-                disabled={!!scoreRangeError}
-                onClick={() => completeStep('score', 'pick')}
-              >
-                다음
-              </Button>
-            )}
-            {step === 'pick' && (
-              <Button size="lg" className="w-full sm:w-[200px]" disabled={!allPicked} onClick={() => completeStep('pick', 'confirm')}>
-                다음
-              </Button>
-            )}
-            {step === 'confirm' && (
-              <Button
-                size="lg"
-                className="w-full sm:w-[200px]"
-                disabled={submitting || !!scoreRangeError}
-                onClick={() => setSubmitConfirmOpen(true)}
-              >
-                {submitting ? '제출 중…' : '이대로 제출하기'}
-              </Button>
-            )}
-          </StickyActionBar>
+              )}
+              <PositionRow
+                picks={picks[match.id] ?? {}}
+                onOpen={position => setPickTarget({ matchId: match.id, position })}
+              />
+            </div>
+          ))}
         </div>
+      )
+    }
+    // confirm — 경기별로 결과/선수 요약 섹션. 선수 픽은 주 단위 1세트라 경기 카드 안에 그대로 붙는다.
+    return (
+      <div className="flex flex-col gap-4">
+        {pending.map((match, i) => (
+          <div key={match.id} className={cn('flex flex-col gap-4', i > 0 && 'mt-2')}>
+            {isMulti && <MatchLabel index={i} opponent={match.opponent} />}
+            <SummarySection title="나의 결과 예측" onEdit={() => setStep('score')}>
+              <div className="flex items-center justify-center gap-4 sm:gap-8">
+                <ConfirmTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
+                <span className="text-title-2 font-semibold">
+                  {scores[match.id]?.[0] ?? 0} – {scores[match.id]?.[1] ?? 0}
+                </span>
+                <ConfirmTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
+              </div>
+            </SummarySection>
+            <SummarySection title="나의 선수 예측" onEdit={() => setStep('pick')}>
+              <PositionRow
+                picks={picks[match.id] ?? {}}
+                onOpen={position => setPickTarget({ matchId: match.id, position })}
+              />
+            </SummarySection>
+          </div>
+        ))}
       </div>
+    )
+  }
+
+  return (
+    <div className="mx-auto max-w-[860px] px-4 pb-28 pt-4 sm:px-6 sm:pb-12 sm:pt-8">
+      <Card className="flex flex-col p-5 sm:p-7">
+        {/* 헤더: 제목/설명(좌) + 진행 pill(우) */}
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-heading-2 font-semibold text-neutral">{stepMeta.name}</h1>
+            <p className="mt-1 text-label-2 text-neutral-muted">{stepDesc}</p>
+          </div>
+          <ProgressPips current={step} />
+        </div>
+
+        {/* 모바일 선수 예측: 남은 툰을 목록 위에 둔다 — 하단 고정 바에 가려지지 않게 목록을 맨 아래로.
+            (데스크탑은 아래 푸터 좌측에 있어 영향 없음.) */}
+        {step === 'pick' && statusNode && <div className="pt-4 sm:hidden">{statusNode}</div>}
+
+        {/* 본문 — 데스크탑은 세 스텝을 같은 칸에 겹쳐 쌓고(높이 고정) 비활성은 자리만 차지. 모바일은 활성만. */}
+        <div className="flex flex-1 flex-col py-6 sm:grid sm:py-8">
+          {STEP_META.map(({ key }) => (
+            <div
+              key={key}
+              aria-hidden={key !== step}
+              className={cn(
+                'flex-col justify-center sm:col-start-1 sm:row-start-1',
+                key === step ? 'flex' : 'hidden sm:flex sm:invisible',
+              )}
+            >
+              <div className="w-full">{stepBody(key)}</div>
+            </div>
+          ))}
+        </div>
+
+        {visibleError && (
+          <p role="alert" className="mb-2 text-center text-label-2 font-medium text-critical">
+            {visibleError}
+          </p>
+        )}
+
+        {/* 모바일 상태 텍스트(확인 단계 안내) — 데스크탑은 아래 푸터 좌측에 있다.
+            선수 예측 남은 툰은 위(목록 상단)로 옮겨서 여기선 확인 단계만 처리한다. */}
+        {step === 'confirm' && statusNode && <div className="pb-1 sm:hidden">{statusNode}</div>}
+
+        {/* 데스크탑 푸터: 구분선 + 상태(좌) + 이전/다음·제출(우). 상태 높이(남은 툰 2줄)가 스텝마다
+            달라 컨테이너 높이가 흔들리던 문제 → 내부 행 높이를 고정(min-h)해 스텝 간 높이를 맞춘다. */}
+        <div className="mt-6 hidden border-t border-neutral-weak pt-5 sm:block">
+          <div className="flex min-h-[56px] items-center justify-between gap-4">
+            <div>{statusNode}</div>
+            <div className="flex gap-2">
+              {step !== 'score' && (
+                <Button variant="ghost" size="lg" className="w-[100px]" onClick={goPrev}>
+                  이전
+                </Button>
+              )}
+              {primaryButton('w-[140px]')}
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* 하단 제출 바는 투표 화면과 같은 StickyActionBar를 쓴다 — 데스크탑은 카드 푸터가 대신하므로
+          sm:hidden으로 모바일 전용이다(fixed→static 전환 로직은 StickyActionBar가 소유). */}
+      <StickyActionBar className="border-neutral-weak sm:hidden">
+        <div className="mx-auto flex max-w-shell gap-2">
+          {step !== 'score' && (
+            <Button variant="ghost" size="lg" className="flex-1" onClick={goPrev}>
+              이전
+            </Button>
+          )}
+          {primaryButton(step !== 'score' ? 'flex-[2]' : 'w-full')}
+        </div>
+      </StickyActionBar>
 
       {/* 껍데기가 아니라 목록만 스크롤한다(타이틀·드래그 핸들 고정) — 세로 flex로 높이를 나눠주고
           스크롤은 PlayerPickContent 내부 목록이 맡는다. */}
@@ -560,17 +628,65 @@ function ScoreStepper({ value, onChange }: { value: number; onChange: (delta: nu
   )
 }
 
-function SectionHead({ title, onEdit }: { title: string; onEdit: () => void }) {
+/** 확인 단계의 요약 섹션(흰 카드 안의 옅은 회색 패널 — bg-page) + 우측 "수정" 링크. */
+function SummarySection({
+  title,
+  onEdit,
+  children,
+}: {
+  title: string
+  onEdit: () => void
+  children: React.ReactNode
+}) {
   return (
-    <div className="mb-3 flex items-center justify-between">
-      <span className="text-body-2-normal font-semibold">{title}</span>
-      <button type="button" onClick={onEdit} className="text-label-2 font-medium text-brand">
-        수정
-      </button>
+    <div className="rounded-lg bg-page p-4 sm:p-5">
+      <div className="mb-4 flex items-center justify-between">
+        <span className="text-label-1-normal font-medium text-neutral-muted">{title}</span>
+        <button type="button" onClick={onEdit} className="text-label-2 font-medium text-brand">
+          수정
+        </button>
+      </div>
+      {children}
     </div>
   )
 }
 
+/** 채운 선수 카드의 사진 — 1:1 고정 72×72 정사각 썸네일(카드 폭이 넓어져도 늘어나지 않게). */
+function PlayerThumb({ url }: { url: string | null }) {
+  return (
+    <div className="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-md">
+      {url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={url} alt="" className="h-full w-full object-cover object-top" />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center bg-disabled text-neutral-subtle">
+          <Silhouette />
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** 남은 툰 카운터 — 숫자(남은/총) 위, "남은 툰" + 도움말 아래(2줄). BudgetBar 대신 단일 경기 픽에서 쓴다. */
+function ToonCounter({ remaining, total }: { remaining: number; total: number }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <div className="flex items-baseline gap-1">
+        <span className="text-title-3 font-semibold text-neutral">{remaining}</span>
+        <span className="text-label-1-normal text-neutral-subtle">/{total}</span>
+      </div>
+      <div className="flex items-center gap-1 text-label-2 text-neutral-muted">
+        <CircleHelp size={14} aria-hidden className="text-neutral-subtle" />
+        <span>남은 툰</span>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * 포지션 3장 — 빈 카드(옅은 회색 bg-page + 우측 원형 아바타) / 채운 카드(흰색 bg-surface + 72 썸네일).
+ * 상단 영역 높이(h-20)와 하단 줄 높이(h-7)를 두 상태에서 고정해, 선택 여부로 카드 높이가 튀지 않게 한다.
+ */
 function PositionRow({
   picks,
   onOpen,
@@ -580,7 +696,7 @@ function PositionRow({
   onOpen: (position: Position) => void
 }) {
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
       {POSITIONS.map(position => {
         const picked = picks[position]
         return (
@@ -589,29 +705,26 @@ function PositionRow({
             type="button"
             onClick={() => onOpen(position)}
             className={cn(
-              'flex min-h-[196px] min-w-0 flex-1 flex-col rounded-lg border border-neutral-weak p-3 text-left transition-colors duration-micro hover:border-neutral-strong',
+              'flex min-h-[150px] min-w-0 flex-1 flex-col rounded-lg border border-neutral-weak p-4 text-left transition-colors duration-micro hover:border-neutral-strong',
               picked ? 'bg-surface' : 'bg-page',
             )}
           >
-            <span className="text-caption-1 font-medium text-neutral-muted">{POSITION_LABEL[position]}</span>
-            <div className="my-2 h-px bg-neutral-weak" />
-            {picked ? (
-              <div className="flex flex-1 flex-col items-center justify-center gap-1">
-                <PlayerPhoto url={picked.photoUrl} />
-                <p className="mt-0.5 text-center text-label-2 font-medium">{picked.name}</p>
-                <ToonCost cost={picked.cost} />
-              </div>
-            ) : (
-              <div className="flex flex-1 flex-col items-center justify-center gap-2">
-                {/* 손으로 조립한 실루엣 원 대신 PlayerPhoto의 폴백을 그대로 쓴다 — 폴백 톤이 한 곳에서만 정해진다. */}
-                <PlayerPhoto url={null} size={40} />
-                <span className="text-center text-caption-2 font-medium text-neutral-muted">
-                  선수를
-                  <br />
-                  선택해요
-                </span>
-              </div>
-            )}
+            <span className="text-label-2 font-medium text-neutral-muted">{POSITION_LABEL[position]}</span>
+            {/* 상단 영역: 우측 세로중앙. 채운: 72 정사각 썸네일 / 빈: 72 원형 아바타 */}
+            <div className="flex h-20 items-center justify-end pr-[6%]">
+              {picked ? <PlayerThumb url={picked.photoUrl} /> : <PlayerPhoto url={null} size={72} />}
+            </div>
+            <div className="h-px bg-neutral-weak" />
+            <div className="mt-3 flex h-7 items-center justify-between gap-2">
+              {picked ? (
+                <>
+                  <span className="min-w-0 truncate text-label-1-normal font-semibold">{picked.name}</span>
+                  <ToonCost cost={picked.cost} className="shrink-0" />
+                </>
+              ) : (
+                <span className="text-label-2 text-neutral-muted">선수를 선택하세요</span>
+              )}
+            </div>
           </button>
         )
       })}

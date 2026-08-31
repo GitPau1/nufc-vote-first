@@ -1,0 +1,14 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as ProgressPipsStories from './ProgressPips.stories'
+
+<Meta of={ProgressPipsStories} />
+
+# ProgressPips
+
+승부예측 진행 화면(경기 예측 → 선수 예측 → 제출 전 확인)의 **상단 우측 진행 표시**. 3분할 pill로, 현재 단계까지 `bg-brand-solid`, 남은 단계는 `bg-neutral-weak`로 채운다. 예측 플로우 개편(2026-08-31)에서 좌측 세로 스텝 트랙을 대체했다.
+
+<Canvas of={ProgressPipsStories.AllSteps} />
+
+## props
+
+`current: StepKey`(`'score' | 'pick' | 'confirm'`) 하나만 받는다 — `STEP_META` 순서로 현재 인덱스를 계산해 그 단계까지 채운다. 라벨/설명은 이 컴포넌트가 아니라 카드 헤더(제목 + 설명)가 따로 보여준다.

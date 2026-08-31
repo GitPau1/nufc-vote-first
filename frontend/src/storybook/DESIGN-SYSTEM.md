@@ -111,7 +111,7 @@
 | TeamBadge | 승부예측 팀 엠블럼. `logoUrl` 없음·로드 실패 모두 팀명 첫 글자 원형으로 폴백 | `components/composition/predict/shared.tsx` | `contents/TeamBadge.mdx` |
 | PlayerPhoto | 선수 사진 원형. Avatar(Radix) 기반이라 null·로드 실패 모두 실루엣 폴백 | `components/composition/predict/shared.tsx` | `contents/PlayerPhoto.mdx` |
 | ShareButton | 예측 결과·완료 화면의 링크 복사 버튼. 이름과 달리 Web Share API가 아니라 현재 주소 클립보드 복사다 | `components/composition/predict/shared.tsx` | `actions/ShareButton.mdx` |
-| StepTrack | 승부예측 3스텝(score→pick→confirm) 진행 표시. 가로 트랙·히어로 문구·세로 트랙 3종 | `components/composition/predict/steps.tsx` | `navigations/StepTrack.mdx` |
+| ProgressPips | 승부예측 3스텝(경기→선수→확인) 상단 우측 진행 표시(3분할 pill) | `components/composition/predict/steps.tsx` | `navigations/ProgressPips.mdx` |
 
 ---
 
