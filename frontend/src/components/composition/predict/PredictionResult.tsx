@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useLoadingRouter } from '@/components/primitives/navigation-loading'
 import { trackEvent } from '@/lib/analytics/mixpanel'
+import { Card } from '@/components/primitives/card'
 import { PlayerPhoto, ShareButton, TeamBadge } from './shared'
 import { WeekRankCard } from './WeekRankCard'
 import { POSITIONS, POSITION_LABEL, playerPhotoUrl, type Position } from '@/lib/predictions/candidates'
@@ -43,7 +43,6 @@ export function PredictionResult({
   candidates: PickCandidates
   ranking: RankingRow[]
 }) {
-  const router = useLoadingRouter()
   const [tab, setTab] = useState<'mine' | 'rank'>('mine')
   const summary = aggregateWeekResult(week, results, ranking)
   const participated = summary !== null
@@ -62,17 +61,10 @@ export function PredictionResult({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [week.weekKey])
 
+  // 셸은 제출 화면(PredictionFlowClient)과 동일 규격 — 860px 컨테이너 + 단일 Card
   return (
-    <div className="mx-auto max-w-[560px] px-4 pb-16 pt-4 sm:max-w-content sm:px-10 sm:pt-6">
-      <button
-        type="button"
-        onClick={() => router.push('/predictions')}
-        className="hidden text-label-1-normal font-medium text-neutral-muted sm:mb-7 sm:inline-flex sm:items-center sm:gap-1.5"
-      >
-        ‹ 목록으로
-      </button>
-
-      <div className="mx-auto sm:max-w-[709px]">
+    <div className="mx-auto max-w-[860px] px-4 pb-16 pt-4 sm:px-6 sm:pt-8">
+      <Card className="p-5 sm:p-7">
         <Hero weekNo={week.weekNo} summary={summary} />
 
         {/* 모바일 전용 토글 — 데스크탑은 두 섹션을 세로로 다 보여준다 */}
@@ -116,7 +108,7 @@ export function PredictionResult({
           <WeekRankCard weekNo={week.weekNo} entries={ranking} className="sm:hidden" />
           <WeekRankCard weekNo={week.weekNo} entries={ranking} capped className="hidden sm:block" />
         </div>
-      </div>
+      </Card>
     </div>
   )
 }
