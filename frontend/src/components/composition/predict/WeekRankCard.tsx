@@ -121,7 +121,7 @@ function RankRow({ entry }: { entry: RankingRow }) {
         )}
       </span>
 
-      <span className="min-w-0 flex-1 truncate text-label-2 font-medium text-neutral">{entry.name}</span>
+      <span className="min-w-0 flex-1 truncate text-label-1-normal font-medium text-neutral">{entry.name}</span>
 
       <span className="w-[42px] shrink-0 text-center text-body-2-normal font-semibold text-neutral-muted">
         {entry.matchPoints ?? 0}

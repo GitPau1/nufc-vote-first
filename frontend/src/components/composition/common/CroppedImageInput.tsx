@@ -87,7 +87,7 @@ export function CroppedImageInput({
 
   return (
     <div className="rounded-lg border border-dashed border-neutral-weak px-3 py-2">
-      <p className="text-label-1-normal font-medium text-neutral-muted">{label}</p>
+      <p className="text-label-1-normal font-medium text-neutral">{label}</p>
       <input type="file" accept="image/*" onChange={handleSourceChange} className="mt-2 block w-full text-caption-1" />
       <input ref={hiddenFileRef} name={name} type="file" accept="image/webp" className="hidden" tabIndex={-1} />
       {sourceUrl && (

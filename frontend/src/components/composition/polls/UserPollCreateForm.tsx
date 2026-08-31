@@ -193,7 +193,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
     <>
       <form onSubmit={submit} className="space-y-3">
         <section className="rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
-          <p className="text-label-2 font-medium text-neutral">투표 유형</p>
+          <p className="text-label-1-normal font-medium text-neutral">투표 유형</p>
           <div className="mt-3 grid gap-2">
             {POLL_TYPES.map(item => {
               const selected = item.type === pollType
@@ -213,7 +213,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
         </section>
 
         <section className="space-y-2.5 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
-          <p className="text-label-2 font-medium text-neutral">기본 정보</p>
+          <p className="text-label-1-normal font-medium text-neutral">기본 정보</p>
           <input name="title" required className="input-field" placeholder="투표 제목" />
           <input name="description" className="input-field" placeholder="설명(선택)" />
           <input name="thumbnail_url" className="input-field" placeholder="대표 이미지 URL(선택)" />
@@ -231,7 +231,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
         {pollType === 'subject_options' ? (
           <section className="space-y-2.5 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-label-2 font-medium text-neutral">대상 선수</p>
+              <p className="text-label-1-normal font-medium text-neutral">대상 선수</p>
               <button type="button" onClick={() => openPlayerPicker('single')} className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-disabled px-2.5 text-caption-1 font-medium text-neutral">
                 <Users className="h-3.5 w-3.5" /> 선택
               </button>
@@ -256,7 +256,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
           </section>
         ) : pollType === 'free_choice' ? (
           <section className="space-y-2.5 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
-            <p className="text-label-2 font-medium text-neutral">선택지</p>
+            <p className="text-label-1-normal font-medium text-neutral">선택지</p>
             <div className="space-y-1.5">
               {freeOptions.map((option, index) => (
                 <div key={index} className="grid grid-cols-[1fr_32px] gap-1.5 rounded-md border border-neutral-weak p-2">
@@ -304,7 +304,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
           <section className="space-y-2.5 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-label-2 font-medium text-neutral">{pollType === 'overall_rating' ? '평가 대상 선수' : '후보 선수'}</p>
+                <p className="text-label-1-normal font-medium text-neutral">{pollType === 'overall_rating' ? '평가 대상 선수' : '후보 선수'}</p>
                 <p className="mt-0.5 text-caption-1 text-neutral-muted">{selectedPlayers.length}명 선택됨</p>
               </div>
               <button type="button" onClick={() => openPlayerPicker('multiple')} className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-disabled px-2.5 text-caption-1 font-medium text-neutral">

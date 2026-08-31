@@ -31,14 +31,14 @@ export function PollHeroCard({ poll }: { poll: PollListItem }) {
           <span className="inline-flex h-[21px] items-center rounded-pill bg-brand-solid/55 px-[9px] text-caption-2 font-medium text-white backdrop-blur-[2px]">
             {poll.status === 'active' ? formatTimeLeft(poll.closes_at) : getStatusLabel(poll)}
           </span>
-          <span className="inline-flex items-center gap-1 text-caption-2 text-white">
+          <span className="inline-flex items-center gap-1 text-caption-1 text-white">
             <Users className="h-3.5 w-3.5" />
             {poll.vote_count.toLocaleString()}명
           </span>
         </div>
         <p className="truncate text-headline-2 sm:text-headline-1 font-semibold text-white">{poll.title}</p>
         {poll.description && (
-          <p className="mt-1 truncate text-caption-1 text-white/75">{poll.description}</p>
+          <p className="mt-1 truncate text-label-1-normal text-white/75">{poll.description}</p>
         )}
       </div>
     </Link>
