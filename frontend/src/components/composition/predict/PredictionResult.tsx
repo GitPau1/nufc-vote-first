@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { User } from 'lucide-react'
 import { trackEvent } from '@/lib/analytics/mixpanel'
 import { Card } from '@/components/primitives/card'
 import { PlayerPhoto, ShareButton, TeamBadge } from './shared'
@@ -21,13 +22,13 @@ import { cn } from '@/lib/utils'
 import { badgeVariants } from '@/components/primitives/badge'
 
 /**
- * 주차 결과 화면(퍼블리싱 `renderResult`). 맨 상단의 "내 예측 / 전체 결과" 세그먼트로 탭을 고른다 —
- * "내 예측"은 경기별 비교 + 선수 픽, "전체 결과"는 히어로(등수·점수) + 주차 랭킹.
+ * 주차 결과 화면(퍼블리싱 `renderResult`). 맨 상단의 "내 예측 / 전체 결과 / 순위" 세그먼트로 탭을 고른다 —
+ * "내 예측"은 경기별 비교 + 선수 픽, "전체 결과"는 히어로(등수·점수) + 주차 랭킹, "순위"는 시즌 누적 순위다.
  * 첫 진입 기본 탭은 "전체 결과"다(내 점수·순위가 먼저 보이도록 — 사용자 확정).
- * 모바일·데스크탑 모두 같은 탭 구조다(TEA-6에서 데스크탑 세로 스택을 없앴다).
+ * 모바일·데스크탑 모두 같은 탭 구조다.
  *
  * 랭킹은 참여 여부와 무관하게 공개된다 — 예측하지 않은 주차도 이 화면으로 들어와 "미참여" 안내와
- * 랭킹을 볼 수 있다(퍼블리싱 `buildLeaderboardNoParticipation`).
+ * 랭킹을 볼 수 있다(퍼블리싱 `buildLeaderboardNoParticipation`). 시즌 누적 순위(순위 탭)도 같은 원칙이다.
  * 채점 단위는 경기지만 등수는 주차 단위 하나뿐이라, 더블 매치위크는 두 경기 점수를 합산한다.
  */
 export function PredictionResult({
@@ -36,6 +37,7 @@ export function PredictionResult({
   predictions,
   candidates,
   ranking,
+  seasonRanking,
 }: {
   week: WeekSession
   /** fixture_id → 채점 결과 */
@@ -44,8 +46,10 @@ export function PredictionResult({
   predictions: MyPredictionMap
   candidates: PickCandidates
   ranking: RankingRow[]
+  /** 시즌 누적 순위(순위 탭) — `ranking`(주차)과 달리 총점만 있다(week_leaderboard vs season_leaderboard) */
+  seasonRanking: RankingRow[]
 }) {
-  const [tab, setTab] = useState<'mine' | 'rank'>('rank')
+  const [tab, setTab] = useState<'mine' | 'rank' | 'season'>('rank')
   const summary = aggregateWeekResult(week, results, ranking)
   const participated = summary !== null
 
@@ -67,7 +71,7 @@ export function PredictionResult({
   return (
     <div className="mx-auto max-w-[860px] px-4 pb-16 pt-4 sm:px-6 sm:pt-8">
       <Card className="p-5 sm:p-7">
-        {/* 탭 세그먼트 — 모든 뷰포트 공통. 순위(통합) 탭(TEA-11)은 여기에 버튼 하나를 더 붙인다. */}
+        {/* 탭 세그먼트 — 모든 뷰포트 공통. */}
         <div className="mb-5 flex gap-0.5 rounded-pill bg-disabled p-1">
           <SegmentButton active={tab === 'mine'} onClick={() => setTab('mine')}>
             내 예측
@@ -75,9 +79,12 @@ export function PredictionResult({
           <SegmentButton active={tab === 'rank'} onClick={() => setTab('rank')}>
             전체 결과
           </SegmentButton>
+          <SegmentButton active={tab === 'season'} onClick={() => setTab('season')}>
+            순위
+          </SegmentButton>
         </div>
 
-        <div className={cn(tab === 'mine' ? 'block' : 'hidden')}>
+        <div className={tab === 'mine' ? 'block' : 'hidden'}>
           {week.matches.map((match, i) => (
             <div key={match.id}>
               {week.matches.length > 1 && (
@@ -105,11 +112,15 @@ export function PredictionResult({
           )}
         </div>
 
-        <div className={cn(tab === 'rank' ? 'block' : 'hidden')}>
+        <div className={tab === 'rank' ? 'block' : 'hidden'}>
           <Hero weekNo={week.weekNo} summary={summary} />
           {/* 모바일은 화면 높이만큼만 노출하고, 데스크탑은 10명까지만 그린 뒤 "전체보기"로 펼친다 */}
           <WeekRankCard weekNo={week.weekNo} entries={ranking} className="sm:hidden" />
           <WeekRankCard weekNo={week.weekNo} entries={ranking} capped className="hidden sm:block" />
+        </div>
+
+        <div className={tab === 'season' ? 'block' : 'hidden'}>
+          <SeasonRankSection entries={seasonRanking} />
         </div>
       </Card>
     </div>
@@ -129,6 +140,7 @@ function SegmentButton({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
         'flex-1 rounded-pill px-1 py-2 text-label-2 font-medium transition-colors duration-micro',
         active ? 'bg-brand-solid text-on-solid' : 'text-neutral-muted',
@@ -136,6 +148,105 @@ function SegmentButton({
     >
       {children}
     </button>
+  )
+}
+
+/** 순위 탭에서 보여줄 인원 수 — 넘으면 "전체보기"로 펼친다(WeekRankCard의 데스크탑 캡과 같은 값). */
+const SEASON_RANK_CAP = 10
+
+/**
+ * 순위 탭 — 시즌 누적 순위(총점만) 목록. `WeekRankCard`는 주차 랭킹 전용이다: 그 카드의 예측/선수픽
+ * 컬럼은 `RankingRow.matchPoints`/`pickPoints`가 있다고 가정하고 없으면 `?? 0`으로 채워서
+ * "0점을 받았다"처럼 보인다(WeekRankCard.stories.tsx의 `MissingColumnPoints` 스토리가 이 근거로
+ * "이 카드에는 주차 랭킹 행만 넘겨야 한다"고 명시한다). 그래서 시즌 데이터는 이 파일 안에서
+ * 총점 한 컬럼짜리 단순 목록으로 따로 그린다 — WeekRankCard의 모바일/데스크탑 이원 캡 대신
+ * 전체 뷰포트에서 같은 캡+전체보기 하나만 쓴다.
+ */
+function SeasonRankSection({ entries }: { entries: RankingRow[] }) {
+  const [expanded, setExpanded] = useState(false)
+  const overLimit = entries.length > SEASON_RANK_CAP
+
+  const rows = expanded || !overLimit ? entries : entries.slice(0, SEASON_RANK_CAP)
+  const me = entries.find(entry => entry.isMe)
+  const myRowBelow = !expanded && overLimit && me && !rows.includes(me) ? me : undefined
+
+  return (
+    <div className="rounded-lg bg-page p-4 text-left">
+      <p className="mb-3 text-body-2-normal font-semibold text-neutral">시즌 누적 순위</p>
+
+      {entries.length === 0 ? (
+        <p className="text-caption-1 text-neutral-muted">아직 집계된 시즌 순위가 없어요</p>
+      ) : (
+        <>
+          <SeasonRankHeaderRow />
+          {rows.map(entry => (
+            <SeasonRankRow key={entry.userId} entry={entry} />
+          ))}
+          {myRowBelow && (
+            <>
+              <div className="py-1 text-center text-label-2 text-neutral-subtle">⋯</div>
+              <SeasonRankRow entry={myRowBelow} />
+            </>
+          )}
+
+          {!expanded && overLimit && (
+            <button
+              type="button"
+              onClick={() => setExpanded(true)}
+              className="mt-3 flex w-full items-center justify-center rounded-md border border-neutral-weak p-3 text-label-2 font-medium text-neutral-muted transition-colors duration-micro hover:border-neutral-strong"
+            >
+              전체보기 · {entries.length}명
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+function SeasonRankHeaderRow() {
+  return (
+    <div className="flex items-center gap-2 px-1 pb-2">
+      <span className="w-8 shrink-0 text-center text-caption-2 font-medium text-neutral-muted">순위</span>
+      <span className="h-7 w-7 shrink-0" />
+      <span className="min-w-0 flex-1" />
+      <span className="w-12 shrink-0 text-center text-caption-2 font-medium text-neutral-muted">총점</span>
+    </div>
+  )
+}
+
+function SeasonRankRow({ entry }: { entry: RankingRow }) {
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-2 border-b border-neutral-weak px-1 py-3 last:border-b-0',
+        entry.isMe && 'rounded-md border-b-0 bg-brand-weak px-2',
+      )}
+    >
+      <span
+        className={cn(
+          'w-8 shrink-0 text-center text-body-1-normal font-semibold text-neutral',
+          entry.isMe && 'text-brand',
+        )}
+      >
+        {entry.rank}
+      </span>
+
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-pill bg-disabled text-neutral-subtle">
+        {entry.avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={entry.avatarUrl} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <User className="h-3.5 w-3.5" />
+        )}
+      </span>
+
+      <span className="min-w-0 flex-1 truncate text-label-1-normal font-medium text-neutral">{entry.name}</span>
+
+      <span className="w-12 shrink-0 text-center text-body-2-normal font-semibold text-brand">
+        {entry.totalPoints}
+      </span>
+    </div>
   )
 }
 

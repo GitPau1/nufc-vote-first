@@ -564,7 +564,7 @@ Update note 2026-05-30:
 - **`prediction_results`는 정산이 끝난 주차만 담습니다**(`20260824120000_prediction_results_week_settled.sql`): 종료된 경기여야 하고, 그 주차에 아직 안 끝난 경기(취소·일정 미정 제외)가 하나도 없어야 합니다. 제출 단위가 주(week)라 집계 단위도 주여야 하고, 진행 중인 주차의 부분 점수가 랭킹으로 새면 안 되기 때문입니다. `week_leaderboard` / `season_leaderboard`가 이 view 위에 있어 게이트가 자동으로 따라갑니다.
 - 그래서 **경기가 끝났지만 주차가 진행 중인 구간에는 점수가 없습니다.** 그때 제출 완료 화면(`PredictionDone`)이 실제 스코어와 적중 여부만 보여줍니다 — 판정은 `lib/predictions/result.ts`의 `matchHit()`이고, DB `prediction_match_points`와 같은 기준이라 한쪽만 고치면 배지와 점수가 어긋납니다.
 - `fixture_player_ratings`는 픽 점수의 입력값입니다. 읽기는 공개(`getFixtureRatings`), 쓰기는 insert 정책이 없어 service-role만 가능하고 경로가 둘입니다: 평상시 자동 적재는 Edge Function `sync-fixture-ratings`(크론), 손보정은 `/admin/ratings` 화면 + `lib/actions/fixture-ratings.ts`의 `saveFixtureRatings`(upsert). 평점 삭제는 지원하지 않습니다.
-- 랭킹은 주차 단위 `week_leaderboard`(`20260823140000_week_leaderboard.sql`)와 시즌 누적 `season_leaderboard`를 씁니다 — `lib/queries/predictions.ts`의 `getWeekRanking(weekKey)` / `getSeasonRanking(limit)`. 목록 화면 사이드바(TOP3 + 내 순위)와 결과 화면 주차 랭킹 모두 연결돼 있습니다.
+- 랭킹은 주차 단위 `week_leaderboard`(`20260823140000_week_leaderboard.sql`)와 시즌 누적 `season_leaderboard`를 씁니다 — `lib/queries/predictions.ts`의 `getWeekRanking(weekKey)` / `getSeasonRanking(limit)`. 목록 화면 사이드바(TOP3 + 내 순위)와 결과 화면 주차 랭킹 모두 연결돼 있습니다. 결과 화면 "순위" 탭(TEA-11)도 `getSeasonRanking()`을 쓰는데, 이때는 `SEASON_RANKING_ALL_LIMIT`(큰 값)을 넘겨 사실상 시즌 전체를 받습니다 — 뷰·쿼리 자체는 그대로고 호출부 인자만 다릅니다.
 - 경기 단위 `fixture_leaderboard`는 랭킹 단위가 주차로 정리되면서 삭제했습니다(화면에서 참조한 적 없음).
 - `week_leaderboard.week_key`는 `to_char(week_start, 'IYYY-IW')`로 만든 값이라 `week.ts`의 `weekKey()`와 같은 문자열입니다 — 한쪽 기준만 바꾸면 화면이 랭킹을 못 찾습니다.
 
