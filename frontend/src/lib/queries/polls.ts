@@ -11,6 +11,7 @@ import {
   mockGetPollById,
   mockGetVoteCounts,
   mockGetMyVote,
+  mockGetRatingResults,
 } from '@/lib/mock/queries'
 
 export { PAGE_SIZE }
@@ -503,7 +504,7 @@ export async function getMyRatingVoteCount(pollId: string, userId: string): Prom
 }
 
 export async function getRatingResults(poll: PollDetail, userId: string | null): Promise<RatingResultItem[]> {
-  if (IS_MOCK) return []
+  if (IS_MOCK) return mockGetRatingResults(poll.id)
   const supabase = await createClient()
   const targetPlayerIds = poll.poll_options
     .map(option => option.player_id)

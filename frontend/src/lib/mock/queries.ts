@@ -4,7 +4,7 @@
  */
 import { PAGE_SIZE } from '@/lib/constants'
 import { getEffectivePollStatus } from '@/lib/polls/status'
-import type { PollDetail, PollHomeSections, PollListItem, VoteCountMap } from '@/lib/queries/polls'
+import type { PollDetail, PollHomeSections, PollListItem, VoteCountMap, RatingResultItem } from '@/lib/queries/polls'
 import type { CommentItem } from '@/lib/queries/comments'
 import type { MatchdayFixture } from '@/lib/queries/fixtures'
 import { toKst, weekKey } from '@/lib/predictions/week'
@@ -13,6 +13,7 @@ import {
   MOCK_POLL_DETAIL,
   MOCK_VOTE_COUNTS,
   MOCK_COMMENTS,
+  MOCK_RATING_RESULTS,
 } from './data'
 
 export async function mockGetPollList(page: number): Promise<PollListItem[]> {
@@ -61,6 +62,12 @@ export async function mockGetPollById(id: string): Promise<PollDetail | null> {
 
 export async function mockGetVoteCounts(pollId: string): Promise<VoteCountMap> {
   return MOCK_VOTE_COUNTS[pollId] ?? {}
+}
+
+/** 목 모드 전체평점 결과 조회. 실제 제출 점수는 저장하지 않으므로(mock-rating-vote-{pollId}
+ *  쿠키만 남긴다) 항상 고정된 값을 돌려준다 — evaluation/selection의 결과 화면과 같은 방식. */
+export async function mockGetRatingResults(pollId: string): Promise<RatingResultItem[]> {
+  return MOCK_RATING_RESULTS[pollId] ?? []
 }
 
 /** 목 모드: mock-vote-{pollId} 쿠키에서 투표 이력 조회 */
