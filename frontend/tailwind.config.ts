@@ -117,6 +117,9 @@ const config = {
         "brand-solid": "var(--sem-stroke-brand-solid)",
         "critical-weak": "var(--sem-stroke-critical-weak)",
         "focus-ring": "var(--sem-stroke-focus-ring)",
+        // 다크 면 위 구분선(피날레 랭킹 행 등). 값은 새로 만들지 않고 배경 알파 토큰을
+        // 그대로 겸용한다(--sem-bg-on-solid-weak, backgroundColor에는 이미 노출돼 있었다).
+        "on-solid-weak": "var(--sem-bg-on-solid-weak)",
       },
       // ring-brand-solid(선택 카드 강조 표시)가 실사용 중이라 ringColor도 노출한다.
       // Tailwind는 ring을 border와 별도 테마 키로 다룬다.
