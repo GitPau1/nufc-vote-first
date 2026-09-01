@@ -125,6 +125,10 @@
        text-disabled를 전용해 쓰고 있었는데 — 값은 맞지만 "비활성"이 아니라 "보조"라
        역할 이름이 어긋났다. 그래서 값은 그대로 두고 이름만 새로 뗐다(시각 변화 없음). */
     --sem-fg-on-solid-muted: var(--p-neutral-400);
+    /* 어두운·색 있는 면 위의 브랜드 강조 텍스트(피날레 랭킹 순위·종합 점수 등). fg-on-solid/
+       fg-on-solid-muted와 같은 자리에 muted 대신 brand 수식어를 넣은 세 번째 변형이다.
+       값은 fg-brand(blue-700)가 아니라 다크 면 대비를 맞춘 blue-400이다. */
+    --sem-fg-on-solid-brand: var(--p-blue-400);
     --sem-fg-brand: var(--p-blue-700);
     --sem-fg-critical: var(--p-red-700);
     --sem-fg-positive: var(--p-green-700);              /* tailwind.config.ts textColor.positive로 노출됨 (기존 #2e9e4f, AA 미달 → green-700, AA 통과) */

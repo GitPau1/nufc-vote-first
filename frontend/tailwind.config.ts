@@ -98,6 +98,8 @@ const config = {
         "on-solid": "var(--sem-fg-on-solid)",
         // 어두운·색 있는 면 위의 2차 텍스트. 이 자리에 text-disabled를 전용해 쓰던 걸 대체한다.
         "on-solid-muted": "var(--sem-fg-on-solid-muted)",
+        // 어두운·색 있는 면 위의 브랜드 강조 텍스트(피날레 랭킹 순위·종합 점수).
+        "on-solid-brand": "var(--sem-fg-on-solid-brand)",
         brand: "var(--sem-fg-brand)",
         critical: "var(--sem-fg-critical)",
         // text-positive 값 교체 확정(#2e9e4f → green-700). 기존 값은 AA 미달(3.43:1)이었고
