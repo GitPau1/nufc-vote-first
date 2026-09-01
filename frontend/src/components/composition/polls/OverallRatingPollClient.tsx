@@ -134,26 +134,30 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
   }
 
   const coverUrl = poll.thumbnail_url
-    ?? `https://placehold.co/480x160/0c2340/41b6e6?text=${encodeURIComponent(poll.title.slice(0, 4))}`
+    ?? `https://placehold.co/480x252/0c2340/41b6e6?text=${encodeURIComponent(poll.title.slice(0, 4))}`
 
   return (
     <div className="relative flex min-h-screen flex-col">
       <PollPageHeader />
 
+      {/* 셸(max-w-detail)은 그대로 두고, 커버·제목 블록만 결과 화면(OverallRatingResultView)과
+          맞춘다 — 같은 투표를 평가→결과로 넘어갈 때 커버 스타일이 튀지 않게. 커버는 이미지
+          오버레이 없는 독립 블록(overflow-hidden rounded-lg bg-disabled)이 되고, 제목/배지는
+          이미지 아래 본문 컨테이너로 내려간다. */}
       <div className="mx-auto flex-1 w-full max-w-detail overflow-y-auto pb-[92px] animate-enter sm:flex-none sm:overflow-visible sm:pb-0">
-        <div className="relative h-[160px] overflow-hidden">
-          <img src={coverUrl} alt={poll.title} className="h-full w-full object-cover" />
-          <div className="banner-text-overlay absolute inset-0" />
-          <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
+        <div className="space-y-4 px-4 py-4">
+          <div className="overflow-hidden rounded-lg bg-disabled">
+            <img src={coverUrl} alt={poll.title} className="h-[252px] w-full object-cover" />
+          </div>
+
+          <div>
             <div className="mb-2 flex items-center gap-1.5">
-              <Badge className="border-0 bg-white/20 text-caption-2 font-medium text-white backdrop-blur-sm pointer-events-none">전체 평가</Badge>
+              <Badge className="pointer-events-none">전체 평가</Badge>
               <Badge className="border-0 bg-brand-solid text-caption-2 font-medium text-white hover:bg-brand-solid pointer-events-none">{completedCount}/{totalRequired} 완료</Badge>
             </div>
-            <h1 className="text-headline-2 sm:text-headline-1 font-semibold text-white">{poll.title}</h1>
+            <h1 className="text-heading-2 sm:text-heading-1 font-semibold text-neutral">{poll.title}</h1>
           </div>
-        </div>
 
-        <div className="space-y-4 px-4 py-4">
           {poll.description && (
             <p className="text-label-1-reading text-neutral-muted">{poll.description}</p>
           )}

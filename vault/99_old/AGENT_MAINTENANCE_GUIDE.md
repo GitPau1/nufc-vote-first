@@ -83,6 +83,7 @@ DB나 Supabase 연동을 건드릴 때:
 - 포지션 정의/표시 헬퍼: `frontend/src/lib/predictions/candidates.ts`
 - 화면: `frontend/src/app/predictions/page.tsx`, `frontend/src/app/predictions/[weekKey]/page.tsx`(오픈 주차=예측 플로우 / 종료 주차=결과 화면 분기), `frontend/src/components/predict/*`
 - 결과 화면은 `PredictionResult.tsx` + 주차 랭킹 `WeekRankCard.tsx`, 순수 계산은 `lib/predictions/result.ts`(+ `result.test.mjs`). 채점 결과 조회는 `getMyResults()`(`prediction_results` view — **정산이 끝난 주차만** 담는다).
+- 결과 화면 "순위" 탭(TEA-11, 시즌 누적)은 `PredictionResult.tsx` 안의 `SeasonRankSection`이 그린다 — `WeekRankCard`를 재사용하지 않는다. `WeekRankCard`는 주차 랭킹(예측/선수픽/종합 3컬럼) 전용으로 만들어져 있고, 시즌 행(`matchPoints`/`pickPoints` 없음)을 넘기면 `?? 0` 폴백 때문에 "0점 받음"처럼 보인다(`WeekRankCard.stories.tsx`의 `MissingColumnPoints` 스토리가 이 근거를 남겨뒀다). 그래서 시즌용은 총점 한 컬럼짜리 목록을 같은 파일 안에 따로 뒀다. 조회는 `getSeasonRanking(SEASON_RANKING_ALL_LIMIT)` — 목록 화면(TOP3+내 순위)과 달리 순위 탭은 전체를 보여줘야 해서 큰 limit을 호출부(`app/predictions/[weekKey]/page.tsx`)에서 넘긴다. `PredictionResult`의 `seasonRanking` prop이 이 데이터를 받는다(주차 랭킹 `ranking` prop과 대칭).
 - 예측/제출 단위는 경기가 아니라 **주(week)**다. 상태(`open`/`result`/`upcoming`)도 주 레벨에만 있고, 더블 매치위크는 경기 2개가 한 세션이다. 다만 목록 카드의 **배지는 경기 단위**(`matchStatusMeta`)다 — 한 경기가 끝났는데 다른 경기는 아직 열려 있을 수 있어서 두 상태를 병기한다.
 - 세션은 **그 주 첫 경기 킥오프 7일 전**에 열리고 **그 주 마지막 경기 킥오프**에 닫힌다. 마감 판정은 실제로는 경기별(`isMatchLocked`)이고, 잠기지 않은 경기가 하나도 없으면 주차가 닫히는 구조다.
 - 그래서 **부분 제출이 정상 상태**다: 첫 경기가 끝난 뒤 처음 들어온 사용자는 남은 경기만 예측한다(`submittableMatches`). 페이지가 미제출·미잠김 경기를 `pending`으로 넘기고, 비어 있으면 완료 화면을 띄운다.

@@ -53,11 +53,12 @@ function mockRanking(count: number, myRank: number): RankingRow[] {
   })
 }
 
-// 실사용처(`PredictionResult`)의 컨테이너 폭. 모바일은 `max-w-[560px] px-4`라 폰에서 358,
-// 데스크탑은 `sm:max-w-[709px]`이다 — 카드가 한 컬럼을 다 쓰므로 폭에 따라 이름 컬럼(flex-1)만
+// 실사용처(`PredictionResult`)에서 이 카드는 `max-w-[860px] px-4 sm:px-6` 컨테이너 속
+// 흰 Card(보더 1px + `p-5 sm:p-7`) 안에 들어간다. 그래서 폰(390px)에서 390−32−2−40 = 316,
+// 데스크탑에서 860−48−2−56 = 754가 실제 렌더 폭이다 — 폭에 따라 이름 컬럼(flex-1)만
 // 늘어난다. 캔버스 폭 그대로 두면 실제 밀도와 달라져서 스토리별로 맞춰 감싼다.
-const mobileWidth = { decorators: [(Story: () => React.JSX.Element) => <div style={{ maxWidth: 358 }}><Story /></div>] }
-const desktopWidth = { decorators: [(Story: () => React.JSX.Element) => <div style={{ maxWidth: 709 }}><Story /></div>] }
+const mobileWidth = { decorators: [(Story: () => React.JSX.Element) => <div style={{ maxWidth: 316 }}><Story /></div>] }
+const desktopWidth = { decorators: [(Story: () => React.JSX.Element) => <div style={{ maxWidth: 754 }}><Story /></div>] }
 
 // 모바일 자르기는 `max-h-[46vh]`라 story iframe 높이에 비례한다 — 실제 기기에서 어디가 잘리는지
 // 보려면 뷰포트를 폰 크기로 고정해야 한다(docs 프레임에서는 46vh가 훨씬 커진다).

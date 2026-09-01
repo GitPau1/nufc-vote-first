@@ -5,6 +5,7 @@ import { Users } from 'lucide-react'
 import type { PollDetail, VoteCountMap } from '@/lib/queries/polls'
 import type { CommentItem } from '@/lib/queries/comments'
 import { trackEvent } from '@/lib/analytics/mixpanel'
+import { Card } from '@/components/primitives/card'
 import { CommentsSection } from './CommentsSection'
 import { PollPageHeader } from './PollPageHeader'
 import { IS_MOCK } from '@/lib/config'
@@ -92,39 +93,45 @@ export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultVie
     <div className="flex min-h-screen flex-col bg-page">
       <PollPageHeader />
       <div className="flex-1 overflow-y-auto hide-scrollbar animate-enter">
-        <main className="mx-auto flex w-full max-w-detail flex-col gap-3 px-4 pb-8 pt-4">
-          <section className="overflow-hidden rounded-lg border border-neutral-weak bg-surface">
+        {/* 컨테이너·카드 규격은 제출 화면(PredictionFlowClient)과 맞춘다 — mx-auto max-w-[860px] +
+            단일 Card(p-5 sm:p-7). 커버 이미지만 Card 밖에 독립된 블록으로 둔다: 투표 화면
+            (TypeBPollClient)도 커버를 카드 밖 단독 블록(overflow-hidden rounded-lg bg-disabled)으로
+            두고, 그 아래 글 컨테이너를 따로 둔다 — 참여 전후로 커버 톤이 달라지지 않게 같은 처리를 쓴다. */}
+        <main className="mx-auto flex w-full max-w-[860px] flex-col gap-3 px-4 pb-8 pt-4 sm:px-6 sm:pt-8">
+          <div className="overflow-hidden rounded-lg bg-disabled">
             <img
               src={coverUrl}
               alt={poll.title}
               className="h-[252px] w-full object-cover"
             />
+          </div>
 
-            <div className="px-4 pb-6 pt-2">
-              <div className="flex flex-col items-center gap-1 pt-4 text-center">
-                <h1 className="break-keep text-heading-2 sm:text-heading-1 font-semibold text-neutral">
-                  {poll.title}
-                </h1>
-                <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-caption-1 text-neutral-muted">
-                  {pollDate && <span>{pollDate}</span>}
-                  <span>{poll.creator_name ?? 'Admin'}</span>
-                </div>
+          <Card className="p-5 sm:p-7">
+            <div className="flex flex-col items-center gap-1 text-center">
+              <h1 className="break-keep text-heading-2 sm:text-heading-1 font-semibold text-neutral">
+                {poll.title}
+              </h1>
+              <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-caption-1 text-neutral-muted">
+                {pollDate && <span>{pollDate}</span>}
+                <span>{poll.creator_name ?? 'Admin'}</span>
               </div>
             </div>
 
-            <div className="mx-4 h-px bg-neutral-weak" />
+            <div className="my-5 h-px bg-neutral-weak" />
 
-            <div className="flex flex-col items-center gap-5 py-5">
-              <p className="text-center text-label-2 font-medium text-neutral-strong">
+            {/* 결과 패널 — 흰 Card 안이라 제출 화면 SummarySection·WeekRankCard와 같은
+                "카드 안 회색 패널(bg-page)"을 쓴다. 그 안 강조 면(막대 자체)은 bg-surface. */}
+            <div className="rounded-lg bg-page px-4 py-5 text-center">
+              <p className="text-label-2 font-medium text-neutral-strong">
                 {isClosed ? '최종 결과' : '현재 결과'}
               </p>
 
               {total === 0 ? (
-                <div className="mx-4 w-[calc(100%-32px)] rounded-lg bg-disabled p-5 text-center text-label-1-normal font-medium text-neutral-muted">
+                <div className="mt-4 rounded-lg bg-disabled p-5 text-label-1-normal font-medium text-neutral-muted">
                   아직 집계된 투표가 없습니다
                 </div>
               ) : (
-                <div className="flex w-full flex-col gap-2 px-4">
+                <div className="mt-4 flex w-full flex-col gap-2 text-left">
                   {resultItems.map((item, index) => {
                     const thumb = getOptionThumb(item.option, poll.option_players)
 
@@ -141,12 +148,12 @@ export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultVie
                 </div>
               )}
 
-              <div className="flex items-center justify-center gap-1 text-caption-1 text-neutral-muted">
+              <div className="mt-4 flex items-center justify-center gap-1 text-caption-1 text-neutral-muted">
                 <Users className="h-3.5 w-3.5" />
                 <span>{total.toLocaleString()}명 참여</span>
               </div>
             </div>
-          </section>
+          </Card>
 
           <CommentsSection
             pollId={poll.id}

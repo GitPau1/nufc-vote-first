@@ -39,7 +39,9 @@ export function WeekRankCard({
   }
 
   return (
-    <div className={cn('rounded-lg border border-neutral-weak bg-surface p-4 text-left', className)}>
+    // 결과 화면의 흰 Card(bg-surface) 안에 들어가는 패널이라, 같은 토큰의 보더 카드를 겹치면
+    // 이중 프레임이 된다 — 제출 화면 SummarySection과 같은 "카드 안 회색 패널(bg-page)"을 쓴다.
+    <div className={cn('rounded-lg bg-page p-4 text-left', className)}>
       <p className="mb-3 text-body-2-normal font-semibold text-neutral">{weekNo}주차 랭킹</p>
 
       {entries.length === 0 ? (
@@ -52,7 +54,7 @@ export function WeekRankCard({
               // 모바일은 기기 화면 높이만큼만 — 잘린 아래쪽은 페이드로 "더 있음"을 암시한다.
               !capped && !expanded && 'max-h-[46vh] overflow-hidden',
               !capped && !expanded && overLimit &&
-                'after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-10 after:bg-gradient-to-b after:from-transparent after:to-surface',
+                'after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-10 after:bg-gradient-to-b after:from-transparent after:to-page',
             )}
           >
             <HeaderRow />
@@ -84,7 +86,7 @@ export function WeekRankCard({
 
 function HeaderRow() {
   return (
-    <div className="sticky top-0 z-[1] flex items-center gap-2 bg-surface px-1 pb-2">
+    <div className="sticky top-0 z-[1] flex items-center gap-2 bg-page px-1 pb-2">
       <span className="w-8 shrink-0 text-center text-caption-2 font-medium text-neutral-muted">순위</span>
       <span className="h-7 w-7 shrink-0" />
       <span className="min-w-0 flex-1" />

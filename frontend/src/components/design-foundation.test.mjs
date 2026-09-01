@@ -102,8 +102,12 @@ test('image banners use a readable dark overlay for white text', () => {
     // TypeBPollClient는 이 목록에서 빠졌다 — 투표 상세(선택형)는 제목을 이미지 위에 얹지 않고
     // 이미지 아래 글 컨테이너로 내렸다. 이미지 위에 흰 텍스트가 없으니 오버레이도 필요 없다.
     // 아래에서 오버레이가 되살아나지 않는지를 대신 검사한다.
-    'components/composition/polls/OverallRatingPollClient.tsx',
-    'components/composition/polls/OverallRatingResultView.tsx',
+    // OverallRatingPollClient도 같은 이유로 이 목록에서 빠졌다 — 결과 화면(OverallRatingResultView)과
+    // 커버 스타일이 갈리지 않도록 제목/배지를 커버 아래 본문으로 내리고, 커버는 이미지 오버레이
+    // 없는 독립 블록이 됐다. 아래에서 오버레이가 되살아나지 않는지를 검사한다.
+    // OverallRatingResultView도 같은 이유로 이 목록에서 빠졌다 —
+    // 결과 화면은 제출 화면(ResultView) 컨벤션에 맞춰 제목/배지를 Card 안으로 내렸고, 커버는
+    // 이미지 오버레이 없는 독립 블록이 됐다. 아래에서 오버레이가 되살아나지 않는지를 검사한다.
   ]
 
   assert.match(globals, /\.banner-text-overlay/)
@@ -121,6 +125,14 @@ test('image banners use a readable dark overlay for white text', () => {
   // 텍스트 오버레이가 다시 들어오면 이미지 위 흰 글씨가 부활한 것이므로 실패시킨다.
   const typeB = source('components/composition/polls/TypeBPollClient.tsx')
   assert.doesNotMatch(typeB, /banner-text-overlay/)
+
+  // 전체 평가 입력·결과 화면도 같은 이유로 커버가 단독 블록이다 — 같은 투표를 평가→결과로
+  // 넘어갈 때 커버 스타일이 갈리면 안 된다.
+  const ratingPoll = source('components/composition/polls/OverallRatingPollClient.tsx')
+  assert.doesNotMatch(ratingPoll, /banner-text-overlay/)
+
+  const ratingResult = source('components/composition/polls/OverallRatingResultView.tsx')
+  assert.doesNotMatch(ratingResult, /banner-text-overlay/)
 })
 
 test('motion uses duration tokens, not numeric durations', () => {
