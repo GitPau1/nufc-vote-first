@@ -1,6 +1,7 @@
 import type { PlayerRow, PollOptionRow, SeasonSquadRow } from '@/types/database'
-import type { PollDetail, PollListItem, VoteCountMap } from '@/lib/queries/polls'
+import type { PollDetail, PollListItem, VoteCountMap, RatingResultItem, RatingCommentItem } from '@/lib/queries/polls'
 import type { FixtureRow } from '@/lib/predictions/week'
+import { getRatingGrade } from '@/lib/polls/rating'
 
 // ── 선수 ────────────────────────────────────────────────────
 const isak: PlayerRow = {
@@ -38,6 +39,26 @@ function evalOptions(pollId: string): PollOptionRow[] {
     { id: `${pollId}-opt3`, poll_id: pollId, label: '무난한 플레이', player_id: null, display_order: 3 },
     { id: `${pollId}-opt4`, poll_id: pollId, label: '아쉬운 모습',   player_id: null, display_order: 4 },
   ]
+}
+
+// ── 전체평점(overall_rating) 옵션 생성 헬퍼 ───────────────────
+// 옵션 하나 = 선수 한 명(선택형과 같은 모양). GK/DEF/MID/FWD를 모두 포함해 결과 화면의
+// 포지션 그룹 UI(OverallRatingResultView)와 평가 화면의 포지션별 스텝(OverallRatingPollClient)을
+// 둘 다 목 모드에서 확인할 수 있게 한다.
+const OVERALL_RATING_TARGETS = [pope, trippier, bruno, isak, gordon, wilson]
+
+function overallRatingOptions(pollId: string): PollOptionRow[] {
+  return OVERALL_RATING_TARGETS.map((player, index) => ({
+    id: `${pollId}-opt${index + 1}`,
+    poll_id: pollId,
+    label: player.name,
+    player_id: player.id,
+    display_order: index + 1,
+  }))
+}
+
+function overallRatingOptionPlayers(): Record<string, PlayerRow> {
+  return Object.fromEntries(OVERALL_RATING_TARGETS.map(player => [player.id, player]))
 }
 
 // ── 더미 투표 목록 ───────────────────────────────────────────
@@ -127,6 +148,32 @@ export const MOCK_POLL_LIST: PollListItem[] = [
     ],
     vote_count: 3187,
   },
+  {
+    id: 'poll-7',
+    type: 'overall_rating',
+    title: '뉴캐슬 스쿼드 이번 시즌 전체평점',
+    status: 'active',
+    closes_at: new Date(Date.now() + 6 * 86400_000).toISOString(),
+    scheduled_at: null,
+    created_at: new Date(Date.now() - 1 * 86400_000).toISOString(),
+    player_id: null,
+    player: null,
+    poll_options: overallRatingOptions('poll-7'),
+    vote_count: 1892,
+  },
+  {
+    id: 'poll-8',
+    type: 'overall_rating',
+    title: '24-25 시즌 뉴캐슬 스쿼드 전체평점',
+    status: 'closed',
+    closes_at: new Date(Date.now() - 4 * 86400_000).toISOString(),
+    scheduled_at: null,
+    created_at: new Date(Date.now() - 25 * 86400_000).toISOString(),
+    player_id: null,
+    player: null,
+    poll_options: overallRatingOptions('poll-8'),
+    vote_count: 3654,
+  },
 ]
 
 // ── 더미 투표 상세 ───────────────────────────────────────────
@@ -188,6 +235,24 @@ export const MOCK_POLL_DETAIL: Record<string, PollDetail> = {
     ],
     option_players: { [pope.id]: pope },
   },
+  'poll-7': {
+    id: 'poll-7', type: 'overall_rating', status: 'active',
+    title: '뉴캐슬 스쿼드 이번 시즌 전체평점',
+    description: '이번 시즌 뉴캐슬 스쿼드 전원의 활약을 포지션별로 평가해주세요. 골키퍼부터 공격수까지 전 포지션을 채워야 제출됩니다.',
+    closes_at: new Date(Date.now() + 6 * 86400_000).toISOString(),
+    player_id: null, player: null,
+    poll_options: overallRatingOptions('poll-7'),
+    option_players: overallRatingOptionPlayers(),
+  },
+  'poll-8': {
+    id: 'poll-8', type: 'overall_rating', status: 'closed',
+    title: '24-25 시즌 뉴캐슬 스쿼드 전체평점',
+    description: '24-25 시즌이 끝난 지금, 뉴캐슬 스쿼드 전원의 시즌 활약을 되돌아보고 평가해주세요.',
+    closes_at: new Date(Date.now() - 4 * 86400_000).toISOString(),
+    player_id: null, player: null,
+    poll_options: overallRatingOptions('poll-8'),
+    option_players: overallRatingOptionPlayers(),
+  },
 }
 
 // ── 투표 집계 ─────────────────────────────────────────────────
@@ -197,6 +262,82 @@ export const MOCK_VOTE_COUNTS: Record<string, VoteCountMap> = {
   'poll-4': { 'poll-4-opt1': 1842, 'poll-4-opt2': 1397,'poll-4-opt3': 712, 'poll-4-opt4': 268 },
   'poll-5': { 'poll-5-opt1': 1203, 'poll-5-opt2': 876, 'poll-5-opt3': 412 },
   'poll-6': { 'poll-6-opt1': 2614, 'poll-6-opt2': 573 },
+}
+
+// ── 전체평점 결과 ─────────────────────────────────────────────
+// getRatingResults(mock 경로)가 그대로 돌려주는 값. 실제 서버 로직처럼 grade는 average_score로부터
+// getRatingGrade()로 계산해, 점수·등급이 따로 놀지 않게 한다.
+type RatingResultSeed = {
+  player: PlayerRow
+  averageScore: number
+  voteCount: number
+  comments: Array<{ display_name: string; comment: string; likeCount: number; isLiked?: boolean }>
+}
+
+function buildRatingResults(pollId: string, seeds: RatingResultSeed[]): RatingResultItem[] {
+  return seeds.map(seed => ({
+    player: seed.player,
+    average_score: seed.averageScore,
+    grade: getRatingGrade(seed.averageScore),
+    vote_count: seed.voteCount,
+    top_comments: seed.comments.map((c, index): RatingCommentItem => ({
+      id: `${pollId}-${seed.player.id}-comment${index + 1}`,
+      player_id: seed.player.id,
+      score: Math.round(seed.averageScore),
+      grade: getRatingGrade(seed.averageScore),
+      comment: c.comment,
+      created_at: new Date(Date.now() - (index + 1) * 6 * 3600_000).toISOString(),
+      like_count: c.likeCount,
+      is_liked: c.isLiked ?? false,
+      user: { display_name: c.display_name, avatar_url: null },
+    })),
+  }))
+}
+
+const OVERALL_RATING_SEEDS: RatingResultSeed[] = [
+  {
+    player: pope, averageScore: 3.6, voteCount: 1204,
+    comments: [
+      { display_name: '포프지지자', comment: '결정적인 순간마다 선방을 해줘서 안심하고 볼 수 있었어요.', likeCount: 26 },
+      { display_name: 'ToonArmy88', comment: '가끔 빌드업 참여에서 아쉬운 장면이 있었지만 전체적으로 안정적이었습니다.', likeCount: 9 },
+    ],
+  },
+  {
+    player: trippier, averageScore: 3.1, voteCount: 1187,
+    comments: [
+      { display_name: 'NUFC2030', comment: '세트피스 정확도는 여전히 리그 최고 수준이었습니다.', likeCount: 17 },
+    ],
+  },
+  {
+    player: bruno, averageScore: 4.2, voteCount: 1256,
+    comments: [
+      { display_name: '뉴캐슬제다이', comment: '중원 장악력이 압도적이었어요. 이번 시즌 팀 내 최고입니다.', likeCount: 41, isLiked: true },
+      { display_name: 'MagpieForever', comment: '패스 정확도와 수비 가담을 동시에 잡은 시즌이었습니다.', likeCount: 20 },
+    ],
+  },
+  {
+    player: isak, averageScore: 4.5, voteCount: 1301,
+    comments: [
+      { display_name: '이삭팬클럽', comment: '득점력이 진짜 리그 최상위권입니다. 시즌 MVP 후보 1순위!', likeCount: 58 },
+    ],
+  },
+  {
+    player: gordon, averageScore: 3.8, voteCount: 1163,
+    comments: [
+      { display_name: 'ToonArmy88', comment: '측면 돌파와 활동량이 눈에 띄게 늘었습니다.', likeCount: 15 },
+    ],
+  },
+  {
+    player: wilson, averageScore: 2.9, voteCount: 1092,
+    comments: [
+      { display_name: 'MagpieForever', comment: '부상 공백이 아쉬웠지만 나올 때마다 제 몫은 해줬어요.', likeCount: 11 },
+    ],
+  },
+]
+
+export const MOCK_RATING_RESULTS: Record<string, RatingResultItem[]> = {
+  'poll-7': buildRatingResults('poll-7', OVERALL_RATING_SEEDS),
+  'poll-8': buildRatingResults('poll-8', OVERALL_RATING_SEEDS),
 }
 
 // ── 댓글 ─────────────────────────────────────────────────────
