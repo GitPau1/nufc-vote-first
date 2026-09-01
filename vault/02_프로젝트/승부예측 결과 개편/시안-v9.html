@@ -1,0 +1,343 @@
+<h2>예측 결과 페이지 v9</h2>
+<p class="subtitle">반영: 주차 랭킹 하단에 희미한 "더보기" 버튼 추가 (랭킹은 상위 일부만 노출하고 나머지는 펼침).</p>
+
+<style>
+  .ds {
+    --bg-page: #fafafb; --bg-surface: #ffffff; --bg-neutral-strong: #313335;
+    --bg-on-solid-weak: rgba(255,255,255,.05); --bg-on-solid-strong: rgba(255,255,255,.1);
+    --bg-disabled: #e9e9ea; --bg-positive-weak: #f4fff5; --bg-critical-weak: #ffe8e0;
+    --bg-warning-weak: #fff5d9; --bg-brand-weak: #d8f1ff; --bg-brand-solid: #115aff;
+    --fg-neutral: #1a1b1c; --fg-neutral-muted: #666666; --fg-on-solid: #ffffff; --fg-on-solid-muted: #bcbec0;
+    --fg-brand: #115aff; --fg-positive: #008728; --fg-critical: #cf231a; --fg-warning: #a65e00;
+    --blue-400: #6ab4ff;
+    --stroke-weak: #e9e9ea;
+    --r-xs: 8px; --r-sm: 10px; --r-md: 12px; --r-lg: 16px; --r-pill: 9999px;
+    font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif;
+    color: var(--fg-neutral);
+  }
+  .t-title-2   { font-size: 28px; line-height: 38px; letter-spacing: -0.0236em; }
+  .t-heading-1 { font-size: 22px; line-height: 30px; letter-spacing: -0.0194em; }
+  .t-headline-1{ font-size: 18px; line-height: 26px; letter-spacing: -0.002em; }
+  .t-body-2    { font-size: 15px; line-height: 22px; letter-spacing: 0.0096em; }
+  .t-label-1   { font-size: 14px; line-height: 20px; letter-spacing: 0.0145em; }
+  .t-label-2   { font-size: 13px; line-height: 18px; letter-spacing: 0.0194em; }
+  .t-caption-1 { font-size: 12px; line-height: 16px; letter-spacing: 0.0252em; }
+
+  .page { width: 720px; max-width: 100%; margin: 20px auto; background: var(--bg-page); border: 1px solid #d0d0d2; border-radius: 24px; padding: 24px 20px 32px; display: flex; flex-direction: column; gap: 16px; }
+  .card { background: var(--bg-surface); border: 1px solid var(--stroke-weak); border-radius: var(--r-lg); padding: 20px; text-align: left; }
+  .dark-card {
+    border: none; border-radius: var(--r-lg); padding: 24px 20px; color: var(--fg-on-solid);
+    background:
+      radial-gradient(250px at 0% 0%, color-mix(in srgb, #115aff 15%, transparent) 0%, transparent 70%),
+      radial-gradient(250px at 100% 0%, color-mix(in srgb, #2f7aff 15%, transparent) 0%, transparent 70%),
+      var(--bg-neutral-strong);
+  }
+  .pill { display: inline-block; border-radius: var(--r-pill); padding: 4px 8px; font-weight: 500; }
+  .pill-positive { background: var(--bg-positive-weak); color: var(--fg-positive); }
+  .pill-warning  { background: var(--bg-warning-weak); color: var(--fg-warning); }
+  .muted { color: var(--fg-neutral-muted); }
+  .onsolid-muted { color: var(--fg-on-solid-muted); }
+  .crest { width: 48px; height: 48px; border-radius: 50%; background: var(--bg-disabled); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--fg-neutral-muted); }
+
+  .cmp { display: grid; grid-template-columns: 120px 1fr 40px 1fr; align-items: center; }
+  .cmp-row { border-radius: var(--r-md); padding: 12px 8px; }
+  .cmp-row.actual { background: var(--bg-page); }
+  .score { text-align: center; font-weight: 600; }
+
+  .pick-cards { display: flex; gap: 12px; align-items: flex-start; }
+  .pick-card { background: var(--bg-surface); border: 1px solid var(--stroke-weak); border-radius: var(--r-lg); padding: 14px; }
+  .pick-photo { width: 64px; height: 64px; border-radius: 50%; background: var(--bg-disabled); margin-left: auto; }
+  .pick-foot { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--stroke-weak); padding-top: 10px; margin-top: 10px; }
+
+  .top3-toggle { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 8px; background: var(--bg-page); border: 1px solid var(--stroke-weak); border-radius: var(--r-md); padding: 9px 12px; cursor: pointer; user-select: none; }
+  .top3-toggle .chev { transition: transform 150ms; font-size: 11px; color: var(--fg-neutral-muted); }
+  .top3-toggle.open .chev { transform: rotate(180deg); }
+  .top3 { margin-top: 6px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+  .top3-row { display: flex; align-items: center; gap: 8px; background: var(--bg-page); border-radius: var(--r-md); padding: 8px 10px; }
+  .top3-row.mine { background: var(--bg-brand-weak); }
+  .top3-photo { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-disabled); flex-shrink: 0; }
+
+  .rk { width: 100%; border-collapse: collapse; }
+  .rk th { font-weight: 400; text-align: right; padding: 8px 6px; }
+  .rk th:first-child, .rk td:first-child { text-align: left; }
+  .rk td { padding: 12px 6px; border-top: 1px solid rgba(255,255,255,.08); text-align: right; }
+  .rk .name { display: flex; align-items: center; gap: 10px; text-align: left; }
+  .rk .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-on-solid-strong); }
+  .rk tr.mine td { background: var(--bg-on-solid-strong); }
+  .rk tr.mine td:first-child { border-radius: var(--r-sm) 0 0 var(--r-sm); }
+  .rk tr.mine td:last-child { border-radius: 0 var(--r-sm) var(--r-sm) 0; }
+
+  .btn-share { display: flex; align-items: center; gap: 6px; margin: 4px auto 0; background: var(--bg-brand-solid); color: var(--fg-on-solid); border-radius: var(--r-pill); padding: 13px 32px; font-weight: 600; border: none; }
+
+  /* 모바일 프레임 오버라이드 */
+  .page.mobile { width: 375px; padding: 16px 14px 24px; gap: 12px; }
+  .mobile .pick-cards { flex-direction: column; }
+  .mobile .cmp { grid-template-columns: 84px 1fr 24px 1fr; }
+  .mobile .card { padding: 16px; }
+  .mobile .dark-card { padding: 20px 14px; }
+  .mobile .rk th, .mobile .rk td { padding-left: 4px; padding-right: 4px; }
+
+  /* 모바일 선수 픽 — 가로 행 리스트 (기존 PickResultRow 패턴) */
+  .mpick-row { display: flex; align-items: center; gap: 10px; width: 100%; background: none; border: none; border-top: 1px solid var(--stroke-weak); padding: 12px 2px; text-align: left; cursor: pointer; font-family: inherit; color: inherit; }
+  .mpick-row.first { border-top: none; padding-top: 4px; }
+  .mpick-photo { width: 48px; height: 48px; border-radius: 50%; background: var(--bg-disabled); flex-shrink: 0; }
+  .mpick-row .chev { transition: transform 150ms; font-size: 10px; color: var(--fg-neutral-muted); margin-left: 2px; }
+  .mpick-row.open .chev { transform: rotate(180deg); }
+  .mobile .top3 { margin: 0 0 10px; }
+</style>
+
+<div class="ds">
+<h3 style="text-align:center">데스크탑 (720px)</h3>
+<div class="page">
+
+  <!-- ① 판정 헤드라인 (단일 경기) -->
+  <div class="dark-card" style="text-align:center">
+    <p class="t-caption-1 onsolid-muted">35주차 결과</p>
+    <p class="t-title-2" style="font-weight:600; margin-top:6px">스코어 <span style="color:var(--blue-400)">정확히 적중!</span></p>
+    <p class="t-label-2 onsolid-muted" style="margin-top:4px">Wolves전 1–1, 내 예측 그대로였어요</p>
+  </div>
+
+  <!-- ② 경기 비교 -->
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+      <span class="t-body-2" style="font-weight:600">경기 예측</span>
+      <span class="pill pill-positive t-caption-1">+4점</span>
+    </div>
+    <div class="cmp" style="margin-bottom:8px">
+      <span></span>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:6px"><div class="crest">뉴</div><span class="t-label-2 muted">뉴캐슬</span></div>
+      <span></span>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:6px"><div class="crest">W</div><span class="t-label-2 muted">Wolves</span></div>
+    </div>
+    <div class="cmp cmp-row">
+      <span class="t-label-2 muted">내 예측</span>
+      <span class="score t-heading-1">1</span><span class="score muted">–</span><span class="score t-heading-1">1</span>
+    </div>
+    <div class="cmp cmp-row actual">
+      <span class="t-label-2 muted">실제 결과</span>
+      <span class="score t-heading-1">1</span><span class="score muted">–</span><span class="score t-heading-1">1</span>
+    </div>
+  </div>
+
+  <!-- ③ 내 선수 픽 + 포지션별 TOP3 아코디언 -->
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+      <span class="t-body-2" style="font-weight:600">내 선수 픽</span>
+      <span class="pill pill-positive t-caption-1">+19점</span>
+    </div>
+    <div class="pick-cards">
+
+      <div style="flex:1">
+        <div class="pick-card">
+          <p class="t-caption-1 muted" style="font-weight:500">수비수</p>
+          <div class="pick-photo"></div>
+          <span class="pill pill-positive t-caption-1">7.8</span>
+          <div class="pick-foot">
+            <span class="t-label-1" style="font-weight:600">트리피어</span>
+            <span class="t-label-1" style="font-weight:600; color:var(--fg-brand)">+5점</span>
+          </div>
+        </div>
+        <button class="top3-toggle" onclick="this.classList.toggle('open'); var p=this.nextElementSibling; p.style.display = p.style.display==='none' ? 'flex' : 'none'">
+          <span class="t-caption-1 muted" style="font-weight:500">포지션 평점 TOP3</span><span class="chev">▼</span>
+        </button>
+        <div class="top3" style="display:none">
+          <div class="top3-row"><span class="t-caption-1 muted" style="width:22px">1위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1">쉐어</span><span class="pill pill-positive t-caption-1">8.1</span></div>
+          <div class="top3-row mine"><span class="t-caption-1" style="width:22px; color:var(--fg-brand); font-weight:600">2위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1; font-weight:600">트리피어</span><span class="pill pill-positive t-caption-1">7.8</span></div>
+          <div class="top3-row"><span class="t-caption-1 muted" style="width:22px">3위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1">보트먼</span><span class="pill pill-warning t-caption-1">6.9</span></div>
+        </div>
+      </div>
+
+      <div style="flex:1">
+        <div class="pick-card">
+          <p class="t-caption-1 muted" style="font-weight:500">미드필더</p>
+          <div class="pick-photo"></div>
+          <span class="pill pill-positive t-caption-1">8.8</span>
+          <div class="pick-foot">
+            <span class="t-label-1" style="font-weight:600">루이스 마일리</span>
+            <span class="t-label-1" style="font-weight:600; color:var(--fg-brand)">+9점</span>
+          </div>
+        </div>
+        <button class="top3-toggle open" onclick="this.classList.toggle('open'); var p=this.nextElementSibling; p.style.display = p.style.display==='none' ? 'flex' : 'none'">
+          <span class="t-caption-1 muted" style="font-weight:500">포지션 평점 TOP3</span><span class="chev">▼</span>
+        </button>
+        <div class="top3">
+          <div class="top3-row mine"><span class="t-caption-1" style="width:22px; color:var(--fg-brand); font-weight:600">1위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1; font-weight:600">루이스 마일리</span><span class="pill pill-positive t-caption-1">8.8</span></div>
+          <div class="top3-row"><span class="t-caption-1 muted" style="width:22px">2위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1">니코 곤살레스</span><span class="pill pill-positive t-caption-1">7.8</span></div>
+          <div class="top3-row"><span class="t-caption-1 muted" style="width:22px">3위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1">기마랑이스</span><span class="pill pill-positive t-caption-1">7.4</span></div>
+        </div>
+      </div>
+
+      <div style="flex:1">
+        <div class="pick-card">
+          <p class="t-caption-1 muted" style="font-weight:500">공격수</p>
+          <div class="pick-photo"></div>
+          <span class="pill pill-warning t-caption-1">6.5</span>
+          <div class="pick-foot">
+            <span class="t-label-1" style="font-weight:600">이사크</span>
+            <span class="t-label-1" style="font-weight:600; color:var(--fg-neutral-muted)">+5점</span>
+          </div>
+        </div>
+        <button class="top3-toggle" onclick="this.classList.toggle('open'); var p=this.nextElementSibling; p.style.display = p.style.display==='none' ? 'flex' : 'none'">
+          <span class="t-caption-1 muted" style="font-weight:500">포지션 평점 TOP3</span><span class="chev">▼</span>
+        </button>
+        <div class="top3" style="display:none">
+          <div class="top3-row"><span class="t-caption-1 muted" style="width:22px">1위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1">고든</span><span class="pill pill-positive t-caption-1">7.9</span></div>
+          <div class="top3-row"><span class="t-caption-1 muted" style="width:22px">2위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1">바운스</span><span class="pill pill-positive t-caption-1">7.2</span></div>
+          <div class="top3-row mine"><span class="t-caption-1" style="width:22px; color:var(--fg-brand); font-weight:600">3위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1; font-weight:600">이사크</span><span class="pill pill-warning t-caption-1">6.5</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ④ 피날레: 총점 + 등수 + 주차 랭킹 (한 다크 컨테이너) -->
+  <div class="dark-card" style="text-align:center">
+    <p class="t-caption-1 onsolid-muted">이번 주 순위</p>
+    <p class="t-title-2" style="font-weight:600; margin-top:2px">1위 <span class="t-label-2 onsolid-muted" style="font-weight:400">/ 4명</span></p>
+    <div style="display:flex; justify-content:center; background:var(--bg-on-solid-strong); border-radius:var(--r-md); padding:14px 16px; margin-top:16px">
+      <div style="flex:1"><p class="t-caption-1 onsolid-muted">경기예측</p><p class="t-label-1" style="font-weight:500; margin-top:3px">4점</p></div>
+      <div style="flex:1"><p class="t-caption-1 onsolid-muted">선수픽</p><p class="t-label-1" style="font-weight:500; margin-top:3px">19점</p></div>
+      <div style="flex:1"><p class="t-caption-1 onsolid-muted">총점</p><p class="t-label-1" style="font-weight:500; margin-top:3px">23점</p></div>
+    </div>
+
+    <div style="text-align:left; margin-top:22px">
+      <p class="t-headline-1" style="font-weight:600; margin-bottom:8px">35주차 랭킹</p>
+      <table class="rk t-label-1">
+        <thead>
+          <tr class="t-caption-1 onsolid-muted"><th>순위</th><th></th><th>예측</th><th>선수픽</th><th>종합</th></tr>
+        </thead>
+        <tbody>
+          <tr class="mine"><td style="font-weight:600; color:var(--blue-400); padding-left:10px">1</td><td><span class="name"><span class="avatar"></span>Admin</span></td><td>4</td><td>19</td><td style="font-weight:600; color:var(--blue-400); padding-right:10px">23</td></tr>
+          <tr><td>2</td><td><span class="name"><span class="avatar"></span>두발모아</span></td><td>3</td><td>13</td><td style="font-weight:600; color:var(--blue-400)">16</td></tr>
+          <tr><td>3</td><td><span class="name"><span class="avatar"></span>숩숩</span></td><td>2</td><td>5</td><td style="font-weight:600; color:var(--blue-400)">7</td></tr>
+          <tr><td>4</td><td><span class="name"><span class="avatar"></span>Paul</span></td><td>0</td><td>4</td><td style="font-weight:600; color:var(--blue-400)">4</td></tr>
+        </tbody>
+      </table>
+      <button class="t-label-2" style="display:block; width:100%; margin-top:6px; padding:10px 0 2px; background:none; border:none; border-top:1px solid rgba(255,255,255,.08); color:var(--fg-on-solid-muted); cursor:pointer; font-family:inherit">더보기 ▾</button>
+    </div>
+  </div>
+
+  <!-- ⑤ 공유 — 맨 하단 -->
+  <button class="btn-share t-label-1">↗ 공유하기</button>
+
+</div>
+
+<h3 style="text-align:center; margin-top:36px">모바일 (375px)</h3>
+<div class="page mobile">
+
+  <!-- ① 판정 헤드라인 (단일 경기) -->
+  <div class="dark-card" style="text-align:center">
+    <p class="t-caption-1 onsolid-muted">35주차 결과</p>
+    <p class="t-title-2" style="font-weight:600; margin-top:6px">스코어 <span style="color:var(--blue-400)">정확히 적중!</span></p>
+    <p class="t-label-2 onsolid-muted" style="margin-top:4px">Wolves전 1–1, 내 예측 그대로였어요</p>
+  </div>
+
+  <!-- ② 경기 비교 -->
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+      <span class="t-body-2" style="font-weight:600">경기 예측</span>
+      <span class="pill pill-positive t-caption-1">+4점</span>
+    </div>
+    <div class="cmp" style="margin-bottom:8px">
+      <span></span>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:6px"><div class="crest">뉴</div><span class="t-label-2 muted">뉴캐슬</span></div>
+      <span></span>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:6px"><div class="crest">W</div><span class="t-label-2 muted">Wolves</span></div>
+    </div>
+    <div class="cmp cmp-row">
+      <span class="t-label-2 muted">내 예측</span>
+      <span class="score t-heading-1">1</span><span class="score muted">–</span><span class="score t-heading-1">1</span>
+    </div>
+    <div class="cmp cmp-row actual">
+      <span class="t-label-2 muted">실제 결과</span>
+      <span class="score t-heading-1">1</span><span class="score muted">–</span><span class="score t-heading-1">1</span>
+    </div>
+  </div>
+
+  <!-- ③ 내 선수 픽 + 포지션별 TOP3 아코디언 -->
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+      <span class="t-body-2" style="font-weight:600">내 선수 픽</span>
+      <span class="pill pill-positive t-caption-1">+19점</span>
+    </div>
+    <div>
+      <button class="mpick-row first" onclick="this.classList.toggle('open'); var p=this.nextElementSibling; p.style.display = p.style.display==='none' ? 'flex' : 'none'">
+        <div class="mpick-photo"></div>
+        <div style="flex:1; min-width:0">
+          <p class="t-caption-1 muted">수비수</p>
+          <p class="t-label-1" style="font-weight:600; margin-top:1px">트리피어</p>
+        </div>
+        <span class="pill pill-positive t-caption-1">7.8</span>
+        <span class="t-label-1" style="font-weight:600; color:var(--fg-brand)">+5점</span>
+        <span class="chev">▼</span>
+      </button>
+      <div class="top3" style="display:none"><div class="top3-row"><span class="t-caption-1 muted" style="width:22px">1위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1">쉐어</span><span class="pill pill-positive t-caption-1">8.1</span></div><div class="top3-row mine"><span class="t-caption-1" style="width:22px; color:var(--fg-brand); font-weight:600">2위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1; font-weight:600">트리피어</span><span class="pill pill-positive t-caption-1">7.8</span></div><div class="top3-row"><span class="t-caption-1 muted" style="width:22px">3위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1">보트먼</span><span class="pill pill-warning t-caption-1">6.9</span></div></div>
+      <button class="mpick-row open" onclick="this.classList.toggle('open'); var p=this.nextElementSibling; p.style.display = p.style.display==='none' ? 'flex' : 'none'">
+        <div class="mpick-photo"></div>
+        <div style="flex:1; min-width:0">
+          <p class="t-caption-1 muted">미드필더</p>
+          <p class="t-label-1" style="font-weight:600; margin-top:1px">루이스 마일리</p>
+        </div>
+        <span class="pill pill-positive t-caption-1">8.8</span>
+        <span class="t-label-1" style="font-weight:600; color:var(--fg-brand)">+9점</span>
+        <span class="chev">▼</span>
+      </button>
+      <div class="top3"><div class="top3-row mine"><span class="t-caption-1" style="width:22px; color:var(--fg-brand); font-weight:600">1위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1; font-weight:600">루이스 마일리</span><span class="pill pill-positive t-caption-1">8.8</span></div><div class="top3-row"><span class="t-caption-1 muted" style="width:22px">2위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1">니코 곤살레스</span><span class="pill pill-positive t-caption-1">7.8</span></div><div class="top3-row"><span class="t-caption-1 muted" style="width:22px">3위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1">기마랑이스</span><span class="pill pill-positive t-caption-1">7.4</span></div></div>
+      <button class="mpick-row" onclick="this.classList.toggle('open'); var p=this.nextElementSibling; p.style.display = p.style.display==='none' ? 'flex' : 'none'">
+        <div class="mpick-photo"></div>
+        <div style="flex:1; min-width:0">
+          <p class="t-caption-1 muted">공격수</p>
+          <p class="t-label-1" style="font-weight:600; margin-top:1px">이사크</p>
+        </div>
+        <span class="pill pill-warning t-caption-1">6.5</span>
+        <span class="t-label-1" style="font-weight:600; color:var(--fg-neutral-muted)">+5점</span>
+        <span class="chev">▼</span>
+      </button>
+      <div class="top3" style="display:none"><div class="top3-row"><span class="t-caption-1 muted" style="width:22px">1위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1">고든</span><span class="pill pill-positive t-caption-1">7.9</span></div><div class="top3-row"><span class="t-caption-1 muted" style="width:22px">2위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1">바운스</span><span class="pill pill-positive t-caption-1">7.2</span></div><div class="top3-row mine"><span class="t-caption-1" style="width:22px; color:var(--fg-brand); font-weight:600">3위</span><div class="top3-photo"></div><span class="t-label-2" style="flex:1; font-weight:600">이사크</span><span class="pill pill-warning t-caption-1">6.5</span></div></div>
+    </div>
+  </div>
+
+  <!-- ④ 피날레: 총점 + 등수 + 주차 랭킹 (한 다크 컨테이너) -->
+  <div class="dark-card" style="text-align:center">
+    <p class="t-caption-1 onsolid-muted">이번 주 순위</p>
+    <p class="t-title-2" style="font-weight:600; margin-top:2px">1위 <span class="t-label-2 onsolid-muted" style="font-weight:400">/ 4명</span></p>
+    <div style="display:flex; justify-content:center; background:var(--bg-on-solid-strong); border-radius:var(--r-md); padding:14px 16px; margin-top:16px">
+      <div style="flex:1"><p class="t-caption-1 onsolid-muted">경기예측</p><p class="t-label-1" style="font-weight:500; margin-top:3px">4점</p></div>
+      <div style="flex:1"><p class="t-caption-1 onsolid-muted">선수픽</p><p class="t-label-1" style="font-weight:500; margin-top:3px">19점</p></div>
+      <div style="flex:1"><p class="t-caption-1 onsolid-muted">총점</p><p class="t-label-1" style="font-weight:500; margin-top:3px">23점</p></div>
+    </div>
+
+    <div style="text-align:left; margin-top:22px">
+      <p class="t-headline-1" style="font-weight:600; margin-bottom:8px">35주차 랭킹</p>
+      <table class="rk t-label-1">
+        <thead>
+          <tr class="t-caption-1 onsolid-muted"><th>순위</th><th></th><th>예측</th><th>선수픽</th><th>종합</th></tr>
+        </thead>
+        <tbody>
+          <tr class="mine"><td style="font-weight:600; color:var(--blue-400); padding-left:10px">1</td><td><span class="name"><span class="avatar"></span>Admin</span></td><td>4</td><td>19</td><td style="font-weight:600; color:var(--blue-400); padding-right:10px">23</td></tr>
+          <tr><td>2</td><td><span class="name"><span class="avatar"></span>두발모아</span></td><td>3</td><td>13</td><td style="font-weight:600; color:var(--blue-400)">16</td></tr>
+          <tr><td>3</td><td><span class="name"><span class="avatar"></span>숩숩</span></td><td>2</td><td>5</td><td style="font-weight:600; color:var(--blue-400)">7</td></tr>
+          <tr><td>4</td><td><span class="name"><span class="avatar"></span>Paul</span></td><td>0</td><td>4</td><td style="font-weight:600; color:var(--blue-400)">4</td></tr>
+        </tbody>
+      </table>
+      <button class="t-label-2" style="display:block; width:100%; margin-top:6px; padding:10px 0 2px; background:none; border:none; border-top:1px solid rgba(255,255,255,.08); color:var(--fg-on-solid-muted); cursor:pointer; font-family:inherit">더보기 ▾</button>
+    </div>
+  </div>
+
+  <!-- ⑤ 공유 — 맨 하단 -->
+  <button class="btn-share t-label-1">↗ 공유하기</button>
+
+</div>
+</div>
+
+<h3 style="margin-top:24px">확인 포인트</h3>
+<div class="options">
+  <div class="option" data-choice="approve" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content"><h3>이 방향으로 승인</h3><p>단일 경기 · 랭킹을 피날레 컨테이너에 통합 · 공유 맨 하단 · TOP3 아코디언.</p></div>
+  </div>
+  <div class="option" data-choice="feedback" onclick="toggleSelect(this)">
+    <div class="letter">✎</div>
+    <div class="content"><h3>수정 필요</h3><p>고칠 부분을 터미널로 알려주세요.</p></div>
+  </div>
+</div>
