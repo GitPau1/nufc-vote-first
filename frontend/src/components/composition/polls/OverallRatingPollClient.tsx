@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { PollEditLink } from './PollEditLink'
 import { Loader2 } from 'lucide-react'
 import type { PollDetail } from '@/lib/queries/polls'
 import type { PlayerRow, Position } from '@/types/database'
@@ -142,14 +142,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated, canEdit }: Over
     <div className="relative flex min-h-screen flex-col">
       {/* 페이지 헤더 — 모바일 전용 진입(AppHeader 모바일 레이어에서만 렌더됨) */}
       <PollPageHeader
-        action={canEdit && (
-          <Link
-            href={`/polls/${poll.id}/edit`}
-            className="text-label-2 font-medium text-neutral-muted hover:text-neutral"
-          >
-            수정
-          </Link>
-        )}
+        action={canEdit && <PollEditLink pollId={poll.id} />}
       />
 
       {/* 셸(max-w-detail)은 그대로 두고, 커버·제목 블록만 결과 화면(OverallRatingResultView)과
@@ -180,12 +173,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated, canEdit }: Over
           {/* 수정 진입 — 데스크탑 전용(모바일은 헤더에서 렌더됨) */}
           {canEdit && (
             <div className="hidden justify-end sm:flex">
-              <Link
-                href={`/polls/${poll.id}/edit`}
-                className="text-label-2 font-medium text-neutral-muted hover:text-neutral"
-              >
-                수정
-              </Link>
+              <PollEditLink pollId={poll.id} />
             </div>
           )}
 

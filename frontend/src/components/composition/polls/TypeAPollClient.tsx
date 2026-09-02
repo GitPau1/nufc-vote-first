@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { PollEditLink } from './PollEditLink'
 import type { PollDetail } from '@/lib/queries/polls'
 import { submitVote } from '@/lib/actions/vote'
 import { trackEvent } from '@/lib/analytics/mixpanel'
@@ -80,14 +80,7 @@ export function TypeAPollClient({ poll, isAuthenticated, canEdit }: TypeAPollCli
     <div className="relative flex flex-col min-h-screen">
       {/* 페이지 헤더 — 모바일 전용 진입(AppHeader 모바일 레이어에서만 렌더됨) */}
       <PollPageHeader
-        action={canEdit && (
-          <Link
-            href={`/polls/${poll.id}/edit`}
-            className="text-label-2 font-medium text-neutral-muted hover:text-neutral"
-          >
-            수정
-          </Link>
-        )}
+        action={canEdit && <PollEditLink pollId={poll.id} />}
       />
 
       {/* 스크롤 영역 */}
@@ -129,12 +122,7 @@ export function TypeAPollClient({ poll, isAuthenticated, canEdit }: TypeAPollCli
           {/* 수정 진입 — 데스크탑 전용(모바일은 헤더에서 렌더됨) */}
           {canEdit && (
             <div className="hidden justify-end sm:flex">
-              <Link
-                href={`/polls/${poll.id}/edit`}
-                className="text-label-2 font-medium text-neutral-muted hover:text-neutral"
-              >
-                수정
-              </Link>
+              <PollEditLink pollId={poll.id} />
             </div>
           )}
 

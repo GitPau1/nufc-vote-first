@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { PollEditLink } from './PollEditLink'
 import { Loader2 } from 'lucide-react'
 import type { PollDetail } from '@/lib/queries/polls'
 import type { PlayerRow, PollOptionRow } from '@/types/database'
@@ -100,14 +100,7 @@ export function TypeBPollClient({ poll, isAuthenticated, canEdit }: TypeBPollCli
     <div className="flex min-h-screen flex-col bg-page">
       {/* 페이지 헤더 — 모바일 전용 진입(AppHeader 모바일 레이어에서만 렌더됨) */}
       <PollPageHeader
-        action={canEdit && (
-          <Link
-            href={`/polls/${poll.id}/edit`}
-            className="text-label-2 font-medium text-neutral-muted hover:text-neutral"
-          >
-            수정
-          </Link>
-        )}
+        action={canEdit && <PollEditLink pollId={poll.id} />}
       />
 
       {/* 폭은 max-w-detail(680px)로 둔다. 결과 화면(ResultView)은 제출 화면 컨벤션에 맞춰
@@ -164,12 +157,7 @@ export function TypeBPollClient({ poll, isAuthenticated, canEdit }: TypeBPollCli
           {/* 수정 진입 — 데스크탑 전용(모바일은 헤더에서 렌더됨) */}
           {canEdit && (
             <div className="hidden justify-end sm:flex">
-              <Link
-                href={`/polls/${poll.id}/edit`}
-                className="text-label-2 font-medium text-neutral-muted hover:text-neutral"
-              >
-                수정
-              </Link>
+              <PollEditLink pollId={poll.id} />
             </div>
           )}
 

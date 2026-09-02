@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import Link from 'next/link'
+import { PollEditLink } from './PollEditLink'
 import { Users } from 'lucide-react'
 import type { PollDetail, VoteCountMap } from '@/lib/queries/polls'
 import type { CommentItem } from '@/lib/queries/comments'
@@ -95,14 +95,7 @@ export function ResultView({ poll, voteCounts, myOptionId, comments, canEdit }: 
     <div className="flex min-h-screen flex-col bg-page">
       {/* 페이지 헤더 — 모바일 전용 진입(AppHeader 모바일 레이어에서만 렌더됨) */}
       <PollPageHeader
-        action={canEdit && (
-          <Link
-            href={`/polls/${poll.id}/edit`}
-            className="text-label-2 font-medium text-neutral-muted hover:text-neutral"
-          >
-            수정
-          </Link>
-        )}
+        action={canEdit && <PollEditLink pollId={poll.id} />}
       />
       <div className="flex-1 overflow-y-auto hide-scrollbar animate-enter">
         {/* 컨테이너·카드 규격은 제출 화면(PredictionFlowClient)과 맞춘다 — mx-auto max-w-[860px] +
@@ -132,12 +125,7 @@ export function ResultView({ poll, voteCounts, myOptionId, comments, canEdit }: 
             {/* 수정 진입 — 데스크탑 전용(모바일은 헤더에서 렌더됨) */}
             {canEdit && (
               <div className="hidden justify-end sm:flex">
-                <Link
-                  href={`/polls/${poll.id}/edit`}
-                  className="text-label-2 font-medium text-neutral-muted hover:text-neutral"
-                >
-                  수정
-                </Link>
+                <PollEditLink pollId={poll.id} />
               </div>
             )}
 
