@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import { AppHeader } from '@/components/composition/common/AppHeader'
 import { PredictionFlowClient } from '@/components/composition/predict/PredictionFlowClient'
 import { PredictionResult } from '@/components/composition/predict/PredictionResult'
-import { getFixtureWeeks } from '@/lib/queries/fixtures'
+import { getFixturePositionTop3, getFixtureWeeks, type FixturePositionTop3 } from '@/lib/queries/fixtures'
 import { findWeekPrediction, findWeekSession, submittableMatches } from '@/lib/predictions/week'
 import { getPickCandidates } from '@/lib/queries/squads'
 import { getMyPredictions, getMyResults, getWeekRanking } from '@/lib/queries/predictions'
@@ -25,7 +25,18 @@ export default async function PredictionFlowPage({ params }: { params: { weekKey
 
   if (week.status === 'result') {
     // 랭킹은 참여 여부와 무관하게 공개된다 — 미참여 주차도 결과 화면으로 들어와 랭킹을 볼 수 있다.
-    const [results, ranking] = await Promise.all([getMyResults(), getWeekRanking(week.weekKey)])
+    // 포지션별 평점 TOP3는 더블 매치위크면 경기마다 따로 조회해 fixture id(string) 키로 묶는다 —
+    // results/predictions가 이미 fixture id 키 맵인 것과 같은 관례.
+    const [results, ranking, top3PerMatch] = await Promise.all([
+      getMyResults(),
+      getWeekRanking(week.weekKey),
+      Promise.all(week.matches.map(match => getFixturePositionTop3(Number(match.id)))),
+    ])
+    const topRatings: Record<string, FixturePositionTop3> = {}
+    week.matches.forEach((match, i) => {
+      topRatings[match.id] = top3PerMatch[i]
+    })
+
     return (
       <>
         <AppHeader mobileBack />
@@ -36,6 +47,7 @@ export default async function PredictionFlowPage({ params }: { params: { weekKey
             predictions={myPredictions}
             candidates={candidates}
             ranking={ranking}
+            topRatings={topRatings}
           />
         </main>
       </>

@@ -18,7 +18,7 @@ function loadResultModule() {
   return cjsModule.exports
 }
 
-const { ratingTier, aggregateWeekResult, ourScoreOrder, matchResultState, matchHit } =
+const { ratingTier, aggregateWeekResult, ourScoreOrder, matchResultState, matchHit, buildTop3Entries } =
   loadResultModule()
 
 const match = (id, { finished = true, isHome = true } = {}) => ({
@@ -106,4 +106,27 @@ test('matchHit: DB prediction_match_points와 같은 3단계로 갈린다', () =
   assert.equal(matchHit([2, 1], [1, 2]), 'miss')
   // 무승부로 끝났는데 승리를 예측한 경우도 미적중
   assert.equal(matchHit([2, 1], [1, 1]), 'miss')
+})
+
+test('buildTop3Entries: 순서는 그대로 두고 내 픽에만 isMine을 붙인다', () => {
+  const players = [
+    { playerId: 1, name: '보트만', rating: 7.8, photoUrl: null },
+    { playerId: 2, name: '리브라멘투', rating: 7.5, photoUrl: null },
+    { playerId: 3, name: '스카르', rating: 6.9, photoUrl: null },
+  ]
+  const entries = buildTop3Entries(players, 2)
+  assert.deepEqual(
+    entries.map(e => [e.playerId, e.isMine]),
+    [[1, false], [2, true], [3, false]],
+  )
+})
+
+test('buildTop3Entries: 미참여(myPlayerId=null)면 전부 isMine: false', () => {
+  const players = [{ playerId: 1, name: '보트만', rating: 7.8, photoUrl: null }]
+  const entries = buildTop3Entries(players, null)
+  assert.equal(entries[0].isMine, false)
+})
+
+test('buildTop3Entries: 빈 배열이 오면 빈 배열을 그대로 돌려준다(패딩 없음)', () => {
+  assert.deepEqual(buildTop3Entries([], 1), [])
 })
