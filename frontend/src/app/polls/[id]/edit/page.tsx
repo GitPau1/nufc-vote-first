@@ -1,6 +1,8 @@
+import { cookies } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 import { getPollById } from '@/lib/queries/polls'
-import { getHeaderAuth } from '@/lib/actions/auth'
+import { IS_MOCK } from '@/lib/config'
+import { isAdmin } from '@/lib/admin'
 import { canAccessPollEdit, getEditablePollFields } from '@/lib/polls/poll-edit-eligibility'
 import { PollPageHeader } from '@/components/composition/polls/PollPageHeader'
 import { UserPollEditForm } from '@/components/composition/polls/UserPollEditForm'
@@ -9,19 +11,40 @@ interface PollEditPageProps {
   params: Promise<{ id: string }>
 }
 
+// polls/[id]/page.tsx와 같은 인라인 auth 체크 — 공용 헬퍼로 안 뽑는 게 이 리포 관례
+// (polls/create/page.tsx, polls/[id]/page.tsx도 각자 인라인). getHeaderAuth()(비캐시
+// getUser + users 테이블 SELECT)를 또 부르지 않고, 여기서 얻은 user로 isAdmin(user.email)까지
+// 직접 계산한다.
+async function getCurrentUser() {
+  if (IS_MOCK) {
+    const cookieStore = await cookies()
+    if (cookieStore.get('mock-auth')?.value === 'true') {
+      // mock 유저는 email이 없어 isAdmin이 항상 false — 작성자 케이스는 fixture로 이미
+      // 커버되므로 허용한다(polls/[id]/page.tsx와 같은 이유).
+      return { id: 'mock-user', email: undefined as string | undefined }
+    }
+    return null
+  }
+
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = await createClient()
+  const { data } = await supabase.auth.getUser()
+  return data.user
+}
+
 export default async function PollEditPage({ params }: PollEditPageProps) {
   const { id } = await params
-  const poll = await getPollById(id)
+  // poll 조회와 auth 확인을 병렬로 — 형제 페이지(polls/[id]/page.tsx)와 같은 패턴.
+  const [poll, user] = await Promise.all([getPollById(id), getCurrentUser()])
   if (!poll) notFound()
 
-  const auth = await getHeaderAuth()
   const editPoll = {
     status: poll.status,
     scheduled_at: poll.scheduled_at ?? null,
     closes_at: poll.closes_at,
     created_by: poll.created_by ?? null,
   }
-  const actor = { userId: auth?.userId ?? null, isAdmin: auth?.isAdmin ?? false }
+  const actor = { userId: user?.id ?? null, isAdmin: isAdmin(user?.email) }
 
   // 클라이언트가 내려받은 canEdit을 신뢰하지 않는다 — URL 직접 접근 방어를 위해 서버에서 재검증.
   if (!canAccessPollEdit(editPoll, actor)) redirect(`/polls/${id}`)
