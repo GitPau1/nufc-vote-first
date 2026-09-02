@@ -191,6 +191,8 @@ RLS:
 - 투표 목록/상세 조회: `frontend/src/lib/queries/polls.ts`
 - 마이페이지 참여 투표 join: `frontend/src/app/my/page.tsx`
 - 관리자 투표 생성/상태 변경: `frontend/src/lib/actions/admin.ts`
+- 사용자 투표 생성: `frontend/src/lib/actions/polls.ts`의 `createUserPoll`
+- 작성자 본인/관리자 투표 수정(제목·설명·썸네일): `frontend/src/lib/actions/polls.ts`의 `updateUserPoll` — active는 제목·설명·썸네일, closed는 썸네일만 허용(`frontend/src/lib/polls/poll-edit-eligibility.ts`). `polls` 테이블에 UPDATE RLS 정책이 없어 이 경로도 service role로 쓴다.
 
 관계:
 
@@ -200,7 +202,7 @@ RLS:
 RLS:
 
 - 공개 SELECT.
-- 관리자 쓰기는 service role 사용.
+- 쓰기(INSERT/UPDATE)는 정책이 없어 service role로만 가능. `createUserPoll`/`updateUserPoll` 모두 애플리케이션 레벨(로그인 여부, 작성자 본인/관리자)에서 권한을 검사한 뒤 service role 클라이언트로 씁니다.
 
 ### `poll_options`
 
@@ -399,6 +401,8 @@ DB 제약:
 - 업로드: `frontend/src/lib/actions/admin.ts`
 - public URL 생성: `frontend/src/lib/actions/admin.ts`
 - 생성된 URL은 `players.photo_url` 또는 `polls.thumbnail_url`에 저장됩니다.
+- 사용자 투표 썸네일/선택지 이미지 업로드: `frontend/src/lib/actions/images.ts`의 `uploadPollImage`(`poll-thumbnails/<userId>/`, `poll-options/<userId>/` 폴더)
+- 삭제: 투표 수정(`updateUserPoll`)이 DB 갱신 성공 후 옛 썸네일 파일을 `storage.remove()`로 지웁니다 — `frontend/src/lib/actions/polls.ts`의 `cleanupOldPollThumbnail`. 다른 poll/poll_options 행이 같은 URL을 참조 중이거나, 우리 버킷 URL이 아니거나, `poll-thumbnails/` 폴더 밖이면 스킵합니다. 이 리포에서 스토리지 파일을 실제로 지우는 첫 코드 경로입니다.
 
 주의:
 
