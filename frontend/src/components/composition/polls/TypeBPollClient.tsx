@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
 import type { PollDetail } from '@/lib/queries/polls'
 import type { PlayerRow, PollOptionRow } from '@/types/database'
@@ -22,6 +23,7 @@ import { formatPollDate, getOptionThumb } from './ResultView'
 interface TypeBPollClientProps {
   poll: PollDetail
   isAuthenticated: boolean
+  canEdit: boolean
 }
 
 /** 라벨 아래 보조 줄. 선수면 포지션·등번호, 자유 선택지면 설명. */
@@ -35,7 +37,7 @@ function getOptionSubLabel(option: PollOptionRow, optionPlayers?: Record<string,
   return option.description ?? null
 }
 
-export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps) {
+export function TypeBPollClient({ poll, isAuthenticated, canEdit }: TypeBPollClientProps) {
   // 무선택으로 시작한다. 예전에는 useState(0)이라 진입 즉시 1번 선택지가 골라진 상태였는데,
   // 미리 선택된 옵션은 그 자체가 강한 제안으로 작동해 응답을 왜곡한다(NN/g). 평가형(TypeA)도
   // 무선택에서 시작하고 CTA를 막는다 — 두 화면의 동작을 맞췄다.
@@ -96,7 +98,17 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
 
   return (
     <div className="flex min-h-screen flex-col bg-page">
-      <PollPageHeader />
+      {/* 페이지 헤더 — 모바일 전용 진입(AppHeader 모바일 레이어에서만 렌더됨) */}
+      <PollPageHeader
+        action={canEdit && (
+          <Link
+            href={`/polls/${poll.id}/edit`}
+            className="text-label-2 font-medium text-neutral-muted hover:text-neutral"
+          >
+            수정
+          </Link>
+        )}
+      />
 
       {/* 폭은 max-w-detail(680px)로 둔다. 결과 화면(ResultView)은 제출 화면 컨벤션에 맞춰
           max-w-[860px]로 바뀌어 더 이상 이 폭과 같지 않다 — 여기서 맞추는 건 커버 이미지 처리
@@ -148,6 +160,18 @@ export function TypeBPollClient({ poll, isAuthenticated }: TypeBPollClientProps)
               )}
             </section>
           </div>
+
+          {/* 수정 진입 — 데스크탑 전용(모바일은 헤더에서 렌더됨) */}
+          {canEdit && (
+            <div className="hidden justify-end sm:flex">
+              <Link
+                href={`/polls/${poll.id}/edit`}
+                className="text-label-2 font-medium text-neutral-muted hover:text-neutral"
+              >
+                수정
+              </Link>
+            </div>
+          )}
 
           {/* 고르는 자리 */}
           <div className="flex flex-col gap-3">

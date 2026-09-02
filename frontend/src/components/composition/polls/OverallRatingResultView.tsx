@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { Heart } from 'lucide-react'
 import type { PollDetail, RatingResultItem } from '@/lib/queries/polls'
 import { toggleRatingCommentLike } from '@/lib/actions/ratings'
@@ -22,9 +23,10 @@ interface OverallRatingResultViewProps {
   poll: PollDetail
   results: RatingResultItem[]
   hasVoted: boolean
+  canEdit: boolean
 }
 
-export function OverallRatingResultView({ poll, results, hasVoted }: OverallRatingResultViewProps) {
+export function OverallRatingResultView({ poll, results, hasVoted, canEdit }: OverallRatingResultViewProps) {
   const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
@@ -39,7 +41,17 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
 
   return (
     <div className="flex min-h-screen flex-col bg-page">
-      <PollPageHeader />
+      {/* 페이지 헤더 — 모바일 전용 진입(AppHeader 모바일 레이어에서만 렌더됨) */}
+      <PollPageHeader
+        action={canEdit && (
+          <Link
+            href={`/polls/${poll.id}/edit`}
+            className="text-label-2 font-medium text-neutral-muted hover:text-neutral"
+          >
+            수정
+          </Link>
+        )}
+      />
       <div className="flex-1 overflow-y-auto hide-scrollbar animate-enter">
         {/* 셸은 결과 화면 컨벤션(ResultView 선례)과 동일하다 — mx-auto max-w-[860px] + 단일
             Card(p-5 sm:p-7). 커버는 Card 밖 독립 블록(overflow-hidden rounded-lg bg-disabled)으로
@@ -65,6 +77,18 @@ export function OverallRatingResultView({ poll, results, hasVoted }: OverallRati
                 <p className="text-label-1-reading text-neutral-muted">{poll.description}</p>
               )}
             </div>
+
+            {/* 수정 진입 — 데스크탑 전용(모바일은 헤더에서 렌더됨) */}
+            {canEdit && (
+              <div className="hidden justify-end sm:flex">
+                <Link
+                  href={`/polls/${poll.id}/edit`}
+                  className="text-label-2 font-medium text-neutral-muted hover:text-neutral"
+                >
+                  수정
+                </Link>
+              </div>
+            )}
 
             <div className="my-5 h-px bg-neutral-weak" />
 
