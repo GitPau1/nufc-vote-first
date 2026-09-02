@@ -70,6 +70,7 @@
   - `candidates.ts` L17-30 `Candidate` 타입에 `departed?: boolean`(optional) 추가.
 - 의존: 3단계(마이그레이션 SQL 작성, 적용 여부와 무관 — 타입은 미리 맞춰둘 수 있음). **단 실제 DB에 컬럼이 없는 상태로 실 모드 조회를 돌리면 에러**이므로, 실 모드 스모크 테스트는 3-3단계(마이그레이션 실제 적용) 이후로 미룬다.
 - 검증: `npm test`, `npm run build`(타입 체크).
+- ✅ plan 이탈 수용 (2026-09-02, 사용자 답변): `excludeDeparted()`는 `lib/predictions/candidates.ts`에 두고 `squads.ts`는 재export — squads.ts가 next/headers를 끌고 있어 클라이언트 컴포넌트(PredictionFlowClient)에서 import하면 `next build`가 실패했기 때문.
 
 ### 5단계 — 선택 경로 2곳에 필터 적용
 - 파일: `frontend/src/lib/actions/predictions.ts`, `frontend/src/components/composition/predict/PredictionFlowClient.tsx`
@@ -109,6 +110,7 @@
 - **이 단계는 3~7단계 코드 작업과 별개로, 실행 직전 사람에게 다시 확인받는다** — 스키마 변경은 되돌리기 어렵고 프로덕션 데이터에 영향을 준다(developer-agent-rules 4번 에스컬레이션 기준).
 - 실행 전 확인 사항: `supabase link` 대상이 실제 서비스 프로젝트(`xrvz…`)가 맞는지(`vault/99_old/AGENT_MAINTENANCE_GUIDE.md`가 경고하는 `ykjf…` 방치 프로젝트로 잘못 적용하지 않도록 `.env.local`의 URL과 `supabase/.temp/project-ref`를 대조).
 - 적용 후: `frontend/src/types/database.ts`가 실제 스키마와 맞는지 `npm run types:supabase`로 재확인(가능하면).
+- 2026-09-02: 사용자가 SQL을 직접 실행하기로 함(SQL Editor). 마이그레이션은 if not exists로 idempotent 처리. 적용 → PR #12 병합 → PR #13 병합 순서 필요.
 
 ---
 

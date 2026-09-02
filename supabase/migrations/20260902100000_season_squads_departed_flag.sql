@@ -4,8 +4,10 @@
 -- season_squads: public read 정책(20260821110000_create_season_squads.sql)이 행 단위라
 -- 신규 컬럼도 별도 정책 변경 없이 그대로 공개 조회된다.
 
+-- if not exists: 사용자가 이 SQL을 Supabase SQL Editor에서 먼저 직접 실행할 예정이라,
+-- 나중에 supabase db push가 같은 마이그레이션을 재적용해도 실패하지 않게 하기 위함.
 alter table public.season_squads
-  add column is_active boolean not null default true;
+  add column if not exists is_active boolean not null default true;
 
 comment on column public.season_squads.is_active is
   'false = 떠난 선수(이적 등). 관리자가 대시보드에서 수동 토글. '
