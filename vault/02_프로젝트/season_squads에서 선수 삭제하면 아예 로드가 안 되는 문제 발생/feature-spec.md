@@ -72,7 +72,11 @@ intent.md 확정: "관리자 화면의 **기존** '동기화' 버튼이 후보 �
 
 ## 4. 설계
 
-### 4-1. 컬럼 설계 — **사람 확정 필요, 임의 확정 금지**
+### 4-1. 컬럼 설계 — **✅ 확정 (2026-09-02, 사용자 답변)**
+
+확정 컬럼: **`is_active boolean not null default true`** — `false`가 '떠난 선수'. 이름은 `players.is_active`(`initial_schema.sql:26`)와 같은 기존 관례를 따른 것으로, 아래 A/B/C 3안 중 어느 것도 아니라 `players.is_active`와 대칭 극성(양성 boolean)으로 별도 확정됐다. 이 문서와 plan.md의 `<departed_col>`은 전부 `is_active`로 읽는다. 파생 필드 `Candidate.departed`, 순수 함수 `excludeDeparted()` 이름은 아래 설계 그대로 유지하되 파생식만 `departed = !row.is_active`로 뒤집힌다.
+
+아래는 확정 전 검토했던 원안(기록 보존용):
 
 | 옵션 | 컬럼 정의 | 필터 조건(파생 `departed: boolean`) | 장점 | 단점 |
 |---|---|---|---|---|

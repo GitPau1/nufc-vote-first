@@ -17,6 +17,10 @@
 
 **마이그레이션 적용(`supabase db push`)은 프로덕션 DB에 스키마를 바꾸는 되돌리기 어려운 작업이다 — 위 표 확정과는 별개로, 실제 적용 직전에 한 번 더 사람 확인을 받는다(아래 3-3단계).**
 
+**✅ 확정 (2026-09-02, 사용자 답변):**
+- season_squads 신규 컬럼: **`is_active boolean not null default true`** — false가 '떠난 선수'. 이름은 `players.is_active`(`initial_schema.sql:26`)와 같은 기존 관례를 따른다. feature-spec/plan의 `<departed_col>`은 전부 `is_active`로 읽는다(A/B/C 3안 중 어느 것도 아닌, `players.is_active`와 대칭 극성의 boolean으로 확정 — B 추천안은 채택되지 않음). 파생 필드 `Candidate.departed`, 순수 함수 `excludeDeparted()` 이름은 feature-spec 4-2 설계 그대로 유지(`departed = !row.is_active`로 파생식만 뒤집힘).
+- 필터 적용 범위: feature-spec 4-2 기본안 그대로 채택. `getPickCandidates()`는 무필터 유지, `excludeDeparted()`를 픽 모달(`PredictionFlowClient.tsx:488`)과 제출 검증(`lib/actions/predictions.ts`) 2곳에만 적용.
+
 ---
 
 ## 1. 이슈 매핑
@@ -28,19 +32,19 @@
 
 ## 2. 이슈 1 실행 단계
 
-### 1단계 — 캐시 태그 추가
+### 1단계 — 캐시 태그 추가 — **완료 (PR #12)**
 - 파일: `frontend/src/lib/queries/squads.ts`
 - 내용: L94-96 `unstable_cache(getPickCandidatesUncached, ['pick-candidates'], { revalidate: 3600 })`에 `tags: ['pick-candidates']` 추가(`getFixtureWeeks`, `fixtures.ts:317-321`과 같은 형태로 맞춘다).
 - 의존: 없음, 즉시 시작 가능.
 - 검증: `npm test`(회귀 확인 — `cache-policy.test.mjs`는 `tags`를 안 보므로 그대로 통과해야 함).
 
-### 2단계 — 관리자 동기화 액션에서 함께 무효화
+### 2단계 — 관리자 동기화 액션에서 함께 무효화 — **완료 (PR #12)**
 - 파일: `frontend/src/lib/actions/sync-fixtures.ts`
 - 내용: L68 `revalidateTag('fixture-weeks')` 다음 줄에 `revalidateTag('pick-candidates')` 추가. 주석으로 "경기 결과·평점 동기화 버튼이 season_squads 픽 후보 캐시도 함께 비운다" 이유를 남긴다(관례상 티켓 번호는 넣지 않는다, CLAUDE.md/developer-agent-rules 체크리스트 3번).
 - 의존: 1단계 완료 후.
 - 검증: `npm test`.
 
-### 2-부속 단계 — cache-policy.test.mjs 보강 (회귀 방지)
+### 2-부속 단계 — cache-policy.test.mjs 보강 (회귀 방지) — **완료 (PR #12)**
 - 파일: `frontend/src/lib/queries/cache-policy.test.mjs`
 - 내용: `squads.ts` 소스에 `tags: ['pick-candidates']`(또는 `tags:\s*\[.*pick-candidates`) 패턴이 있는지 검사하는 새 `test(...)` 추가 — 이번 버그(태그 없이 1시간 캐시)의 재발 방지 목적. 기존 테스트 스타일(문자열 정규식 검사)을 그대로 따른다.
 - 의존: 1단계 완료 후, 2단계와 **병렬 가능**.
