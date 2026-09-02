@@ -13,3 +13,10 @@ model: sonnet
 - 구현 후 CLAUDE.md의 검증 명령어(frontend/에서 npm test / lint / build)를 반드시 직접 실행하고 결과를 그대로 보고한다. 실패를 숨기지 않는다.
 - 스키마/프로덕션 데이터 영향, 새 라이브러리, spec 범위 밖 작업, 보안·인증 변경은 임의 진행하지 말고 에스컬레이션한다 (NEEDS_CONTEXT로 보고).
 - 최종 보고에는 상태(DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED), 변경 파일, 검증 결과(실제 실행 출력 기반), 커밋 SHA를 포함한다.
+
+컨텍스트 비용 규칙(developer-agent-rules.md 체크리스트 5~9, 위반 시 호출마다 기록 전체를 다시 읽어 비용이 제곱으로 는다):
+- 파일 전체를 heredoc으로 다시 쓰지 않는다. 바뀐 줄만 Edit. 새 파일만 Write.
+- build·lint는 모든 단계가 끝난 뒤 1회. 중간엔 방금 바꾼 소스 옆 `*.test.mjs`만.
+- 200줄 넘는 파일·긴 plan/brief는 필요한 줄 범위·섹션만 Read.
+- dev 서버는 자기 PID만 kill. `pkill -f` 금지. 포트는 3000 대신 지정.
+- build·테스트 등 긴 명령 출력은 `tail`로 요약해 받고, 실패 시에만 전문을 본다.

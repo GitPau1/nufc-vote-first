@@ -27,6 +27,7 @@ Newcastle United 팬 투표 플랫폼 (한국어, 모바일 퍼스트). Next.js 
 - **디자인/기획 작업** (design-brief, UX 흐름·톤 판단) → `designer` 에이전트
 - **Linear 이슈 생성·상태 변경·댓글** → 메인 세션이 내용을 완결되게 구성한 뒤 `linear-ops` 에이전트가 실행 (메인 세션이 Linear CRUD를 직접 하지 않는다)
 - 위임 전 `vault/01_에이전트/orchestrator-rules.md`의 에스컬레이션 기준을 확인하고, 애매한 결정은 진행 전에 사용자에게 질문 형식(상황/선택지/트레이드오프/추천)으로 올린다.
+- **위임 단위·리뷰 방식·모델 지정**은 같은 문서의 "컨텍스트(토큰) 비용 규칙" 섹션을 따른다: 구현은 plan 단계별 새 에이전트(같은 에이전트 이어 쓰기 최대 2회), `code-review`는 `low`/`medium`만 1회(메인 컨텍스트가 크면 스킬 대신 새 sonnet 에이전트에 diff 경로만 넘김), 모든 서브에이전트 스폰에 `model` 명시(기본값이 opus 5).
 
 - **작업별 산출물**은 `vault/02_프로젝트/<Linear 프로젝트명>/`에 둔다: `intent.md` → `spec.md`(또는 `design-brief.md`/`feature-spec.md`) → `plan.md`. 소속 프로젝트가 없는 단발 이슈는 간소 사이클 — 이슈 본문이 spec, plan 승인만 거친다.
 - **`plan.md`는 사람의 승인 없이는 구현을 시작하지 않는다.**
