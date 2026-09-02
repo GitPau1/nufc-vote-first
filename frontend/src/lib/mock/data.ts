@@ -571,3 +571,35 @@ export const MOCK_RESULTS = {
     },
   },
 }
+
+// ── 포지션별 평점 TOP3 원본 (fixture_player_ratings 테이블과 같은 모양: player_id, rating) ──
+// MOCK_SQUAD에 있는 선수 id만 재사용한다 — 새 id를 지어내지 않는다. MOCK_RESULTS의 내 픽과
+// 같은 id·rating을 포함시켜(예: '9001' DEF 577175=7.8) 내 픽 강조(isMine)와 픽 카드에 이미
+// 보이는 평점이 서로 어긋나지 않게 한다. 실제 조회(getFixturePositionTop3)와 같이 포지션별
+// 상위 3명만 골라 쓰므로, 포지션당 후보가 3명 넘게 있어도 그대로 다 넣어둔다.
+export const MOCK_FIXTURE_RATINGS: Record<string, { playerId: number; rating: number }[]> = {
+  '9001': [
+    { playerId: 577175, rating: 7.8 }, // DEF · 보트만 · 내 픽
+    { playerId: 1140067, rating: 7.5 }, // DEF · 리브라멘투
+    { playerId: 184644, rating: 6.9 }, // DEF · 스카르
+    { playerId: 180254, rating: 6.1 }, // DEF · 트리피어
+    { playerId: 586826, rating: 7.2 }, // MID · 윌록
+    { playerId: 869678, rating: 6.3 }, // MID · 기마랑이스 · 내 픽
+    { playerId: 1088651, rating: 5.8 }, // MID · 토날리
+    { playerId: 487126, rating: 7.6 }, // FWD · 반스
+    { playerId: 1146398, rating: 6.0 }, // FWD · 고든
+    { playerId: 725364, rating: 5.4 }, // FWD · 이사크 · 내 픽
+  ],
+  '9003': [
+    { playerId: 577175, rating: 7.9 }, // DEF · 보트만
+    { playerId: 1140067, rating: 6.8 }, // DEF · 리브라멘투
+    { playerId: 184644, rating: 6.2 }, // DEF · 스카르 · 내 픽
+    { playerId: 180254, rating: 5.5 }, // DEF · 트리피어
+    { playerId: 869678, rating: 7.4 }, // MID · 기마랑이스 · 내 픽
+    { playerId: 1088651, rating: 6.5 }, // MID · 토날리
+    { playerId: 586826, rating: 5.9 }, // MID · 윌록
+    { playerId: 725364, rating: 8.1 }, // FWD · 이사크 · 내 픽
+    { playerId: 1146398, rating: 7.0 }, // FWD · 고든
+    { playerId: 487126, rating: 6.4 }, // FWD · 반스
+  ],
+}

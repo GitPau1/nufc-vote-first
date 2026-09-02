@@ -4,8 +4,8 @@ import { IS_MOCK } from '@/lib/config'
 import type { FixtureRow, SquadPosition } from '@/types/database'
 import { koreanTeamName } from '@/lib/predict/team-names'
 import { toKst, weekKey } from '@/lib/predictions/week'
-import { playerPhotoUrl } from '@/lib/predictions/candidates'
-import { mockGetHomeMatchdayFixture } from '@/lib/mock/queries'
+import { playerPhotoUrl, type Position } from '@/lib/predictions/candidates'
+import { mockGetFixturePositionTop3, mockGetHomeMatchdayFixture } from '@/lib/mock/queries'
 // 예측 목록(주차 그룹)은 승부예측 기능에서 쓰는 별개 경로다 — 같은 fixtures 테이블을 읽지만
 // 컬럼·가공 방식이 달라서 FixtureRow도 서로 다른 타입이라 별칭으로 구분한다.
 import {
@@ -121,14 +121,14 @@ function toMatchdayFixture(row: FixtureRow, ratings: MatchRatings): MatchdayFixt
 }
 
 /**
- * 종료된 경기의 평점 요약 — DEF/MID/FWD 각 최고 평점 1명.
- * fixture_player_ratings에는 뉴캐슬 선수만 들어있고, 포지션은 season_squads에서 붙인다.
- * GK는 포지션 카드가 없어 여기 포함하지 않는다(요구상 수비수·미드필더·공격수 3종만).
+ * fixture_player_ratings + season_squads 조인 — 그 경기에 평점이 매겨진 뉴캐슬 선수 전원을
+ * 평점 내림차순으로 돌려준다(포지션 포함). 포지션별 최고 1명(getMatchRatings)과 포지션별
+ * 상위 3명(getFixturePositionTop3)이 이 조회 하나를 나눠 쓴다 — 조회는 한 번, 뽑는 개수만 다르다.
  */
-async function getMatchRatings(
+async function getRatedSquadPlayers(
   supabase: ReturnType<typeof createPublicClient>,
   fixtureId: number,
-): Promise<MatchRatings> {
+): Promise<MatchdayPositionLeader[]> {
   const { data: ratings, error: ratingsError } = await supabase
     .from('fixture_player_ratings')
     .select('player_id, rating')
@@ -136,10 +136,10 @@ async function getMatchRatings(
     .order('rating', { ascending: false })
 
   if (ratingsError) {
-    console.error('getMatchRatings (ratings) error:', ratingsError)
-    return EMPTY_RATINGS
+    console.error('getRatedSquadPlayers (ratings) error:', ratingsError)
+    return []
   }
-  if (!ratings || ratings.length === 0) return EMPTY_RATINGS
+  if (!ratings || ratings.length === 0) return []
 
   const rows = ratings as { player_id: number; rating: number }[]
 
@@ -150,7 +150,7 @@ async function getMatchRatings(
     .eq('is_current', true)
     .maybeSingle()) as { data: { id: string } | null }
 
-  if (!season) return EMPTY_RATINGS
+  if (!season) return []
 
   const { data: squads, error: squadError } = (await supabase
     .from('season_squads')
@@ -165,14 +165,14 @@ async function getMatchRatings(
   }
 
   if (squadError) {
-    console.error('getMatchRatings (squad) error:', squadError)
-    return EMPTY_RATINGS
+    console.error('getRatedSquadPlayers (squad) error:', squadError)
+    return []
   }
 
   const squadById = new Map((squads ?? []).map((s) => [s.fotmob_player_id, s]))
 
-  // ratings가 평점 내림차순이므로 이 배열도 내림차순을 유지한다 —
-  // 아래 find()가 각 포지션의 "첫 번째" = 최고 평점을 집어낸다.
+  // ratings가 평점 내림차순이므로 이 배열도 내림차순을 유지한다 — 호출부가 find()로 1위를,
+  // filter().slice(0, 3)으로 top3를 뽑을 때 둘 다 이 순서에 기대 있다.
   const rated: MatchdayPositionLeader[] = []
   for (const r of rows) {
     const squad = squadById.get(r.player_id)
@@ -185,6 +185,18 @@ async function getMatchRatings(
       position: squad.position,
     })
   }
+  return rated
+}
+
+/**
+ * 종료된 경기의 평점 요약 — DEF/MID/FWD 각 최고 평점 1명.
+ * GK는 포지션 카드가 없어 여기 포함하지 않는다(요구상 수비수·미드필더·공격수 3종만).
+ */
+async function getMatchRatings(
+  supabase: ReturnType<typeof createPublicClient>,
+  fixtureId: number,
+): Promise<MatchRatings> {
+  const rated = await getRatedSquadPlayers(supabase, fixtureId)
   if (rated.length === 0) return EMPTY_RATINGS
 
   const topOf = (position: SquadPosition) => rated.find((p) => p.position === position) ?? null
@@ -193,6 +205,33 @@ async function getMatchRatings(
     topDefender: topOf('DEF'),
     topMidfielder: topOf('MID'),
     topForward: topOf('FWD'),
+  }
+}
+
+/** 포지션(DEF/MID/FWD)별 평점 상위 3명 — 결과 화면 "내 선수 픽" TOP3 아코디언이 쓰는 형태. */
+export type FixturePositionTop3 = Record<Position, MatchdayRatedPlayer[]>
+
+const EMPTY_TOP3: FixturePositionTop3 = { DEF: [], MID: [], FWD: [] }
+
+/**
+ * 그 경기 포지션별 평점 상위 3명(내림차순). 후보가 3명 미만인 포지션은 있는 만큼만 돌려준다
+ * (패딩 없음), 평점이 아직 없으면(동기화 전) 세 포지션 모두 빈 배열이다.
+ * `isMine`(내가 이 선수를 골랐는지)은 여기서 넣지 않는다 — 이 함수는 그 정보를 모르고,
+ * 호출부(결과 화면)가 이미 알고 있는 값이라 여기 섞으면 관심사가 겹친다.
+ */
+export async function getFixturePositionTop3(fixtureId: number): Promise<FixturePositionTop3> {
+  if (IS_MOCK) return mockGetFixturePositionTop3(fixtureId)
+
+  const supabase = createPublicClient()
+  const rated = await getRatedSquadPlayers(supabase, fixtureId)
+  if (rated.length === 0) return EMPTY_TOP3
+
+  const topNOf = (position: Position) => rated.filter((p) => p.position === position).slice(0, 3)
+
+  return {
+    DEF: topNOf('DEF'),
+    MID: topNOf('MID'),
+    FWD: topNOf('FWD'),
   }
 }
 

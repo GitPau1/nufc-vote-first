@@ -6,14 +6,17 @@ import { PAGE_SIZE } from '@/lib/constants'
 import { getEffectivePollStatus } from '@/lib/polls/status'
 import type { PollDetail, PollHomeSections, PollListItem, VoteCountMap, RatingResultItem } from '@/lib/queries/polls'
 import type { CommentItem } from '@/lib/queries/comments'
-import type { MatchdayFixture } from '@/lib/queries/fixtures'
+import type { FixturePositionTop3, MatchdayFixture } from '@/lib/queries/fixtures'
 import { toKst, weekKey } from '@/lib/predictions/week'
+import { isPickPosition, playerPhotoUrl, type Position } from '@/lib/predictions/candidates'
 import {
   MOCK_POLL_LIST,
   MOCK_POLL_DETAIL,
   MOCK_VOTE_COUNTS,
   MOCK_COMMENTS,
   MOCK_RATING_RESULTS,
+  MOCK_FIXTURE_RATINGS,
+  MOCK_SQUAD,
 } from './data'
 
 export async function mockGetPollList(page: number): Promise<PollListItem[]> {
@@ -106,5 +109,42 @@ export async function mockGetHomeMatchdayFixture(): Promise<MatchdayFixture> {
     shootoutScore: null,
     started: false,
     finished: false,
+  }
+}
+
+/**
+ * 목 모드: 포지션별 평점 상위 3명. `MOCK_FIXTURE_RATINGS`(fixture_player_ratings와 같은 모양)를
+ * `MOCK_SQUAD`(season_squads와 같은 모양)와 조인해 실제 조회(getFixturePositionTop3)와 같은
+ * 순서(평점 내림차순 → 포지션별 상위 3명)로 만든다.
+ */
+export async function mockGetFixturePositionTop3(fixtureId: number): Promise<FixturePositionTop3> {
+  const ratings = MOCK_FIXTURE_RATINGS[String(fixtureId)] ?? []
+  if (ratings.length === 0) return { DEF: [], MID: [], FWD: [] }
+
+  const squadById = new Map(MOCK_SQUAD.map(squad => [squad.fotmob_player_id, squad]))
+
+  const rated = ratings
+    .slice()
+    .sort((a, b) => b.rating - a.rating)
+    .flatMap(r => {
+      const squad = squadById.get(r.playerId)
+      if (!squad || !isPickPosition(squad.position)) return []
+      return [
+        {
+          playerId: r.playerId,
+          name: squad.name_ko?.trim() || squad.name,
+          rating: r.rating,
+          photoUrl: playerPhotoUrl(r.playerId),
+          position: squad.position,
+        },
+      ]
+    })
+
+  const topNOf = (position: Position) => rated.filter(p => p.position === position).slice(0, 3)
+
+  return {
+    DEF: topNOf('DEF'),
+    MID: topNOf('MID'),
+    FWD: topNOf('FWD'),
   }
 }

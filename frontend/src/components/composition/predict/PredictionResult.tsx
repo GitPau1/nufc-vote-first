@@ -9,6 +9,7 @@ import { WeekRankCard } from './WeekRankCard'
 import { POSITIONS, POSITION_LABEL, playerPhotoUrl, type Position } from '@/lib/predictions/candidates'
 import {
   aggregateWeekResult,
+  buildTop3Entries,
   matchHit,
   matchResultState,
   ourScoreOrder,
@@ -16,9 +17,11 @@ import {
   type MatchHit,
   type MatchResultState,
   type RatingTier,
+  type Top3Entry,
 } from '@/lib/predictions/result'
 import { NUFC_LABEL, NUFC_TEAM_ID, teamLogoUrl, type MatchView, type WeekSession } from '@/lib/predictions/week'
 import type { MyPredictionMap, MyResult, MyResultMap, RankingRow } from '@/lib/queries/predictions'
+import type { FixturePositionTop3 } from '@/lib/queries/fixtures'
 import type { PickCandidates } from '@/lib/queries/squads'
 import { cn } from '@/lib/utils'
 import { badgeVariants } from '@/components/primitives/badge'
@@ -39,6 +42,7 @@ export function PredictionResult({
   predictions,
   candidates,
   ranking,
+  topRatings,
 }: {
   week: WeekSession
   /** fixture_id → 채점 결과 */
@@ -47,6 +51,8 @@ export function PredictionResult({
   predictions: MyPredictionMap
   candidates: PickCandidates
   ranking: RankingRow[]
+  /** fixture_id → 포지션별 평점 TOP3 */
+  topRatings: Record<string, FixturePositionTop3>
 }) {
   const summary = aggregateWeekResult(week, results, ranking)
   const participated = summary !== null
@@ -81,6 +87,7 @@ export function PredictionResult({
             state={matchResultState(match, results)}
             predictions={predictions}
             candidates={candidates}
+            topRatings={topRatings[match.id]}
           />
         </div>
       ))}
@@ -286,11 +293,14 @@ function MatchResultBlock({
   state,
   predictions,
   candidates,
+  topRatings,
 }: {
   match: MatchView
   state: MatchResultState
   predictions: MyPredictionMap
   candidates: PickCandidates
+  /** 이 경기의 포지션별 평점 TOP3. 평점이 아직 없으면(동기화 전) 세 포지션 모두 빈 배열. */
+  topRatings: FixturePositionTop3
 }) {
   if (state.kind === 'pending') {
     return (
@@ -338,7 +348,8 @@ function MatchResultBlock({
       </Card>
 
       {/* ③ 내 선수 픽 — 헤더에 합산 점수 배지. 모바일은 세로 행 리스트, 데스크탑은 포지션 카드
-          3장(퍼블리싱과 동일). TOP3는 이슈 2가 데이터를 꽂을 자리라 지금은 항상 null. */}
+          3장(퍼블리싱과 동일). TOP3는 포지션별 평점 상위 3명 — 평점이 아직 없는 경기는 빈 배열이
+          내려와 아코디언 트리거가 자동으로 숨는다. */}
       <Card className="p-5 text-left">
         <div className="mb-3.5 flex items-center justify-between">
           <span className="text-body-2-normal font-semibold">내 선수 픽</span>
@@ -350,7 +361,7 @@ function MatchResultBlock({
               key={position}
               position={position}
               pick={resolvePick(position, match, scored, predictions, candidates)}
-              top3={null}
+              top3={buildTop3Entries(topRatings[position], scored?.picks[position].playerId ?? null)}
             />
           ))}
         </div>
@@ -360,7 +371,7 @@ function MatchResultBlock({
               key={position}
               position={position}
               pick={resolvePick(position, match, scored, predictions, candidates)}
-              top3={null}
+              top3={buildTop3Entries(topRatings[position], scored?.picks[position].playerId ?? null)}
             />
           ))}
         </div>
@@ -400,20 +411,6 @@ function resolvePick(
     rating,
     points,
   }
-}
-
-/**
- * 포지션 평점 TOP3 한 줄 — 이슈 2(포지션별 평점 TOP3 데이터)가 채울 인터페이스다. 전체 후보
- * 평점을 조회할 방법이 아직 쿼리 계층에 없어(candidates.ts에 rating 필드 자체가 없음) 지금은
- * 항상 `null`로 넘긴다 — `null`이면 아코디언 트리거 자체를 렌더하지 않는다(RatingBadge가
- * rating===null이면 배지를 아예 안 그리는 것과 같은 관례).
- */
-type Top3Entry = {
-  playerId: number
-  name: string
-  photoUrl: string | null
-  rating: number
-  isMine: boolean
 }
 
 const TIER_BADGE: Record<RatingTier, string> = {
@@ -515,8 +512,13 @@ function ScoreCompareRow({
   )
 }
 
-/** TOP3 아코디언 한 줄 — 순위·사진·이름·평점 배지. 내가 고른 선수 행만 강조한다. */
-function Top3Row({ entry, rank }: { entry: Top3Entry; rank: number }) {
+/**
+ * TOP3 아코디언 한 줄 — 평점 배지·사진·이름. 내가 고른 선수 행만 강조한다. 순위 라벨은 두지
+ * 않는다 — 배열 순서(위→아래)가 이미 평점 내림차순이라 순위를 따로 표시할 필요가 없고,
+ * 실기기 검수 결과 데스크탑 카드 폭(약 164px)에서 순위 라벨이 이름을 잘라먹었다. 그 자리에
+ * 평점 배지를 옮겨 이름(`truncate flex-1`)이 남는 공간을 다 쓰게 한다.
+ */
+function Top3Row({ entry }: { entry: Top3Entry }) {
   return (
     <div
       className={cn(
@@ -524,19 +526,11 @@ function Top3Row({ entry, rank }: { entry: Top3Entry; rank: number }) {
         entry.isMine && 'bg-brand-weak',
       )}
     >
-      <span
-        className={cn(
-          'w-7 shrink-0 text-caption-1 text-neutral-muted',
-          entry.isMine && 'font-semibold text-brand',
-        )}
-      >
-        {rank}위
-      </span>
+      <RatingBadge rating={entry.rating} />
       <PlayerPhoto url={entry.photoUrl} size={28} />
       <span className={cn('min-w-0 flex-1 truncate text-label-2', entry.isMine && 'font-semibold')}>
         {entry.name}
       </span>
-      <RatingBadge rating={entry.rating} />
     </div>
   )
 }
@@ -568,7 +562,7 @@ function PickResultRow({
     </>
   )
 
-  // TOP3 데이터가 없으면(이슈 2 착수 전) 트리거 자체를 만들지 않는다 — chevron도 없이 기존과
+  // TOP3가 비어 있으면(평점 미집계 등) 트리거 자체를 만들지 않는다 — chevron도 없이 기존과
   // 같은 정적인 행 하나로 끝난다.
   if (!top3 || top3.length === 0) {
     return (
@@ -589,8 +583,8 @@ function PickResultRow({
         </AccordionTrigger>
         <AccordionContent>
           <div className="flex flex-col gap-1.5">
-            {top3.map((entry, i) => (
-              <Top3Row key={entry.playerId} entry={entry} rank={i + 1} />
+            {top3.map(entry => (
+              <Top3Row key={entry.playerId} entry={entry} />
             ))}
           </div>
         </AccordionContent>
@@ -600,11 +594,11 @@ function PickResultRow({
 }
 
 /**
- * 데스크탑 카드 — 시안-v9.html `.pick-card`: 좌상단 포지션 캡션 → 사진 64px(우측 정렬,
- * `margin-left:auto`) → 사진 아래 좌측 평점 배지 → 상단 구분선 있는 푸터(이름 좌·점수 우).
+ * 데스크탑 카드 — 시안-v9.html `.pick-card`: 좌상단 포지션 캡션 → 한 행에 평점 배지(좌,
+ * 수직 중앙)와 사진 64px(우) → 상단 구분선 있는 푸터(이름 좌·점수 우).
  * "라벨 → 가운데 정렬 세로 스택(사진·이름·평점·구분선·점수)" 구조는 폐기됐다(실기기 검수,
- * plan의 "레이아웃 유지" 문구가 시안과 모순이었던 오류) — 자유 플로우(비-flex) 블록으로
- * 다시 짠다.
+ * plan의 "레이아웃 유지" 문구가 시안과 모순이었던 오류). 평점 배지도 처음엔 사진 아래 줄에
+ * 뒀다가 실기기 검수로 사진과 같은 행으로 옮겼다 — 두 번의 검수 모두 반영한 최종 구조다.
  */
 function PickResultCard({
   position,
@@ -619,14 +613,17 @@ function PickResultCard({
     <div className="min-w-0 flex-1">
       <div className="rounded-lg border border-neutral-weak bg-surface p-3.5">
         <p className="text-caption-1 font-medium text-neutral-muted">{POSITION_LABEL[position]}</p>
-        <div className="ml-auto h-16 w-16">
-          <PlayerPhoto url={pick?.photoUrl ?? null} size={64} />
-        </div>
-        {pick && (
-          <div className="mt-2 w-fit">
-            <RatingBadge rating={pick.rating} />
+        {/* 평점 배지(좌, 바닥 정렬)와 사진(우, 64px)을 한 행에 — 실기기 검수: 배지가 사진 아래
+            줄에 있으면 안 되고 사진과 같은 행이어야 한다(시안-v9 의도). items-end로 배지를
+            사진 하단 라인에 붙인다(처음엔 items-center로 했다가 "떠다녀 보인다"는 재검수로
+            바닥 정렬로 바꿨다). 빈 div는 pick이 없어도 justify-between이 사진을 오른쪽에
+            고정하기 위한 자리다. */}
+        <div className="mt-2 flex items-end justify-between">
+          <div>{pick && <RatingBadge rating={pick.rating} />}</div>
+          <div className="h-16 w-16">
+            <PlayerPhoto url={pick?.photoUrl ?? null} size={64} />
           </div>
-        )}
+        </div>
         <div className="mt-2.5 flex items-baseline justify-between gap-2 border-t border-neutral-weak pt-2.5">
           <span
             className={cn(
@@ -640,22 +637,16 @@ function PickResultCard({
         </div>
       </div>
 
-      {/* TOP3 데이터가 없으면(이슈 2 착수 전) 아코디언 자체를 만들지 않는다. */}
+      {/* TOP3가 비어 있으면(평점 미집계 등) 아무것도 렌더하지 않는다(기존 관례 유지). 데스크탑은
+          아코디언 없이 항상 펼쳐서 보여준다 — 실기기 검수: "포지션 평점 TOP3" 트리거 바가
+          카드 폭을 다 차지해 어색했다. 원 레퍼런스처럼 카드 아래 3행이 바로 보이는 형태로 바꿨다.
+          모바일 행(PickResultRow)은 이 지적 대상이 아니라 탭 아코디언을 그대로 둔다. */}
       {top3 && top3.length > 0 && (
-        <Accordion type="single" collapsible>
-          <AccordionItem value={position} className="mt-2 rounded-md border-neutral-weak bg-page">
-            <AccordionTrigger className="p-2.5 text-caption-1 font-medium text-neutral-muted hover:opacity-100">
-              포지션 평점 TOP3
-            </AccordionTrigger>
-            <AccordionContent>
-              <div className="flex flex-col gap-1.5">
-                {top3.map((entry, i) => (
-                  <Top3Row key={entry.playerId} entry={entry} rank={i + 1} />
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+        <div className="mt-2 flex flex-col gap-1.5">
+          {top3.map(entry => (
+            <Top3Row key={entry.playerId} entry={entry} />
+          ))}
+        </div>
       )}
     </div>
   )

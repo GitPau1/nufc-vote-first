@@ -5,6 +5,7 @@
 
 import type { MyResult, MyResultMap, RankingRow } from '@/lib/queries/predictions'
 import type { MatchView, WeekGroup } from '@/lib/predictions/week'
+import type { MatchdayRatedPlayer } from '@/lib/queries/fixtures'
 
 /** 평점 구간 — 배지 색이 3단계로 갈린다(퍼블리싱 `ratingTier`). */
 export type RatingTier = 'good' | 'mid' | 'bad'
@@ -102,4 +103,15 @@ export function matchResultState(match: MatchView, results: MyResultMap): MatchR
   const result = results[match.id]
   if (result) return { kind: 'scored', result }
   return match.finished ? { kind: 'missed' } : { kind: 'pending' }
+}
+
+/** 포지션 평점 TOP3 한 줄 — 이름·사진·평점(조회 결과 그대로) + 내가 이 선수를 골랐는지. */
+export type Top3Entry = MatchdayRatedPlayer & { isMine: boolean }
+
+/**
+ * TOP3 목록(`getFixturePositionTop3`, 평점 내림차순)에 `isMine`만 덧붙인다. 순서는 건드리지
+ * 않는다. `myPlayerId`가 null이면(미참여 경기) 전부 `isMine: false`.
+ */
+export function buildTop3Entries(players: MatchdayRatedPlayer[], myPlayerId: number | null): Top3Entry[] {
+  return players.map(player => ({ ...player, isMine: player.playerId === myPlayerId }))
 }
