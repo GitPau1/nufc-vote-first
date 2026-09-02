@@ -65,7 +65,10 @@ v1에서 이미 사람이 확정한 3건(토큰 이름·구분선 색·카피 �
   - 0번에서 (a) 확정 시: L71-73 `Card` 셸 유지, 아래 5블록을 그 자식으로 배치. (b) 확정 시: `Card`를 걷어내고 페이지 배경(`bg-page`) 위에 5블록을 직접 나열 — 어느 쪽이든 블록 내부 구현은 동일하다.
   - **① 판정 헤드라인 신규 작성**: `matchHit` import 추가(현재 미import). `spotlight-glow-brand-strong` 유틸리티(새 CSS 아님, `MatchdayHero.tsx` L179와 같은 클래스) 적용. 카피는 feature-spec 8번 표 그대로(9-1 확정 문구 반영, 무승부 적중 분기 포함).
   - **② 경기별 비교**: L343-425 `MatchResultBlock`의 스코어보드부(L379-400, `ScoreCompareRow`)는 재사용. 블록 헤더(제목 "경기 예측" + `PointsBadge`)를 새로 추가하고, `ScoreCompareRow`(L508-545) 호출에서 `badge` prop 전달을 제거(점수는 헤더 한 곳에만).
-  - **③ 내 선수 픽**: 헤더(제목 "내 선수 픽" + `scored.pickPoints` 배지) 신설. `PickResultRow`(L547-567)/`PickResultCard`(L569-595)는 레이아웃 유지, TOP3 아코디언만 추가(feature-spec 6번 — `Accordion` 프리미티브, 데이터는 항상 `null`이라 트리거 자체를 렌더하지 않음, `top3: Top3Entry[] | null` 인터페이스로 이슈 2 인계).
+  - **③ 내 선수 픽**: 헤더(제목 "내 선수 픽" + `scored.pickPoints` 배지) 신설.
+    - **[plan 오류 정정 — 2026-09-02 실기기 검수 반영]** 최초 이 줄은 "`PickResultRow`/`PickResultCard`는 레이아웃 유지, TOP3 아코디언만 추가"였다. 이건 틀렸다 — v1 spec 시절 "라벨 → 가운데 정렬 세로 스택(사진·이름·평점·구분선·점수)" 레이아웃을 그대로 재사용하면 된다고 잘못 적었는데, 시안-v9.html의 `.pick-card`는 이 구조가 아니다(좌상단 포지션 캡션 → 사진 64px **우측 정렬** → 사진 아래 좌측 평점 배지 → **상단 구분선 있는 푸터**에 이름(좌)+점수(우)). 목표 상태는 시안이지 기존 코드가 아니므로, 데스크탑 `PickResultCard`는 시안 구조로 다시 짜야 한다.
+    - 모바일 `PickResultRow`도 시안 `.mpick-row`([사진 48px] → [포지션 캡션+이름 좌측 스택] → [평점 pill] → [점수] 한 줄) 기준으로 맞춘다 — 포지션 라벨을 행 위에 별도 줄로 두지 않는다.
+    - TOP3 아코디언은 원래 계획대로: `Accordion` 프리미티브, 데이터는 항상 `null`이라 트리거 자체를 렌더하지 않음, `top3: Top3Entry[] | null` 인터페이스로 이슈 2 인계(feature-spec 6번).
   - **④ 피날레 신규 작성**: `Hero`(L259-323)의 등수·`useCountUp`(L325-341, 그대로 재사용) 로직을 가져오되 다크로 재작업(`spotlight-glow-brand-strong` + `text-on-solid*`). 그 안에 2단계에서 다크 재작업한 `WeekRankCard`(`capped` prop 없이 1회 호출)를 임베드.
   - **⑤ 공유 버튼**: `ShareButton` 호출을 피날레 다음, 페이지 최하단으로 이동.
   - **L30-31 상단 주석**: 3-tab/시즌 언급을 걷어내고 새 5블록 순서 설명으로 다시 쓴다(개발자 체크리스트 "문서 drift 방지").

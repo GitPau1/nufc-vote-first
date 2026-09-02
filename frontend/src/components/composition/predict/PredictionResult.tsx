@@ -532,6 +532,10 @@ function Top3Row({ entry, rank }: { entry: Top3Entry; rank: number }) {
   )
 }
 
+/**
+ * 모바일 행 — 시안-v9.html `.mpick-row`: [사진 48px] [포지션 캡션 위·이름 아래, 좌측 스택]
+ * [평점 pill] [점수] 한 줄. 포지션 캡션은 행 위에 별도로 두지 않고 이름과 같은 스택 안에 둔다.
+ */
 function PickResultRow({
   position,
   pick,
@@ -544,13 +548,14 @@ function PickResultRow({
   const row = (
     <>
       <PlayerPhoto url={pick?.photoUrl ?? null} size={48} />
-      <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
+      <div className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
+        <p className="text-caption-1 text-neutral-muted">{POSITION_LABEL[position]}</p>
         <p className={cn('truncate text-label-1-normal font-medium', !pick && 'text-neutral-muted')}>
           {pick ? pick.name ?? '선수 정보 없음' : '선택하지 않았어요'}
         </p>
-        {pick && <RatingBadge rating={pick.rating} />}
       </div>
-      {pick && <span className="shrink-0 text-body-2-normal font-semibold text-brand">{pick.points}점</span>}
+      {pick && <RatingBadge rating={pick.rating} />}
+      {pick && <span className="shrink-0 text-label-1-normal font-semibold text-brand">{pick.points}점</span>}
     </>
   )
 
@@ -558,22 +563,20 @@ function PickResultRow({
   // 같은 정적인 행 하나로 끝난다.
   if (!top3 || top3.length === 0) {
     return (
-      <div className="border-b border-neutral-weak p-3 last:border-b-0">
-        <p className="mb-2 text-caption-1 font-medium text-neutral-muted">{POSITION_LABEL[position]}</p>
-        <div className="flex items-center gap-2.5">{row}</div>
+      <div className="flex items-center gap-2.5 border-b border-neutral-weak p-3 last:border-b-0">
+        {row}
       </div>
     )
   }
 
   // 행 전체가 트리거다(design-brief 6번 — 모바일은 행 탭으로 TOP3가 그 자리에서 펼쳐진다).
+  // justify-start로 덮어써야 한다 — AccordionTrigger 기본값(justify-between)과 겹치면
+  // info(flex-1) 오른쪽의 배지·점수·chevron 사이가 각각 벌어져 시안과 달라진다.
   return (
     <Accordion type="single" collapsible className="border-b border-neutral-weak last:border-b-0">
       <AccordionItem value={position} className="rounded-none border-0 bg-transparent">
-        <AccordionTrigger className="items-center p-3 hover:opacity-100">
-          <div className="flex min-w-0 flex-1 flex-col items-start gap-2 text-left">
-            <p className="text-caption-1 font-medium text-neutral-muted">{POSITION_LABEL[position]}</p>
-            <div className="flex w-full items-center gap-2.5">{row}</div>
-          </div>
+        <AccordionTrigger className="items-center justify-start gap-2.5 p-3 hover:opacity-100">
+          {row}
         </AccordionTrigger>
         <AccordionContent>
           <div className="flex flex-col gap-1.5">
@@ -587,6 +590,13 @@ function PickResultRow({
   )
 }
 
+/**
+ * 데스크탑 카드 — 시안-v9.html `.pick-card`: 좌상단 포지션 캡션 → 사진 64px(우측 정렬,
+ * `margin-left:auto`) → 사진 아래 좌측 평점 배지 → 상단 구분선 있는 푸터(이름 좌·점수 우).
+ * "라벨 → 가운데 정렬 세로 스택(사진·이름·평점·구분선·점수)" 구조는 폐기됐다(실기기 검수,
+ * plan의 "레이아웃 유지" 문구가 시안과 모순이었던 오류) — 자유 플로우(비-flex) 블록으로
+ * 다시 짠다.
+ */
 function PickResultCard({
   position,
   pick,
@@ -597,35 +607,34 @@ function PickResultCard({
   top3: Top3Entry[] | null
 }) {
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-2">
-      <div className="flex min-h-[196px] flex-col rounded-lg border border-neutral-weak bg-surface p-3">
-        <span className="text-caption-1 font-medium text-neutral-muted">{POSITION_LABEL[position]}</span>
-        <div className="my-2 h-px bg-neutral-weak" />
-        {pick ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-1">
-            <PlayerPhoto url={pick.photoUrl} />
-            <p className="mt-0.5 text-center text-label-2 font-medium">{pick.name ?? '선수 정보 없음'}</p>
+    <div className="min-w-0 flex-1">
+      <div className="rounded-lg border border-neutral-weak bg-surface p-3.5">
+        <p className="text-caption-1 font-medium text-neutral-muted">{POSITION_LABEL[position]}</p>
+        <div className="ml-auto h-16 w-16">
+          <PlayerPhoto url={pick?.photoUrl ?? null} size={64} />
+        </div>
+        {pick && (
+          <div className="mt-2 w-fit">
             <RatingBadge rating={pick.rating} />
-            <div className="my-1.5 h-px w-8 bg-neutral-weak" />
-            <span className="text-caption-1 font-medium text-brand">{pick.points}점</span>
-          </div>
-        ) : (
-          <div className="flex flex-1 flex-col items-center justify-center gap-2">
-            {/* 손으로 조립한 실루엣 원 대신 PlayerPhoto의 폴백을 그대로 쓴다 — 폴백 톤이 한 곳에서만 정해진다. */}
-            <PlayerPhoto url={null} size={40} />
-            <span className="text-center text-caption-2 font-medium text-neutral-muted">
-              선택하지
-              <br />
-              않았어요
-            </span>
           </div>
         )}
+        <div className="mt-2.5 flex items-baseline justify-between gap-2 border-t border-neutral-weak pt-2.5">
+          <span
+            className={cn(
+              'truncate text-label-1-normal font-semibold',
+              !pick && 'font-medium text-neutral-muted',
+            )}
+          >
+            {pick ? pick.name ?? '선수 정보 없음' : '선택하지 않았어요'}
+          </span>
+          {pick && <span className="shrink-0 text-label-1-normal font-semibold text-brand">{pick.points}점</span>}
+        </div>
       </div>
 
       {/* TOP3 데이터가 없으면(이슈 2 착수 전) 아코디언 자체를 만들지 않는다. */}
       {top3 && top3.length > 0 && (
         <Accordion type="single" collapsible>
-          <AccordionItem value={position} className="rounded-md border-neutral-weak bg-page">
+          <AccordionItem value={position} className="mt-2 rounded-md border-neutral-weak bg-page">
             <AccordionTrigger className="p-2.5 text-caption-1 font-medium text-neutral-muted hover:opacity-100">
               포지션 평점 TOP3
             </AccordionTrigger>
