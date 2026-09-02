@@ -35,3 +35,14 @@ test('squads.ts does not cache fetch errors — errors throw out of the cache, c
     'exported getPickCandidates must catch cache errors and return EMPTY uncached',
   )
 })
+
+// 회귀: pick-candidates 캐시(1시간)에 태그가 없어 관리자 동기화 버튼을 눌러도 비워지지
+// 않던 문제. tags가 있어야 lib/actions/sync-fixtures.ts의 revalidateTag가 먹는다.
+test('squads.ts pick-candidates cache carries a revalidateTag tag', () => {
+  const squads = source('squads.ts')
+  assert.match(
+    squads,
+    /tags:\s*\[.*pick-candidates.*\]/,
+    'getPickCandidatesCached must declare tags: [\'pick-candidates\'] so admin sync can revalidateTag it',
+  )
+})

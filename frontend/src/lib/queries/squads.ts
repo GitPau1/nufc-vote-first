@@ -93,6 +93,8 @@ async function getPickCandidatesUncached(): Promise<PickCandidates> {
 
 const getPickCandidatesCached = unstable_cache(getPickCandidatesUncached, ['pick-candidates'], {
   revalidate: 3600,
+  // 관리자 동기화 버튼(lib/actions/sync-fixtures.ts)이 이 태그로 캐시를 즉시 비운다.
+  tags: ['pick-candidates'],
 })
 
 /**
