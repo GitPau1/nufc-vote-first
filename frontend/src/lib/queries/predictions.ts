@@ -220,13 +220,6 @@ async function getMySeasonRow(userId: string): Promise<SeasonRankingQueryRow | n
   return (data ?? null) as unknown as SeasonRankingQueryRow | null
 }
 
-/**
- * 결과 화면 "순위" 탭은 시즌 전체를 보여줘야 한다(잘라내지 않음). `getSeasonRanking`은
- * 목록 화면 TOP N(기본 3)용으로 만들어져 `limit` 인자를 받으므로, 실질적으로 전체가 나오도록
- * 참여자 수보다 넉넉히 큰 값을 호출부에서 넘긴다 — 쿼리/뷰 자체는 건드리지 않는다.
- */
-export const SEASON_RANKING_ALL_LIMIT = 1000
-
 export async function getSeasonRanking(limit = 3): Promise<RankingRow[]> {
   if (IS_MOCK) return mockRanking(false).slice(0, limit + 1)
 

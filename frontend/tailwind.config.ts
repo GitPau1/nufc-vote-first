@@ -98,6 +98,8 @@ const config = {
         "on-solid": "var(--sem-fg-on-solid)",
         // 어두운·색 있는 면 위의 2차 텍스트. 이 자리에 text-disabled를 전용해 쓰던 걸 대체한다.
         "on-solid-muted": "var(--sem-fg-on-solid-muted)",
+        // 어두운·색 있는 면 위의 브랜드 강조 텍스트(피날레 랭킹 순위·종합 점수).
+        "on-solid-brand": "var(--sem-fg-on-solid-brand)",
         brand: "var(--sem-fg-brand)",
         critical: "var(--sem-fg-critical)",
         // text-positive 값 교체 확정(#2e9e4f → green-700). 기존 값은 AA 미달(3.43:1)이었고
@@ -115,6 +117,9 @@ const config = {
         "brand-solid": "var(--sem-stroke-brand-solid)",
         "critical-weak": "var(--sem-stroke-critical-weak)",
         "focus-ring": "var(--sem-stroke-focus-ring)",
+        // 다크 면 위 구분선(피날레 랭킹 행 등). 값은 새로 만들지 않고 배경 알파 토큰을
+        // 그대로 겸용한다(--sem-bg-on-solid-weak, backgroundColor에는 이미 노출돼 있었다).
+        "on-solid-weak": "var(--sem-bg-on-solid-weak)",
       },
       // ring-brand-solid(선택 카드 강조 표시)가 실사용 중이라 ringColor도 노출한다.
       // Tailwind는 ring을 border와 별도 테마 키로 다룬다.

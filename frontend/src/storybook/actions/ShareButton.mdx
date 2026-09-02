@@ -50,7 +50,7 @@ setTimeout(() => setCopied(false), 2000)
 
 | 파일 | 위치 | 조건 |
 |---|---|---|
-| `src/components/composition/predict/PredictionResult.tsx` | 결과 본문 맨 아래, `mt-7 flex justify-center` | `participated`가 true일 때만 렌더 |
+| `src/components/composition/predict/PredictionResult.tsx` | 결과 본문 맨 아래(피날레 다음), `flex justify-center` | `participated`가 true일 때만 렌더 |
 | `src/components/composition/predict/PredictionDone.tsx` | 제출 완료 본문 맨 아래, 같은 래퍼 | 항상 |
 
 두 곳 모두 감싸는 마크업이 동일하고, props가 하나도 없어서(`ShareButton()`) 라벨·폭·복사 대상은 호출부에서 바꿀 수 없다. 다른 문구나 다른 URL이 필요하면 소스를 고쳐야 한다.

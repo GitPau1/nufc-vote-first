@@ -53,15 +53,30 @@ function mockRanking(count: number, myRank: number): RankingRow[] {
   })
 }
 
-// 실사용처(`PredictionResult`)에서 이 카드는 `max-w-[860px] px-4 sm:px-6` 컨테이너 속
-// 흰 Card(보더 1px + `p-5 sm:p-7`) 안에 들어간다. 그래서 폰(390px)에서 390−32−2−40 = 316,
-// 데스크탑에서 860−48−2−56 = 754가 실제 렌더 폭이다 — 폭에 따라 이름 컬럼(flex-1)만
-// 늘어난다. 캔버스 폭 그대로 두면 실제 밀도와 달라져서 스토리별로 맞춰 감싼다.
-const mobileWidth = { decorators: [(Story: () => React.JSX.Element) => <div style={{ maxWidth: 316 }}><Story /></div>] }
-const desktopWidth = { decorators: [(Story: () => React.JSX.Element) => <div style={{ maxWidth: 754 }}><Story /></div>] }
+// 실사용처(`PredictionResult`의 피날레)는 2026-09-01 개편으로 흰 Card 셸이 없어졌다 — 이 카드는
+// 이제 자체 배경 없이 다크 카드(`spotlight-glow-brand-strong`, 피날레 컴포넌트) 안에 투명하게
+// 얹힌다. 페이지 컨테이너(`max-w-[560px] px-4` / `sm:max-w-[709px] sm:px-6`)와 피날레 카드
+// 자체 패딩(`px-4`, 브레이크포인트 무관 고정)을 빼면 폰(390px)에서 390−32−32 = 326,
+// 데스크탑(709px)에서 709−48−32 = 629가 실제 렌더 폭이다 — 아래 데코레이터가 다크 카드까지
+// 함께 감싸서 라이트 Storybook 캔버스에서도 온솔리드 토큰이 실제 밝기로 보이게 한다.
+function darkCardDecorators(maxWidth: number) {
+  return [
+    (Story: () => React.JSX.Element) => (
+      <div style={{ maxWidth }}>
+        <div className="spotlight-glow-brand-strong rounded-lg p-4">
+          <Story />
+        </div>
+      </div>
+    ),
+  ]
+}
 
-// 모바일 자르기는 `max-h-[46vh]`라 story iframe 높이에 비례한다 — 실제 기기에서 어디가 잘리는지
-// 보려면 뷰포트를 폰 크기로 고정해야 한다(docs 프레임에서는 46vh가 훨씬 커진다).
+const mobileWidth = { decorators: darkCardDecorators(326) }
+const desktopWidth = { decorators: darkCardDecorators(629) }
+
+// 자르는 방식이 모바일/데스크탑 공용(`DESKTOP_CAP=10` + "더보기" 버튼)으로 통일된 뒤로는
+// 폰 뷰포트가 크롭 로직에 영향을 주지 않는다 — 다만 실제 폰 프레임에서 카드 밀도가 어떻게
+// 보이는지 확인하는 용도로는 여전히 유효해 유지한다.
 const phoneViewport = { globals: { viewport: { value: 'iphone12' } } }
 
 const meta = {
@@ -69,12 +84,6 @@ const meta = {
   component: WeekRankCard,
   parameters: {
     viewport: { options: INITIAL_VIEWPORTS },
-  },
-  argTypes: {
-    capped: {
-      description:
-        'true(데스크탑): 10명까지만 그리고 내 순위가 밖이면 ⋯ 뒤에 내 행을 붙인다. false(모바일): 전체 행을 그린 뒤 max-height로 화면 높이만큼만 노출한다.',
-    },
   },
   args: {
     weekNo: 12,
@@ -86,68 +95,57 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 /**
- * 모바일(`capped` 없음) — 16명 전부를 DOM에 그리고 `max-h-[46vh]`로 잘라 하단 페이드로
- * "더 있음"을 암시한다. 잘린 뒤에도 아래 "전체보기 · 16명" 버튼은 항상 보여야 한다.
+ * 폰 폭 — 16명 중 10명까지만 그리고 "더보기 ▾"로 나머지를 편다. 예전에는 모바일만
+ * `max-h-[46vh]` 페이드로 잘랐는데, 이제 폭과 무관하게 데스크탑과 같은 캡+버튼 방식 하나다.
  */
 export const Mobile: Story = {
   ...mobileWidth,
   ...phoneViewport,
 }
 
-/**
- * 위 카드에서 "전체보기"를 누른 뒤 — max-height·페이드·버튼이 **한꺼번에** 사라지고 16명이 다
- * 보인다. 세 개가 같은 `expanded` 상태에 묶여 있어서, 하나만 남으면(예: 페이드만 남음) 바로
- * 회귀다. 접기는 없다 — 한 번 펼치면 카드를 다시 마운트해야 원상복구된다.
- */
+/** 위 카드에서 "더보기"를 누른 뒤 — 캡이 풀리고 16명이 다 보인다. 접기는 없다(재마운트 전까지). */
 export const MobileExpanded: Story = {
   ...mobileWidth,
   ...phoneViewport,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: /전체보기/ }))
+    await userEvent.click(canvas.getByRole('button', { name: /더보기/ }))
   },
 }
 
-/**
- * 데스크탑(`capped`) — 같은 16명인데 10행에서 딱 끊긴다. 자르는 방식이 모바일과 다르다:
- * 여기서는 11번째 이후가 DOM에 아예 없고(모바일은 그려두고 가린다), 페이드도 없다.
- * 내가 10위 안(4위)이면 내 행은 목록 안에서 강조된다.
- */
-export const DesktopCapped: Story = {
+/** 데스크탑 폭 — 모바일과 완전히 같은 로직(10명 캡 + 더보기)이 폭만 넓어진 모습이다. */
+export const Desktop: Story = {
   ...desktopWidth,
-  args: { capped: true },
 }
 
 /**
  * 내 순위가 캡(10위) 밖일 때만 나오는 분기 — 10행 뒤에 `⋯` 구분선을 넣고 내 행(14위)을 따로
- * 붙인다. 순위 숫자는 14 그대로다(붙였다고 11위처럼 보이면 안 된다). `capped`에서만 동작하는
- * 보강이라, 모바일 카드에는 이 `⋯` 행이 아예 없다.
+ * 붙인다. 순위 숫자는 14 그대로다(붙였다고 11위처럼 보이면 안 된다).
  */
-export const DesktopMyRankBelowCap: Story = {
+export const MyRankBelowCap: Story = {
   ...desktopWidth,
-  args: { capped: true, entries: mockRanking(16, 14) },
+  args: { entries: mockRanking(16, 14) },
 }
 
 /**
  * 위 상태에서 펼친 뒤 — `⋯`와 따로 붙인 내 행이 사라지고 14위가 제자리에 한 번만 나온다.
  * 펼침 분기가 `myRowBelow` 계산과 같은 조건을 공유하지 않으면 내 행이 두 번 나오는 회귀가 난다.
  */
-export const DesktopExpanded: Story = {
+export const Expanded: Story = {
   ...desktopWidth,
-  args: { capped: true, entries: mockRanking(16, 14) },
+  args: { entries: mockRanking(16, 14) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: /전체보기/ }))
+    await userEvent.click(canvas.getByRole('button', { name: /더보기/ }))
   },
 }
 
 /**
- * 참여자가 캡보다 적을 때(6명) — "전체보기" 버튼도, 모바일 페이드도 뜨지 않는다.
- * `capped` 여부와 무관하게 같은 모양이 되는 유일한 구간이라, 주차 초반에 실제로 이 상태를 본다.
+ * 참여자가 캡보다 적을 때(6명) — "더보기" 버튼이 뜨지 않는다. 주차 초반에 실제로 이 상태를 본다.
  */
 export const FewParticipants: Story = {
   ...desktopWidth,
-  args: { capped: true, entries: mockRanking(6, 3) },
+  args: { entries: mockRanking(6, 3) },
 }
 
 /**
@@ -159,7 +157,6 @@ export const FewParticipants: Story = {
 export const TiedRanks: Story = {
   ...desktopWidth,
   args: {
-    capped: true,
     entries: [
       mockEntry({ userId: 'u1', rank: 1, name: '김민준', matchPoints: 3, pickPoints: 12, totalPoints: 15 }),
       mockEntry({ userId: 'u2', rank: 2, name: '이서연', matchPoints: 3, pickPoints: 9, totalPoints: 12 }),
@@ -175,13 +172,13 @@ export const TiedRanks: Story = {
  */
 export const NoMyRow: Story = {
   ...desktopWidth,
-  args: { capped: true, entries: mockRanking(16, 0) },
+  args: { entries: mockRanking(16, 0) },
 }
 
 /** 채점 전(빈 배열) — 컬럼 헤더조차 그리지 않고 안내 문구 한 줄만 남는다. */
 export const Empty: Story = {
   ...desktopWidth,
-  args: { capped: true, entries: [] },
+  args: { entries: [] },
 }
 
 /**
@@ -192,7 +189,6 @@ export const Empty: Story = {
 export const MissingColumnPoints: Story = {
   ...desktopWidth,
   args: {
-    capped: true,
     entries: [
       mockEntry({ userId: 'u1', rank: 1, name: '김민준', matchPoints: undefined, pickPoints: undefined, totalPoints: 56 }),
       mockEntry({ userId: 'u2', rank: 2, name: '이서연', matchPoints: undefined, pickPoints: undefined, totalPoints: 50 }),

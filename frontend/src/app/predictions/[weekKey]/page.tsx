@@ -5,13 +5,7 @@ import { PredictionResult } from '@/components/composition/predict/PredictionRes
 import { getFixtureWeeks } from '@/lib/queries/fixtures'
 import { findWeekPrediction, findWeekSession, submittableMatches } from '@/lib/predictions/week'
 import { getPickCandidates } from '@/lib/queries/squads'
-import {
-  getMyPredictions,
-  getMyResults,
-  getSeasonRanking,
-  getWeekRanking,
-  SEASON_RANKING_ALL_LIMIT,
-} from '@/lib/queries/predictions'
+import { getMyPredictions, getMyResults, getWeekRanking } from '@/lib/queries/predictions'
 
 export default async function PredictionFlowPage({ params }: { params: { weekKey: string } }) {
   const weeks = await getFixtureWeeks()
@@ -31,12 +25,7 @@ export default async function PredictionFlowPage({ params }: { params: { weekKey
 
   if (week.status === 'result') {
     // 랭킹은 참여 여부와 무관하게 공개된다 — 미참여 주차도 결과 화면으로 들어와 랭킹을 볼 수 있다.
-    // 시즌 누적 순위(순위 탭)도 같은 원칙이라 여기서 같이 조회한다.
-    const [results, ranking, seasonRanking] = await Promise.all([
-      getMyResults(),
-      getWeekRanking(week.weekKey),
-      getSeasonRanking(SEASON_RANKING_ALL_LIMIT),
-    ])
+    const [results, ranking] = await Promise.all([getMyResults(), getWeekRanking(week.weekKey)])
     return (
       <>
         <AppHeader mobileBack />
@@ -47,7 +36,6 @@ export default async function PredictionFlowPage({ params }: { params: { weekKey
             predictions={myPredictions}
             candidates={candidates}
             ranking={ranking}
-            seasonRanking={seasonRanking}
           />
         </main>
       </>
