@@ -8,6 +8,8 @@ import { OverallRatingPollClient } from '@/components/composition/polls/OverallR
 import { OverallRatingResultView } from '@/components/composition/polls/OverallRatingResultView'
 import { ResultView } from '@/components/composition/polls/ResultView'
 import { IS_MOCK } from '@/lib/config'
+import { getHeaderAuth } from '@/lib/actions/auth'
+import { canAccessPollEdit } from '@/lib/polls/poll-edit-eligibility'
 
 interface PollPageProps {
   params: Promise<{ id: string }>
@@ -32,11 +34,16 @@ export default async function PollPage({ params }: PollPageProps) {
   const { id } = await params
   const pollPromise = getPollById(id)
   const userPromise = getCurrentUser()
-  const [user, poll] = await Promise.all([userPromise, pollPromise])
+  const authPromise = getHeaderAuth()
+  const [user, poll, auth] = await Promise.all([userPromise, pollPromise, authPromise])
 
   if (!poll) notFound()
 
   const isClosed = poll.status === 'closed'
+  const canEdit = canAccessPollEdit(
+    { status: poll.status, scheduled_at: poll.scheduled_at ?? null, closes_at: poll.closes_at, created_by: poll.created_by ?? null },
+    { userId: auth?.userId ?? null, isAdmin: auth?.isAdmin ?? false }
+  )
 
   if (poll.type === 'overall_rating') {
     const targetCount = poll.poll_options.filter(option => option.player_id).length
@@ -45,10 +52,10 @@ export default async function PollPage({ params }: PollPageProps) {
 
     if (isClosed || hasRated) {
       const results = await getRatingResults(poll, user?.id ?? null)
-      return <OverallRatingResultView poll={poll} results={results} hasVoted={hasRated} />
+      return <OverallRatingResultView poll={poll} results={results} hasVoted={hasRated} canEdit={canEdit} />
     }
 
-    return <OverallRatingPollClient poll={poll} isAuthenticated={!!user} />
+    return <OverallRatingPollClient poll={poll} isAuthenticated={!!user} canEdit={canEdit} />
   }
 
   // 내 투표 여부 확인
@@ -72,14 +79,15 @@ export default async function PollPage({ params }: PollPageProps) {
         voteCounts={voteCounts}
         myOptionId={myOptionId}
         comments={comments}
+        canEdit={canEdit}
       />
     )
   }
 
   // 아직 투표 전
   if (poll.type === 'selection' || poll.type === 'question_targets' || poll.type === 'free_choice') {
-    return <TypeBPollClient poll={poll} isAuthenticated={!!user} />
+    return <TypeBPollClient poll={poll} isAuthenticated={!!user} canEdit={canEdit} />
   }
 
-  return <TypeAPollClient poll={poll} isAuthenticated={!!user} />
+  return <TypeAPollClient poll={poll} isAuthenticated={!!user} canEdit={canEdit} />
 }
