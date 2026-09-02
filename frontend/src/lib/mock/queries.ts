@@ -4,6 +4,7 @@
  */
 import { PAGE_SIZE } from '@/lib/constants'
 import { getEffectivePollStatus } from '@/lib/polls/status'
+import { canAccessPollEdit, validatePollEditPayload, type PollEditPoll } from '@/lib/polls/poll-edit-eligibility'
 import type { PollDetail, PollHomeSections, PollListItem, VoteCountMap, RatingResultItem } from '@/lib/queries/polls'
 import type { CommentItem } from '@/lib/queries/comments'
 import type { FixturePositionTop3, MatchdayFixture } from '@/lib/queries/fixtures'
@@ -65,6 +66,39 @@ export async function mockGetPollById(id: string): Promise<PollDetail | null> {
 
 export async function mockGetVoteCounts(pollId: string): Promise<VoteCountMap> {
   return MOCK_VOTE_COUNTS[pollId] ?? {}
+}
+
+/** 목 모드: 실제 DB에 쓰지 않지만(mock은 원래 상태가 없다, createUserPoll도 mock이면
+ *  고정 pollId만 반환) 권한 검사만은 실제로 통과/실패가 갈리게 한다. */
+export async function mockUpdatePoll(pollId: string, formData: FormData): Promise<{ success?: true; error?: string }> {
+  const poll = MOCK_POLL_DETAIL[pollId]
+  if (!poll) return { error: '투표를 찾을 수 없습니다.' }
+
+  const { getHeaderAuth } = await import('@/lib/actions/auth')
+  const auth = await getHeaderAuth()
+
+  const editPoll: PollEditPoll = {
+    status: poll.status,
+    scheduled_at: poll.scheduled_at ?? null,
+    closes_at: poll.closes_at,
+    created_by: poll.created_by ?? null,
+  }
+
+  if (!canAccessPollEdit(editPoll, { userId: auth?.userId ?? null, isAdmin: auth?.isAdmin ?? false })) {
+    return { error: '수정 권한이 없습니다.' }
+  }
+
+  const payload: Record<string, string | null> = {}
+  if (formData.has('title')) payload.title = String(formData.get('title') ?? '').trim()
+  if (formData.has('description')) payload.description = String(formData.get('description') ?? '').trim() || null
+  if (formData.has('thumbnail_url')) payload.thumbnail_url = String(formData.get('thumbnail_url') ?? '').trim() || null
+
+  const check = validatePollEditPayload(editPoll, Object.keys(payload))
+  if (!check.ok) return { error: '수정할 수 없는 항목입니다.' }
+
+  if ('title' in payload && !payload.title) return { error: '투표 제목을 입력해주세요.' }
+
+  return { success: true }
 }
 
 /** 목 모드 전체평점 결과 조회. 실제 제출 점수는 저장하지 않으므로(mock-rating-vote-{pollId}
