@@ -62,11 +62,12 @@ DB나 Supabase 연동을 건드릴 때:
 
 ## 기능별 주요 파일
 
-관리자 대시보드 분리 메모:
+관리자 대시보드 구조 (2026-09-02 정정 — `AdminTransfersPanel.tsx`/`AdminDashboard.tsx`는 리포에 없는 파일이었습니다):
 
-- 이적 탭 UI와 이적 수정/복귀 클라이언트 로직은 `frontend/src/app/admin/AdminTransfersPanel.tsx`를 먼저 확인합니다.
-- `frontend/src/app/admin/AdminDashboard.tsx`는 전체 섹션 라우팅과 선수/투표/구단 폼 중심으로 유지합니다.
-- 큰 관리자 파일을 수정할 때는 필요한 섹션 컴포넌트만 읽고, 전체 파일 출력은 피합니다.
+- `frontend/src/app/admin/page.tsx`가 유일한 진입점이고 하위 기능(경기별 선수 평점 등)으로 가는 링크 허브 역할만 합니다.
+- 경기별 선수 평점 손보정: `frontend/src/app/admin/ratings/page.tsx` + `frontend/src/components/admin/AdminRatingsForm.tsx`.
+- **이적/시즌 스쿼드(`season_squads`) 수정은 앱 관리자 UI가 없습니다.** Supabase 대시보드 Table Editor에서 직접 수정하는 방식이고, 앞으로도 그 방식을 유지하기로 확정됐습니다(TEA-20 intent).
+- 큰 관리자 관련 파일을 수정할 때는 필요한 섹션 컴포넌트만 읽고, 전체 파일 출력은 피합니다.
 
 투표:
 

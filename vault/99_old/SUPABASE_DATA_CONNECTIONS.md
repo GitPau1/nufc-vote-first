@@ -390,6 +390,34 @@ DB 제약:
 - 관리자 수정은 기존 해당 선수의 `player_season_stats`를 전부 DELETE한 뒤 전달된 row들을 다시 INSERT합니다.
 - 현재 마이그레이션의 write policy가 넓게 열려 있습니다. 앱에서는 service role을 쓰지만 DB 정책은 별도 점검 대상입니다.
 
+### `season_squads`
+
+역할: 시즌별 스쿼드 명단(외부 FotMob API 동기화)입니다. 이 시즌 행이 있는 DEF/MID/FWD 선수가 승부예측 픽 후보입니다. `players`와는 무관하며 서로 참조하지 않습니다(`player_id`는 nullable 연결 고리일 뿐).
+
+코드에서 쓰는 주요 컬럼:
+
+- `season_id`, `fotmob_player_id`, `player_id`, `name`, `name_ko`, `shirt_number`, `position`, `nationality_name`, `date_of_birth`, `prediction_multiplier`, `pick_cost`, `is_active`, `synced_at`
+
+- `is_active`(2026-09-02 추가, `boolean not null default true`): `false`면 떠난 선수(이적 등). 관리자가 Supabase 대시보드에서 직접 토글합니다(앱 관리자 UI 없음). 승부예측 선수 픽 **선택** 경로(픽 모달, 제출 검증)에서만 걸러지고, 과거 픽·채점·완료/결과 화면 이름 표시·관리자 평점 입력 폼은 전부 그대로 유지됩니다.
+
+DB 제약:
+
+- `primary key (season_id, fotmob_player_id)`
+- `unique (season_id, player_id)`(NULL은 여러 행 허용)
+- `position in ('GK', 'DEF', 'MID', 'FWD')` — GK는 픽 대상이 아닙니다.
+- `pick_cost between 1 and 3`, `prediction_multiplier > 0`
+
+사용 위치:
+
+- 픽 후보/배당 조회: `frontend/src/lib/queries/squads.ts`의 `getPickCandidates()`(`unstable_cache`, 태그 `pick-candidates`) — 이 함수는 `is_active`와 무관하게 시즌 DEF/MID/FWD 전원을 반환합니다.
+- 떠난 선수 제외: 같은 파일의 순수 함수 `excludeDeparted(candidates)`를 제출 검증(`frontend/src/lib/actions/predictions.ts`)과 선수 픽 모달(`frontend/src/components/composition/predict/PredictionFlowClient.tsx`) 2곳에만 적용합니다. `PredictionDone.tsx`/`PredictionResult.tsx`의 이름 표시, `app/admin/ratings/page.tsx`의 평점 입력 폼은 `excludeDeparted()`를 거치지 않은 원본을 그대로 씁니다.
+- `sync-season-squad` Edge Function이 upsert로 채웁니다(아래 "Edge Function · 크론" 참고).
+
+RLS:
+
+- 공개 SELECT(행 단위 정책이라 신규 컬럼도 별도 정책 변경 없이 공개 조회됩니다).
+- 쓰기 정책은 앱에 season_squads insert/update 코드가 없어 사실상 Edge Function(service-role)과 관리자 대시보드 수동 수정 전용입니다.
+
 ## Storage 연결
 
 사용 버킷:
@@ -589,7 +617,7 @@ FotMob 비공식 API에서 경기·선수 데이터를 긁어 DB에 적재하는
 |---|---|---|
 | `sync-fixture` | `fixtures` (전 경기 upsert) | 크론 `sync-fixture-daily` (UTC `0 23 * * *` = KST 08:00) |
 | `sync-fixture-ratings` | `fixture_player_ratings` | 크론 `sync-fixture-ratings-daily` (UTC `5 23 * * *` = KST 08:05) |
-| `sync-season-squad` | `season_squads` | 수동(시즌 시작·이적시장) |
+| `sync-season-squad` | `season_squads` | 수동(시즌 시작·이적시장) — upsert payload에 없는 컬럼(`pick_cost`, `is_active`)은 PostgREST가 대상에서 제외해 기존 행 값을 그대로 보존합니다. 신규 행만 컬럼 DEFAULT를 받습니다. |
 | `get-fotmob-fixture`, `health-check` | 없음(조회/확인용) | 수동 |
 
 - 크론은 **Supabase 대시보드 → Integrations → Cron**에 등록되어 있습니다. pg_cron은 DB 타임존(UTC) 기준으로 스케줄을 해석하므로 UI에 "At 23:00"으로 보이는 것이 KST 08:00입니다. Method는 **POST 필수**(두 함수 모두 POST 전용), Timeout은 기본값 1000ms가 너무 짧아 각각 10000 / 30000ms로 둡니다.

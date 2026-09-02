@@ -272,6 +272,7 @@ export interface Database {
           prediction_multiplier: number
           pick_cost: number
           synced_at: string
+          is_active: boolean
         }
         Insert: Database['public']['Tables']['season_squads']['Row']
         Update: Partial<Database['public']['Tables']['season_squads']['Row']>

@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { trackServerEvent } from '@/lib/analytics/server'
 import { IS_MOCK } from '@/lib/config'
 import { getFixtureWeeks } from '@/lib/queries/fixtures'
-import { getPickCandidates } from '@/lib/queries/squads'
+import { excludeDeparted, getPickCandidates } from '@/lib/queries/squads'
 import { findWeekSession } from '@/lib/predictions/week'
 import { buildPredictionRows, type PredictionInput } from '@/lib/predictions/submit'
 
@@ -45,7 +45,7 @@ export async function submitWeekPrediction(
   const week = findWeekSession(weeks, weekKey)
   if (!week) return { error: 'failed' }
 
-  const candidates = await getPickCandidates()
+  const candidates = excludeDeparted(await getPickCandidates())
   const built = buildPredictionRows(week, input, candidates)
   if ('error' in built) return { error: built.error }
 

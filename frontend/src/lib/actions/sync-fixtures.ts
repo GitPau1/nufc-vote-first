@@ -66,6 +66,9 @@ export async function syncFixtureData(): Promise<SyncResult> {
   // 목록·결과 화면이 읽는 fixtures 캐시(300초)를 즉시 비운다 — 눌렀는데 화면이 안 바뀌면
   // 동기화가 안 된 것처럼 보인다.
   revalidateTag('fixture-weeks')
+  // 경기 결과·평점 동기화 버튼이 season_squads 픽 후보 캐시(1시간)도 함께 비운다 —
+  // 선수 명단이 바뀐 직후에도 픽 모달이 옛 목록을 보여주지 않게 한다.
+  revalidateTag('pick-candidates')
 
   return {
     success: true,
