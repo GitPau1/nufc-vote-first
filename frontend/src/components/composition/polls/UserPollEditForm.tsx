@@ -47,9 +47,9 @@ export function UserPollEditForm({ poll, editableFields }: UserPollEditFormProps
     e.preventDefault()
     setMessage(null)
     const fd = new FormData(e.currentTarget)
-
-    if (!canEditTitle) fd.delete('title')
-    if (!canEditDescription) fd.delete('description')
+    // title/description input 자체가 안 잠긴 필드만 렌더되므로(canEditTitle/canEditDescription이
+    // false면 애초에 그 input이 없다) fd에 그 키가 안 담긴다 — 서버의 validatePollEditPayload가
+    // 진짜 관문이고, 여기서 또 fd.delete()로 지울 필요는 없다.
 
     startTransition(async () => {
       const thumbnailFile = fd.get('thumbnail_image_file') as File | null
