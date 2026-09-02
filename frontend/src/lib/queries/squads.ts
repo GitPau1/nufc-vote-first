@@ -14,7 +14,7 @@ import type { SeasonSquadRow } from '@/types/database'
 export type PickCandidates = Record<Position, Candidate[]>
 
 const SQUAD_COLUMNS =
-  'fotmob_player_id, name, name_ko, shirt_number, position, nationality_name, date_of_birth, prediction_multiplier, pick_cost'
+  'fotmob_player_id, name, name_ko, shirt_number, position, nationality_name, date_of_birth, prediction_multiplier, pick_cost, is_active'
 
 type SquadCandidateRow = Pick<
   SeasonSquadRow,
@@ -27,6 +27,7 @@ type SquadCandidateRow = Pick<
   | 'date_of_birth'
   | 'prediction_multiplier'
   | 'pick_cost'
+  | 'is_active'
 >
 
 const EMPTY: PickCandidates = { DEF: [], MID: [], FWD: [] }
@@ -47,6 +48,7 @@ export function toPickCandidates(rows: SquadCandidateRow[], now: number): PickCa
       nationality: row.nationality_name,
       age: ageFrom(row.date_of_birth, now),
       photoUrl: playerPhotoUrl(row.fotmob_player_id),
+      departed: !row.is_active,
     })
   }
 
@@ -57,6 +59,10 @@ export function toPickCandidates(rows: SquadCandidateRow[], now: number): PickCa
 
   return grouped
 }
+
+// 정의는 lib/predictions/candidates.ts에 있다(서버 전용 의존성이 없는 파일이라 클라이언트
+// 컴포넌트가 여기(next/headers를 타는 squads.ts)를 거치지 않고 직접 import할 수 있다).
+export { excludeDeparted } from '@/lib/predictions/candidates'
 
 async function getPickCandidatesUncached(): Promise<PickCandidates> {
   const now = Date.now()

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { CircleHelp } from 'lucide-react'
 import { useLoadingRouter } from '@/components/primitives/navigation-loading'
 import { trackEvent } from '@/lib/analytics/mixpanel'
@@ -15,7 +15,13 @@ import { PlayerPickContent } from '@/components/primitives/modal/contents/Player
 import { PredictionDone } from './PredictionDone'
 import { PlayerPhoto, TeamBadge, ToonCost, BudgetBar, Silhouette } from './shared'
 import { STEP_META, ProgressPips, type StepKey } from './steps'
-import { POSITIONS, POSITION_LABEL, type Candidate, type Position } from '@/lib/predictions/candidates'
+import {
+  excludeDeparted,
+  POSITIONS,
+  POSITION_LABEL,
+  type Candidate,
+  type Position,
+} from '@/lib/predictions/candidates'
 import { MAX_SCORE, BUDGET } from '@/lib/predictions/submit'
 import { submitWeekPrediction, type SubmitPredictionResult } from '@/lib/actions/predictions'
 import {
@@ -98,6 +104,10 @@ export function PredictionFlowClient({
 
   // 경기마다 3포지션이 다 채워져야 다음 단계로 넘어갈 수 있다.
   const allPicked = pending.every(match => POSITIONS.every(position => picks[match.id]?.[position]))
+  /** 픽 모달 "선택 가능 목록"에만 쓴다 — 떠난 선수는 새로 고를 수 없다. 이미 고른 픽 조회(L502)는
+   * candidates를 그대로 쓴다(클릭된 id는 항상 이 목록에서 나온 값이라 걸러도 무방하지만, 과거
+   * 픽 이름 표시와 같은 원칙을 지키려 원본을 남겨둔다). */
+  const selectableCandidates = useMemo(() => excludeDeparted(candidates), [candidates])
 
   /**
    * 버튼 상한 가드와 changeScore 클램프를 뚫고 범위 밖 값이 들어온 경우까지 화면에서 막는 안전망.
@@ -485,7 +495,7 @@ export function PredictionFlowClient({
       >
         <PlayerPickContent
           positionLabel={pickTarget ? POSITION_LABEL[pickTarget.position] : ''}
-          players={pickTarget ? candidates[pickTarget.position] : []}
+          players={pickTarget ? selectableCandidates[pickTarget.position] : []}
           remainingBudget={
             pickTarget
               ? BUDGET -

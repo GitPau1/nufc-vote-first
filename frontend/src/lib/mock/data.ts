@@ -498,6 +498,7 @@ const squadMember = (
   nationality: string,
   dateOfBirth: string,
   multiplier: number,
+  isActive = true,
 ): SeasonSquadRow => ({
   season_id: 'mock-season',
   fotmob_player_id: fotmobPlayerId,
@@ -514,6 +515,7 @@ const squadMember = (
   prediction_multiplier: multiplier,
   pick_cost: multiplier >= 2.0 ? 3 : multiplier >= 1.5 ? 2 : 1,
   synced_at: new Date().toISOString(),
+  is_active: isActive,
 })
 
 export const MOCK_SQUAD: SeasonSquadRow[] = [
@@ -529,6 +531,8 @@ export const MOCK_SQUAD: SeasonSquadRow[] = [
   squadMember(487126, 'Harvey Barnes',      '반스',       'FWD', 15, '잉글랜드', '1997-12-09', 2.0),
   // GK는 픽 후보에서 걸러지는지 확인용
   squadMember(233450, 'Nick Pope',          '포프',       'GK',  22, '잉글랜드', '1992-04-19', 1.1),
+  // 이적(떠난 선수) 필터 확인용 — 선수 픽 모달엔 안 보이지만 과거 픽 이름 표시는 그대로 유지돼야 한다
+  squadMember(292462, 'Callum Wilson',      '윌슨',       'FWD', 9,  '잉글랜드', '1992-02-27', 1.8, false),
 ]
 
 // ── 승부예측 랭킹 (week_leaderboard / season_leaderboard 결과와 같은 모양) ─────

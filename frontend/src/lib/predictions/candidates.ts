@@ -27,6 +27,8 @@ export type Candidate = {
   nationality: string | null
   age: number | null
   photoUrl: string | null
+  /** season_squads.is_active가 false(떠난 선수)면 true. 픽 선택 경로에서만 걸러내는 데 쓴다. */
+  departed?: boolean
 }
 
 /**
@@ -42,6 +44,24 @@ export function playerPhotoUrl(fotmobPlayerId: number): string | null {
 
 export function isPickPosition(position: string): position is Position {
   return (POSITIONS as readonly string[]).includes(position)
+}
+
+/**
+ * 픽 선택이 필요한 경로(픽 모달, 제출 검증)에서만 쓴다 — 떠난 선수를 후보 목록에서 걷어낸다.
+ * 완료/결과 화면 이름 표시, 관리자 평점 폼은 이 함수를 거치지 않은 getPickCandidates() 결과를
+ * 그대로 써야 한다(과거 픽 이름 표시·과거 평점 손보정이 깨지면 안 된다).
+ * 클라이언트 컴포넌트(PredictionFlowClient)에서 직접 쓸 수 있도록 서버 전용 의존성이 없는
+ * 이 파일에 둔다 — lib/queries/squads.ts는 next/headers를 타는 서버 전용 모듈이라
+ * 거기서 값을 import하면 클라이언트 번들에 서버 코드가 딸려온다(빌드 시 발견).
+ */
+export function excludeDeparted(
+  candidates: Record<Position, Candidate[]>,
+): Record<Position, Candidate[]> {
+  const filtered = { DEF: [], MID: [], FWD: [] } as Record<Position, Candidate[]>
+  for (const position of POSITIONS) {
+    filtered[position] = candidates[position].filter(candidate => !candidate.departed)
+  }
+  return filtered
 }
 
 /** date_of_birth → 만 나이. 없으면 null. */
