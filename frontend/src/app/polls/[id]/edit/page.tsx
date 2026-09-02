@@ -27,7 +27,11 @@ export default async function PollEditPage({ params }: PollEditPageProps) {
   if (!canAccessPollEdit(editPoll, actor)) redirect(`/polls/${id}`)
 
   const editableFields = getEditablePollFields(editPoll)
-  const isClosed = poll.status === 'closed'
+  // DB status가 아직 'active'여도 closes_at이 지났으면 getEditablePollFields가 이미
+  // effective status 기준으로 title을 잠근다 — poll.status를 따로 보면 그 시점에서
+  // 문구·배너가 실제 편집 가능 필드와 어긋난다(자동 마감 처리 전 구간). editableFields를
+  // 그대로 판정 근거로 재사용해 UserPollEditForm의 판정과 항상 같은 기준을 쓴다.
+  const isClosed = !editableFields.includes('title')
 
   return (
     <>

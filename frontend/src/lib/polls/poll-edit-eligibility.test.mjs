@@ -113,6 +113,20 @@ test('getEditablePollFields: closed → thumbnail_url만', () => {
   }, now), ['thumbnail_url'])
 })
 
+test('getEditablePollFields: status active + closes_at 과거(자동 마감 처리 전) → thumbnail_url만', () => {
+  const { getEditablePollFields } = loadEligibilityModule()
+  const now = new Date('2026-05-29T10:00:00.000Z')
+  // DB status는 아직 'active'인데 마감 시각이 지난 경우 — getEffectivePollStatus가 이걸
+  // 'closed'로 취급해야, 이 값을 그대로 쓰는 화면(edit page/폼)의 배너·서브카피 문구가
+  // 실제 편집 가능 필드와 어긋나지 않는다.
+  assert.deepEqual(getEditablePollFields({
+    status: 'active',
+    scheduled_at: null,
+    closes_at: '2026-05-29T09:00:00.000Z',
+    created_by: 'user-1',
+  }, now), ['thumbnail_url'])
+})
+
 test('getEditablePollFields: scheduled → 빈 배열', () => {
   const { getEditablePollFields } = loadEligibilityModule()
   const now = new Date('2026-05-29T10:00:00.000Z')

@@ -34,7 +34,10 @@ export function UserPollEditForm({ poll, editableFields }: UserPollEditFormProps
 
   const canEditTitle = editableFields.includes('title')
   const canEditDescription = editableFields.includes('description')
-  const isClosed = poll.status === 'closed'
+  // poll.status(DB 원본)가 아니라 editableFields로 판정한다 — 마감 시각은 지났지만 DB status가
+  // 아직 'active'인 구간(자동 마감 처리 전)에는 title이 이미 잠겨 있으므로, 같은 근거(effective
+  // status)를 쓰는 edit page(page.tsx)의 서브카피와 배너 문구가 어긋나지 않게 한다.
+  const isClosed = !canEditTitle
 
   // subject_options/evaluation: 단일 대상 선수 + 텍스트 선택지. 그 외(question_targets/
   // selection/free_choice/overall_rating): poll_options를 선수/이미지 박스로 나열.
