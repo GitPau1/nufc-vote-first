@@ -173,3 +173,75 @@ test('validatePollEditPayload: closed에서 thumbnail_url → ok', () => {
   }, ['thumbnail_url'], now)
   assert.deepEqual(result, { ok: true })
 })
+
+test('resolvePollEditUpdate: 권한 없음 → ok:false, error 권한 문구', () => {
+  const { resolvePollEditUpdate } = loadEligibilityModule()
+  const now = new Date('2026-05-29T10:00:00.000Z')
+  const poll = {
+    status: 'active',
+    scheduled_at: null,
+    closes_at: '2026-05-29T11:00:00.000Z',
+    created_by: 'user-1',
+  }
+  const result = resolvePollEditUpdate(poll, { userId: 'user-2', isAdmin: false }, { title: '새 제목' }, now)
+  assert.deepEqual(result, { ok: false, error: '수정 권한이 없습니다.' })
+})
+
+test('resolvePollEditUpdate: active + title/description/thumbnail_url 모두 존재 → payload 구성(trim, 빈 설명은 null)', () => {
+  const { resolvePollEditUpdate } = loadEligibilityModule()
+  const now = new Date('2026-05-29T10:00:00.000Z')
+  const poll = {
+    status: 'active',
+    scheduled_at: null,
+    closes_at: '2026-05-29T11:00:00.000Z',
+    created_by: 'user-1',
+  }
+  const result = resolvePollEditUpdate(poll, { userId: 'user-1', isAdmin: false }, {
+    title: '  새 제목  ',
+    description: '   ',
+    thumbnail_url: '  https://x/y.webp  ',
+  }, now)
+  assert.deepEqual(result, {
+    ok: true,
+    payload: { title: '새 제목', description: null, thumbnail_url: 'https://x/y.webp' },
+  })
+})
+
+test('resolvePollEditUpdate: closed에서 title 존재 → ok:false, 허용 안 된 항목 문구', () => {
+  const { resolvePollEditUpdate } = loadEligibilityModule()
+  const now = new Date('2026-05-29T10:00:00.000Z')
+  const poll = {
+    status: 'closed',
+    scheduled_at: null,
+    closes_at: '2026-05-29T09:00:00.000Z',
+    created_by: 'user-1',
+  }
+  const result = resolvePollEditUpdate(poll, { userId: 'user-1', isAdmin: false }, { title: '새 제목' }, now)
+  assert.deepEqual(result, { ok: false, error: '수정할 수 없는 항목입니다.' })
+})
+
+test('resolvePollEditUpdate: closed에서 thumbnail_url만 존재 → ok, 부분 payload', () => {
+  const { resolvePollEditUpdate } = loadEligibilityModule()
+  const now = new Date('2026-05-29T10:00:00.000Z')
+  const poll = {
+    status: 'closed',
+    scheduled_at: null,
+    closes_at: '2026-05-29T09:00:00.000Z',
+    created_by: 'user-1',
+  }
+  const result = resolvePollEditUpdate(poll, { userId: 'user-1', isAdmin: false }, { thumbnail_url: 'https://x/y.webp' }, now)
+  assert.deepEqual(result, { ok: true, payload: { thumbnail_url: 'https://x/y.webp' } })
+})
+
+test('resolvePollEditUpdate: active + title이 공백뿐 → ok:false, 제목 필수 문구', () => {
+  const { resolvePollEditUpdate } = loadEligibilityModule()
+  const now = new Date('2026-05-29T10:00:00.000Z')
+  const poll = {
+    status: 'active',
+    scheduled_at: null,
+    closes_at: '2026-05-29T11:00:00.000Z',
+    created_by: 'user-1',
+  }
+  const result = resolvePollEditUpdate(poll, { userId: 'user-1', isAdmin: false }, { title: '   ' }, now)
+  assert.deepEqual(result, { ok: false, error: '투표 제목을 입력해주세요.' })
+})

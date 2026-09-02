@@ -98,3 +98,38 @@ test('resolveOldThumbnailToDelete: 허용 폴더(players/) 밖이면 null — �
   const oldUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/players/isak.webp`
   assert.equal(resolveOldThumbnailToDelete(oldUrl, null, BUCKET, ['poll-thumbnails']), null)
 })
+
+test('canDeleteOldThumbnail: 참조 없음 → true', () => {
+  const { canDeleteOldThumbnail } = loadStorageCleanupModule(SUPABASE_URL)
+  assert.equal(canDeleteOldThumbnail({
+    pollRefs: 0, pollRefsError: null, optionRefs: 0, optionRefsError: null,
+  }), true)
+})
+
+test('canDeleteOldThumbnail: 다른 poll이 참조 중 → false', () => {
+  const { canDeleteOldThumbnail } = loadStorageCleanupModule(SUPABASE_URL)
+  assert.equal(canDeleteOldThumbnail({
+    pollRefs: 1, pollRefsError: null, optionRefs: 0, optionRefsError: null,
+  }), false)
+})
+
+test('canDeleteOldThumbnail: poll_options가 참조 중 → false', () => {
+  const { canDeleteOldThumbnail } = loadStorageCleanupModule(SUPABASE_URL)
+  assert.equal(canDeleteOldThumbnail({
+    pollRefs: 0, pollRefsError: null, optionRefs: 2, optionRefsError: null,
+  }), false)
+})
+
+test('canDeleteOldThumbnail: pollRefs 조회 실패(count는 null) → false — 참조 없음으로 오판 금지', () => {
+  const { canDeleteOldThumbnail } = loadStorageCleanupModule(SUPABASE_URL)
+  assert.equal(canDeleteOldThumbnail({
+    pollRefs: null, pollRefsError: { message: 'boom' }, optionRefs: 0, optionRefsError: null,
+  }), false)
+})
+
+test('canDeleteOldThumbnail: optionRefs 조회 실패 → false', () => {
+  const { canDeleteOldThumbnail } = loadStorageCleanupModule(SUPABASE_URL)
+  assert.equal(canDeleteOldThumbnail({
+    pollRefs: 0, pollRefsError: null, optionRefs: null, optionRefsError: { message: 'boom' },
+  }), false)
+})

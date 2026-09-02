@@ -2,8 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createImageStoragePath, getImageUploadPreset, optimizeImageForUpload } from '@/lib/images/optimize'
+import { PLAYER_PHOTOS_BUCKET, POLL_UPLOAD_FOLDERS } from '@/lib/images/storage-cleanup'
 
-const ALLOWED_FOLDERS = new Set(['poll-thumbnails', 'poll-options'])
+const ALLOWED_FOLDERS = new Set(POLL_UPLOAD_FOLDERS)
 
 export async function uploadPollImage(formData: FormData): Promise<{ url?: string; error?: string }> {
   try {
@@ -26,12 +27,12 @@ export async function uploadPollImage(formData: FormData): Promise<{ url?: strin
     const path = createImageStoragePath(`${folder}/${user.id}`, file.name)
 
     const { error } = await serviceSupabase.storage
-      .from('player-photos')
+      .from(PLAYER_PHOTOS_BUCKET)
       .upload(path, optimized.bytes, { contentType: optimized.contentType, upsert: true, cacheControl: '31536000' })
 
     if (error) return { error: error.message }
 
-    const { data } = serviceSupabase.storage.from('player-photos').getPublicUrl(path)
+    const { data } = serviceSupabase.storage.from(PLAYER_PHOTOS_BUCKET).getPublicUrl(path)
     return { url: data.publicUrl }
   } catch (e) {
     return { error: (e as Error).message }

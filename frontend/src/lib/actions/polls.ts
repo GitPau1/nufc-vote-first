@@ -7,11 +7,9 @@ import { IS_MOCK } from '@/lib/config'
 import { getPollList } from '@/lib/queries/polls'
 import { datetimeLocalToKoreaIso } from '@/lib/datetime'
 import type { PollType } from '@/types/database'
-import { canAccessPollEdit, validatePollEditPayload, type PollEditPoll } from '@/lib/polls/poll-edit-eligibility'
-import { resolveOldThumbnailToDelete } from '@/lib/images/storage-cleanup'
-
-const POLL_THUMBNAIL_BUCKET = 'player-photos'
-const POLL_THUMBNAIL_ALLOWED_FOLDERS = ['poll-thumbnails']
+import { isAdmin } from '@/lib/admin'
+import { resolvePollEditUpdate, type PollEditPoll } from '@/lib/polls/poll-edit-eligibility'
+import { resolveOldThumbnailToDelete, canDeleteOldThumbnail, PLAYER_PHOTOS_BUCKET, POLL_THUMBNAIL_DELETE_FOLDERS } from '@/lib/images/storage-cleanup'
 
 export async function loadMorePolls(page: number) {
   return getPollList(page)
@@ -102,6 +100,20 @@ export async function createUserPoll(formData: FormData): Promise<{ pollId?: str
   return { pollId: poll.id }
 }
 
+// .select()에 컬럼을 여러 개 나열하면 supabase-js 제네릭 타입 추론이 poll을 never로 좁힌다 —
+// queries/polls.ts의 AnyRow 캐스팅과 같은 우회.
+type PollEditRow = {
+  status: PollEditPoll['status']
+  scheduled_at: string | null
+  closes_at: string
+  created_by: string | null
+  thumbnail_url: string | null
+}
+
+function formFieldOrUndefined(formData: FormData, key: string): string | undefined {
+  return formData.has(key) ? String(formData.get(key) ?? '') : undefined
+}
+
 export async function updateUserPoll(
   pollId: string,
   formData: FormData
@@ -112,26 +124,22 @@ export async function updateUserPoll(
   }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: '로그인이 필요합니다.' }
 
-  const { getHeaderAuth } = await import('./auth')
-  const auth = await getHeaderAuth()
-
-  // .select()에 컬럼을 여러 개 나열하면 supabase-js 제네릭 타입 추론이 poll을 never로 좁힌다 —
-  // queries/polls.ts의 AnyRow 캐스팅과 같은 우회.
-  type PollEditRow = {
-    status: PollEditPoll['status']
-    scheduled_at: string | null
-    closes_at: string
-    created_by: string | null
-    thumbnail_url: string | null
-  }
-  const { data: poll, error: pollError } = await supabase
+  // auth 확인(getUser)과 poll 조회를 병렬로 — 로그인 여부를 알기 전에도 poll 조회를 미리
+  // 시작해둔다. getHeaderAuth()(비캐시 getUser + users 테이블 SELECT)를 또 부르지 않고,
+  // 이미 여기서 얻은 user로 isAdmin(user.email)까지 직접 계산한다(createUserPoll·
+  // sync-fixtures.ts가 이미 쓰는 방식과 동일).
+  const userPromise = supabase.auth.getUser()
+  const pollPromise = supabase
     .from('polls')
     .select('status, scheduled_at, closes_at, created_by, thumbnail_url')
     .eq('id', pollId)
-    .single() as { data: PollEditRow | null; error: { message: string } | null }
+    .single()
+
+  const [{ data: { user } }, pollResult] = await Promise.all([userPromise, pollPromise])
+  if (!user) return { error: '로그인이 필요합니다.' }
+
+  const { data: poll, error: pollError } = pollResult as { data: PollEditRow | null; error: { message: string } | null }
   if (pollError || !poll) return { error: '투표를 찾을 수 없습니다.' }
 
   const editPoll: PollEditPoll = {
@@ -141,26 +149,24 @@ export async function updateUserPoll(
     created_by: poll.created_by,
   }
 
-  if (!canAccessPollEdit(editPoll, { userId: auth?.userId ?? null, isAdmin: auth?.isAdmin ?? false })) {
-    return { error: '수정 권한이 없습니다.' }
-  }
-
-  const payload: Record<string, string | null> = {}
-  if (formData.has('title')) payload.title = String(formData.get('title') ?? '').trim()
-  if (formData.has('description')) payload.description = String(formData.get('description') ?? '').trim() || null
-  if (formData.has('thumbnail_url')) payload.thumbnail_url = String(formData.get('thumbnail_url') ?? '').trim() || null
-
-  const check = validatePollEditPayload(editPoll, Object.keys(payload))
-  if (!check.ok) return { error: '수정할 수 없는 항목입니다.' }
-
-  if ('title' in payload && !payload.title) return { error: '투표 제목을 입력해주세요.' }
+  const resolved = resolvePollEditUpdate(
+    editPoll,
+    { userId: user.id, isAdmin: isAdmin(user.email) },
+    {
+      title: formFieldOrUndefined(formData, 'title'),
+      description: formFieldOrUndefined(formData, 'description'),
+      thumbnail_url: formFieldOrUndefined(formData, 'thumbnail_url'),
+    }
+  )
+  if (!resolved.ok) return { error: resolved.error }
+  const payload = resolved.payload
 
   const { createClient: createServiceClient } = await import('@supabase/supabase-js')
   const serviceSupabase = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
   )
-  const oldThumbnailUrl = poll.thumbnail_url as string | null
+  const oldThumbnailUrl = poll.thumbnail_url
   const { error: updateError } = await serviceSupabase.from('polls').update(payload).eq('id', pollId)
   if (updateError) return { error: updateError.message }
 
@@ -182,7 +188,7 @@ async function cleanupOldPollThumbnail(
   oldUrl: string | null,
   newUrl: string | null
 ) {
-  const target = resolveOldThumbnailToDelete(oldUrl, newUrl, POLL_THUMBNAIL_BUCKET, POLL_THUMBNAIL_ALLOWED_FOLDERS)
+  const target = resolveOldThumbnailToDelete(oldUrl, newUrl, PLAYER_PHOTOS_BUCKET, POLL_THUMBNAIL_DELETE_FOLDERS)
   if (!target) return
 
   try {
@@ -190,15 +196,25 @@ async function cleanupOldPollThumbnail(
     // polls.thumbnail_url / poll_options.image_url 둘뿐이다(avatar_url·photo_url은 각각
     // users/players 도메인이라 poll 썸네일과 무관, 물리적으로도 다른 폴더 경로를 쓴다 —
     // team-logos/·players/ vs poll-thumbnails/<userId>/·poll-options/<userId>/).
-    const [{ count: pollRefs }, { count: optionRefs }] = await Promise.all([
+    const [
+      { count: pollRefs, error: pollRefsError },
+      { count: optionRefs, error: optionRefsError },
+    ] = await Promise.all([
       serviceSupabase.from('polls').select('id', { count: 'exact', head: true })
         .eq('thumbnail_url', oldUrl).neq('id', pollId),
       serviceSupabase.from('poll_options').select('id', { count: 'exact', head: true })
         .eq('image_url', oldUrl),
     ])
-    if ((pollRefs ?? 0) > 0 || (optionRefs ?? 0) > 0) return
+    // canDeleteOldThumbnail(storage-cleanup.ts)이 에러 유무까지 함께 판별한다 — count만 보면
+    // 조회 실패 시 (null ?? 0) > 0이 항상 false가 되어 "참조 없음"으로 오판할 수 있다.
+    if (!canDeleteOldThumbnail({ pollRefs, pollRefsError, optionRefs, optionRefsError })) {
+      if (pollRefsError || optionRefsError) {
+        console.error('updateUserPoll: 옛 썸네일 참조 확인 실패, 삭제 스킵', pollRefsError, optionRefsError)
+      }
+      return
+    }
 
-    const { error } = await serviceSupabase.storage.from(POLL_THUMBNAIL_BUCKET).remove([target.path])
+    const { error } = await serviceSupabase.storage.from(PLAYER_PHOTOS_BUCKET).remove([target.path])
     if (error) console.error('updateUserPoll: 옛 썸네일 삭제 실패', error)
   } catch (error) {
     console.error('updateUserPoll: 옛 썸네일 삭제 중 예외', error)
