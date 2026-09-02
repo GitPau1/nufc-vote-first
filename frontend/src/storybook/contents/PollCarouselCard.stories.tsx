@@ -43,5 +43,5 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
-  args: { poll, isAuthenticated: true },
+  args: { poll, isAuthenticated: true, canEdit: false },
 }

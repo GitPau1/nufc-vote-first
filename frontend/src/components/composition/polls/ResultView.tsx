@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { PollEditLink } from './PollEditLink'
 import { Users } from 'lucide-react'
 import type { PollDetail, VoteCountMap } from '@/lib/queries/polls'
 import type { CommentItem } from '@/lib/queries/comments'
@@ -17,6 +18,7 @@ interface ResultViewProps {
   voteCounts: VoteCountMap
   myOptionId: string | null
   comments: CommentItem[]
+  canEdit: boolean
 }
 
 function buildResultItems(poll: PollDetail, voteCounts: VoteCountMap) {
@@ -60,7 +62,7 @@ export function getOptionThumb(option: PollOptionRow, optionPlayers?: Record<str
   return null
 }
 
-export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultViewProps) {
+export function ResultView({ poll, voteCounts, myOptionId, comments, canEdit }: ResultViewProps) {
   const options  = poll.poll_options
   const counts   = options.map(o => voteCounts[o.id] ?? 0)
   const total    = counts.reduce((a, b) => a + b, 0)
@@ -91,7 +93,10 @@ export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultVie
 
   return (
     <div className="flex min-h-screen flex-col bg-page">
-      <PollPageHeader />
+      {/* 페이지 헤더 — 모바일 전용 진입(AppHeader 모바일 레이어에서만 렌더됨) */}
+      <PollPageHeader
+        action={canEdit && <PollEditLink pollId={poll.id} />}
+      />
       <div className="flex-1 overflow-y-auto hide-scrollbar animate-enter">
         {/* 컨테이너·카드 규격은 제출 화면(PredictionFlowClient)과 맞춘다 — mx-auto max-w-[860px] +
             단일 Card(p-5 sm:p-7). 커버 이미지만 Card 밖에 독립된 블록으로 둔다: 투표 화면
@@ -116,6 +121,13 @@ export function ResultView({ poll, voteCounts, myOptionId, comments }: ResultVie
                 <span>{poll.creator_name ?? 'Admin'}</span>
               </div>
             </div>
+
+            {/* 수정 진입 — 데스크탑 전용(모바일은 헤더에서 렌더됨) */}
+            {canEdit && (
+              <div className="hidden justify-end sm:flex">
+                <PollEditLink pollId={poll.id} />
+              </div>
+            )}
 
             <div className="my-5 h-px bg-neutral-weak" />
 

@@ -4,6 +4,7 @@
  */
 import { PAGE_SIZE } from '@/lib/constants'
 import { getEffectivePollStatus } from '@/lib/polls/status'
+import { resolvePollEditUpdate, type PollEditPoll } from '@/lib/polls/poll-edit-eligibility'
 import type { PollDetail, PollHomeSections, PollListItem, VoteCountMap, RatingResultItem } from '@/lib/queries/polls'
 import type { CommentItem } from '@/lib/queries/comments'
 import type { FixturePositionTop3, MatchdayFixture } from '@/lib/queries/fixtures'
@@ -65,6 +66,38 @@ export async function mockGetPollById(id: string): Promise<PollDetail | null> {
 
 export async function mockGetVoteCounts(pollId: string): Promise<VoteCountMap> {
   return MOCK_VOTE_COUNTS[pollId] ?? {}
+}
+
+/** 목 모드: 실제 DB에 쓰지 않지만(mock은 원래 상태가 없다, createUserPoll도 mock이면
+ *  고정 pollId만 반환) 권한 검사만은 실제로 통과/실패가 갈리게 한다. */
+export async function mockUpdatePoll(pollId: string, formData: FormData): Promise<{ success?: true; error?: string }> {
+  const poll = MOCK_POLL_DETAIL[pollId]
+  if (!poll) return { error: '투표를 찾을 수 없습니다.' }
+
+  const { getHeaderAuth } = await import('@/lib/actions/auth')
+  const auth = await getHeaderAuth()
+
+  const editPoll: PollEditPoll = {
+    status: poll.status,
+    scheduled_at: poll.scheduled_at ?? null,
+    closes_at: poll.closes_at,
+    created_by: poll.created_by ?? null,
+  }
+
+  // updateUserPoll(lib/actions/polls.ts)과 같은 공통 검증 함수 — 권한 확인 → payload 구성 →
+  // 상태별 허용 필드 검사 → 제목 필수 검사. mock은 실제로 저장하지 않으므로 payload는 안 쓴다.
+  const resolved = resolvePollEditUpdate(
+    editPoll,
+    { userId: auth?.userId ?? null, isAdmin: auth?.isAdmin ?? false },
+    {
+      title: formData.has('title') ? String(formData.get('title') ?? '') : undefined,
+      description: formData.has('description') ? String(formData.get('description') ?? '') : undefined,
+      thumbnail_url: formData.has('thumbnail_url') ? String(formData.get('thumbnail_url') ?? '') : undefined,
+    }
+  )
+  if (!resolved.ok) return { error: resolved.error }
+
+  return { success: true }
 }
 
 /** 목 모드 전체평점 결과 조회. 실제 제출 점수는 저장하지 않으므로(mock-rating-vote-{pollId}

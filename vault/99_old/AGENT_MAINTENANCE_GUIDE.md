@@ -58,6 +58,7 @@ DB나 Supabase 연동을 건드릴 때:
 - 경기·평점 수집은 `supabase/functions/`의 Edge Function + Supabase 대시보드 Cron(KST 08:00/08:05)입니다. **함수 소스는 리포에서 관리하니 대시보드에서 직접 고치지 말고** `npx supabase functions deploy <name>`으로 배포합니다. 크론 등록만 대시보드에 있습니다(`supabase/functions/README.md`).
 - **`supabase link` 대상 프로젝트를 먼저 확인합니다.** 실제로 쓰는 DB는 `frontend/.env.local`의 `NEXT_PUBLIC_SUPABASE_URL`이 가리키는 프로젝트(`xrvz…`)입니다. 리포에는 `ykjf…`로 link된 적이 있는데 그쪽은 `fixtures`·`week_leaderboard`조차 없는 방치된 프로젝트라, `migration list`가 "원격 히스토리가 20260821000000에서 멈춤"으로 보이고 CLI가 `migration repair --status reverted` / `db pull`을 제안합니다. **그 제안을 따르면 엉뚱한 DB 기준으로 로컬 히스토리를 덮어씁니다.** 히스토리가 어긋나 보이면 repair 전에 `.env.local`의 URL과 `supabase/.temp/project-ref`가 같은지부터 봅니다(2026-08-25에 실제로 겪음).
 - `prediction_results`는 **정산이 끝난 주차만** 담습니다(`20260824120000_prediction_results_week_settled.sql`). 주차 진행 중에는 점수·랭킹이 비어 있는 게 정상이고, 그 구간의 화면 표기는 `matchHit()`의 적중 배지입니다.
+- 투표 수정(`updateUserPoll`) 시 옛 썸네일 스토리지 파일을 `storage.remove()`로 실제로 지웁니다(다른 poll/poll_options 행이 참조 중이거나, 우리 버킷 URL이 아니거나, `poll-thumbnails/` 폴더 밖이면 스킵) — 이 리포에서 스토리지 파일을 실제로 지우는 첫 코드 경로입니다. `frontend/src/lib/actions/polls.ts`의 `cleanupOldPollThumbnail`, 판별 로직은 `frontend/src/lib/images/storage-cleanup.ts` 참고.
 
 ## 기능별 주요 파일
 
@@ -72,6 +73,7 @@ DB나 Supabase 연동을 건드릴 때:
 - 조회: `frontend/src/lib/queries/polls.ts`
 - 투표 제출: `frontend/src/lib/actions/vote.ts`
 - 투표 가능 여부: `frontend/src/lib/polls/vote-eligibility.ts`
+- 투표 수정(작성자 본인/관리자만, active는 제목·설명·썸네일 / closed는 썸네일만): 권한·필드 판정은 `frontend/src/lib/polls/poll-edit-eligibility.ts`, 서버 액션은 `frontend/src/lib/actions/polls.ts`의 `updateUserPoll`, 폼은 `frontend/src/components/composition/polls/UserPollEditForm.tsx`, 화면은 `frontend/src/app/polls/[id]/edit/page.tsx`
 - 댓글/좋아요: `frontend/src/lib/queries/comments.ts`, `frontend/src/lib/actions/comments.ts`
 - 화면: `frontend/src/app/page.tsx`, `frontend/src/app/polls/[id]/page.tsx`
 

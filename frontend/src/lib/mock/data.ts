@@ -185,6 +185,7 @@ export const MOCK_POLL_DETAIL: Record<string, PollDetail> = {
     closes_at: new Date(Date.now() + 5 * 86400_000).toISOString(),
     player_id: isak.id, player: isak,
     poll_options: evalOptions('poll-1'),
+    created_by: 'mock-user',
   },
   'poll-5': {
     id: 'poll-5', type: 'selection', status: 'active',
@@ -222,6 +223,7 @@ export const MOCK_POLL_DETAIL: Record<string, PollDetail> = {
     closes_at: new Date(Date.now() - 3 * 86400_000).toISOString(),
     player_id: trippier.id, player: trippier,
     poll_options: evalOptions('poll-4'),
+    created_by: 'mock-user',
   },
   'poll-6': {
     id: 'poll-6', type: 'selection', status: 'closed',

@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { PollEditLink } from './PollEditLink'
 import { Loader2 } from 'lucide-react'
 import type { PollDetail } from '@/lib/queries/polls'
 import type { PlayerRow, Position } from '@/types/database'
@@ -39,9 +40,10 @@ const POSITION_LABELS: Record<Position, string> = {
 interface OverallRatingPollClientProps {
   poll: PollDetail
   isAuthenticated: boolean
+  canEdit: boolean
 }
 
-export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRatingPollClientProps) {
+export function OverallRatingPollClient({ poll, isAuthenticated, canEdit }: OverallRatingPollClientProps) {
   const router = useRouter()
   const [stepIndex, setStepIndex] = useState(0)
   const [showLogin, setShowLogin] = useState(false)
@@ -138,7 +140,10 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
 
   return (
     <div className="relative flex min-h-screen flex-col">
-      <PollPageHeader />
+      {/* 페이지 헤더 — 모바일 전용 진입(AppHeader 모바일 레이어에서만 렌더됨) */}
+      <PollPageHeader
+        action={canEdit && <PollEditLink pollId={poll.id} />}
+      />
 
       {/* 셸(max-w-detail)은 그대로 두고, 커버·제목 블록만 결과 화면(OverallRatingResultView)과
           맞춘다 — 같은 투표를 평가→결과로 넘어갈 때 커버 스타일이 튀지 않게. 커버는 이미지
@@ -163,6 +168,13 @@ export function OverallRatingPollClient({ poll, isAuthenticated }: OverallRating
           )}
           {errorMsg && (
             <p className="text-label-1-normal font-medium text-critical">{errorMsg}</p>
+          )}
+
+          {/* 수정 진입 — 데스크탑 전용(모바일은 헤더에서 렌더됨) */}
+          {canEdit && (
+            <div className="hidden justify-end sm:flex">
+              <PollEditLink pollId={poll.id} />
+            </div>
           )}
 
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1">

@@ -8,6 +8,8 @@ import { OverallRatingPollClient } from '@/components/composition/polls/OverallR
 import { OverallRatingResultView } from '@/components/composition/polls/OverallRatingResultView'
 import { ResultView } from '@/components/composition/polls/ResultView'
 import { IS_MOCK } from '@/lib/config'
+import { isAdmin } from '@/lib/admin'
+import { canAccessPollEdit } from '@/lib/polls/poll-edit-eligibility'
 
 interface PollPageProps {
   params: Promise<{ id: string }>
@@ -17,7 +19,10 @@ async function getCurrentUser() {
   if (IS_MOCK) {
     const cookieStore = await cookies()
     if (cookieStore.get('mock-auth')?.value === 'true') {
-      return { id: 'mock-user', user_metadata: { name: '뉴캐슬 팬', avatar_url: null } }
+      // email 없음(mock 유저는 이메일 개념이 없다) — isAdmin(undefined)는 항상 false라
+      // mock 모드에서 관리자 케이스는 재현할 수 없다. 작성자 본인 케이스는
+      // poll-1/poll-4 fixture(created_by: 'mock-user')로 이미 커버되므로 허용한다.
+      return { id: 'mock-user', email: undefined as string | undefined, user_metadata: { name: '뉴캐슬 팬', avatar_url: null } }
     }
     return null
   }
@@ -37,6 +42,12 @@ export default async function PollPage({ params }: PollPageProps) {
   if (!poll) notFound()
 
   const isClosed = poll.status === 'closed'
+  // getHeaderAuth()(비캐시 getUser + users 테이블 SELECT)를 또 부르지 않는다 — 위에서 이미
+  // 얻은 user로 충분하다(createUserPoll·sync-fixtures.ts가 이미 쓰는 방식과 동일).
+  const canEdit = canAccessPollEdit(
+    { status: poll.status, scheduled_at: poll.scheduled_at ?? null, closes_at: poll.closes_at, created_by: poll.created_by ?? null },
+    { userId: user?.id ?? null, isAdmin: isAdmin(user?.email) }
+  )
 
   if (poll.type === 'overall_rating') {
     const targetCount = poll.poll_options.filter(option => option.player_id).length
@@ -45,10 +56,10 @@ export default async function PollPage({ params }: PollPageProps) {
 
     if (isClosed || hasRated) {
       const results = await getRatingResults(poll, user?.id ?? null)
-      return <OverallRatingResultView poll={poll} results={results} hasVoted={hasRated} />
+      return <OverallRatingResultView poll={poll} results={results} hasVoted={hasRated} canEdit={canEdit} />
     }
 
-    return <OverallRatingPollClient poll={poll} isAuthenticated={!!user} />
+    return <OverallRatingPollClient poll={poll} isAuthenticated={!!user} canEdit={canEdit} />
   }
 
   // 내 투표 여부 확인
@@ -72,14 +83,15 @@ export default async function PollPage({ params }: PollPageProps) {
         voteCounts={voteCounts}
         myOptionId={myOptionId}
         comments={comments}
+        canEdit={canEdit}
       />
     )
   }
 
   // 아직 투표 전
   if (poll.type === 'selection' || poll.type === 'question_targets' || poll.type === 'free_choice') {
-    return <TypeBPollClient poll={poll} isAuthenticated={!!user} />
+    return <TypeBPollClient poll={poll} isAuthenticated={!!user} canEdit={canEdit} />
   }
 
-  return <TypeAPollClient poll={poll} isAuthenticated={!!user} />
+  return <TypeAPollClient poll={poll} isAuthenticated={!!user} canEdit={canEdit} />
 }

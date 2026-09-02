@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { PollEditLink } from './PollEditLink'
 import type { PollDetail } from '@/lib/queries/polls'
 import { submitVote } from '@/lib/actions/vote'
 import { trackEvent } from '@/lib/analytics/mixpanel'
@@ -20,9 +21,10 @@ import { PollPageHeader } from './PollPageHeader'
 interface TypeAPollClientProps {
   poll: PollDetail
   isAuthenticated: boolean
+  canEdit: boolean
 }
 
-export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps) {
+export function TypeAPollClient({ poll, isAuthenticated, canEdit }: TypeAPollClientProps) {
   const [selectedId, setSelectedId]   = useState<string | null>(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const [showLogin, setShowLogin]     = useState(false)
@@ -76,8 +78,10 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
 
   return (
     <div className="relative flex flex-col min-h-screen">
-      {/* 페이지 헤더 */}
-      <PollPageHeader />
+      {/* 페이지 헤더 — 모바일 전용 진입(AppHeader 모바일 레이어에서만 렌더됨) */}
+      <PollPageHeader
+        action={canEdit && <PollEditLink pollId={poll.id} />}
+      />
 
       {/* 스크롤 영역 */}
       <div className="mx-auto flex-1 w-full max-w-detail overflow-y-auto hide-scrollbar pb-[88px] animate-enter sm:flex-none sm:overflow-visible sm:pb-0">
@@ -114,6 +118,13 @@ export function TypeAPollClient({ poll, isAuthenticated }: TypeAPollClientProps)
 
         {/* 콘텐츠 */}
         <div className="px-4 py-4 flex flex-col gap-4">
+
+          {/* 수정 진입 — 데스크탑 전용(모바일은 헤더에서 렌더됨) */}
+          {canEdit && (
+            <div className="hidden justify-end sm:flex">
+              <PollEditLink pollId={poll.id} />
+            </div>
+          )}
 
           {/* 설명 */}
           {poll.description && (

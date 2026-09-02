@@ -21,6 +21,8 @@
     "test:prediction-result": "node --test src/lib/predictions/result.test.mjs",
     "test:rating": "node --test src/lib/polls/rating.test.mjs",
     "test:vote-eligibility": "node --test src/lib/polls/vote-eligibility.test.mjs",
+    "test:poll-edit-eligibility": "node --test src/lib/polls/poll-edit-eligibility.test.mjs",
+    "test:storage-cleanup": "node --test src/lib/images/storage-cleanup.test.mjs",
     "types:supabase": "supabase gen types typescript --linked --schema public > src/types/database.generated.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"

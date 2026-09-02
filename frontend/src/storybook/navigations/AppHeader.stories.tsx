@@ -39,3 +39,14 @@ export const MobileBack: Story = {
   args: { auth: null, mobileBack: true },
   globals: { viewport: { value: 'iphone12' } },
 }
+
+// 모바일 서브 화면 + 페이지별 액션(예: 투표 상세의 "수정" 링크) — action은 mobileBack일
+// 때만 렌더된다. 데스크탑 레이어는 이 prop을 참조하지 않아 영향이 없다.
+export const MobileBackWithAction: Story = {
+  args: {
+    auth: null,
+    mobileBack: true,
+    action: <span className="text-label-2 font-medium text-neutral-muted">수정</span>,
+  },
+  globals: { viewport: { value: 'iphone12' } },
+}
