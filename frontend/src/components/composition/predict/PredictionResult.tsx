@@ -250,7 +250,9 @@ function Finale({
           <div className="mx-auto mt-4 flex max-w-[320px] justify-center gap-5 rounded-md bg-on-solid-strong px-4 py-3.5">
             <FinaleStat label="경기예측" value={`${summary.matchPoints}점`} />
             <FinaleStat label="선수픽" value={`${summary.pickPoints}점`} />
-            <FinaleStat label="총점" value={`${total}점`} />
+            {/* 총점만 값을 차별화한다 — 랭킹 테이블 "종합" 열과 같은 강조 규칙(text-on-solid-brand
+                + font-semibold)을 재사용한다(새 스타일 발명 금지, 사용자 확정). 라벨은 그대로. */}
+            <FinaleStat label="총점" value={`${total}점`} emphasize />
           </div>
         </div>
       )}
@@ -262,11 +264,18 @@ function Finale({
   )
 }
 
-function FinaleStat({ label, value }: { label: string; value: string }) {
+function FinaleStat({ label, value, emphasize = false }: { label: string; value: string; emphasize?: boolean }) {
   return (
     <div className="min-w-0 flex-1">
       <p className="text-caption-1 text-on-solid-muted">{label}</p>
-      <p className="mt-0.5 text-label-1-normal font-medium text-on-solid">{value}</p>
+      <p
+        className={cn(
+          'mt-0.5 text-label-1-normal',
+          emphasize ? 'font-semibold text-on-solid-brand' : 'font-medium text-on-solid',
+        )}
+      >
+        {value}
+      </p>
     </div>
   )
 }
