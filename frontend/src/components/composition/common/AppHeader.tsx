@@ -13,6 +13,8 @@ type AppHeaderProps = {
   showAuth?: boolean
   /** 모바일에서 로고 중앙 정렬 대신 '돌아가기' 버튼(서브 페이지). 데스크탑 GNB에는 영향 없음. */
   mobileBack?: boolean
+  /** 모바일(`mobileBack`)에서만 렌더된다 — 데스크탑 GNB는 영향 없음. */
+  action?: React.ReactNode
 }
 
 /**
@@ -23,7 +25,7 @@ type AppHeaderProps = {
  * 모바일에서는 화면 성격에 따라 두 갈래로 갈린다: 최상위 화면은 로고 중앙 정렬(+옵션 아바타),
  * 서브 화면(`mobileBack`)은 돌아가기 버튼 — 기존 PollPageHeader와 동일한 모습.
  */
-export function AppHeader({ auth, showAuth = true, mobileBack = false }: AppHeaderProps = {}) {
+export function AppHeader({ auth, showAuth = true, mobileBack = false, action }: AppHeaderProps = {}) {
   const router = useRouter()
 
   return (
@@ -50,6 +52,10 @@ export function AppHeader({ auth, showAuth = true, mobileBack = false }: AppHead
             <div className="absolute right-4">
               <HeaderAuthStatus auth={auth} />
             </div>
+          )}
+
+          {mobileBack && action && (
+            <div className="absolute right-4">{action}</div>
           )}
         </div>
 
