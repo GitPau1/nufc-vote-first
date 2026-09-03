@@ -8,6 +8,8 @@ import { Button } from '@/components/primitives/button'
 import { Card, CardContent } from '@/components/primitives/card'
 import { Separator } from '@/components/primitives/separator'
 import { Badge } from '@/components/primitives/badge'
+import { Modal } from '@/components/primitives/modal/Modal'
+import { ProfileGradeContent } from '@/components/primitives/modal/contents/ProfileGrade'
 import type { ParticipatedPoll } from '@/lib/mock/data'
 import { cn } from '@/lib/utils'
 
@@ -17,6 +19,8 @@ interface MyPageClientProps {
   avatarUrl: string | null
   participatedPolls: ParticipatedPoll[]
   isMockMode: boolean
+  totalPoints: number
+  profileGrades: { threshold: number; iconUrl: string }[]
 }
 
 function formatDate(dateStr: string): string {
@@ -31,10 +35,13 @@ export function MyPageClient({
   avatarUrl,
   participatedPolls,
   isMockMode,
+  totalPoints,
+  profileGrades,
 }: MyPageClientProps) {
   const [nameValue, setNameValue]         = useState(displayName)
   const [isEditingName, setIsEditingName] = useState(false)
   const [editInput, setEditInput]         = useState(displayName)
+  const [showGradeModal, setShowGradeModal] = useState(false)
 
   const initial = nameValue[0]?.toUpperCase() ?? 'U'
 
@@ -85,12 +92,19 @@ export function MyPageClient({
 
           <Card>
             <CardContent className="flex items-center gap-4 p-4">
-              <Avatar className="h-16 w-16">
-                <AvatarImage src={avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-brand-weak text-brand text-heading-2 font-semibold">
-                  {initial}
-                </AvatarFallback>
-              </Avatar>
+              <button
+                type="button"
+                onClick={() => setShowGradeModal(true)}
+                aria-label="프로필 등급 안내 보기"
+                className="rounded-pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-solid"
+              >
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={avatarUrl ?? undefined} />
+                  <AvatarFallback className="bg-brand-weak text-brand text-heading-2 font-semibold">
+                    {initial}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
 
               <div className="flex-1 min-w-0">
                 {isEditingName ? (
@@ -208,6 +222,10 @@ export function MyPageClient({
           </Button>
         </div>
       </div>
+
+      <Modal open={showGradeModal} onOpenChange={setShowGradeModal}>
+        <ProfileGradeContent totalPoints={totalPoints} grades={profileGrades} />
+      </Modal>
     </div>
   )
 }
