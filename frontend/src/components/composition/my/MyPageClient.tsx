@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Trash2, ChevronRight, Pencil, Check, X } from 'lucide-react'
+import { Trash2, ChevronRight, Pencil, Check, X, FileText, Shield } from 'lucide-react'
 import { useLoadingRouter } from '@/components/primitives/navigation-loading'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/primitives/avatar'
 import { Button } from '@/components/primitives/button'
@@ -219,6 +219,24 @@ export function MyPageClient({
               </CardContent>
             </Card>
           )}
+        </div>
+
+        <Separator />
+
+        {/* 약관 및 정책 */}
+        <div className="flex flex-col gap-2">
+          <Button asChild variant="outline" size="lg" className="justify-start">
+            <Link href="/terms">
+              <FileText className="h-4 w-4" />
+              이용약관
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg" className="justify-start">
+            <Link href="/privacy">
+              <Shield className="h-4 w-4" />
+              개인정보처리방침
+            </Link>
+          </Button>
         </div>
 
         <Separator />

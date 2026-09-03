@@ -1,4 +1,5 @@
 import { AppHeader } from '@/components/composition/common/AppHeader'
+import { Card, CardContent } from '@/components/primitives/card'
 
 export default function PrivacyPage() {
   return (
@@ -8,7 +9,8 @@ export default function PrivacyPage() {
         <h1 className="text-heading-2 sm:text-heading-1 font-semibold text-neutral mb-1">개인정보처리방침</h1>
         <p className="text-caption-1 text-neutral-muted mb-6">시행일자: 2026년 9월 3일</p>
 
-        <div className="flex flex-col gap-6 text-label-1-reading text-neutral-muted">
+        <Card>
+        <CardContent className="flex flex-col gap-6 text-label-1-reading text-neutral-muted p-4">
           <section>
             <h2 className="text-headline-2 font-semibold text-neutral mb-1">1. 운영자</h2>
             <p>본 서비스(NUFCVOTE)는 사업자 등록이 없는 비상업적 개인 프로젝트로 운영됩니다.</p>
@@ -88,7 +90,8 @@ export default function PrivacyPage() {
             <h2 className="text-headline-2 font-semibold text-neutral mb-1">12. 개인정보 보호책임자 및 문의처</h2>
             <p>서비스 운영자 / [문의 이메일 — 배포 전 직접 입력 예정]</p>
           </section>
-        </div>
+        </CardContent>
+        </Card>
       </main>
     </>
   )

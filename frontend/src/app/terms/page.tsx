@@ -1,4 +1,5 @@
 import { AppHeader } from '@/components/composition/common/AppHeader'
+import { Card, CardContent } from '@/components/primitives/card'
 
 export default function TermsPage() {
   return (
@@ -8,7 +9,8 @@ export default function TermsPage() {
         <h1 className="text-heading-2 sm:text-heading-1 font-semibold text-neutral mb-1">이용약관</h1>
         <p className="text-caption-1 text-neutral-muted mb-6">시행일자: 2026년 9월 3일</p>
 
-        <div className="flex flex-col gap-6 text-label-1-reading text-neutral-muted">
+        <Card>
+        <CardContent className="flex flex-col gap-6 text-label-1-reading text-neutral-muted p-4">
           <section>
             <h2 className="text-headline-2 font-semibold text-neutral mb-1">1. 목적</h2>
             <p>이 약관은 NUFCVOTE(이하 &quot;서비스&quot;)의 이용 조건을 정합니다. 서비스는 사업자가 아닌 개인이 비상업적으로 운영하는 뉴캐슬 유나이티드 팬 투표 플랫폼입니다.</p>
@@ -63,7 +65,8 @@ export default function TermsPage() {
             <h2 className="text-headline-2 font-semibold text-neutral mb-1">11. 준거법</h2>
             <p>이 약관은 대한민국 법령에 따라 해석됩니다.</p>
           </section>
-        </div>
+        </CardContent>
+        </Card>
       </main>
     </>
   )
