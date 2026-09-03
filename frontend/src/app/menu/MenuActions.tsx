@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { LogIn, MessageSquareText, ShieldCheck, UserRound } from 'lucide-react'
+import { FileText, LogIn, MessageSquareText, Shield, ShieldCheck, UserRound } from 'lucide-react'
 import { Button } from '@/components/primitives/button'
 import { Modal } from '@/components/primitives/modal/Modal'
 import { LoginContent } from '@/components/primitives/modal/contents/Login'
@@ -30,6 +30,20 @@ export function MenuActions({ isLoggedIn, isAdmin }: MenuActionsProps) {
           <Link href="/my/feedback">
             <MessageSquareText className="h-4 w-4" />
             피드백 남기기
+          </Link>
+        </Button>
+
+        <Button asChild variant="outline" size="lg" className="justify-start">
+          <Link href="/terms">
+            <FileText className="h-4 w-4" />
+            이용약관
+          </Link>
+        </Button>
+
+        <Button asChild variant="outline" size="lg" className="justify-start">
+          <Link href="/privacy">
+            <Shield className="h-4 w-4" />
+            개인정보처리방침
           </Link>
         </Button>
 

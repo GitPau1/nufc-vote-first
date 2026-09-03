@@ -18,6 +18,7 @@ export interface Database {
           display_name: string | null
           created_at: string
           deleted_at: string | null
+          terms_accepted_at: string | null
         }
         Insert: Omit<Database['public']['Tables']['users']['Row'], 'created_at'>
         Update: Partial<Database['public']['Tables']['users']['Insert']>

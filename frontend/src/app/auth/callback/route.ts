@@ -38,16 +38,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/?error=auth`)
   }
 
-  // 신규 가입자 판별: display_name이 null이면 온보딩으로
+  // 약관 동의 여부 판별: terms_accepted_at이 null이면 온보딩으로
   const { data: { user } } = await supabase.auth.getUser()
   if (user) {
     const { data: profile } = await supabase
       .from('users')
-      .select('display_name')
+      .select('display_name, terms_accepted_at')
       .eq('id', user.id)
       .single()
 
-    if (!profile?.display_name) {
+    if (!profile?.terms_accepted_at) {
       // 온보딩으로 리다이렉트 — 쿠키도 같이 전달
       const onboardingResponse = NextResponse.redirect(
         `${origin}/onboarding?next=${encodeURIComponent(next)}`
