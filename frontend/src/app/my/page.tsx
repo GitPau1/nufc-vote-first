@@ -2,7 +2,7 @@ import { IS_MOCK } from '@/lib/config'
 import { MOCK_PARTICIPATED } from '@/lib/mock/data'
 import { getEffectivePollStatus } from '@/lib/polls/status'
 import { getMySeasonRow } from '@/lib/queries/predictions'
-import { getProfileIconThresholds, resolveProfileIconUrl } from '@/lib/images/profile-icons'
+import { getProfileIconThresholdsSafe, resolveProfileIconUrl } from '@/lib/images/profile-icons'
 import { AppHeader } from '@/components/composition/common/AppHeader'
 import { MyPageClient } from '@/components/composition/my/MyPageClient'
 import { RequireAuthModal } from '@/components/composition/auth/RequireAuthModal'
@@ -59,7 +59,7 @@ export default async function MyPage() {
   // 예측 미참여 유저는 season_leaderboard에 행 자체가 없을 수 있다 — 이 경우 0점(기본 등급)으로 간주(plan 6-4).
   const mySeasonRow = await getMySeasonRow(user.id)
   const totalPoints = mySeasonRow?.total_points ?? 0
-  const profileIconThresholds = await getProfileIconThresholds()
+  const profileIconThresholds = await getProfileIconThresholdsSafe()
   const avatarUrl = resolveProfileIconUrl(totalPoints, profileIconThresholds)
 
   // 등급 안내 모달(마이페이지 아바타 탭)에 넘길 전체 등급 목록 — 임계점수 + 아이콘 URL만(plan 6-2).
