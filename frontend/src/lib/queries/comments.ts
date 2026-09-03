@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { IS_MOCK } from '@/lib/config'
 import { mockGetComments } from '@/lib/mock/queries'
+import { getProfileIconThresholds, resolveProfileIconUrl } from '@/lib/images/profile-icons'
 
 export type CommentItem = {
   id: string
@@ -38,6 +39,11 @@ type LikeQueryRow = {
   comment_id: string
 }
 
+type SeasonPointsQueryRow = {
+  user_id: string
+  total_points: number
+}
+
 export async function getComments(
   pollId: string,
   userId: string | null,
@@ -63,9 +69,10 @@ export async function getComments(
   const commenterIds = Array.from(new Set(data.map(row => row.user_id)))
   const commentIds = data.map(row => row.id)
 
-  // votes→poll_options 체인과 comment_likes는 서로의 결과를 안 쓴다. 순차로 기다릴 이유가 없어 나눠 보낸다.
+  // votes→poll_options 체인, comment_likes, 등급 아이콘 계산(총점 조회+버킷 임계값)은 서로의
+  // 결과를 안 쓴다. 순차로 기다릴 이유가 없어 나눠 보낸다.
   // (votes→poll_options는 option_id 의존이라 그 안에서는 순차가 맞다)
-  const [voteMap, likedSet] = await Promise.all([
+  const [voteMap, likedSet, avatarUrlMap] = await Promise.all([
     (async () => {
       const map = new Map<string, string>()
       if (commenterIds.length === 0) return map
@@ -115,6 +122,29 @@ export async function getComments(
       for (const like of likeData ?? []) set.add(like.comment_id)
       return set
     })(),
+    (async () => {
+      const map = new Map<string, string | null>()
+      if (commenterIds.length === 0) return map
+
+      // 등급 아이콘은 Storage 계산까지 포함해 서버(쿼리 파일)에서 끝낸다 — 클라이언트로는
+      // 최종 아이콘 URL만 내려간다(profile-icons.ts 2절 근거와 동일 원칙).
+      const [thresholds, { data: pointsData }] = await Promise.all([
+        getProfileIconThresholds(),
+        supabase
+          .from('season_leaderboard')
+          .select('user_id, total_points')
+          .in('user_id', commenterIds) as unknown as Promise<{ data: SeasonPointsQueryRow[] | null }>,
+      ])
+
+      const pointsMap = new Map<string, number>(
+        (pointsData ?? []).map(row => [row.user_id, row.total_points])
+      )
+
+      for (const commenterId of commenterIds) {
+        map.set(commenterId, resolveProfileIconUrl(pointsMap.get(commenterId) ?? 0, thresholds))
+      }
+      return map
+    })(),
   ])
 
   return data.map(row => ({
@@ -124,7 +154,7 @@ export async function getComments(
     created_at: row.created_at,
     user: {
       display_name: row.user?.display_name ?? null,
-      avatar_url: row.user?.avatar_url ?? null,
+      avatar_url: avatarUrlMap.get(row.user_id) ?? null,
     },
     like_count: row.like_count?.[0]?.count ?? 0,
     is_liked: likedSet.has(row.id),

@@ -8,7 +8,7 @@ import { deleteComment, submitComment, toggleLike, updateComment } from '@/lib/a
 import { trackEvent } from '@/lib/analytics/mixpanel'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/primitives/button'
-import { Avatar, AvatarFallback } from '@/components/primitives/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/primitives/avatar'
 
 interface CommentsSectionProps {
   pollId: string
@@ -248,6 +248,9 @@ export function CommentsSection({
                 <div key={comment.id}>
                   <div className="flex gap-2 px-4 py-3">
                     <Avatar className="h-8 w-8 flex-shrink-0 mt-0.5">
+                      {comment.user.avatar_url && (
+                        <AvatarImage src={comment.user.avatar_url} alt="" className="object-cover" />
+                      )}
                       <AvatarFallback className="bg-disabled text-caption-1 font-medium text-neutral-strong">
                         {initial}
                       </AvatarFallback>

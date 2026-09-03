@@ -4,6 +4,8 @@ import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { ENABLE_DEV_MOCK_AUTH, IS_MOCK } from '@/lib/config'
 import { isAdmin } from '@/lib/admin'
+import { getMySeasonRow } from '@/lib/queries/predictions'
+import { getProfileIconUrl } from '@/lib/images/profile-icons'
 
 export type HeaderAuth = {
   userId?: string
@@ -42,10 +44,15 @@ export async function getHeaderAuth(): Promise<HeaderAuth | null> {
     .eq('id', data.user.id)
     .single<HeaderProfile>()
 
+  // 예측 미참여 유저는 season_leaderboard에 행 자체가 없을 수 있다 — 이 경우 0점(기본 등급)으로 간주(plan 6-4).
+  const mySeasonRow = await getMySeasonRow(data.user.id)
+  const totalPoints = mySeasonRow?.total_points ?? 0
+  const avatarUrl = await getProfileIconUrl(totalPoints)
+
   return {
     userId: data.user.id,
     displayName: profile?.display_name ?? data.user.user_metadata?.name ?? undefined,
-    avatarUrl: data.user.user_metadata?.avatar_url ?? undefined,
+    avatarUrl: avatarUrl ?? undefined,
     isAdmin: isAdmin(data.user.email),
   }
 }

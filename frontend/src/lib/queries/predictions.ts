@@ -3,6 +3,7 @@ import { createClient, createPublicClient, getCurrentUser } from '@/lib/supabase
 import { IS_MOCK } from '@/lib/config'
 import type { Position } from '@/lib/predictions/candidates'
 import { MOCK_RANKING, MOCK_RESULTS } from '@/lib/mock/data'
+import { getProfileIconUrl } from '@/lib/images/profile-icons'
 
 /**
  * 내가 제출한 예측 1건. 배당은 제출 시점 스냅샷(`predictions.{def,mid,fwd}_multiplier`)이라
@@ -172,16 +173,18 @@ export async function getWeekRanking(weekKey: string): Promise<RankingRow[]> {
 
   const [rows, user] = await Promise.all([getWeekRankingRows(weekKey), getCurrentUser()])
 
-  return rows.map(row => ({
-    userId: row.user_id,
-    rank: row.rank,
-    name: row.display_name ?? ANONYMOUS_NAME,
-    avatarUrl: row.avatar_url,
-    matchPoints: row.match_points,
-    pickPoints: row.pick_points,
-    totalPoints: row.total_points,
-    isMe: row.user_id === user?.id,
-  }))
+  return Promise.all(
+    rows.map(async row => ({
+      userId: row.user_id,
+      rank: row.rank,
+      name: row.display_name ?? ANONYMOUS_NAME,
+      avatarUrl: await getProfileIconUrl(row.total_points),
+      matchPoints: row.match_points,
+      pickPoints: row.pick_points,
+      totalPoints: row.total_points,
+      isMe: row.user_id === user?.id,
+    })),
+  )
 }
 
 /**
@@ -209,7 +212,7 @@ const getSeasonTopRows = unstable_cache(
 )
 
 /** 내 시즌 순위 한 줄. TOP N 밖이면 상위권 조회에 안 걸려서 따로 읽는다. */
-async function getMySeasonRow(userId: string): Promise<SeasonRankingQueryRow | null> {
+export async function getMySeasonRow(userId: string): Promise<SeasonRankingQueryRow | null> {
   const supabase = await createClient()
   const { data } = await supabase
     .from('season_leaderboard')
@@ -232,14 +235,16 @@ export async function getSeasonRanking(limit = 3): Promise<RankingRow[]> {
   const rows = [...top]
   if (myRow && !rows.some(row => row.user_id === myRow.user_id)) rows.push(myRow)
 
-  return rows.map(row => ({
-    userId: row.user_id,
-    rank: row.rank,
-    name: row.display_name ?? ANONYMOUS_NAME,
-    avatarUrl: row.avatar_url,
-    totalPoints: row.total_points,
-    isMe: row.user_id === user?.id,
-  }))
+  return Promise.all(
+    rows.map(async row => ({
+      userId: row.user_id,
+      rank: row.rank,
+      name: row.display_name ?? ANONYMOUS_NAME,
+      avatarUrl: await getProfileIconUrl(row.total_points),
+      totalPoints: row.total_points,
+      isMe: row.user_id === user?.id,
+    })),
+  )
 }
 
 /** 목 모드 랭킹 — 화면 확인용 고정 데이터. 실제 view 결과와 컬럼 구성만 같다. */
