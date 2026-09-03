@@ -2,9 +2,8 @@
 
 // 사용 도메인: auth (로그인 유도 — Modal 껍데기에 끼워 쓴다)
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Lock } from 'lucide-react'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { IS_MOCK } from '@/lib/config'
 import { mockLogin } from '@/lib/actions/auth'
@@ -49,7 +48,6 @@ interface LoginContentProps {
  */
 export function LoginContent({ triggerAction, onClose, onLoginSuccess }: LoginContentProps) {
   const pathname = usePathname()
-  const [agreed, setAgreed] = useState(false)
 
   // 이 컴포넌트는 Modal이 열렸을 때만 마운트되므로(닫히면 Radix가 언마운트) 마운트 시 = 열림 시 전송.
   useEffect(() => {
@@ -60,7 +58,6 @@ export function LoginContent({ triggerAction, onClose, onLoginSuccess }: LoginCo
   }, [pathname, triggerAction])
 
   async function handleLogin() {
-    if (!agreed) return
     if (IS_MOCK) {
       await mockLogin()
       trackEvent('login_completed', {
@@ -95,24 +92,9 @@ export function LoginContent({ triggerAction, onClose, onLoginSuccess }: LoginCo
         </SheetHeader>
       </div>
 
-      <label className="flex items-start gap-2 mb-4 text-caption-1 text-neutral-muted">
-        <input
-          type="checkbox"
-          checked={agreed}
-          onChange={e => setAgreed(e.target.checked)}
-          className="mt-0.5 h-4 w-4 shrink-0 rounded border-neutral-weak accent-brand-solid"
-        />
-        <span>
-          <Link href="/terms" target="_blank" rel="noopener noreferrer" className="underline">이용약관</Link>
-          {' '}및{' '}
-          <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="underline">개인정보처리방침</Link>
-          에 동의합니다
-        </span>
-      </label>
-
       {/* 원탭 로그인 CTA — outline이 아니라 default(브랜드 채움)로 둬서
           "여기를 누르면 바로 로그인된다"는 게 시각적으로 분명하게 드러나야 한다. */}
-      <Button size="lg" className="w-full font-semibold mb-2" onClick={handleLogin} disabled={!agreed}>
+      <Button size="lg" className="w-full font-semibold mb-2" onClick={handleLogin}>
         {IS_MOCK ? (
           <>
             <span className="text-headline-1">⚡</span>

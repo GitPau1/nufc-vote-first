@@ -94,20 +94,6 @@ test('login CTA uses the filled default button, not the outline/secondary style'
   assert.doesNotMatch(ctaBlock, /className="w-full h-12/)
 })
 
-test('login requires agreeing to terms/privacy before proceeding (TEA-22)', () => {
-  // 버튼은 미동의 상태에서 비활성화된다.
-  assert.match(contentSource, /disabled=\{!agreed\}/)
-  // handleLogin 내부에도 이중 방어 가드가 있다.
-  const handleLoginBlock = contentSource.slice(
-    contentSource.indexOf('async function handleLogin'),
-    contentSource.indexOf('return (', contentSource.indexOf('async function handleLogin'))
-  )
-  assert.match(handleLoginBlock, /if \(!agreed\) return/)
-  // 약관/방침 링크는 새 탭으로 열려 모달 상태(체크 여부)가 유지된다.
-  assert.match(contentSource, /href="\/terms" target="_blank"/)
-  assert.match(contentSource, /href="\/privacy" target="_blank"/)
-})
-
 test('Modal shell switches between sheet (mobile) and center (desktop) for responsive by viewport width', () => {
   assert.match(modalSource, /matchMedia/)
   assert.match(modalSource, /\(min-width: 768px\)/)

@@ -343,48 +343,29 @@ Microsoft Clarity는 이번 방침에 포함하지 않는다(도입 미확정).
 10. **약관의 변경**: 이 약관은 필요 시 개정될 수 있으며, 변경 시 서비스 내 공지합니다.
 11. **준거법**: 이 약관은 대한민국 법령에 따라 해석됩니다.
 
-### 3-3. 로그인 동의 체크박스
+### 3-3. 동의 절차 위치 변경 (2026-09-03 재설계 — 최초 구현 후 사용자 피드백 반영)
 
-`frontend/src/components/primitives/modal/contents/Login.tsx` 수정.
+**최초 구현(커밋 `6b7fe0d`)은 `Login.tsx`에 체크박스를 넣었으나, 로그인할 때마다(재로그인 포함) 매번 눌러야 하는 문제가 발견되어 아래로 재설계함. 이 절이 기존 3-3/3-4 내용을 대체한다.**
 
-**UI 형태 — 네이티브 `<input type="checkbox">`로 결정**, 별도 Checkbox 프리미티브를 새로 만들지 않는다. 이 리포에 이미 설치된 Radix 패키지 목록(`@radix-ui/react-{accordion,avatar,dialog,progress,separator,slot}`)에 `react-checkbox`가 없어, 스타일드 체크박스 프리미티브를 만들려면 새 패키지가 필요하다 — CLAUDE.md 규칙상 새 라이브러리 추가는 사람 확인이 필요하므로, 이번 범위에서는 네이티브 input을 Tailwind로 스타일링해 새 의존성 없이 해결한다.
+#### 배경 — 발견된 버그
 
-```tsx
-const [agreed, setAgreed] = useState(false)
+`frontend/src/app/auth/callback/route.ts:41-50`의 기존 "신규 가입자 판별" 로직(`!profile?.display_name`이면 `/onboarding`으로)은 사실상 죽은 코드였다. `handle_new_user()` 트리거(`initial_schema.sql:93-102`)가 가입 즉시 Google 이름 또는 이메일 앞부분으로 `display_name`을 항상 채우기 때문에, 실제 Google 로그인에서 `display_name`이 null인 경우가 없다 — 즉 온보딩 페이지에 실제로 도달하는 유저가 없었다.
 
-// ...버튼 위에 배치
-<label className="flex items-start gap-2 mb-4 text-caption-1 text-neutral-muted">
-  <input
-    type="checkbox"
-    checked={agreed}
-    onChange={e => setAgreed(e.target.checked)}
-    className="mt-0.5 h-4 w-4 shrink-0 rounded border-neutral-weak accent-brand-solid"
-  />
-  <span>
-    <Link href="/terms" target="_blank" rel="noopener noreferrer" className="underline">이용약관</Link>
-    {' '}및{' '}
-    <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="underline">개인정보처리방침</Link>
-    에 동의합니다
-  </span>
-</label>
+#### 확정된 설계
 
-<Button size="lg" className="w-full font-semibold mb-2" onClick={handleLogin} disabled={!agreed}>
-  {/* 기존 내용 그대로 */}
-</Button>
-```
+1. **새 컬럼**: `public.users.terms_accepted_at timestamptz` (nullable, default null) 마이그레이션 추가.
+2. **`Login.tsx`**: 체크박스·`agreed` state·`disabled={!agreed}`·`if (!agreed) return` 가드를 전부 제거하고 원래대로(원탭 로그인) 되돌린다.
+3. **`/auth/callback/route.ts`**: 리다이렉트 조건을 `!profile?.display_name` → `!profile?.terms_accepted_at`로 변경. `select('display_name')`도 `select('display_name, terms_accepted_at')`로.
+4. **온보딩을 2단계로 분리** (`frontend/src/app/onboarding/OnboardingForm.tsx` 또는 새 래퍼 컴포넌트에서 client state로 단계 관리):
+   - **1단계 — 동의 화면**: `Login.tsx`에서 제거한 체크박스 UI(네이티브 `<input type="checkbox">`, `/terms`·`/privacy` `target="_blank"` 링크)를 그대로 옮겨온다. "동의하고 계속하기" 버튼(미체크 시 `disabled`). 이 단계는 서버 저장 없이 클라이언트 state만 넘긴다.
+   - **2단계 — 닉네임 화면**: 기존 `OnboardingForm` 내용 그대로. **input의 초기값을 서버에서 내려준 현재 `display_name`으로 미리 채운다** — 신규/기존 유저를 구분하는 로직 없이, 기존 유저는 그냥 "계속하기"만 누르면 되고 신규 유저는 트리거가 채운 기본값(구글 이름/이메일 앞부분)이 미리 채워진 상태에서 원하면 바꾼다.
+   - `OnboardingPage`(서버 컴포넌트, `frontend/src/app/onboarding/page.tsx`)가 현재 유저의 `display_name`을 조회해 `OnboardingForm`(또는 새 래퍼)에 prop으로 내려준다.
+5. **`saveNickname()`** (`frontend/src/lib/actions/onboarding.ts`): 기존 `display_name` upsert에 `terms_accepted_at: new Date().toISOString()`을 함께 넣는다. mock 모드 분기는 건드리지 않는다(mock은 애초에 온보딩 리다이렉트 대상이 아님 — 범위 밖).
+6. **기존 가입자 처리**: 별도 로직 불필요 — `terms_accepted_at`이 null인 모든 유저(기존+신규)가 다음 로그인 때 콜백에서 온보딩으로 보내지고, 2단계에서 현재 닉네임이 미리 채워진 채로 한 번만 거치면 끝난다.
 
-- `handleLogin` 함수 맨 앞에도 `if (!agreed) return`을 방어적으로 추가한다(버튼 disabled와 별개로 이중 방어).
-- 체크박스는 mock 로그인("데모로 바로 로그인")과 실제 Google 로그인 양쪽 다 같은 버튼이라 **둘 다 동의를 요구한다** — 모드별로 분기하면 데모 모드만 동의 없이 진행되는 구멍이 생긴다.
-- 약관/방침 링크는 `target="_blank"`로 새 탭에 열어 로그인 모달과 체크 상태를 유지한다(모달이 열려 있는 상태에서 바로 다시 로그인 시도 가능).
-- `Link`는 이미 파일에 없으므로 `next/link` import를 추가한다.
-
-### 3-4. `login-modal.test.mjs` 갱신
-
-기존 테스트 중 `'login CTA uses the filled default button...'`(86-95행)는 `<Button size="lg" className="w-full` 로 시작하는 문자열만 검사해 `disabled={!agreed}` 추가와 무관하게 그대로 통과한다. 다만 아래 **신규 테스트**를 추가해야 한다(구현 단계에서):
-
-- 체크박스 미체크 시 로그인 버튼이 `disabled`인지 (`disabled={!agreed}` 존재 검사)
-- `/terms`, `/privacy` 링크가 존재하고 `target="_blank"`인지
-- `handleLogin` 함수 본문에 `if (!agreed) return` 가드가 있는지
+#### `login-modal.test.mjs` 갱신
+- `'login requires agreeing to terms/privacy before proceeding (TEA-22)'` 테스트를 **제거**한다(더 이상 유효하지 않은 동작 — 이 동작을 검증하던 테스트가 사라지는 게 맞다, 자리를 옮겨 재작성하지 않는다).
+- 온보딩 쪽에 새 테스트 파일(`OnboardingForm.test.mjs` 등, 이 리포의 소스-문자열 검사 관례를 따름)을 추가해 1단계 동의 게이트 + 2단계 prefill 동작을 검증한다.
 
 ---
 
