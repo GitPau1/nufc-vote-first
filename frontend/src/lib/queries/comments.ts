@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { IS_MOCK } from '@/lib/config'
 import { mockGetComments } from '@/lib/mock/queries'
-import { getProfileIconThresholds, resolveProfileIconUrl } from '@/lib/images/profile-icons'
+import { getProfileIconThresholdsSafe, resolveProfileIconUrl } from '@/lib/images/profile-icons'
 
 export type CommentItem = {
   id: string
@@ -129,7 +129,7 @@ export async function getComments(
       // 등급 아이콘은 Storage 계산까지 포함해 서버(쿼리 파일)에서 끝낸다 — 클라이언트로는
       // 최종 아이콘 URL만 내려간다(profile-icons.ts 2절 근거와 동일 원칙).
       const [thresholds, { data: pointsData }] = await Promise.all([
-        getProfileIconThresholds(),
+        getProfileIconThresholdsSafe(),
         supabase
           .from('season_leaderboard')
           .select('user_id, total_points')

@@ -63,8 +63,23 @@ export function resolveProfileIconUrl(totalPoints: number, thresholds: number[])
   return `${SUPABASE_URL}/storage/v1/object/public/${PROFILE_ICONS_BUCKET}/${matched}.webp`
 }
 
+/**
+ * getProfileIconThresholds()의 안전 래퍼 — Storage 조회 실패(getProfileIconThresholdsUncached의
+ * 의도된 throw)를 여기서 흡수해 빈 배열로 되돌린다. 등급 아이콘은 부가 기능이라 이 조회 하나가
+ * 실패했다고 헤더/댓글/마이페이지 등 무관한 화면 전체가 죽으면 안 된다 — 빈 배열이 들어가면
+ * resolveProfileIconUrl이 null을 반환해 기존 아바타 폴백(이니셜)으로 자연스럽게 떨어진다.
+ */
+export async function getProfileIconThresholdsSafe(): Promise<number[]> {
+  try {
+    return await getProfileIconThresholds()
+  } catch (error) {
+    console.error('getProfileIconThresholds error:', error)
+    return []
+  }
+}
+
 /** 위 두 개를 합친 편의 함수 — 대부분의 호출부는 이것만 쓰면 됨. */
 export async function getProfileIconUrl(totalPoints: number): Promise<string | null> {
-  const thresholds = await getProfileIconThresholds()
+  const thresholds = await getProfileIconThresholdsSafe()
   return resolveProfileIconUrl(totalPoints, thresholds)
 }

@@ -3,7 +3,7 @@ import { createClient, createPublicClient, getCurrentUser } from '@/lib/supabase
 import { IS_MOCK } from '@/lib/config'
 import type { Position } from '@/lib/predictions/candidates'
 import { MOCK_RANKING, MOCK_RESULTS } from '@/lib/mock/data'
-import { getProfileIconUrl } from '@/lib/images/profile-icons'
+import { getProfileIconThresholdsSafe, resolveProfileIconUrl } from '@/lib/images/profile-icons'
 
 /**
  * 내가 제출한 예측 1건. 배당은 제출 시점 스냅샷(`predictions.{def,mid,fwd}_multiplier`)이라
@@ -171,20 +171,22 @@ const getWeekRankingRows = unstable_cache(
 export async function getWeekRanking(weekKey: string): Promise<RankingRow[]> {
   if (IS_MOCK) return mockRanking(true)
 
-  const [rows, user] = await Promise.all([getWeekRankingRows(weekKey), getCurrentUser()])
+  const [rows, user, thresholds] = await Promise.all([
+    getWeekRankingRows(weekKey),
+    getCurrentUser(),
+    getProfileIconThresholdsSafe(),
+  ])
 
-  return Promise.all(
-    rows.map(async row => ({
-      userId: row.user_id,
-      rank: row.rank,
-      name: row.display_name ?? ANONYMOUS_NAME,
-      avatarUrl: await getProfileIconUrl(row.total_points),
-      matchPoints: row.match_points,
-      pickPoints: row.pick_points,
-      totalPoints: row.total_points,
-      isMe: row.user_id === user?.id,
-    })),
-  )
+  return rows.map(row => ({
+    userId: row.user_id,
+    rank: row.rank,
+    name: row.display_name ?? ANONYMOUS_NAME,
+    avatarUrl: resolveProfileIconUrl(row.total_points, thresholds),
+    matchPoints: row.match_points,
+    pickPoints: row.pick_points,
+    totalPoints: row.total_points,
+    isMe: row.user_id === user?.id,
+  }))
 }
 
 /**
@@ -227,24 +229,23 @@ export async function getSeasonRanking(limit = 3): Promise<RankingRow[]> {
   if (IS_MOCK) return mockRanking(false).slice(0, limit + 1)
 
   const user = await getCurrentUser()
-  const [top, myRow] = await Promise.all([
+  const [top, myRow, thresholds] = await Promise.all([
     getSeasonTopRows(limit),
     user ? getMySeasonRow(user.id) : Promise.resolve(null),
+    getProfileIconThresholdsSafe(),
   ])
 
   const rows = [...top]
   if (myRow && !rows.some(row => row.user_id === myRow.user_id)) rows.push(myRow)
 
-  return Promise.all(
-    rows.map(async row => ({
-      userId: row.user_id,
-      rank: row.rank,
-      name: row.display_name ?? ANONYMOUS_NAME,
-      avatarUrl: await getProfileIconUrl(row.total_points),
-      totalPoints: row.total_points,
-      isMe: row.user_id === user?.id,
-    })),
-  )
+  return rows.map(row => ({
+    userId: row.user_id,
+    rank: row.rank,
+    name: row.display_name ?? ANONYMOUS_NAME,
+    avatarUrl: resolveProfileIconUrl(row.total_points, thresholds),
+    totalPoints: row.total_points,
+    isMe: row.user_id === user?.id,
+  }))
 }
 
 /** 목 모드 랭킹 — 화면 확인용 고정 데이터. 실제 view 결과와 컬럼 구성만 같다. */

@@ -38,15 +38,18 @@ export async function getHeaderAuth(): Promise<HeaderAuth | null> {
   const { data } = await supabase.auth.getUser()
   if (!data.user) return null
 
-  const { data: profile } = await supabase
-    .from('users')
-    .select('display_name')
-    .eq('id', data.user.id)
-    .single<HeaderProfile>()
-
+  // display_name 조회와 시즌 점수 조회는 서로 의존하지 않아 병렬로 보낸다.
   // 예측 미참여 유저는 season_leaderboard에 행 자체가 없을 수 있다 — 이 경우 0점(기본 등급)으로 간주(plan 6-4).
-  const mySeasonRow = await getMySeasonRow(data.user.id)
+  const [{ data: profile }, mySeasonRow] = await Promise.all([
+    supabase
+      .from('users')
+      .select('display_name')
+      .eq('id', data.user.id)
+      .single<HeaderProfile>(),
+    getMySeasonRow(data.user.id),
+  ])
   const totalPoints = mySeasonRow?.total_points ?? 0
+  // total_points가 나와야 등급을 계산할 수 있어 getProfileIconUrl은 위 조회들 이후에 순차 실행한다.
   const avatarUrl = await getProfileIconUrl(totalPoints)
 
   return {
