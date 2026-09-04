@@ -427,7 +427,9 @@ fallback 관련 코드 0건(`grep -n "isMissingColumnError\|isMissingRatingSchem
 
 ### 4-2. `frontend/src/types/database.ts`
 
-- 줄 3: `export type PollType = 'evaluation' | 'selection' | 'subject_options' | 'question_targets' | 'free_choice' | 'overall_rating'` → `export type PollType = 'poll' | 'overall_rating'`
+> **실행 중 정정(2026-09-04, 사람 확정 — intent 표 #15)**: 이 단계에서 유니온을 좁히면 Step 4b/5로 미룬 `UserPollCreateForm.tsx`·`actions/polls.ts`·`PollCarouselCard.stories.tsx`가 빌드를 깨뜨린다. 그래서 Step 4에서는 **`'poll'`을 추가만 하고 옛 5개 값을 과도기로 유지**한다: `export type PollType = 'poll' | 'overall_rating' | 'subject_options' | 'question_targets' | 'free_choice' | 'selection' | 'evaluation'`(주석으로 과도기 표시). **`'poll' | 'overall_rating'`으로 좁히는 것은 Step 5 마지막 항목**으로 옮긴다.
+
+- 줄 3: (원안) `export type PollType = 'evaluation' | 'selection' | 'subject_options' | 'question_targets' | 'free_choice' | 'overall_rating'` → `export type PollType = 'poll' | 'overall_rating'` — **Step 5에서 수행**
 
 ### 4-3. 렌더 분기 — `frontend/src/app/polls/[id]/page.tsx` (임시 처리 — Step 4b에서 다시 손댄다)
 
@@ -791,6 +793,8 @@ assert.ok(overlayIndex > typeABranchStart && overlayIndex < typeBBranchStart, 'b
 ---
 
 ## Step 5 — TEA-26b: 생성/수정 폼 재구성
+
+> **추가 항목(2026-09-04, intent 표 #15)**: 이 단계의 **마지막**에 `frontend/src/types/database.ts`의 `PollType`을 `'poll' | 'overall_rating'`으로 좁히고 과도기 주석을 지운다(Step 4에서 옛 값을 유지했으므로). 완료 기준에 `grep -rn "'subject_options'\|'question_targets'\|'free_choice'\|'selection'\|'evaluation'" frontend/src` **0건**을 포함한다.
 
 ### 5-1. `frontend/src/lib/queries/polls.ts` — `getPollFormPlayers()`에 `is_active` 필터
 
