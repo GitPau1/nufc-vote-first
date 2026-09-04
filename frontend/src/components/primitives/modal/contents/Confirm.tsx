@@ -14,11 +14,15 @@ interface ConfirmContentProps {
   title?: string
   summaryCaption?: string
   confirmLabel?: string
+  /** 기본값은 투표 도메인의 "제출 후 변경 불가" 문구. 승부예측처럼 제출 후에도 수정 가능한
+   * 도메인은 이 prop으로 덮어써야 한다 — 안 덮어쓰면 그 도메인 결정과 모순되는 문구가 남는다. */
+  description?: string
 }
 
 /**
- * 투표 제출 직전 확인 모달의 **내용**. 껍데기(Modal)는 호출부가 씌운다(기본 form=responsive).
- * "제출 후에는 변경할 수 없습니다" 설명은 이 모달이 존재하는 이유라 고정 — prop으로 못 끈다.
+ * 제출 직전 확인 모달의 **내용**(투표·승부예측 공용). 껍데기(Modal)는 호출부가 씌운다(기본
+ * form=responsive). `description` 기본값은 투표 도메인 기준("제출 후에는 변경할 수 없습니다")이라
+ * 제출 후에도 자유롭게 수정 가능한 도메인(승부예측)에서는 반드시 `description`을 덮어써야 한다.
  */
 export function ConfirmContent({
   selectedLabel,
@@ -28,12 +32,13 @@ export function ConfirmContent({
   title = '이 선택으로 투표하시겠어요?',
   summaryCaption = '내 선택',
   confirmLabel = '최종 제출',
+  description = '제출 후에는 변경할 수 없습니다',
 }: ConfirmContentProps) {
   return (
     <>
       <SheetHeader className="text-left mb-5">
         <SheetTitle className="text-headline-1">{title}</SheetTitle>
-        <SheetDescription>제출 후에는 변경할 수 없습니다</SheetDescription>
+        <SheetDescription>{description}</SheetDescription>
       </SheetHeader>
 
       {/* 선택 요약 — 라디오 인디케이터·브랜드색 테두리로 "선택하는 중"을 다시 그리지 않는다.

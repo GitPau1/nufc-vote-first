@@ -25,11 +25,13 @@ Newcastle United 팬 투표 플랫폼 (한국어, 모바일 퍼스트). Next.js 
 
 - **구현 작업** (feature-spec/plan 작성, 코드 수정) → `developer` 에이전트
 - **디자인/기획 작업** (design-brief, UX 흐름·톤 판단) → `designer` 에이전트
+- **홍보/미디어/마케팅 작업** (앱 내 홍보 문구, 팬 사이트 게시글, 신규 유저 확보 전략) → `marketing` 에이전트 (실제 게시는 하지 않고 초안까지만 — 상세는 `vault/01_에이전트/marketing-agent-rules.md`)
 - **Linear 이슈 생성·상태 변경·댓글** → 메인 세션이 내용을 완결되게 구성한 뒤 `linear-ops` 에이전트가 실행 (메인 세션이 Linear CRUD를 직접 하지 않는다)
 - 위임 전 `vault/01_에이전트/orchestrator-rules.md`의 에스컬레이션 기준을 확인하고, 애매한 결정은 진행 전에 사용자에게 질문 형식(상황/선택지/트레이드오프/추천)으로 올린다.
 - **위임 단위·리뷰 방식·모델 지정**은 같은 문서의 "컨텍스트(토큰) 비용 규칙" 섹션을 따른다: 구현은 plan 단계별 새 에이전트(같은 에이전트 이어 쓰기 최대 2회), `code-review`는 `low`/`medium`만 1회(메인 컨텍스트가 크면 스킬 대신 새 sonnet 에이전트에 diff 경로만 넘김), 모든 서브에이전트 스폰에 `model` 명시(기본값이 opus 5).
 
-- **작업별 산출물**은 `vault/02_프로젝트/<Linear 프로젝트명>/`에 둔다: `intent.md` → `spec.md`(또는 `design-brief.md`/`feature-spec.md`) → `plan.md`. 소속 프로젝트가 없는 단발 이슈는 간소 사이클 — 이슈 본문이 spec, plan 승인만 거친다.
+- **작업별 산출물**은 `vault/02_프로젝트/<Linear 프로젝트명>/`에 둔다: `intent.md` → `spec.md`(또는 `design-brief.md`/`feature-spec.md`/`marketing-brief.md`) → `plan.md`. 소속 프로젝트가 없는 단발 이슈는 간소 사이클 — 이슈 본문이 spec, plan 승인만 거친다.
+- 기능/프로젝트에 안 걸리고 계속 갱신되는 마케팅 상시 문서(브랜드 보이스·성장 전략·콘텐츠 캘린더)는 예외로 `vault/03_마케팅/`에 두고 Linear 이슈로 만들지 않는다 (상세는 `marketing-agent-rules.md`).
 - **`plan.md`는 사람의 승인 없이는 구현을 시작하지 않는다.**
 - 구현이 끝났다고 바로 완료 보고하지 않는다 — 반드시 아래 Commands의 검증 명령어(테스트/린트/빌드)로 스스로 확인한 뒤 결과를 그대로 보고한다. 실패한 검증 결과를 숨기거나 축소하지 않는다.
 - 언제 사람에게 물어야 하는지는 `vault/01_에이전트/orchestrator-rules.md`를 따른다. 애매하면 진행하지 않고 먼저 확인한다.
@@ -75,7 +77,7 @@ DB migration은 리포 루트에서 `supabase db push` (사전에 `supabase link
 - Mock/실연동 모드는 `frontend/src/lib/config.ts`가 결정한다: `NEXT_PUBLIC_SUPABASE_URL`이 없거나 `http`로 시작하지 않으면 `IS_MOCK = true`가 되어 `lib/mock/`의 데이터를 쓴다. **기능을 mock 모드에서만 확인하고 끝내지 말 것** — 실제 Supabase 연동 시 깨질 수 있다.
 - 데이터 계층은 조회(`lib/queries/*`)와 쓰기(`lib/actions/*`)로 분리되어 있다. 스키마를 바꾀면 migration, `frontend/src/types/database.ts`(수동 관리라 drift 주의), query의 `select(...)`, action의 payload, RLS 정책을 함께 확인한다.
 - 관리자 권한은 `lib/admin.ts`의 `ADMIN_EMAILS` 판정 + `lib/supabase/admin.ts`의 service-role 클라이언트 조합으로 동작한다.
-- 투표는 제출 후 수정 불가(DB UNIQUE 제약), 결과는 참여 후에만 공개, 댓글은 투표 참여자만 작성 가능 — 이 세 제약은 UI/쿼리 어디를 고치든 깨지면 안 된다.
+- 투표는 제출 후 수정 불가(DB UNIQUE 제약) — **승부예측(predictions)은 예외로 킥오프 전까지 자유 수정 가능(2026-09-03 확정, 근거: `vault/10_gun/승부예측-랭킹-요구사항-명세서.md` NFR-001)**. 결과는 참여 후에만 공개, 댓글은 투표 참여자만 작성 가능 — 이 세 제약(승부예측의 수정 허용 예외 제외)은 UI/쿼리 어디를 고치든 깨지면 안 된다.
 
 ## Before touching DB/Supabase-related code
 

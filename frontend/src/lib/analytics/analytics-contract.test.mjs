@@ -131,10 +131,17 @@ test('prediction flow tracks the funnel entry and per-step completion', () => {
   assert.match(file, /if \(submitted\) return/)
   assert.match(file, /trackEvent\('prediction_step_completed'/)
   assert.match(file, /onClick=\{\(\) => completeStep\('score', 'pick'\)\}/)
-  assert.match(file, /onClick=\{\(\) => completeStep\('pick', 'confirm'\)\}/)
+  // pick의 "다음"은 고정 순서 a-b-a-b-c를 진행시킨다(feature-spec §9) — 실제로 다음 경기의
+  // score로 갈지 confirm으로 갈지는 flow-cursor.ts의 computeNextFromPick이 정하고(로직 자체는
+  // flow-cursor.test.mjs가 검증), 여기서는 그 결과(next.step)를 그대로 이벤트에 실어보낸다.
+  assert.match(file, /onClick=\{goNextFromPick\}/)
+  assert.match(file, /const next = computeNextFromPick\(\{ step, matchCursor, returnToConfirm \}, pending\.length\)/)
+  assert.match(file, /completeStep\('pick', next\.step\)/)
   // 스코어는 0-0 초기값이라 "미입력"이 없다 — 손대지 않은 경기 수로 대체
   assert.match(file, /untouched_score_count/)
-  assert.match(file, /used_copy_picks: copyUsedRef\.current/)
+  // "그대로 적용"(픽 복사) 버튼은 이 재설계로 완전히 폐기됐다 — 되살아나면 회귀다.
+  // (설명 주석에서 그 이름을 언급하는 것 자체는 허용하고, 실제 렌더되는 버튼 텍스트만 잡는다)
+  assert.doesNotMatch(file, /copyPicks|copyUsedRef|used_copy_picks|>\s*그대로 적용\s*</)
 })
 
 test('prediction submit failures split the login wall from real errors', () => {
@@ -151,7 +158,11 @@ test('prediction done view closes the client funnel without duplicating the serv
 
   assert.match(file, /trackEvent\('prediction_done_viewed'/)
   assert.match(file, /submitted_match_count: submittedMatches\.length/)
-  assert.match(file, /missed_match_count: missedMatches\.length/)
+  // missed_match_count는 "제출 안 한 경기 수" 전체를 담는다(마감돼서 못 낸 것 + 아직 안 낸 것
+  // 합산) — 화면이 그 둘을 나눠 보여주게 된 뒤에도 이벤트 필드의 의미는 그대로다(분석 이벤트
+  // 확장은 이번 스코프에서 스킵, feature-spec.md §7-7).
+  assert.match(file, /missed_match_count: notSubmittedCount/)
+  assert.match(file, /notSubmittedCount = deferredMatches\.length \+ missedMatches\.length/)
   assert.doesNotMatch(file, /trackEvent\('prediction_submitted'/)
 })
 

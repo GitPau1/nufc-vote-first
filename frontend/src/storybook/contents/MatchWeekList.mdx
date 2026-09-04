@@ -13,7 +13,7 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 
 **컨테이너는 클릭 대상이 아니다.** 진입점은 하단 CTA `Button` 하나뿐이고(`MatchWeekList.tsx:265-277`), 경기 카드도 클릭되지 않는 정보 카드다. 경기가 1개든 2개든 같은 카드가 **세로로 쌓이고 폭 전체를 쓴다**(`flex flex-col gap-2`, `MatchWeekList.tsx:252`) — 폭에 따라 바뀌지 않는다. 컴포넌트 전체에 `sm:`/`md:` 분기가 하나도 없다.
 
-`N주차` 타이포는 `text-headline-1 font-extrabold`다(`MatchWeekList.tsx:233`).
+`N주차` 타이포는 `text-headline-1 font-extrabold`다(`MatchWeekList.tsx:233`). 문구 자체는 `lib/predictions/week.ts`의 `weekLabel()`이 만든다 — 프리시즌 주(`weekNo`가 음수)는 "N주차" 대신 "프리시즌 N"으로 나온다(2026-09-04).
 
 **배지도 CTA도 주차 단위로 하나씩이다.** 제출 자체는 경기 단위로 쌓이지만(`myResult`가 경기에 붙는다), 화면에 요약되는 건 주 레벨 두 플래그다.
 
@@ -93,7 +93,7 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 카드 안 배치는 이렇다(`MatchInfoCard`, `MatchWeekList.tsx:293-392`).
 
 - **표면은 `dimmed`면 `bg-page`, 예측 가능한 경기면 대회색 wash(`.competition-wash-*`)이고 테두리가 없다**(TEA-30). 컨테이너가 흰 면(`bg-surface`)이라 한 단계 낮은 `bg-page`나 옅은 wash만으로 경계가 갈린다 — 컨테이너 종류에 따라 표면을 바꾸는 prop은 없다. 패딩은 `p-3 pb-5` — 아래쪽만 20px로 더 줘서 시각적 무게를 아래로 배분한다.
-- 좌상단은 **대회명만** 둔다(`competition ?? '프리미어리그'`). 이전에 있던 `{weekNo}라운드` 표기는 실제 라운드가 아니라 ISO 주차 번호였고(`lib/predictions/week.ts:88-94`), `fixtures`에 라운드 컬럼이 없어서 삭제했다.
+- 좌상단은 **대회명만** 둔다(`match.competition`이 있을 때만 렌더, 없으면 텍스트 자체를 생략 — TEA-30). 이전에 있던 `{weekNo}라운드` 표기는 실제 라운드가 아니라 ISO 주차 번호였고(`lib/predictions/week.ts:88-94`), `fixtures`에 라운드 컬럼이 없어서 삭제했다.
 - 가운데는 위아래 두 줄이다 — **일자**(`8월 23일`)가 caption으로 위, 그 아래에 아직 안 끝난 경기는 `kickoffTime`, 끝난 경기는 `actual` 스코어가 온다.
 - `finished`인 경기는 양쪽 팀 로고가 흑백이 된다(`TeamBadge`의 `grayscale`).
 - `isDimmed`(= 경기가 `locked`이거나 주차가 `upcoming`)는 이제 **텍스트 톤만** 가른다(`MatchWeekList.tsx:139-141`). 배경으로 가라앉히던 `bg-disabled`는 없어졌다 — 영향을 받는 건 팀명(`:341`, `:369`)과 스코어·킥오프 시각(`:355`, `:359`) 두 자리뿐이고, 대회명(`:323`)과 일자(`:353`)는 `dimmed`와 무관하게 늘 muted다. "지금 할 수 있는 것"은 카드 배경이 아니라 **주차 컨테이너 색**이 가리킨다.

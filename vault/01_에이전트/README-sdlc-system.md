@@ -2,7 +2,7 @@
 
 이 문서는 왜 이런 구조를 만들었는지, 그리고 실제로 어떻게 작동하는지를 설명한다.
 개별 규칙 파일(리포 루트 `CLAUDE.md`, 이 폴더의 `orchestrator-rules.md`, `designer-agent-rules.md`,
-`developer-agent-rules.md`, `haiku-linear-ops.md`, `sonnet-subtask-scope.md`)을 처음 보거나,
+`developer-agent-rules.md`, `marketing-agent-rules.md`, `haiku-linear-ops.md`, `sonnet-subtask-scope.md`)을 처음 보거나,
 시간이 지나 왜 이렇게 구성했는지 기억이 흐려졌을 때 이 문서로 돌아와서 맥락을 복구한다.
 
 > 안착 노트 (2026-09-01): 원문의 독립 `CLAUDE.md` 템플릿은 별도 파일로 두지 않고
@@ -45,7 +45,7 @@ GitHub이 "진짜 기록"이고, Linear는 그 기록을 보기 좋게 보여주
 사람 (최종 판단 / 승인 / 피드백)
  └─ Fable (오케스트레이션: 흐름 관리, 순서/우선순위 판단)
      └─ Haiku (Linear 이슈 생성/상태변경 등 기계적 실행)
- └─ 디자이너 에이전트 / 개발자 에이전트 (판단 + 산출물 작성 — 배정 모델은 orchestrator-rules.md 표 참고)
+ └─ 디자이너 에이전트 / 개발자 에이전트 / 마케팅 에이전트 (판단 + 산출물 작성 — 배정 모델은 orchestrator-rules.md 표 참고)
      └─ Sonnet (병렬·저판단·소규모 하위 작업 실행)
 ```
 
@@ -64,6 +64,10 @@ GitHub이 "진짜 기록"이고, Linear는 그 기록을 보기 좋게 보여주
   - 위치: `vault/02_프로젝트/<Linear 프로젝트명>/` (프로젝트별 폴더)
   - **간소 사이클** (2026-09-01 확정): 소속 Linear 프로젝트가 없는 단발 이슈는 intent/spec/plan 파일을
     만들지 않는다 — Linear 이슈 본문을 spec으로 삼고, plan 승인 게이트만 거친다 (plan은 이슈 댓글/세션 보고로 남김).
+  - **마케팅 상시 문서** (2026-09-04 추가): 신규 유저 확보 전략·브랜드 보이스·콘텐츠 캘린더처럼 특정
+    기능/프로젝트에 안 걸리고 계속 갱신되는 마케팅 문서는 `vault/03_마케팅/`에 둔다 — Linear 이슈로 만들지
+    않고 문서로만 관리한다. 기능에 딸린 홍보 문구(`marketing-brief.md`)는 기존 방식대로
+    `vault/02_프로젝트/<프로젝트명>/`에 둔다. 상세 기준은 `marketing-agent-rules.md` 참고.
 
 이 구분은 SDLC 플레이북 원문이 이미 쓰던 개념(정적 인프라 vs 작업별 산출물)을 그대로 따른 것이다.
 정적 문서를 다시 역할별로 쪼갠 이유는, 디자이너와 개발자가 필요로 하는 정보 자체가 다르기 때문이다
