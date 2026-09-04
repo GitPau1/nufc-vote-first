@@ -6,6 +6,8 @@ import { Button } from '@/components/primitives/button'
 import { Badge } from '@/components/primitives/badge'
 import { teamLogoUrl } from '@/lib/predictions/week'
 import type { MatchdayFixture, MatchdayRatedPlayer, MatchdayPositionLeader } from '@/lib/queries/fixtures'
+import { competitionColorBucket, COMPETITION_GLOW } from '@/lib/predictions/competitionColor'
+import { cn } from '@/lib/utils'
 
 /**
  * 홈 히어로 — `fixtures` 테이블(FotMob 동기화) 한 건을 받아 다음/최근 경기를 보여주고
@@ -174,9 +176,13 @@ export function MatchdayHero({ fixture, href }: { fixture: MatchdayFixture; href
       : null)
   // /predictions/[weekKey] — 승부예측 세션 화면(main 병합으로 이 브랜치에 존재한다).
   const targetHref = href ?? `/predictions/${fixture.weekKey}`
+  const glowClass = !fixture.finished
+    ? COMPETITION_GLOW[competitionColorBucket(fixture.competitionName)]
+    : 'bg-neutral-strong'
 
   return (
-    <div className="spotlight-glow-brand-strong relative overflow-hidden rounded-lg px-4 pb-4 pt-5">
+    // 대회색 글로우(TEA-30): 경기가 끝나기 전(예정+진행 중)엔 대회색, 끝나면 무채색 평면. 파랑 상시 글로우는 제거됨.
+    <div className={cn(glowClass, 'relative overflow-hidden rounded-lg px-4 pb-4 pt-5')}>
       {fixture.competitionName && (
         <p className="text-center text-caption-2 font-medium text-on-solid-muted">
           {fixture.competitionName}
