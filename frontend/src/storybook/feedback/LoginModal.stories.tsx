@@ -50,7 +50,7 @@ export const TriggerLogin: Story = {
 
 /**
  * **케이스 2 — 행동 유도(투표).** `triggerAction="vote"`. 투표하려다 막힌 비로그인 사용자.
- * `TypeAPollClient`·`TypeBPollClient`·`OverallRatingPollClient`가 이 값을 넘긴다.
+ * `PollClient`·`OverallRatingPollClient`가 이 값을 넘긴다.
  */
 export const TriggerVote: Story = {
   args: { triggerAction: 'vote' },

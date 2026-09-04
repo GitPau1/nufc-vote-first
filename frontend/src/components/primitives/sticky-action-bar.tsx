@@ -7,7 +7,7 @@ interface StickyActionBarProps {
 
 /**
  * 화면 하단 제출 버튼 바.
- * TypeAPollClient·TypeBPollClient·OverallRatingPollClient(투표 3종)와 PredictionFlowClient
+ * PollClient·OverallRatingPollClient(투표 2종)와 PredictionFlowClient
  * (승부예측 제출)에 거의 동일하게 복붙돼 있던 마크업을 통합한 것.
  * 폭·데스크탑 정렬처럼 화면마다 다른 부분은 `className`으로 넘긴다(예측 플로우는 더 좁은 폭 +
  * 데스크탑 가운데 고정폭 버튼). 공유하는 건 "모바일 fixed → 데스크탑 static" 전환 로직이다.

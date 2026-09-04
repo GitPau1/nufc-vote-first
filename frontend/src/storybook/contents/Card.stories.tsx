@@ -47,7 +47,7 @@ export const Default: Story = {
 }
 
 /**
- * 실사용 형태 1 — 투표 상세의 선수 정보 카드(`polls/TypeAPollClient.tsx`).
+ * 실사용 형태 1 — 투표 상세의 선수 정보 카드(`polls/PollClient.tsx`).
  * `CardContent`에 `p-4`를 다시 명시해 기본값 `pt-0`을 덮는다. Header 없이 Content만 쓸 때
  * 이걸 빼면 카드 위쪽 패딩이 사라지는 게 이 컴포넌트의 가장 흔한 함정이다.
  */

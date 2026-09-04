@@ -1,48 +1,8 @@
-# 07 — 예정 투표 & 마감 처리
+# 07 — 예정 투표 & 마감 처리 (제거됨)
 
-## 예정 투표 (status = 'scheduled')
+이 기능은 2026-09-04 TEA-25로 완전 제거됐다.
 
-### 조건
-`polls.status = 'scheduled'` AND `polls.scheduled_at > now()`
-
-### 목록 카드 UI
-- 카드 전체 blur (`backdrop-filter: blur(8px)`)
-- 잠금 아이콘 오버레이
-- 투표 제목 표시
-- 카운트다운 타이머 (클라이언트 사이드 실시간 업데이트)
-  - 1일 이상: "D-N"
-  - 1일 미만: "HH:MM:SS"
-- 클릭 불가 (`pointer-events: none`)
-
-### 자동 공개 처리
-`scheduled_at` 도달 시 `status = 'active'` 로 자동 전환.
-
-```sql
--- Supabase Edge Function + pg_cron (매 분 실행)
-UPDATE polls
-SET status = 'active'
-WHERE status = 'scheduled'
-  AND scheduled_at <= now();
-```
-
----
-
-## 투표 마감 (status = 'closed')
-
-### 조건
-`polls.closes_at <= now()`
-
-### 자동 마감 처리
-
-```sql
--- Supabase Edge Function + pg_cron (매 분 실행)
-UPDATE polls
-SET status = 'closed'
-WHERE status = 'active'
-  AND closes_at <= now();
-```
-
-### 마감된 투표 UI
-- 목록 카드: "투표 종료" 뱃지
-- 상세 페이지: 투표 UI 없음, 결과 화면만 표시
-- 미참여자도 결과 열람 가능
+- 근거: `status = 'scheduled'` 행이 프로덕션에 0건이었고, 애초에 앱에서 예정 투표를 만들 방법이 없었다(`createUserPoll`이 `status: 'active'`로 고정, 생성 폼에 `scheduled_at` 입력란 없음). cron/Edge Function 자동전환도 구현된 적이 없었다(`getEffectivePollStatus()`가 매 요청마다 날짜로 즉석 계산하는 우회 구조만 존재).
+- PR: [`nufc-vote-first#22`](https://github.com/GitPau1/nufc-vote-first/pull/22) — `feat(TEA-25): 예정 투표(scheduled polls) 기능 제거`.
+- 현재 `PollStatus`는 `'active' | 'closed'` 두 값만 존재한다. `polls.scheduled_at` 컬럼은 DB에 남아 있으나 코드가 읽지 않고, `supabase/migrations/20260904160000_drop_polls_scheduled_at.sql`로 삭제가 대기 중이다(투표 정리 프로젝트 plan.md §3-1).
+- 이 문서가 다뤘던 원래 내용(예정 투표 카드 blur/잠금 UI, 마감 처리 자동 전환 로직)은 구현된 적이 없었으므로 원문을 보존하지 않는다.

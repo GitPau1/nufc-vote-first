@@ -49,7 +49,7 @@ export function OverallRatingResultView({ poll, results, hasVoted, canEdit }: Ov
         {/* 셸은 결과 화면 컨벤션(ResultView 선례)과 동일하다 — mx-auto max-w-[860px] + 단일
             Card(p-5 sm:p-7). 커버는 Card 밖 독립 블록(overflow-hidden rounded-lg bg-disabled)으로
             두고, 제목/배지는 이미지 오버레이 대신 Card 안으로 내린다 — 이 화면만 예외로 이미지 위
-            흰 글씨를 얹을 이유가 없다(TypeBPollClient가 같은 이유로 오버레이를 뺀 선례). */}
+            흰 글씨를 얹을 이유가 없다(PollClient의 선택형 분기가 같은 이유로 오버레이를 뺀 선례). */}
         <main className="mx-auto flex w-full max-w-[860px] flex-col gap-3 px-4 pb-8 pt-4 sm:px-6 sm:pt-8">
           <div className="overflow-hidden rounded-lg bg-disabled">
             <img src={coverUrl} alt={poll.title} className="h-[160px] sm:h-[252px] w-full object-cover" />

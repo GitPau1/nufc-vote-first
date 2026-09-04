@@ -97,7 +97,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated, canEdit }: Over
     if (!isLastStep) setStepIndex(index => index + 1)
   }
 
-  // 제출 후 수정이 불가하므로 선택형 투표(TypeA/B)와 같이 확인 단계를 한 번 거친다.
+  // 제출 후 수정이 불가하므로 일반 투표(PollClient)와 같이 확인 단계를 한 번 거친다.
   function requestSubmit() {
     if (!isAuthenticated) { setShowLogin(true); return }
     if (completedCount !== totalRequired) {

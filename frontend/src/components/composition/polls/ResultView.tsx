@@ -36,7 +36,7 @@ function buildResultItems(poll: PollDetail, voteCounts: VoteCountMap) {
     .sort((a, b) => b.count - a.count || a.option.display_order - b.option.display_order)
 }
 
-/** 투표 상세(TypeBPollClient)도 같은 포맷을 쓴다 — 제출 전후로 날짜 표기가 달라지지 않게. */
+/** 투표 상세(PollClient)도 같은 포맷을 쓴다 — 제출 전후로 날짜 표기가 달라지지 않게. */
 export function formatPollDate(dateStr?: string | null): string | null {
   if (!dateStr) return null
   return new Intl.DateTimeFormat('ko-KR', {
@@ -48,7 +48,7 @@ export function formatPollDate(dateStr?: string | null): string | null {
 }
 
 /**
- * 선택지 썸네일 판정. 투표 상세(TypeBPollClient)도 같은 판정을 쓴다 —
+ * 선택지 썸네일 판정. 투표 상세(PollClient)도 같은 판정을 쓴다 —
  * 투표할 때 본 썸네일과 결과에서 보는 썸네일이 어긋나면 안 되기 때문.
  */
 export function getOptionThumb(option: PollOptionRow, optionPlayers?: Record<string, PlayerRow>) {
@@ -100,7 +100,7 @@ export function ResultView({ poll, voteCounts, myOptionId, comments, canEdit }: 
       <div className="flex-1 overflow-y-auto hide-scrollbar animate-enter">
         {/* 컨테이너·카드 규격은 제출 화면(PredictionFlowClient)과 맞춘다 — mx-auto max-w-[860px] +
             단일 Card(p-5 sm:p-7). 커버 이미지만 Card 밖에 독립된 블록으로 둔다: 투표 화면
-            (TypeBPollClient)도 커버를 카드 밖 단독 블록(overflow-hidden rounded-lg bg-disabled)으로
+            (PollClient의 선택형 분기)도 커버를 카드 밖 단독 블록(overflow-hidden rounded-lg bg-disabled)으로
             두고, 그 아래 글 컨테이너를 따로 둔다 — 참여 전후로 커버 톤이 달라지지 않게 같은 처리를 쓴다. */}
         <main className="mx-auto flex w-full max-w-[860px] flex-col gap-3 px-4 pb-8 pt-4 sm:px-6 sm:pt-8">
           <div className="overflow-hidden rounded-lg bg-disabled">

@@ -25,13 +25,13 @@ test('result page omits sections that are not in the Figma result frame', () => 
 
 // 결과 화면 셸을 제출 화면(PredictionFlowClient) 컨벤션으로 정렬했다 —
 // mx-auto max-w-[860px] 컨테이너 + 단일 Card(p-5 sm:p-7) 셸. 커버 이미지는 Card 밖 독립
-// 블록으로 둔다(투표 화면 TypeBPollClient와 같은 처리 — 참여 전후로 커버 톤이 갈리지 않게).
+// 블록으로 둔다(투표 화면 PollClient와 같은 처리 — 참여 전후로 커버 톤이 갈리지 않게).
 test('result page shell matches the submission-screen container and single-Card convention', () => {
   assert.match(resultView, /mx-auto flex w-full max-w-\[860px\]/)
   assert.match(resultView, /from '@\/components\/primitives\/card'/)
   assert.match(resultView, /<Card className="p-5 sm:p-7">/)
 
-  // 커버는 투표 화면과 동일하게 Card 밖 단독 블록 — 참여 전(TypeBPollClient)과 이미지 처리가 갈리면 안 된다.
+  // 커버는 투표 화면과 동일하게 Card 밖 단독 블록 — 참여 전(PollClient)과 이미지 처리가 갈리면 안 된다.
   assert.match(resultView, /overflow-hidden rounded-lg bg-disabled/)
 
   // 예전 "이미지+본문을 한 보더 섹션에 합친" 셸은 사라졌다 — 그 셸의 클래스 조합이 리터럴로 남아있으면 안 된다.
