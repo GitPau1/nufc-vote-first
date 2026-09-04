@@ -14,7 +14,6 @@ import * as PollCardStories from './PollCard.stories'
 
 <Canvas of={PollCardStories.Active} />
 <Canvas of={PollCardStories.ClosingSoon} />
-<Canvas of={PollCardStories.Scheduled} />
 <Canvas of={PollCardStories.Closed} />
 
 ## 상태 뱃지 톤
@@ -23,7 +22,6 @@ import * as PollCardStories from './PollCard.stories'
 
 | 상태 | Badge variant | 톤 |
 |---|---|---|
-| 공개 예정 | `outline` | 중립 — "지금 참여 못 함" |
 | 진행중, 마감 1일 초과 | `default` | brand |
 | 진행중, 마감 1일 이하 | `destructive` | critical — 위 `ClosingSoon` 참고 |
 | 종료됨 | `outline` | 중립 — "지금 참여 못 함" |

@@ -65,7 +65,7 @@ export const ClosingSoon: Story = {
   },
 }
 
-/** 종료된 투표가 히어로에 올라오는 경우(진행중·공개예정이 하나도 없을 때) — 뱃지가 "종료됨". 흐림/흑백 처리는 없다. */
+/** 종료된 투표가 히어로에 올라오는 경우(진행중이 하나도 없을 때) — 뱃지가 "종료됨". 흐림/흑백 처리는 없다. */
 export const Closed: Story = {
   ...mobileWidth,
   args: { poll: mockPoll({ status: 'closed', vote_count: 8421 }) },
