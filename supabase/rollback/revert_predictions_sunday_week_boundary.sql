@@ -54,8 +54,25 @@ from (
 comment on view public.week_leaderboard is
   '주차별 랭킹. week_key는 lib/predictions/week.ts의 weekKey()와 같은 ISO 주차 문자열.';
 
+-- 주의: 이 리버트는 20260904140000 이전 상태, 즉 20260830150000_toon_cup_scoring.sql의
+-- 정의(리그/컵 배점 차등 is_cup, 포지션 순위 기반 픽 점수 pos_rank)로 되돌린다 — 그보다도
+-- 더 옛날인 rating/multiplier 방식으로 되돌리면 안 된다. 여기서 바뀌는 건 date_trunc 2줄뿐이다
+-- (일요일 앵커 → 원래 월요일 ISO 기준).
 create or replace view public.prediction_results
 with (security_invoker = true) as
+with current_season as (
+  select id from public.seasons where is_current limit 1
+),
+ranked as (
+  select
+    fpr.fixture_id, fpr.player_id, s.position, fpr.rating,
+    rank() over (partition by fpr.fixture_id, s.position order by fpr.rating desc) as pos_rank
+  from public.fixture_player_ratings fpr
+  join public.season_squads s
+    on s.fotmob_player_id = fpr.player_id
+   and s.season_id = (select id from current_season)
+  where s.position in ('DEF','MID','FWD')
+)
 select
   p.id,
   p.user_id,
@@ -70,22 +87,23 @@ select
   rd.rating as def_rating,
   rm.rating as mid_rating,
   rf.rating as fwd_rating,
-  public.prediction_match_points(p.home_score, p.away_score, f.home_score, f.away_score) as match_points,
-  public.prediction_pick_points(coalesce(rd.rating, 0), p.def_multiplier) as def_points,
-  public.prediction_pick_points(coalesce(rm.rating, 0), p.mid_multiplier) as mid_points,
-  public.prediction_pick_points(coalesce(rf.rating, 0), p.fwd_multiplier) as fwd_points,
-  public.prediction_pick_points(coalesce(rd.rating, 0), p.def_multiplier)
-    + public.prediction_pick_points(coalesce(rm.rating, 0), p.mid_multiplier)
-    + public.prediction_pick_points(coalesce(rf.rating, 0), p.fwd_multiplier) as pick_points,
-  public.prediction_match_points(p.home_score, p.away_score, f.home_score, f.away_score)
-    + public.prediction_pick_points(coalesce(rd.rating, 0), p.def_multiplier)
-    + public.prediction_pick_points(coalesce(rm.rating, 0), p.mid_multiplier)
-    + public.prediction_pick_points(coalesce(rf.rating, 0), p.fwd_multiplier) as total_points
+  public.prediction_match_points(p.home_score, p.away_score, f.home_score, f.away_score, cup.is_cup) as match_points,
+  public.prediction_pick_points(rd.pos_rank, cup.is_cup) as def_points,
+  public.prediction_pick_points(rm.pos_rank, cup.is_cup) as mid_points,
+  public.prediction_pick_points(rf.pos_rank, cup.is_cup) as fwd_points,
+  public.prediction_pick_points(rd.pos_rank, cup.is_cup)
+    + public.prediction_pick_points(rm.pos_rank, cup.is_cup)
+    + public.prediction_pick_points(rf.pos_rank, cup.is_cup) as pick_points,
+  public.prediction_match_points(p.home_score, p.away_score, f.home_score, f.away_score, cup.is_cup)
+    + public.prediction_pick_points(rd.pos_rank, cup.is_cup)
+    + public.prediction_pick_points(rm.pos_rank, cup.is_cup)
+    + public.prediction_pick_points(rf.pos_rank, cup.is_cup) as total_points
 from public.predictions p
 join public.fixtures f on f.fixture_id = p.fixture_id
-left join public.fixture_player_ratings rd on rd.fixture_id = p.fixture_id and rd.player_id = p.def_player_id
-left join public.fixture_player_ratings rm on rm.fixture_id = p.fixture_id and rm.player_id = p.mid_player_id
-left join public.fixture_player_ratings rf on rf.fixture_id = p.fixture_id and rf.player_id = p.fwd_player_id
+cross join lateral (select (f.competition_name is distinct from 'Premier League') as is_cup) cup
+left join ranked rd on rd.fixture_id = p.fixture_id and rd.player_id = p.def_player_id and rd.position = 'DEF'
+left join ranked rm on rm.fixture_id = p.fixture_id and rm.player_id = p.mid_player_id and rm.position = 'MID'
+left join ranked rf on rf.fixture_id = p.fixture_id and rf.player_id = p.fwd_player_id and rf.position = 'FWD'
 where f.finished
   and not exists (
     select 1
@@ -98,5 +116,5 @@ where f.finished
   );
 
 comment on view public.prediction_results is
-  '정산이 끝난 주차(그 주 경기 전부 종료)의 예측 + 계산된 점수. 진행 중인 주차와 미종료 경기는 '
-  '여기 나오지 않는다 — 제출완료 화면은 predictions 를 직접 읽고 적중 여부만 보여준다.';
+  '정산이 끝난 주차의 예측 + 계산된 점수. 대회별 배점 — 리그(Premier League): 스코어 8/5·픽 4/2/1(만점 20), '
+  '컵(그 외): 스코어 5/3·픽 3/2/1(만점 14). 미출전(평점 없음)=0점.';
