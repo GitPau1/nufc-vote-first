@@ -503,21 +503,34 @@ export function PredictionFlowClient({
             (데스크탑은 아래 푸터 좌측에 있어 영향 없음.) */}
         {step === 'pick' && statusNode && <div className="pt-4 sm:hidden">{statusNode}</div>}
 
-        {/* 본문 — 데스크탑은 세 스텝을 같은 칸에 겹쳐 쌓고(높이 고정) 비활성은 자리만 차지. 모바일은 활성만. */}
-        <div className="flex flex-1 flex-col py-6 sm:grid sm:py-8">
-          {STEP_META.map(({ key }) => (
-            <div
-              key={key}
-              aria-hidden={key !== step}
-              className={cn(
-                'flex-col justify-center sm:col-start-1 sm:row-start-1',
-                key === step ? 'flex' : 'hidden sm:flex sm:invisible',
-              )}
-            >
-              <div className="w-full">{stepBody(key)}</div>
-            </div>
-          ))}
-        </div>
+        {/*
+          본문 — score↔pick 전환(같은 경기 안에서 왔다갔다 하는, 가장 잦은 전환)만 같은 그리드
+          칸에 겹쳐 쌓아 높이를 고정한다(비활성은 자리만 차지). confirm은 이 겹쳐-쌓기에서 뺐다
+          — 더블 매치위크에서는 confirm이 경기 2개를 다 보여줘 훨씬 커지는데, 그걸 score/pick과
+          같이 계속 그려두면 경기 하나만 보여줘야 할 score/pick 컨테이너까지 confirm 높이로
+          고정돼버린다(코드리뷰 2026-09-04). confirm은 그냥 조건부로 그 내용만 렌더해
+          자기 콘텐츠 크기대로 자연스럽게 커지게 둔다. 모바일은 원래도 활성 스텝만 그렸으니 영향 없음.
+        */}
+        {step === 'confirm' ? (
+          <div className="flex flex-1 flex-col py-6 sm:py-8">
+            <div className="w-full">{stepBody('confirm')}</div>
+          </div>
+        ) : (
+          <div className="flex flex-1 flex-col py-6 sm:grid sm:py-8">
+            {(['score', 'pick'] as const).map(key => (
+              <div
+                key={key}
+                aria-hidden={key !== step}
+                className={cn(
+                  'flex-col justify-center sm:col-start-1 sm:row-start-1',
+                  key === step ? 'flex' : 'hidden sm:flex sm:invisible',
+                )}
+              >
+                <div className="w-full">{stepBody(key)}</div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {visibleError && (
           <p role="alert" className="mb-2 text-center text-label-2 font-medium text-critical">

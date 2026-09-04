@@ -77,3 +77,16 @@ test('ProgressPips receives a dynamic dot count instead of always assuming 3 fix
   assert.match(file, /const totalSteps = pending\.length \* 2 \+ 1/)
   assert.match(file, /<ProgressPips current=\{step\} total=\{totalSteps\} activeIndex=\{currentStepIndex\} \/>/)
 })
+
+// 코드리뷰 2026-09-04 버그 수정: "겹쳐 쌓아 높이 고정" 그리드 트릭에 confirm까지 계속 끼어 있으면
+// (더블 매치위크에서 confirm이 경기 2개를 다 보여줘 훨씬 커진 뒤로) score/pick 컨테이너까지
+// confirm 높이로 고정돼버린다. confirm은 그 트릭에서 빼고 조건부로 자기 콘텐츠 크기만큼만 렌더한다.
+test('the height-locking grid stacks only score/pick, not confirm (which sizes to its own content)', () => {
+  // score/pick만 겹쳐 쌓는다 — STEP_META 전체(confirm 포함)를 도는 게 아니라 두 키만 명시한다.
+  assert.match(file, /\(\['score', 'pick'\] as const\)\.map\(key => \(/)
+  // confirm은 별도 분기에서 조건부로 그 내용만 렌더한다(같은 그리드 칸에 숨겨서 얹어두지 않는다).
+  assert.match(file, /step === 'confirm' \? \(/)
+  assert.match(file, /<div className="w-full">\{stepBody\('confirm'\)\}<\/div>/)
+  // confirm이 겹쳐-쌓기용 sm:invisible로 숨겨진 채 계속 그려지는 옛 패턴이 되살아나면 회귀다.
+  assert.doesNotMatch(file, /STEP_META\.map\(\{ key \}\) => \(/)
+})
