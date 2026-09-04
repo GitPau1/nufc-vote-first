@@ -151,7 +151,11 @@ test('prediction done view closes the client funnel without duplicating the serv
 
   assert.match(file, /trackEvent\('prediction_done_viewed'/)
   assert.match(file, /submitted_match_count: submittedMatches\.length/)
-  assert.match(file, /missed_match_count: missedMatches\.length/)
+  // missed_match_count는 "제출 안 한 경기 수" 전체를 담는다(마감돼서 못 낸 것 + 아직 안 낸 것
+  // 합산) — 화면이 그 둘을 나눠 보여주게 된 뒤에도 이벤트 필드의 의미는 그대로다(분석 이벤트
+  // 확장은 이번 스코프에서 스킵, feature-spec.md §7-7).
+  assert.match(file, /missed_match_count: notSubmittedCount/)
+  assert.match(file, /notSubmittedCount = deferredMatches\.length \+ missedMatches\.length/)
   assert.doesNotMatch(file, /trackEvent\('prediction_submitted'/)
 })
 

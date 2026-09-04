@@ -23,7 +23,11 @@ import {
   type Position,
 } from '@/lib/predictions/candidates'
 import { MAX_SCORE, BUDGET } from '@/lib/predictions/submit'
-import { submitWeekPrediction, type SubmitPredictionResult } from '@/lib/actions/predictions'
+import {
+  submitWeekPrediction,
+  updateMatchPrediction,
+  type SubmitPredictionResult,
+} from '@/lib/actions/predictions'
 import {
   NUFC_LABEL,
   NUFC_TEAM_ID,
@@ -44,7 +48,7 @@ type SubmitError = Extract<SubmitPredictionResult, { error: string }>['error']
 
 const ERROR_MESSAGE: Record<SubmitError, string> = {
   unauthenticated: '로그인이 필요해요',
-  already_submitted: '이미 제출한 주차예요. 제출한 예측은 수정할 수 없어요.',
+  already_submitted: '이미 제출한 경기예요. 완료 화면에서 수정해주세요.',
   closed: '예측이 마감된 주차예요',
   incomplete: '스코어와 선수 픽을 모두 채워주세요',
   invalid_score: '스코어는 0~20 사이로 입력해주세요',
@@ -56,10 +60,11 @@ const ERROR_MESSAGE: Record<SubmitError, string> = {
 }
 
 /**
- * 예측 세션 하나 = 주차 하나. 더블 매치위크면 아직 킥오프이 안 지난 경기의 스코어와 선수 픽을
- * 경기마다 각각 입력한 뒤 한 번에 제출한다(2026-08-23 확정 — 픽도 경기별).
- * 첫 경기가 끝난 뒤 들어오면 `pending`에 남은 경기만 담겨 온다 — 그 경기들만 예측한다.
- * 제출 후에는 수정할 수 없어서(DB UNIQUE + UPDATE 정책 없음) 완료 화면으로 고정된다.
+ * 예측 세션 하나 = 주차 하나(submit 모드) 또는 경기 하나(edit 모드). 더블 매치위크면 아직
+ * 킥오프이 안 지난 경기의 스코어와 선수 픽을 경기마다 각각 입력한 뒤 한 번에 제출한다(2026-08-23
+ * 확정 — 픽도 경기별). 첫 경기가 끝난 뒤 들어오면 `pending`에 남은 경기만 담겨 온다 — 그
+ * 경기들만 예측한다. 승부예측은 킥오프 전까지 자유롭게 재제출(수정)할 수 있다 — `mode === 'edit'`이면
+ * 이미 제출된 경기 하나만 `updateMatchPrediction`으로 고친다(완료 화면 하단 "수정하기"에서 진입).
  *
  * 레이아웃(2026-08-31 개편): 좌측 사이드바 스텝 트랙을 없애고 단일 컬럼 카드로 바꿨다.
  * 제목/설명은 카드 헤더(좌), 진행 표시는 ProgressPips(우). 데스크탑은 세 스텝을 같은 그리드
@@ -72,20 +77,46 @@ export function PredictionFlowClient({
   pending,
   candidates,
   submitted,
+  mode = 'submit',
+  matchIds,
+  initialValues,
 }: {
   week: WeekSession
-  /** 이번에 제출할 경기 — 그 주에서 아직 안 잠기고 미제출인 것들 */
+  /** 이번 세션이 다루는 정확한 경기 집합 — submit 모드는 미제출 경기, edit 모드는 수정할 경기 1개 */
   pending: MatchView[]
   candidates: PickCandidates
   /** 남은 경기를 다 제출했으면 내 제출 내역(경기별 스코어 + 주 단위 픽) */
   submitted?: WeekPrediction
+  /** 'edit'이면 이미 제출된 경기 하나(pending은 항상 길이 1)의 스코어·픽을 고친다. 기본 'submit'. */
+  mode?: 'submit' | 'edit'
+  /** 서버로 보낼 정확한 경기 id 목록(=pending.map(id)) — 서버가 이 목록으로만 검증 대상을 좁힌다 */
+  matchIds: string[]
+  /** mode === 'edit'일 때 그 경기의 기존 제출값으로 스코어·픽을 초기화한다 */
+  initialValues?: {
+    score: [number, number]
+    picks: Record<Position, { playerId: number; multiplier: number }>
+  }
 }) {
   const router = useLoadingRouter()
   const [step, setStep] = useState<StepKey>('score')
   const [scores, setScores] = useState<Scores>(() =>
-    Object.fromEntries(pending.map(match => [match.id, [0, 0] as [number, number]])),
+    Object.fromEntries(
+      pending.map(match => [
+        match.id,
+        (mode === 'edit' && initialValues ? initialValues.score : [0, 0]) as [number, number],
+      ]),
+    ),
   )
-  const [picks, setPicks] = useState<Picks>({})
+  const [picks, setPicks] = useState<Picks>(() => {
+    if (mode !== 'edit' || !initialValues || !pending[0]) return {}
+    const resolved: Partial<Record<Position, Candidate>> = {}
+    for (const position of POSITIONS) {
+      const { playerId } = initialValues.picks[position]
+      const found = candidates[position].find(c => c.id === playerId)
+      if (found) resolved[position] = found
+    }
+    return { [pending[0].id]: resolved }
+  })
   /** 열려 있는 픽 모달이 어느 경기의 어느 포지션인지 */
   const [pickTarget, setPickTarget] = useState<{ matchId: string; position: Position } | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -222,7 +253,7 @@ export function PredictionFlowClient({
   function handleSubmit() {
     setError(null)
     startTransition(async () => {
-      const result = await submitWeekPrediction(week.weekKey, {
+      const input = {
         scores,
         picks: Object.fromEntries(
           pending.map(match => [
@@ -234,14 +265,24 @@ export function PredictionFlowClient({
             },
           ]),
         ),
-      })
+      }
+      const result =
+        mode === 'edit'
+          ? await updateMatchPrediction(week.weekKey, matchIds[0], input)
+          : await submitWeekPrediction(week.weekKey, matchIds, input)
 
       if ('success' in result) {
         // 성공 이벤트(prediction_submitted)는 서버 액션이 보낸다 — 애드블록에 막히지 않게.
-        // 퍼널 종료 지점은 아래 refresh로 마운트되는 PredictionDone이 맡는다.
-        // 제출 내역은 서버가 다시 읽는다(revalidate) — 새로고침하면 완료 화면으로 들어온다.
+        // updateMatchPrediction은 이번 스코프에서 서버 이벤트를 안 보낸다(§5 스킵 확정).
         setSubmitConfirmOpen(false)
-        router.refresh()
+        if (mode === 'edit') {
+          // query(?edit=)를 지우고 완료 허브로 돌아간다 — refresh만 하면 URL이 그대로 남아
+          // 같은 edit 화면이 다시 뜬다(무한 루프는 아니지만 "수정 완료" 느낌을 주지 못한다).
+          router.push(`/predictions/${week.weekKey}`)
+        } else {
+          // 제출 내역은 서버가 다시 읽는다(revalidate) — 새로고침하면 완료 화면으로 들어온다.
+          router.refresh()
+        }
         return
       }
       if (result.error === 'unauthenticated') {
@@ -285,12 +326,12 @@ export function PredictionFlowClient({
       ? POSITIONS.reduce((sum, position) => sum + (picks[pending[0].id]?.[position]?.cost ?? 0), 0)
       : 0
 
-  // 푸터 좌측(데스크탑) / 카드 하단(모바일)에 붙는 상태. 픽=남은 툰, 확인=수정 불가 안내.
+  // 푸터 좌측(데스크탑) / 카드 하단(모바일)에 붙는 상태. 픽=남은 툰, 확인=킥오프 전까지 수정 가능 안내.
   const statusNode =
     step === 'pick' && !isMulti ? (
       <ToonCounter remaining={BUDGET - singleSpent} total={BUDGET} />
     ) : step === 'confirm' ? (
-      <span className="text-label-2 text-neutral-muted">제출한 예측은 수정할 수 없어요</span>
+      <span className="text-label-2 text-neutral-muted">킥오프 전까지 다시 수정할 수 있어요</span>
     ) : null
 
   /** 스텝별 다음/제출 버튼 — 데스크탑 푸터와 모바일 바 양쪽에서 같은 핸들러를 쓴다. */
@@ -316,7 +357,7 @@ export function PredictionFlowClient({
         disabled={submitting || !!scoreRangeError}
         onClick={() => setSubmitConfirmOpen(true)}
       >
-        {submitting ? '제출 중…' : '제출하기'}
+        {mode === 'edit' ? (submitting ? '수정 중…' : '수정하기') : submitting ? '제출 중…' : '제출하기'}
       </Button>
     )
   }
@@ -541,9 +582,13 @@ export function PredictionFlowClient({
           LoginContent의 onLoginSuccess가 이 모달을 다시 연 상태로 돌려보낸다(자동 재제출 아님). */}
       <Modal open={submitConfirmOpen} onOpenChange={o => { if (!o) setSubmitConfirmOpen(false) }}>
         <ConfirmContent
-          title="이대로 제출할까요?"
+          title={mode === 'edit' ? '이대로 수정할까요?' : '이대로 제출할까요?'}
+          // 승부예측은 제출 후에도 킥오프 전까지 자유 수정 가능하다 — ConfirmContent 기본 문구
+          // ("제출 후에는 변경할 수 없습니다", 투표 도메인 기준)를 그대로 두면 모순이라 덮어쓴다.
+          description="킥오프 전까지 다시 수정할 수 있어요"
           selectedLabel={`${pending.length}경기 예측`}
           summaryCaption="내 예측"
+          confirmLabel={mode === 'edit' ? '수정하기' : undefined}
           onCancel={() => setSubmitConfirmOpen(false)}
           onConfirm={handleSubmit}
           isPending={submitting}
