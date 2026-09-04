@@ -2,8 +2,7 @@ import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { getPollById, getVoteCounts, getMyVote, getMyRatingVoteCount, getRatingResults } from '@/lib/queries/polls'
 import { getComments } from '@/lib/queries/comments'
-import { TypeAPollClient } from '@/components/composition/polls/TypeAPollClient'
-import { TypeBPollClient } from '@/components/composition/polls/TypeBPollClient'
+import { PollClient } from '@/components/composition/polls/PollClient'
 import { OverallRatingPollClient } from '@/components/composition/polls/OverallRatingPollClient'
 import { OverallRatingResultView } from '@/components/composition/polls/OverallRatingResultView'
 import { ResultView } from '@/components/composition/polls/ResultView'
@@ -89,9 +88,5 @@ export default async function PollPage({ params }: PollPageProps) {
   }
 
   // 아직 투표 전
-  if (poll.type === 'selection' || poll.type === 'question_targets' || poll.type === 'free_choice') {
-    return <TypeBPollClient poll={poll} isAuthenticated={!!user} canEdit={canEdit} />
-  }
-
-  return <TypeAPollClient poll={poll} isAuthenticated={!!user} canEdit={canEdit} />
+  return <PollClient poll={poll} isAuthenticated={!!user} canEdit={canEdit} />
 }

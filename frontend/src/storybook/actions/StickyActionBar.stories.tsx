@@ -7,7 +7,7 @@ import { Button } from '@/components/primitives/button'
  * 투표 상세(`/polls/[id]`) 레이아웃 축약판.
  *
  * 이 컴포넌트의 본질은 "스크롤되는 화면의 하단에 붙어 있다"는 것이라 빈 캔버스에 두면
- * 아무 의미가 없다. 그래서 사용처(TypeAPollClient 등)와 같은 골격 —
+ * 아무 의미가 없다. 그래서 사용처(PollClient 등)와 같은 골격 —
  * `min-h-screen` 세로 컬럼 + `overflow-y-auto` 스크롤 영역 + `pb-[88px]` — 을 그대로 깐다.
  * 하단 패딩은 컴포넌트가 만들어주지 않고 호출부가 직접 주는 값이라 여기서도 호출부 쪽에 둔다.
  *
@@ -68,8 +68,8 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 /**
- * TypeAPollClient·TypeBPollClient의 제출 바 — 버튼 1개, `w-full h-12`.
- * 두 화면의 children이 완전히 같아서 하나의 스토리로 대표한다.
+ * PollClient의 제출 바 — 버튼 1개, `w-full h-12`.
+ * 선수 대상/선택형 두 분기의 children이 완전히 같아서 하나의 스토리로 대표한다.
  */
 export const VoteSubmit: Story = {
   args: {

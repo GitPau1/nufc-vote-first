@@ -8,31 +8,29 @@ import { uploadPollImage } from '@/lib/actions/images'
 import { trackEvent } from '@/lib/analytics/mixpanel'
 import { CroppedImageInput } from '@/components/composition/common/CroppedImageInput'
 import type { PollFormPlayer } from '@/lib/queries/polls'
-import type { PollType } from '@/types/database'
 import { Button } from '@/components/primitives/button'
 import { Modal } from '@/components/primitives/modal/Modal'
 import { PollPickerContent, getPlayerMeta, type PlayerPickMode } from '@/components/primitives/modal/contents/PollPicker'
 
-type FreeOption = { label: string; description: string; imageUrl: string }
-type CreatePollType = Extract<PollType, 'subject_options' | 'question_targets' | 'free_choice' | 'overall_rating'>
+type PollFormat = 'poll' | 'overall_rating'
+type UnifiedOption = { label: string; description: string; imageUrl: string; playerId: string | null }
 
-const POLL_TYPES: Array<{ type: CreatePollType; label: string; description: string }> = [
-  { type: 'subject_options', label: '대상+선택지', description: '한 선수에 대해 여러 선택지를 붙입니다.' },
-  { type: 'question_targets', label: '질문+선수', description: '질문 하나에 여러 선수를 후보로 둡니다.' },
-  { type: 'free_choice', label: '자유 선택', description: '선수와 무관한 선택지를 직접 만듭니다.' },
-  { type: 'overall_rating', label: '전체 평점', description: '여러 선수에게 각각 등급과 코멘트를 받습니다.' },
+const POLL_FORMATS: Array<{ format: PollFormat; label: string; description: string }> = [
+  { format: 'poll', label: '일반 투표', description: '선택지를 만들어 팬들의 의견을 모읍니다.' },
+  { format: 'overall_rating', label: '전체 평점', description: '여러 선수에게 각각 등급과 코멘트를 받습니다.' },
 ]
 
 export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
   const router = useLoadingRouter()
-  const [pollType, setPollType] = useState<CreatePollType>(POLL_TYPES[0].type)
-  const [textOptions, setTextOptions] = useState(['', ''])
-  const [freeOptions, setFreeOptions] = useState<FreeOption[]>([
-    { label: '', description: '', imageUrl: '' },
-    { label: '', description: '', imageUrl: '' },
+  const [format, setFormat] = useState<PollFormat>(POLL_FORMATS[0].format)
+  const [options, setOptions] = useState<UnifiedOption[]>([
+    { label: '', description: '', imageUrl: '', playerId: null },
+    { label: '', description: '', imageUrl: '', playerId: null },
   ])
+  const [showSubjectPlayer, setShowSubjectPlayer] = useState(false)
   const [selectedSubjectPlayerId, setSelectedSubjectPlayerId] = useState<string | null>(null)
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<string[]>([])
+  const [editingOptionIndex, setEditingOptionIndex] = useState<number | null>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerMode, setPickerMode] = useState<PlayerPickMode>('single')
   const [message, setMessage] = useState<string | null>(null)
@@ -43,12 +41,44 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
     .map(id => players.find(player => player.id === id))
     .filter((player): player is PollFormPlayer => Boolean(player))
 
-  function openPlayerPicker(mode: PlayerPickMode) {
+  // 선택지 선수 픽커를 열 때만 적용 — 다른 선택지가 이미 연결한 선수는 목록에서 빼서
+  // 옵션 간 중복 연결을 막는다(대상 선수는 다른 슬롯이라 제외 대상이 아니다).
+  const otherOptionPlayerIds = editingOptionIndex !== null
+    ? options
+        .filter((_, index) => index !== editingOptionIndex)
+        .map(option => option.playerId)
+        .filter((id): id is string => Boolean(id))
+    : []
+  const pickerPlayers = otherOptionPlayerIds.length > 0
+    ? players.filter(player => !otherOptionPlayerIds.includes(player.id))
+    : players
+
+  function updateOption(index: number, patch: Partial<UnifiedOption>) {
+    setOptions(prev => prev.map((option, itemIndex) => itemIndex === index ? { ...option, ...patch } : option))
+  }
+
+  function addOption() {
+    setOptions(prev => [...prev, { label: '', description: '', imageUrl: '', playerId: null }])
+  }
+
+  function removeOption(index: number) {
+    setOptions(prev => prev.filter((_, itemIndex) => itemIndex !== index))
+  }
+
+  function openPlayerPicker(mode: PlayerPickMode, optionIndex?: number) {
     setPickerMode(mode)
+    setEditingOptionIndex(optionIndex ?? null)
     setPickerOpen(true)
   }
 
   function togglePlayer(playerId: string) {
+    if (editingOptionIndex !== null) {
+      updateOption(editingOptionIndex, { playerId, imageUrl: '' })
+      setPickerOpen(false)
+      setEditingOptionIndex(null)
+      return
+    }
+
     if (pickerMode === 'single') {
       setSelectedSubjectPlayerId(playerId)
       setPickerOpen(false)
@@ -66,42 +96,10 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
     const fd = new FormData(e.currentTarget)
     trackEvent('create_poll_clicked', {
       source_page: 'create',
-      poll_type: pollType,
+      poll_type: format,
     })
 
-    if (pollType === 'subject_options') {
-      const options = textOptions.map(option => option.trim()).filter(Boolean)
-      if (!selectedSubjectPlayerId) {
-        setMessage('대상 선수를 선택해주세요.')
-        return
-      }
-      if (options.length < 2) {
-        setMessage('선택지를 최소 2개 입력해주세요.')
-        return
-      }
-      fd.set('player_id', selectedSubjectPlayerId)
-      fd.set('options', JSON.stringify(options.map(label => ({ label }))))
-    } else if (pollType === 'free_choice') {
-      const options = freeOptions
-        .map((option, index) => ({
-          label: option.label.trim(),
-          description: option.description.trim() || null,
-          image_url: option.imageUrl.trim() || null,
-          imageField: `free_option_image_${index}`,
-        }))
-        .filter(option => option.label)
-      if (options.length < 2) {
-        setMessage('선택지를 최소 2개 입력해주세요.')
-        return
-      }
-      fd.set('options', JSON.stringify(options.map(option => ({
-        label: option.label,
-        description: option.description,
-        image_url: option.image_url,
-        imageField: option.imageField,
-      }))))
-      fd.delete('player_id')
-    } else {
+    if (format === 'overall_rating') {
       const targetPlayerIds = selectedPlayerIds
 
       if (targetPlayerIds.length < 2) {
@@ -113,9 +111,31 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
         return { label: player?.name ?? id, player_id: id }
       })))
       fd.delete('player_id')
+    } else {
+      const cleaned = options
+        .map((option, index) => ({ ...option, label: option.label.trim(), imageField: `option_image_${index}` }))
+        .filter(option => option.label)
+      if (cleaned.length < 2) {
+        setMessage('선택지를 최소 2개 입력해주세요.')
+        return
+      }
+      if (showSubjectPlayer && !selectedSubjectPlayerId) {
+        setMessage('대상 선수를 선택해주세요.')
+        return
+      }
+
+      fd.set('options', JSON.stringify(cleaned.map(option => ({
+        label: option.label,
+        description: option.description.trim() || null,
+        image_url: option.playerId ? null : (option.imageUrl.trim() || null),
+        player_id: option.playerId,
+        imageField: option.playerId ? null : option.imageField,
+      }))))
+      if (showSubjectPlayer && selectedSubjectPlayerId) fd.set('player_id', selectedSubjectPlayerId)
+      else fd.delete('player_id')
     }
 
-    fd.set('type', pollType)
+    fd.set('type', format)
 
     startTransition(async () => {
       const thumbnailFile = fd.get('thumbnail_image_file') as File | null
@@ -133,17 +153,18 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
         fd.set('thumbnail_url', uploadResult.url)
       }
 
-      if (pollType === 'free_choice') {
+      if (format === 'poll') {
         const parsedOptions = JSON.parse(String(fd.get('options') ?? '[]')) as Array<{
           label: string
           description: string | null
           image_url: string | null
-          imageField: string
+          player_id: string | null
+          imageField: string | null
         }>
         const uploadedOptions = []
         for (const option of parsedOptions) {
-          const imageFile = fd.get(option.imageField) as File | null
-          fd.delete(option.imageField)
+          const imageFile = option.imageField ? (fd.get(option.imageField) as File | null) : null
+          if (option.imageField) fd.delete(option.imageField)
           if (!option.image_url && imageFile && imageFile.size > 0) {
             const imageForm = new FormData()
             imageForm.set('file', imageFile)
@@ -158,12 +179,14 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
               label: option.label,
               description: option.description,
               image_url: uploadResult.url,
+              player_id: option.player_id,
             })
           } else {
             uploadedOptions.push({
               label: option.label,
               description: option.description,
               image_url: option.image_url,
+              player_id: option.player_id,
             })
           }
         }
@@ -179,7 +202,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
       trackEvent('poll_published', {
         source_page: 'create',
         poll_id: result.pollId ?? null,
-        poll_type: pollType,
+        poll_type: format,
         option_count: optionCount,
         has_thumbnail: Boolean(String(fd.get('thumbnail_url') ?? '').trim()),
         creator_type: 'user',
@@ -193,15 +216,15 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
     <>
       <form onSubmit={submit} className="space-y-3">
         <section className="rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
-          <p className="text-label-1-normal font-medium text-neutral">투표 유형</p>
-          <div className="mt-3 grid gap-2">
-            {POLL_TYPES.map(item => {
-              const selected = item.type === pollType
+          <p className="text-label-1-normal font-medium text-neutral">투표 형식</p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            {POLL_FORMATS.map(item => {
+              const selected = item.format === format
               return (
                 <button
-                  key={item.type}
+                  key={item.format}
                   type="button"
-                  onClick={() => setPollType(item.type)}
+                  onClick={() => setFormat(item.format)}
                   className={`rounded-sm border px-3 py-3 text-left transition-opacity hover:opacity-70 ${selected ? 'border-brand-solid bg-brand-weak' : 'border-neutral-weak bg-surface'}`}
                 >
                   <span className={`block text-label-2 font-medium ${selected ? 'text-brand' : 'text-neutral'}`}>{item.label}</span>
@@ -215,7 +238,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
         <section className="space-y-3 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
           <p className="text-label-1-normal font-medium text-neutral">기본 정보</p>
           <input name="title" required className="input-field" placeholder="투표 제목" />
-          <input name="description" className="input-field" placeholder="설명(선택)" />
+          <textarea name="description" className="input-field min-h-[72px] resize-none py-2" placeholder="설명(선택)" />
           <input name="thumbnail_url" className="input-field" placeholder="대표 이미지 URL(선택)" />
           <CroppedImageInput
             name="thumbnail_image_file"
@@ -228,83 +251,119 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
           <input name="closes_at" type="datetime-local" required className="input-field" aria-label="투표 종료일" />
         </section>
 
-        {pollType === 'subject_options' ? (
-          <section className="space-y-3 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-label-1-normal font-medium text-neutral">대상 선수</p>
-              <button type="button" onClick={() => openPlayerPicker('single')} className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-disabled px-2.5 text-caption-1 font-medium text-neutral">
-                <Users className="h-3.5 w-3.5" /> 선택
-              </button>
-            </div>
-            {selectedSubjectPlayer ? <PlayerSummary player={selectedSubjectPlayer} /> : <EmptySelection label="선수를 선택해주세요." />}
-            <div className="space-y-1.5 pt-1">
-              {textOptions.map((option, index) => (
-                <input
-                  key={index}
-                  value={option}
-                  onChange={event => setTextOptions(prev => prev.map((item, itemIndex) => itemIndex === index ? event.target.value : item))}
-                  className="input-field"
-                  placeholder={`선택지 ${index + 1}`}
-                />
-              ))}
-            </div>
-            {textOptions.length < 5 && (
-              <button type="button" onClick={() => setTextOptions(prev => [...prev, ''])} className="inline-flex items-center gap-1 text-caption-1 font-medium text-brand">
-                <Plus className="h-3.5 w-3.5" /> 선택지 추가
-              </button>
-            )}
-          </section>
-        ) : pollType === 'free_choice' ? (
-          <section className="space-y-3 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
-            <p className="text-label-1-normal font-medium text-neutral">선택지</p>
-            <div className="space-y-1.5">
-              {freeOptions.map((option, index) => (
-                <div key={index} className="grid grid-cols-[1fr_32px] gap-1.5 rounded-md border border-neutral-weak p-2">
-                  <div className="space-y-1.5">
-                    <input
-                      value={option.label}
-                      onChange={event => setFreeOptions(prev => prev.map((item, itemIndex) => itemIndex === index ? { ...item, label: event.target.value } : item))}
-                      className="input-field"
-                      placeholder={`선택지 ${index + 1}`}
-                    />
-                    <textarea
-                      value={option.description}
-                      onChange={event => setFreeOptions(prev => prev.map((item, itemIndex) => itemIndex === index ? { ...item, description: event.target.value } : item))}
-                      className="input-field min-h-[72px] resize-none py-2"
-                      placeholder="세부 설명(선택)"
-                    />
-                    <input
-                      value={option.imageUrl}
-                      onChange={event => setFreeOptions(prev => prev.map((item, itemIndex) => itemIndex === index ? { ...item, imageUrl: event.target.value } : item))}
-                      className="input-field"
-                      placeholder="이미지 URL"
-                    />
-                    <CroppedImageInput
-                      name={`free_option_image_${index}`}
-                      label="선택지 카드 이미지 크롭"
-                      outputWidth={1000}
-                      outputHeight={1300}
-                      previewClassName="aspect-[10/13]"
-                      fileName="poll-option.webp"
-                    />
-                  </div>
-                  <button type="button" onClick={() => setFreeOptions(prev => prev.filter((_, itemIndex) => itemIndex !== index))} className="rounded-sm border border-neutral-weak text-neutral-muted" aria-label="선택지 삭제">
-                    <X className="mx-auto h-3.5 w-3.5" />
-                  </button>
+        {format === 'poll' ? (
+          <>
+            <section className="rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-label-1-normal font-medium text-neutral">특정 선수 한 명에 대한 투표인가요?</p>
+                  <p className="mt-0.5 text-caption-1 text-neutral-muted">선택 — 켜면 표지에 대표 선수 카드가 함께 표시돼요.</p>
                 </div>
-              ))}
-            </div>
-            {freeOptions.length < 8 && (
-              <button type="button" onClick={() => setFreeOptions(prev => [...prev, { label: '', description: '', imageUrl: '' }])} className="inline-flex items-center gap-1 text-caption-1 font-medium text-brand">
-                <Plus className="h-3.5 w-3.5" /> 선택지 추가
-              </button>
-            )}
-          </section>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={showSubjectPlayer}
+                  onClick={() => {
+                    setShowSubjectPlayer(prev => !prev)
+                    if (showSubjectPlayer) setSelectedSubjectPlayerId(null)
+                  }}
+                  className={`inline-flex h-8 shrink-0 items-center rounded-sm px-2.5 text-caption-1 font-medium transition-opacity hover:opacity-70 ${showSubjectPlayer ? 'bg-brand-weak text-brand' : 'bg-disabled text-neutral'}`}
+                >
+                  {showSubjectPlayer ? '켜짐' : '꺼짐'}
+                </button>
+              </div>
+              {showSubjectPlayer && (
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-label-2 font-medium text-neutral-muted">대상 선수</p>
+                    <button type="button" onClick={() => openPlayerPicker('single')} className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-disabled px-2.5 text-caption-1 font-medium text-neutral">
+                      <Users className="h-3.5 w-3.5" /> 선택
+                    </button>
+                  </div>
+                  {selectedSubjectPlayer ? <PlayerSummary player={selectedSubjectPlayer} /> : <EmptySelection label="선수를 선택해주세요." />}
+                </div>
+              )}
+            </section>
+
+            <section className="space-y-3 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
+              <p className="text-label-1-normal font-medium text-neutral">선택지</p>
+              <div className="space-y-1.5">
+                {options.map((option, index) => {
+                  const connectedPlayer = option.playerId ? players.find(player => player.id === option.playerId) ?? null : null
+                  return (
+                    <div key={index} className="grid grid-cols-[1fr_32px] gap-1.5 rounded-md border border-neutral-weak p-2">
+                      <div className="space-y-1.5">
+                        <input
+                          value={option.label}
+                          onChange={event => updateOption(index, { label: event.target.value })}
+                          className="input-field"
+                          placeholder={`선택지 ${index + 1}`}
+                        />
+                        <textarea
+                          value={option.description}
+                          onChange={event => updateOption(index, { description: event.target.value })}
+                          className="input-field min-h-[72px] resize-none py-2"
+                          placeholder="세부 설명(선택)"
+                        />
+                        {connectedPlayer ? (
+                          <div className="flex items-center justify-between gap-2 rounded-md border border-neutral-weak bg-disabled px-3 py-2">
+                            <div className="flex min-w-0 items-center gap-2">
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-pill bg-surface text-caption-2 font-medium text-brand">
+                                {connectedPlayer.photo_url ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img src={connectedPlayer.photo_url} alt="" className="h-full w-full object-cover" />
+                                ) : (
+                                  connectedPlayer.name.slice(0, 2)
+                                )}
+                              </div>
+                              <p className="truncate text-caption-1 font-medium text-neutral">{connectedPlayer.name}</p>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2">
+                              <button type="button" onClick={() => openPlayerPicker('single', index)} className="text-caption-2 font-medium text-brand">변경</button>
+                              <button type="button" onClick={() => updateOption(index, { playerId: null })} className="text-caption-2 font-medium text-neutral-muted">연결 해제</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <button type="button" onClick={() => openPlayerPicker('single', index)} className="inline-flex items-center gap-1 text-caption-1 font-medium text-brand">
+                              <Users className="h-3.5 w-3.5" /> 선수 연결
+                            </button>
+                            <input
+                              value={option.imageUrl}
+                              onChange={event => updateOption(index, { imageUrl: event.target.value })}
+                              className="input-field"
+                              placeholder="이미지 URL"
+                            />
+                            <CroppedImageInput
+                              name={`option_image_${index}`}
+                              label="선택지 카드 이미지 크롭"
+                              outputWidth={1000}
+                              outputHeight={1300}
+                              previewClassName="aspect-[10/13]"
+                              fileName="poll-option.webp"
+                            />
+                          </>
+                        )}
+                      </div>
+                      <button type="button" onClick={() => removeOption(index)} className="rounded-sm border border-neutral-weak text-neutral-muted" aria-label="선택지 삭제">
+                        <X className="mx-auto h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+              {options.length < 8 && (
+                <button type="button" onClick={addOption} className="inline-flex items-center gap-1 text-caption-1 font-medium text-brand">
+                  <Plus className="h-3.5 w-3.5" /> 선택지 추가
+                </button>
+              )}
+            </section>
+          </>
         ) : (
           <section className="space-y-3 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-label-1-normal font-medium text-neutral">{pollType === 'overall_rating' ? '평가 대상 선수' : '후보 선수'}</p>
+                <p className="text-label-1-normal font-medium text-neutral">평가 대상 선수</p>
                 <p className="mt-0.5 text-caption-1 text-neutral-muted">{selectedPlayers.length}명 선택됨</p>
               </div>
               <button type="button" onClick={() => openPlayerPicker('multiple')} className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-disabled px-2.5 text-caption-1 font-medium text-neutral">
@@ -336,13 +395,22 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
           (`p-0`이면 핸들이 시트 최상단에 붙는다). 하단은 콘텐츠의 완료 버튼 블록이 직접 채운다. */}
       <Modal
         open={pickerOpen}
-        onOpenChange={setPickerOpen}
+        onOpenChange={open => {
+          setPickerOpen(open)
+          if (!open) setEditingOptionIndex(null)
+        }}
         className="flex h-[82vh] max-h-[82vh] flex-col overflow-hidden px-0 pb-0 pt-5"
       >
         <PollPickerContent
           mode={pickerMode}
-          players={players}
-          selectedIds={pickerMode === 'single' ? (selectedSubjectPlayerId ? [selectedSubjectPlayerId] : []) : selectedPlayerIds}
+          players={pickerPlayers}
+          selectedIds={
+            editingOptionIndex !== null
+              ? (options[editingOptionIndex]?.playerId ? [options[editingOptionIndex].playerId as string] : [])
+              : pickerMode === 'single'
+                ? (selectedSubjectPlayerId ? [selectedSubjectPlayerId] : [])
+                : selectedPlayerIds
+          }
           onToggle={togglePlayer}
           onDone={() => setPickerOpen(false)}
         />

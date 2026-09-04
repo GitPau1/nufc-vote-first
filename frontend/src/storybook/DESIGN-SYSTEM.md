@@ -96,7 +96,7 @@
 | PollHeroCard | 홈 히어로 자리의 252px 고정높이 투표 배너. MatchdayHero가 없을 때의 폴백 | `components/composition/polls/PollHeroCard.tsx` | `contents/PollHeroCard.mdx` |
 | PollHomeSection | 홈의 투표 섹션 하나(제목+링크+목록). 모바일 세로 리스트 / 데스크탑 한 줄 그리드+페이지 넘김 | `components/composition/polls/PollHomeSection.tsx` | `contents/PollHomeSection.mdx` |
 | CommentsSection | 투표 결과 화면의 댓글 입력창+목록(투표 항목 칩·좋아요·내 댓글 수정/삭제) | `components/composition/polls/CommentsSection.tsx` | `contents/CommentsSection.mdx` |
-| PollCarouselCard (pattern) | 투표 상세 캐러셀. 가운데 카드 확대 + 좌우 스와이프 | `components/composition/polls/TypeBPollClient.tsx` | `contents/PollCarouselCard.mdx` |
+| PollCarouselCard (pattern) | 투표 상세 캐러셀. 가운데 카드 확대 + 좌우 스와이프 | `components/composition/polls/PollClient.tsx` | `contents/PollCarouselCard.mdx` |
 | RatingMatrix (pattern) | 전체 평가 투표의 F~S 6단계 점수 선택 그리드 | `components/composition/polls/OverallRatingPollClient.tsx` | `selection-and-input/RatingMatrix.mdx` |
 | FormSection (pattern) | 투표 생성 폼의 섹션 셸 + 선수 선택 picker | `components/composition/polls/UserPollCreateForm.tsx` | `selection-and-input/FormSection.mdx` |
 
@@ -127,7 +127,7 @@
 
 **1. 화면 단위 클라이언트** — 컴포넌트가 아니라 페이지 1곳만 조립하는 화면 조립체다. 이 안의 재사용 패턴은 이미 PollCarouselCard·RatingMatrix·FormSection·CommentsSection으로 추출돼 있다.
 
-`composition/predict/PredictListClient.tsx` · `composition/predict/PredictionFlowClient.tsx` · `composition/predict/PredictionResult.tsx` · `composition/predict/PredictionDone.tsx` · `composition/common/HomeClient.tsx` · `composition/polls/PollListClient.tsx` · `composition/polls/TypeAPollClient.tsx` · `composition/polls/TypeBPollClient.tsx` · `composition/polls/OverallRatingPollClient.tsx` · `composition/polls/ResultView.tsx` · `composition/polls/OverallRatingResultView.tsx` · `composition/polls/UserPollCreateForm.tsx` · `composition/my/MyPageClient.tsx` · `composition/my/MyFeedbackForm.tsx` · `composition/players/PlayersPageClient.tsx` · `composition/admin/AdminRatingsForm.tsx`(관리자 평점 입력 — `admin/ratings` 1곳 조립) · `composition/polls/PollPageHeader.tsx`(AppHeader `mobileBack` 7줄 래퍼)
+`composition/predict/PredictListClient.tsx` · `composition/predict/PredictionFlowClient.tsx` · `composition/predict/PredictionResult.tsx` · `composition/predict/PredictionDone.tsx` · `composition/common/HomeClient.tsx` · `composition/polls/PollListClient.tsx` · `composition/polls/PollClient.tsx` · `composition/polls/OverallRatingPollClient.tsx` · `composition/polls/ResultView.tsx` · `composition/polls/OverallRatingResultView.tsx` · `composition/polls/UserPollCreateForm.tsx` · `composition/my/MyPageClient.tsx` · `composition/my/MyFeedbackForm.tsx` · `composition/players/PlayersPageClient.tsx` · `composition/admin/AdminRatingsForm.tsx`(관리자 평점 입력 — `admin/ratings` 1곳 조립) · `composition/polls/PollPageHeader.tsx`(AppHeader `mobileBack` 7줄 래퍼)
 
 **2. 자체 UI가 없는 컴포넌트** — 로직만 수행하고 아무것도 그리지 않거나(`composition/common/AppAnalytics.tsx` · `composition/auth/AuthCodeHandler.tsx` · `composition/players/PlayerRatingChangesAnalytics.tsx`), 다른 컴포넌트를 갈아 끼우기만 한다(`composition/common/HeaderAuthStatus.tsx` — 판별 중엔 회색 원 플레이스홀더 하나를 그린다. 갈림 규칙은 `navigations/UserMenu.mdx`에 있다)
 

@@ -1,6 +1,6 @@
 # Supabase 데이터 연결 구조
 
-최종 업데이트: 2026-08-24
+최종 업데이트: 2026-09-04
 
 이 문서는 현재 서비스가 Supabase와 어떻게 연결되어 있는지 정리한 기준 문서입니다. 테이블, 컬럼, RLS 정책, Storage 버킷, 기능별 데이터 흐름을 바꿀 때마다 함께 업데이트하세요.
 
@@ -184,7 +184,9 @@ RLS:
 
 코드에서 쓰는 주요 컬럼:
 
-- `id`, `type`, `title`, `description`, `player_id`, `status`, `thumbnail_url`, `scheduled_at`, `closes_at`, `created_at`
+- `id`, `type`, `title`, `description`, `player_id`, `status`, `thumbnail_url`, `closes_at`, `created_at`
+- `type`은 `'poll' | 'overall_rating'` 두 값만 씁니다(TEA-26, 2026-09 통합). 옛 5개 값(`subject_options`/`question_targets`/`free_choice`/`selection`/`evaluation`)은 코드가 더는 만들지 않고, 기존 13개 poll도 `'poll'`로 일괄 변환하는 `supabase/migrations/20260904150000_consolidate_poll_type_to_poll.sql`이 PR #2 머지 후 실행 대기입니다.
+- `scheduled_at` 컬럼은 DB에 남아 있지만 코드가 더는 읽지 않습니다(예정 투표 기능 자체가 TEA-25로 완전 제거됨). `supabase/migrations/20260904160000_drop_polls_scheduled_at.sql`이 PR #2 머지 후 실행 대기입니다.
 
 사용 위치:
 
@@ -196,8 +198,7 @@ RLS:
 
 관계:
 
-- Type A/evaluation 투표는 `polls.player_id -> players.id`로 단일 선수를 연결합니다.
-- Type B/selection 투표는 `poll_options.player_id -> players.id`로 옵션별 선수를 연결합니다.
+- `poll.player_id` 유무로 상세 화면 레이아웃이 갈립니다(`PollClient.tsx` 단일 컴포넌트, 옛 `TypeAPollClient`/`TypeBPollClient` 분리는 병합·삭제됨). `polls.player_id -> players.id`가 있으면 poll 전체가 특정 선수 하나를 대상으로 합니다(선수 대상 레이아웃: 커버 오버레이+선수 정보 카드). 없으면 선택지별로 `poll_options.player_id -> players.id`를 연결할 수 있는 선택형 레이아웃입니다(옵션마다 선수 연결은 선택 사항이며, 연결한 옵션은 커스텀 이미지 UI를 숨기고 선수 사진을 씁니다).
 
 RLS:
 
@@ -253,7 +254,7 @@ RLS:
 
 - 현재 DB는 `option_id`가 같은 `poll_id`에 속한 옵션인지 복합 제약으로 강제하지 않습니다.
 - `20260529_public_profiles_storage_vote_guards.sql` 이후부터는 `votes(option_id, poll_id)`가 `poll_options(id, poll_id)`를 참조하도록 보강됩니다.
-- `submitVote()`는 INSERT 전에 `status`, `scheduled_at`, `closes_at`를 확인합니다.
+- `submitVote()`는 INSERT 전에 `status`, `closes_at`를 확인합니다.
 
 ### `comments`
 
@@ -651,11 +652,10 @@ Supabase 스키마를 바꿀 때는 아래를 함께 처리하세요.
 ## 현재 연동 오류 위험 지점
 
 - `frontend/src/types/database.ts`가 수동 관리라서 실제 DB와 쉽게 어긋날 수 있습니다.
-- `players.squad_status`, `polls.thumbnail_url`처럼 일부 쿼리는 누락 컬럼 fallback을 가지고 있습니다. 부분 마이그레이션 상태를 견디게 해주지만, 스키마 drift를 숨길 수도 있습니다.
 - `player-photos` Storage 버킷은 `20260529_public_profiles_storage_vote_guards.sql`에서 public bucket으로 생성/보정합니다.
 - `club_status`, `player_season_stats`의 DB write policy가 넓게 열려 있습니다. 앱에서는 service role로 관리자 쓰기를 하지만 DB 정책 자체는 재검토가 필요합니다.
 - 관리자 권한은 DB role이 아니라 `ADMIN_EMAILS` 환경변수 기반 앱 코드로 판단합니다.
 - `votes`는 `20260529_public_profiles_storage_vote_guards.sql`에서 option-poll 복합 FK를 추가합니다. 기존 운영 DB에 이미 잘못된 vote row가 있으면 FK validation은 별도 점검이 필요합니다.
-- 예정/마감 투표의 상태 자동 전환 cron/Edge Function은 아직 별도 구현 대상입니다. 현재는 `submitVote()`에서 잘못된 INSERT를 방어합니다.
+- 예정 투표(scheduled poll) 기능 자체가 TEA-25(2026-09)로 완전 제거됐습니다(`PollStatus`는 `'active' | 'closed'`). `polls.scheduled_at` 컬럼은 아직 DB에 남아 있으나 코드가 안 읽고, `20260904160000_drop_polls_scheduled_at.sql`이 PR #2 머지 후 사람이 실행할 예정입니다. `submitVote()`는 `status`/`closes_at`로 잘못된 INSERT를 방어합니다.
 - 경기·평점 데이터는 **FotMob 비공식 API**에 의존합니다. 스펙이 예고 없이 바뀌면 수집이 조용히 멈출 수 있으므로, 함수들은 빈 응답을 성공으로 넘기지 않고(`EMPTY_FIXTURES`) 사유를 응답에 남깁니다. 이상 신호는 대시보드 Cron의 Runs 이력에서 확인합니다.
 - 일부 기존 소스 파일의 한글 주석/문자열이 깨져 있습니다. DB 동작과 직접 관련은 없지만 유지보수 중 오해를 만들 수 있습니다.

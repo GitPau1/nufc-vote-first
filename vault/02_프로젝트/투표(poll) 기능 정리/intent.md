@@ -115,11 +115,16 @@ feature-spec.md 끝의 목록 번호 기준. 여기 적힌 것이 plan.md의 입
 | 11 | PR 전략 | **TEA-25(예정 투표 제거)만 먼저 별도 PR, 나머지(TEA-26/27/29)는 PR 1개** |
 | 12 | mock 데이터의 "공개 예정" 데모 투표(`poll-3`) | **삭제** (active로 바꿔 유지하지 않음) |
 | 13 | 합쳐진 `PollClient` 화면 | **목업의 표지(160/252, 뱃지 없음) + 나머지 마크업은 기존 TypeA/TypeB 그대로**, `poll.player_id` 유무로 분기. 별도 디자인 시안 없음 |
+| 15 | Step 4 실행 중 발견된 plan 모순(2026-09-04) — `PollType`을 Step 4에서 좁히면 Step 4b/5로 미룬 3개 파일(`UserPollCreateForm.tsx`, `actions/polls.ts`, `PollCarouselCard.stories.tsx`)이 빌드를 깨뜨림 | **Step 4는 `PollType`에 `'poll'`을 추가만 하고 옛 5개 값을 과도기로 유지, Step 5 마지막에 `'poll' \| 'overall_rating'`으로 좁힌다.** 모든 단계 커밋이 빌드 통과 상태를 유지하는 게 목적. 다른 결정 변경 없음 |
+| 16 | Step 4b 리뷰에서 발견(2026-09-04) — 병합된 `PollClient`가 선수 대상(옛 TypeA) 화면의 표지도 선택형과 같은 껍데기(좌우 여백 `px-4` + `rounded-lg`)로 바꿈. 옛 TypeA는 화면 끝까지 꽉 찬 직각 배너였음 | **통일 유지(여백+둥근 모서리, 목업과 동일)** — 사용자 확정. #13의 "나머지 마크업 그대로"에 대한 명시적 예외. 같은 리뷰에서 잡힌 `gap-3` 누락(표지-본문 12→24px)과 `canEdit`/설명 순서 뒤집힘은 실수라 원복 |
+| 17 | Step 5 리뷰(2026-09-04)에서 발견된 신규 검증 공백 | **고침** — (a) 선택지 간 같은 선수 중복 연결 방지(옛 다중 선택 픽커의 동작 보존; 클라이언트 픽커 + 서버 거부), (b) `createUserPoll`의 `type` 화이트리스트(`'poll'\|'overall_rating'`, DB CHECK 없음) |
+| 19 | 마이그레이션 파일명 정정(2026-09-04, Step 7) | `scheduled_at` DROP 파일은 `#10`의 `20260904140000_…`가 아니라 **`supabase/migrations/20260904160000_drop_polls_scheduled_at.sql`** — `140000`은 이미 머지된 승부예측 마이그레이션이 쓰고 있어 다음 빈 슬롯 사용(SQL 내용은 plan §3-1 그대로). 실행 순서: `150000`(type→poll) → `160000`(DROP), 둘 다 PR #2 머지 후 사람이 |
+| 18 | Step 5 리뷰 메모 — 범위 밖, 후속 후보 | (1) 옵션 목록 `key={index}`로 인해 중간 옵션 삭제 시 뒤 옵션의 크롭 이미지 상태가 이월될 수 있음(옛 free_choice에도 있던 패턴), (2) 존재하지 않는 `player_id`는 FK가 막지만 Postgres 원문 에러가 사용자에게 노출(기존 동작), (3) 선수 대상 투표의 선택지에 설명/이미지가 DB에 있으면 통합 후 화면에 새로 노출 — 확인 SQL은 사람에게 전달됨. **TEA-28 또는 별도 이슈에서 판단** |
 | 14 | plan 검토에서 잡힌 수정 | `design-foundation.test.mjs`의 오버레이 부재 검사는 삭제가 아니라 `PollClient.tsx` 조건 분기 기준으로 재작성 / Step 4를 "데이터 모델·분기·픽스처"와 "PollClient 병합" 두 단계로 분리 / Step 4 완료 기준에 "런타임 `type === 'poll'` 양성 검사 없음(배포→마이그레이션 사이 옛 값 공존)" 추가 |
 
 **되돌리기 어려운 변경 목록(plan.md 승인 시 문장 그대로 재확인)**:
 - `alter table polls drop column scheduled_at;`
-- `update polls set type = 'poll' where type in ('subject_options','question_targets','free_choice','selection','evaluation');` — 실행 전 `select type, count(*) from polls group by type`로 13건 확인, 실행 후 `poll` 13 / `overall_rating` 2 확인.
+- `update polls set type = 'poll' where type in ('subject_options','question_targets','free_choice','selection','evaluation');` — 실행 전 `select type, count(*) from polls group by type`로 13건 확인, 실행 후 `poll` 13 / `overall_rating` 2 확인. → **롤백 근거 백업(`select id, type from polls where type in (...)` 13행) 2026-09-04 사람이 보관 완료(plan §0-C 게이트 통과).**
 - fallback 제거 전 프로덕션 `information_schema.columns` 1회 조회(spec §5-1). → **2026-09-04 사람이 실행, 4행 확인(`players.squad_status`, `polls.thumbnail_url`, `poll_options.image_url`, `poll_options.description` 전부 존재). Step 3 진행 가능.**
 
 ## 불변 제약 (건드리면 안 됨)

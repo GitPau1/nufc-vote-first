@@ -1,6 +1,6 @@
 # Agent Maintenance Guide
 
-최종 업데이트: 2026-08-24
+최종 업데이트: 2026-09-04
 
 이 문서는 앞으로 이 저장소에서 기능 수정, 개선, DB 변경, Supabase 연동 작업을 할 때 먼저 확인할 작업 기준입니다. 작업 중 새로 알게 된 구조나 반복되는 오류 원인이 있으면 이 문서를 계속 업데이트합니다.
 
@@ -47,14 +47,13 @@ DB나 Supabase 연동을 건드릴 때:
 ## 현재 특히 조심할 부분
 
 - `frontend/src/types/database.ts`는 수동 관리라 실제 DB와 drift가 생기기 쉽습니다.
-- `players.squad_status`, `polls.thumbnail_url` 관련 fallback query가 있어 스키마 불일치가 숨겨질 수 있습니다.
 - `player-photos` Storage bucket은 `20260529_public_profiles_storage_vote_guards.sql`에서 public bucket으로 생성/보정합니다.
 - **Storage에 파일을 대시보드/스크립트로 직접 올리면 `Cache-Control`이 빠지거나 잘못 들어갑니다.** 코드 경로(`lib/actions/images.ts:30`)는 `cacheControl: '31536000'`을 붙이지만, `team-logos/*.png`는 수동 업로드라 헤더값이 `max-age=` 없는 `31536000`(무효 → 브라우저가 캐시 안 함)으로 들어가 있었습니다(2026-08-26에 32개 일괄 수정). 수동 업로드 시 `cache-control: max-age=31536000`을 직접 지정하고, 어긋나면 `node --env-file=frontend/.env.local scripts/fix-storage-cache-control.mjs`(기본 dry-run, `--apply`로 반영)로 정리합니다.
 - `club_status`, `player_season_stats`의 DB write policy는 넓게 열려 있습니다.
 - 댓글 작성자 표시는 `public_profiles`를 사용해야 합니다. `users` 전체 공개로 해결하지 않습니다.
 - `votes`는 `20260529_public_profiles_storage_vote_guards.sql` 이후 option-poll 복합 FK로 보강됩니다.
-- `submitVote()`는 status/scheduled_at/closes_at 검증을 거친 뒤 INSERT해야 합니다.
-- 예정/마감 투표 자동 상태 전환은 아직 cron/Edge Function 후속 작업입니다.
+- `submitVote()`는 status/closes_at 검증을 거친 뒤 INSERT해야 합니다.
+- 예정 투표(scheduled poll) 기능 자체가 없습니다(TEA-25, 2026-09 완전 제거 — `PollStatus`는 `'active' | 'closed'` 둘뿐). `polls.scheduled_at` 컬럼은 DB에 아직 남아 있으나 코드가 더는 읽지 않고, `supabase/migrations/20260904160000_drop_polls_scheduled_at.sql`로 PR #2 머지 후 사람이 실행 대기 중입니다. `polls.type`의 옛 5개 값(`subject_options`/`question_targets`/`free_choice`/`selection`/`evaluation`)을 `'poll'`로 통합하는 `20260904150000_consolidate_poll_type_to_poll.sql`도 같은 시점(PR #2 머지 후) 실행 대기입니다.
 - 경기·평점 수집은 `supabase/functions/`의 Edge Function + Supabase 대시보드 Cron(KST 08:00/08:05)입니다. **함수 소스는 리포에서 관리하니 대시보드에서 직접 고치지 말고** `npx supabase functions deploy <name>`으로 배포합니다. 크론 등록만 대시보드에 있습니다(`supabase/functions/README.md`).
 - **`supabase link` 대상 프로젝트를 먼저 확인합니다.** 실제로 쓰는 DB는 `frontend/.env.local`의 `NEXT_PUBLIC_SUPABASE_URL`이 가리키는 프로젝트(`xrvz…`)입니다. 리포에는 `ykjf…`로 link된 적이 있는데 그쪽은 `fixtures`·`week_leaderboard`조차 없는 방치된 프로젝트라, `migration list`가 "원격 히스토리가 20260821000000에서 멈춤"으로 보이고 CLI가 `migration repair --status reverted` / `db pull`을 제안합니다. **그 제안을 따르면 엉뚱한 DB 기준으로 로컬 히스토리를 덮어씁니다.** 히스토리가 어긋나 보이면 repair 전에 `.env.local`의 URL과 `supabase/.temp/project-ref`가 같은지부터 봅니다(2026-08-25에 실제로 겪음).
 - `prediction_results`는 **정산이 끝난 주차만** 담습니다(`20260824120000_prediction_results_week_settled.sql`). 주차 진행 중에는 점수·랭킹이 비어 있는 게 정상이고, 그 구간의 화면 표기는 `matchHit()`의 적중 배지입니다.
@@ -72,9 +71,11 @@ DB나 Supabase 연동을 건드릴 때:
 투표:
 
 - 조회: `frontend/src/lib/queries/polls.ts`
+- 투표 생성: 서버 액션은 `frontend/src/lib/actions/polls.ts`의 `createUserPoll`, 폼은 `frontend/src/components/composition/polls/UserPollCreateForm.tsx`("일반 투표"/"전체 평점" 2형식, 일반 투표는 대상 선수 전체 연결 토글 + 선택지별 선수 연결을 옵션으로 제공), 화면은 `frontend/src/app/polls/create/page.tsx`. 후보 선수 목록(`getPollFormPlayers()`)은 `is_active = true`만 노출.
 - 투표 제출: `frontend/src/lib/actions/vote.ts`
 - 투표 가능 여부: `frontend/src/lib/polls/vote-eligibility.ts`
 - 투표 수정(작성자 본인/관리자만, active는 제목·설명·썸네일 / closed는 썸네일만): 권한·필드 판정은 `frontend/src/lib/polls/poll-edit-eligibility.ts`, 서버 액션은 `frontend/src/lib/actions/polls.ts`의 `updateUserPoll`, 폼은 `frontend/src/components/composition/polls/UserPollEditForm.tsx`, 화면은 `frontend/src/app/polls/[id]/edit/page.tsx`
+- 상세 화면: 일반 투표(`type: 'poll'`)는 `frontend/src/components/composition/polls/PollClient.tsx` 하나로 렌더한다(옛 `TypeAPollClient`/`TypeBPollClient` 두 컴포넌트는 병합·삭제됨) — 레이아웃 분기는 `poll.player_id` 유무(있으면 선수 대상: 커버 오버레이+선수 정보 카드 / 없으면 선택형). 전체 평점(`type: 'overall_rating'`)은 별도 `OverallRatingPollClient.tsx`. 진입점은 `frontend/src/app/polls/[id]/page.tsx`.
 - 댓글/좋아요: `frontend/src/lib/queries/comments.ts`, `frontend/src/lib/actions/comments.ts`
 - 화면: `frontend/src/app/page.tsx`, `frontend/src/app/polls/[id]/page.tsx`
 

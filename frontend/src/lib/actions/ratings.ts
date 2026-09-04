@@ -13,16 +13,7 @@ type RatingInput = {
 
 type RatingSubmitResult =
   | { success: true }
-  | { error: 'unauthenticated' | 'already_voted' | 'closed' | 'incomplete' | 'setup_required' | 'failed' }
-
-function isMissingRatingSchemaError(error: { message?: string } | null | undefined): boolean {
-  const message = String(error?.message ?? '')
-  return (
-    message.includes('rating_votes') ||
-    message.includes('schema cache') ||
-    message.includes('does not exist')
-  )
-}
+  | { error: 'unauthenticated' | 'already_voted' | 'closed' | 'incomplete' | 'failed' }
 
 export async function submitRatingVotes(pollId: string, ratings: RatingInput[]): Promise<RatingSubmitResult> {
   if (IS_MOCK) {
@@ -94,7 +85,6 @@ export async function submitRatingVotes(pollId: string, ratings: RatingInput[]):
 
   if (error) {
     if (error.code === '23505') return { error: 'already_voted' }
-    if (isMissingRatingSchemaError(error)) return { error: 'setup_required' }
     console.error('submitRatingVotes insert failed:', error)
     return { error: 'failed' }
   }

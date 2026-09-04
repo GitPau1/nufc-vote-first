@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-import { TypeBPollClient } from '@/components/composition/polls/TypeBPollClient'
+import { PollClient } from '@/components/composition/polls/PollClient'
 import type { PollDetail } from '@/lib/queries/polls'
 
 const poll: PollDetail = {
   id: 'poll-b1',
-  type: 'selection',
+  type: 'poll',
   title: '이번 주 최고의 활약을 펼친 선수는?',
   description: null,
   status: 'active',
@@ -30,13 +30,13 @@ const poll: PollDetail = {
 
 const meta = {
   title: 'Composition/Polls/PollCarouselCard',
-  component: TypeBPollClient,
+  component: PollClient,
   parameters: {
     // appDirectory: true가 없으면 내부의 useRouter()가
     // "invariant expected app router to be mounted"로 죽는다.
     nextjs: { appDirectory: true, navigation: { pathname: `/polls/${poll.id}` } },
   },
-} satisfies Meta<typeof TypeBPollClient>
+} satisfies Meta<typeof PollClient>
 
 export default meta
 type Story = StoryObj<typeof meta>

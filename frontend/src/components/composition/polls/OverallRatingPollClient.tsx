@@ -97,7 +97,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated, canEdit }: Over
     if (!isLastStep) setStepIndex(index => index + 1)
   }
 
-  // 제출 후 수정이 불가하므로 선택형 투표(TypeA/B)와 같이 확인 단계를 한 번 거친다.
+  // 제출 후 수정이 불가하므로 일반 투표(PollClient)와 같이 확인 단계를 한 번 거친다.
   function requestSubmit() {
     if (!isAuthenticated) { setShowLogin(true); return }
     if (completedCount !== totalRequired) {
@@ -127,9 +127,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated, canEdit }: Over
             ? '이미 참여한 평가입니다'
             : result.error === 'incomplete'
               ? '모든 선수를 평가해주세요'
-              : result.error === 'setup_required'
-                ? '전체 평가 DB 마이그레이션이 필요합니다'
-                : '제출에 실패했습니다. 다시 시도해주세요'
+              : '제출에 실패했습니다. 다시 시도해주세요'
         )
       }
     })
@@ -152,7 +150,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated, canEdit }: Over
       <div className="mx-auto flex-1 w-full max-w-detail overflow-y-auto pb-[92px] animate-enter sm:flex-none sm:overflow-visible sm:pb-0">
         <div className="space-y-4 px-4 py-4">
           <div className="overflow-hidden rounded-lg bg-disabled">
-            <img src={coverUrl} alt={poll.title} className="h-[252px] w-full object-cover" />
+            <img src={coverUrl} alt={poll.title} className="h-[160px] sm:h-[252px] w-full object-cover" />
           </div>
 
           <div>

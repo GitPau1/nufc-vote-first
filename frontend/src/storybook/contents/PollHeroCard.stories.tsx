@@ -8,7 +8,7 @@ const HERO_IMAGE = 'https://placehold.co/716x504/0c2340/41b6e6?text=St+James+Par
 function mockPoll(overrides: Partial<PollListItem>): PollListItem {
   return {
     id: 'poll-1',
-    type: 'selection',
+    type: 'poll',
     title: '이번 시즌 최고의 활약을 펼친 선수는?',
     description: null,
     status: 'active',

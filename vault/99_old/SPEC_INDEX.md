@@ -10,9 +10,9 @@
 | [02-auth.md](02-auth.md) | Google OAuth, 접근 권한 테이블, 로그인 유도 흐름 | — |
 | [03-data-model.md](03-data-model.md) | 전체 DB 스키마 (CREATE TABLE), RLS 정책, 테이블 관계 | — |
 | [04-poll-list.md](04-poll-list.md) | 메인 페이지(/), 투표 카드, 무한 스크롤, 헤더 | 02-auth |
-| [05-poll-detail.md](05-poll-detail.md) | 투표 상세(/polls/[id]), Type A/B UI, 확인 모달, 결과 화면 | 02-auth, 03-data-model |
+| [05-poll-detail.md](05-poll-detail.md) | 투표 상세(/polls/[id]), 선수 대상/선택형 UI, 확인 모달, 결과 화면 | 02-auth, 03-data-model |
 | [06-mypage.md](06-mypage.md) | 마이페이지(/my), 프로필, 탈퇴 처리 | 02-auth |
-| [07-scheduled-polls.md](07-scheduled-polls.md) | 예정 투표 blur UI, 카운트다운, 자동 공개/마감 cron | 03-data-model |
+| [07-scheduled-polls.md](07-scheduled-polls.md) (제거됨) | 예정 투표 기능 — 2026-09-04 TEA-25로 완전 제거 | — |
 | [08-comments.md](08-comments.md) | 댓글 작성 조건, 좋아요, 정렬, 에러 처리 | 02-auth, 03-data-model |
 | [09-analytics.md](09-analytics.md) | Mixpanel 이벤트 전체 목록 및 속성 | — |
 | [10-content-mgmt.md](10-content-mgmt.md) | 선수/투표 등록 SQL 예시, 관리 방법 | 03-data-model |
@@ -28,7 +28,7 @@
 | 투표 참여 흐름 구현 | 05 → 11 (+ 02, 03) |
 | 댓글 기능 구현 | 08 (+ 02, 03) |
 | 마이페이지 구현 | 06 (+ 02) |
-| 예정/마감 투표 처리 | 07 (+ 03) |
+| 마감 투표 처리(예정 투표는 07 참고 — 제거됨) | 05 (+ 03) |
 | Mixpanel 연동 | 09 |
 | DB 초기 데이터 입력 | 10 (+ 03) |
 | 전체 아키텍처 리뷰 | 전부 |
