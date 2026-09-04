@@ -338,6 +338,15 @@ npm run build
 
 ---
 
+## ⑨ 화면 검수 반영 (2026-09-05, 사람 확정 — intent.md "⑧ 화면 검수 반영")
+
+④의 결과가 검수에서 바뀌었다. 새 developer 에이전트 1개가 아래를 한 커밋으로 처리한다(빌드는 dev 서버 종료 후 오케스트레이터가 별도 실행):
+- `globals.css`: `.competition-wash-*` 3종을 컨테이너용 대각 공식(`135deg`, 700 8% → 투명 55%, 베이스 `bg-surface`)으로 변경. `.spotlight-glow-brand`(non-strong) 같은 공식·`--p-blue-700`으로 복원(⑥의 삭제 번복).
+- `competitionColor.ts`: `weekGlowClass(competitions)`(제안명) — 버킷 1종이면 `COMPETITION_WASH[버킷]`, 그 외/빈 배열이면 `'spotlight-glow-brand'`. 테스트 6건 추가.
+- `MatchWeekList.tsx`: `WeekSessionCard` 배경 = `weekPhase(week)==='open' ? weekGlowClass(...) : 'bg-surface'`. `MatchInfoCard`는 항상 `bg-page`(wash 제거). 텍스트 규칙 유지.
+- Storybook 4파일(MatchWeekList.mdx/.stories, Gradient.mdx, DesignToken.mdx) 새 규칙으로 재갱신. `CompetitionColors` 스토리 = open 주차 4개(PL/EFL/친선/PL+EFL 혼합).
+- 검증: `npm test`(273+6 기대)·tsc·lint → 커밋 → dev 서버 종료 → `npm run build`·`build-storybook` → dev 재기동 → 사람 재검수.
+
 ## 2. 브랜치·Linear (확정: 이슈 1개 + 브랜치 1개)
 
 Linear 프로젝트 "대회별로 색상 다르게"(TEA 팀)에 **이슈 1개**(전체 기능)를 만들었다 — **TEA-30** (https://linear.app/teamboo/issue/TEA-30, In Progress). 브랜치: **`geonhaa/tea-30-승부예측-화면-대회별-색상-적용-노란-팔레트-신설`** (Linear 자동 생성명 그대로). PR 본문에 `Fixes TEA-30`. 작업은 **`origin/main`에서 딴 git worktree**에서 한다 — 현재 체크아웃(`geonhaa/tea-24-…`)에 커밋 안 된 마케팅 작업이 있어 브랜치 전환으로 섞이지 않게 하기 위함. `vault/02_프로젝트/대회별로 색상 다르게/` 문서 6개(intent/design-brief/노란-팔레트-제안/feature-spec/plan/시안.html)도 같은 브랜치에 커밋해 PR에 포함한다. `main` 직접 push 금지, PR을 통해서만 반영(CLAUDE.md "Git/GitHub 규칙") — PR 설명에 이슈 ID와 `Fixes TEA-XX` 매직 워드, 그리고 "무엇을 왜"(색상 매핑·팔레트 신설·배지 공식·옛 글로우 삭제) 요약 포함. PR 전 보안/코드 리뷰: `code-review` `medium` 1회 또는 새 sonnet 에이전트에 diff 경로만 넘김(orchestrator-rules 10.2).
