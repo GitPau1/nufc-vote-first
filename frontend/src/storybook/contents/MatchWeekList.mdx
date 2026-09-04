@@ -43,30 +43,28 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 
 판정 원본은 `weekBadge`(`MatchWeekList.tsx:91-104`)와 `weekAction`(`MatchWeekList.tsx:111-131`)이다. 표의 `variant`는 `weekAction`이 반환하는 값이고 **화면에도 그대로 쓰인다** — 컨테이너 색과 무관하게 CTA variant를 덮어쓰지 않는다(`MatchWeekList.tsx:267`).
 
-## 주차 컨테이너 — 예측 접수 중인 주차만 브랜드 글로우
+## 주차 컨테이너와 경기 카드 배경 — 접수 상태는 배지, 대회 구분은 카드 색
 
-**`weekPhase === 'open'`인 주차의 컨테이너만 라이트 브랜드 글로우다.** `.spotlight-glow-brand` 유틸리티를 쓰고(`globals.css:178-204` — `--sem-bg-surface`(흰색) 베이스 + 위에서 아래로 내려오는 **세로 linear 한 겹**: `--p-blue-700` 8%로 시작해 컨테이너 높이의 25%에서 완전히 소멸), 나머지 단계(`upcoming`·`settling`·`result`)는 `bg-surface` 흰 컨테이너다(`MatchWeekList.tsx:225-230`). 스톱이 px이 아니라 퍼센트인 게 핵심이다 — 이 컨테이너는 경기 카드 수에 따라 높이가 변하는데(1개면 130px대, 2개면 카드가 세로로 한 장 더 쌓인 만큼 커진다 — `MatchWeekList.tsx:252`), 앞서 시도한 radial 2겹은 반경이 절대 px이라 같은 "진행중" 주차인데도 경기 수에 따라 인상이 달랐다. 25%에서 끊는 이유는 끝까지 페이드하면 아래쪽 경기 카드(`bg-page`)가 틴트 위에 얹혀 회색기가 돌기 때문이고, 상단에서 끊으면 틴트가 `N주차`·배지 줄에만 걸린다 — 버린 시안 두 개와 자세한 근거는 [Gradient](?path=/docs/foundations-gradient--docs)에 있다. [MatchdayHero](?path=/docs/composition-predict-matchdayhero--docs)가 쓰는 `.spotlight-glow-brand-strong`은 코너 radial 방식을 유지한 다크 변형이고 여기서는 쓰지 않는다(2026-08-25에 다크 → 라이트로 교체).
+주차 컨테이너는 상태와 무관하게 항상 `bg-surface` + `rounded-lg border border-neutral-weak p-4`다(`MatchWeekList.tsx:219-226` — TEA-30, 2026-09-05: `open` 주차만 쓰던 라이트 브랜드 글로우를 제거했고, 접수 상태는 좌상단 `weekBadge` 배지가 전담한다). 대신 대회 구분은 컨테이너가 아니라 그 안 경기 카드 `MatchInfoCard`의 배경이 맡는다: `!dimmed`면(`isDimmed(week, match)`가 `false`) `.competition-wash-{violet,green,yellow}`(프리미어리그=violet · 그 외 컵 대회=green · 친선=yellow — 700단계 8%로 시작하는 세로 linear 한 겹이 컨테이너 높이 25%에서 완전히 소멸), 아니면 `bg-page`다(`MatchWeekList.tsx:307-309`). 색 값·소멸 지점의 자세한 근거는 [Gradient](?path=/docs/foundations-gradient--docs)에 있다.
 
-이 유틸리티는 `background`를 통째로 정하므로 같은 요소에 `bg-surface`를 함께 주지 않는다. **`border`는 반대로 함께 준다** — 글로우는 배경만 정하고 테두리는 만들지 않으므로, 테두리가 없으면 페이지와의 경계가 안 생긴다. 그래서 `rounded-lg border border-neutral-weak p-4`는 두 컨테이너의 공통 클래스이고(`MatchWeekList.tsx:226`), `cn()`이 가르는 건 마지막 한 칸뿐이다: `highlighted ? 'spotlight-glow-brand' : 'bg-surface'`(`MatchWeekList.tsx:229`).
-
-| | 흰 컨테이너 | 글로우 컨테이너(`open`) |
+| | `open` 이외 주차(`upcoming`·`settling`·`result`) | `open` 주차 |
 |---|---|---|
-| 컨테이너 배경 | `bg-surface` | `.spotlight-glow-brand` (베이스도 `bg-surface`) |
+| 컨테이너 배경 | `bg-surface` | `bg-surface` (같다) |
 | 컨테이너 테두리 | `border border-neutral-weak` | 같다 |
 | 주차 번호 | `text-neutral` | `text-neutral` (같다) |
-| 경기 카드 표면 | `bg-page` | `bg-page` (같다) |
+| 경기 카드 배경 | `bg-page` (전부 `dimmed`) | 잠기지 않은 경기 → `.competition-wash-*`, 잠긴 경기 → `bg-page` |
 | 카드 본문 텍스트 | `text-neutral` / `text-neutral-muted` | 같다 |
 | 예측 줄 구분선 | `border-neutral-weak` | 같다 |
 | 점수 강조 | `text-brand` | 같다 |
 | 하단 CTA | `weekAction`의 `variant` 그대로 | 같다 |
 
-스위치는 `const highlighted = weekPhase(week) === 'open'` 한 줄이고(`MatchWeekList.tsx:220`), **가르는 건 컨테이너 배경 하나뿐**이다. 테두리·텍스트·구분선·CTA는 물론 **안쪽 경기 카드 표면까지 두 컨테이너가 같다.**
+컨테이너 배경을 가르던 스위치(`highlighted`)는 삭제됐다(TEA-30). 두 열이 다른 건 **경기 카드 배경 한 줄뿐**이고, 그것도 주차 단위가 아니라 경기 단위(`isDimmed(week, match)`)로 갈린다 — 더블 매치위크에서 한 주에 프리미어리그와 컵 경기가 같이 뜨는 게 정상이라 대회색은 애초에 카드 단위여야 한다. 테두리·텍스트·구분선·CTA는 두 열이 같다.
 
-전에는 글로우 컨테이너 안의 경기 카드만 `bg-surface`로 뒤집었다 — 글로우 베이스가 `bg-page`여서 카드도 `bg-page`면 경계가 사라졌기 때문이다. 그 안팎 뒤집기는 없어졌다: 글로우 베이스 자체가 `bg-surface`로 바뀌면서(원래 베이스 `bg-page`는 이 앱의 페이지 배경과 같은 색이라 컨테이너 경계가 사라졌다 — `globals.css:148-149`의 `body`) 카드는 어느 컨테이너 안에서든 한 단계 낮은 `bg-page` 한 색이다. `MatchInfoCard`에 있던 `highlighted` prop도 그때 삭제됐다(`MatchWeekList.tsx:290-291`, `:293-303`).
+이력: 2026-08-25에는 `open` 주차 컨테이너에 라이트 브랜드 글로우를 얹고 그 안 경기 카드 표면을 뒤집는 처리가 있었다. 2026-09-05(TEA-30)에 글로우를 지우면서 그 뒤집기·`highlighted` 변수·`MatchInfoCard`의 `highlighted` prop이 전부 사라졌고, 카드 표면은 `dimmed` 여부 하나로만 갈린다.
 
 배지도 variant를 바꾸지 않는다. `Badge` 4종이 전부 "옅은 틴트 배경 + 짙은 텍스트"라(`primitives/badge.tsx:11-17`) 대비가 배지 안에서 닫혀 있다.
 
-**글로우는 "내가 참여할 수 있다"가 아니라 "이 주차가 접수 중이다"를 뜻한다** — 배지가 `진행중`이든 `참여 완료`든 둘 다 글로우다. 활성 주차를 목록 맨 위로 끌어올리던 정렬이 폐기됐으므로(아래 "실제 목록" 절), 지금 예측할 수 있는 주를 가리키는 신호는 이 색뿐이다.
+**접수 중 신호는 배지 문구다** — `진행중`·`참여 완료` 둘 다 `open` 주차이고, 활성 주차를 목록 맨 위로 끌어올리던 정렬이 폐기됐으므로(아래 "실제 목록" 절) 지금 예측할 수 있는 주를 가리키는 건 `weekBadge`뿐이다. 대회색 wash는 "이 경기가 무슨 대회인가"만 말하고 접수 상태는 말하지 않는다 — 두 신호를 섞지 않는다.
 
 <Canvas of={MatchWeekListStories.Open} />
 <Canvas of={MatchWeekListStories.Submitted} />
