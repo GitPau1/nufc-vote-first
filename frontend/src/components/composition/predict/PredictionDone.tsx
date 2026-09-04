@@ -9,6 +9,7 @@ import {
   NUFC_LABEL,
   NUFC_TEAM_ID,
   teamLogoUrl,
+  weekLabel,
   type WeekPrediction,
   type WeekSession,
 } from '@/lib/predictions/week'
@@ -82,7 +83,7 @@ export function PredictionDone({
 
   const intro = (align: 'center' | 'left') => (
     <div className={align === 'center' ? 'text-center' : 'text-left'}>
-      <p className="text-headline-1 font-semibold text-neutral">{week.weekNo}주차 제출 완료</p>
+      <p className="text-headline-1 font-semibold text-neutral">{weekLabel(week.weekNo, '주차')} 제출 완료</p>
       <p className="mt-1 text-label-2 text-neutral-muted">킥오프 전까지 언제든 결과를 확인하러 다시 와주세요</p>
     </div>
   )

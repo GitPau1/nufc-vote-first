@@ -35,6 +35,7 @@ const {
   submittableMatches,
   isoWeek,
   weekKey,
+  weekLabel,
   currentWeekKey,
   toKst,
   NUFC_TEAM_ID,
@@ -406,4 +407,16 @@ test('groupFixturesByWeek: 알 수 없는 날짜의 경기는 에러 없이 조�
   assert.ok(!allIds.includes('66'), '알 수 없는 날짜의 경기는 어떤 그룹에도 나타나지 않아야 한다')
   assert.ok(allIds.includes('4813748'))
   assert.ok(allIds.includes('1'))
+})
+
+// --- weekLabel: 화면 표시 문구(프리시즌은 "프리시즌 N", 정규 시즌은 그대로) ---
+
+test('weekLabel: 정규 시즌(양수 weekNo)은 기존과 같은 "N주차"/"N라운드"를 반환한다', () => {
+  assert.equal(weekLabel(1, '주차'), '1주차')
+  assert.equal(weekLabel(33, '라운드'), '33라운드')
+})
+
+test('weekLabel: 프리시즌(음수 weekNo)은 unit 없이 "프리시즌 N"을 반환한다', () => {
+  assert.equal(weekLabel(-1, '주차'), '프리시즌 1')
+  assert.equal(weekLabel(-4, '라운드'), '프리시즌 4')
 })

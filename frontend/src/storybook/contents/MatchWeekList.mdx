@@ -13,7 +13,7 @@ import * as MatchWeekListStories from './MatchWeekList.stories'
 
 **컨테이너는 클릭 대상이 아니다.** 진입점은 하단 CTA `Button` 하나뿐이고(`MatchWeekList.tsx:265-277`), 경기 카드도 클릭되지 않는 정보 카드다. 경기가 1개든 2개든 같은 카드가 **세로로 쌓이고 폭 전체를 쓴다**(`flex flex-col gap-2`, `MatchWeekList.tsx:252`) — 폭에 따라 바뀌지 않는다. 컴포넌트 전체에 `sm:`/`md:` 분기가 하나도 없다.
 
-`N주차` 타이포는 `text-headline-1 font-extrabold`다(`MatchWeekList.tsx:233`).
+`N주차` 타이포는 `text-headline-1 font-extrabold`다(`MatchWeekList.tsx:233`). 문구 자체는 `lib/predictions/week.ts`의 `weekLabel()`이 만든다 — 프리시즌 주(`weekNo`가 음수)는 "N주차" 대신 "프리시즌 N"으로 나온다(2026-09-04).
 
 **배지도 CTA도 주차 단위로 하나씩이다.** 제출 자체는 경기 단위로 쌓이지만(`myResult`가 경기에 붙는다), 화면에 요약되는 건 주 레벨 두 플래그다.
 
