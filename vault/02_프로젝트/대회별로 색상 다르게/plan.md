@@ -334,7 +334,7 @@ npm run build
 
 - **mock 모드**: `npm run dev`(포트는 3000 대신 별도 지정, 예: `-- -p 4300`)로 홈(MatchdayHero)·`/predictions`(MatchWeekList)·`/predictions/[weekKey]`(FlowClient → 제출 → Done) 화면에서 violet(Premier League)·green(EFL Cup)·**yellow(Club Friendlies, ②에서 추가한 9008)** 세 색이 design-brief 3-4 표대로 나오는지 확인. 종료 경기의 MatchdayHero가 무채색(`bg-neutral-strong`)인지, 잠긴 경기의 MatchInfoCard가 `bg-page`인지도 함께 확인. 스크린샷을 사람에게 보여 검수받는다(검수 지적은 라운드가 끝날 때까지 모아 1왕복으로 반영 — orchestrator-rules 10.5).
 - **실연동 확인**: CLAUDE.md 원칙("mock 모드에서만 확인하고 끝내지 말 것") — 프리뷰 배포 또는 스테이징 Supabase 연동 환경에서 실제 `fixtures.competition_name` 값으로도 3색이 나오는지 별도 확인. 이 리포에 스테이징 환경 접근 방법이 이 plan 범위에 없으면 "실연동 미확인"으로 최종 보고에 명시하고 사람에게 확인 경로를 묻는다.
-- dev 서버는 자기 PID만 kill(`pkill -f` 금지, developer-agent-rules 5-9 규칙). **실행 메모(2026-09-05)**: 일반 Bash 호출 안에서 `&`로 띄운 dev 서버는 호출 종료 시 함께 죽는다 — 하네스 백그라운드 작업(`run_in_background`)으로 띄워야 유지된다. Chrome 확장이 연결되지 않아 오케스트레이터 스크린샷은 불가 → 사람이 `http://localhost:4300/`·`/predictions`를 직접 열어 검수(⑧).
+- dev 서버는 자기 PID만 kill(`pkill -f` 금지, developer-agent-rules 5-9 규칙). **실행 메모(2026-09-05)**: 일반 Bash 호출 안에서 `&`로 띄운 dev 서버는 호출 종료 시 함께 죽는다 — 하네스 백그라운드 작업(`run_in_background`)으로 띄워야 유지된다. **⑦의 `npm run build`는 dev 서버를 끄고 돌린다** — 같은 `.next/`를 공유해서 동시에 돌리면 dev 서버가 `TypeError: __webpack_modules__[moduleId] is not a function`으로 `/`를 500/404로 내보낸다(2026-09-05 실제 발생, 재시작으로 복구). Chrome 확장이 연결되지 않아 오케스트레이터 스크린샷은 불가 → 사람이 `http://localhost:4300/`·`/predictions`를 직접 열어 검수(⑧).
 
 ---
 
