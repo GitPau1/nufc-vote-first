@@ -161,7 +161,8 @@ export function weekKey(kst: Date): string | null {
  * "1라운드")을 그대로 쓰고, 프리시즌 주(`weekNo`가 음수 — isoWeek()/weekKey() 주석 참고)는
  * `unit` 없이 `"프리시즌 ${M}"`(M = -weekNo, weekKey의 "2627-0-M"과 같은 순번)만 보여준다.
  * 프리시즌 음수 문구("-1주차" 등)를 없애기로 한 확정 요구사항(2026-09-04, plan.md
- * "스코프 밖(후속 이슈)" §A를 스코프에 편입) 반영 — 화면 5곳이 이 함수 하나를 공유한다.
+ * "스코프 밖(후속 이슈)" §A를 스코프에 편입) 반영 — 화면 6곳(승부예측 5곳 + 관리자 평점 입력)이
+ * 이 함수 하나를 공유한다.
  */
 export function weekLabel(weekNo: number, unit: string): string {
   return weekNo < 0 ? `프리시즌 ${-weekNo}` : `${weekNo}${unit}`

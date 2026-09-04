@@ -8,7 +8,7 @@ import { getHeaderAuth } from '@/lib/actions/auth'
 import { getFixtureWeeks } from '@/lib/queries/fixtures'
 import { getFixtureRatings } from '@/lib/queries/predictions'
 import { getPickCandidates } from '@/lib/queries/squads'
-import { NUFC_LABEL } from '@/lib/predictions/week'
+import { NUFC_LABEL, weekLabel } from '@/lib/predictions/week'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,7 +76,7 @@ export default async function AdminRatingsPage({
           <AdminRatingsForm
             fixtures={finished.map(({ week, match }) => ({
               id: match.id,
-              label: `${match.kickoff} ${weekLabel(week.weekNo)} ${NUFC_LABEL} vs ${match.opponent}${
+              label: `${match.kickoff} ${weekLabel(week.weekNo, '주차')} ${NUFC_LABEL} vs ${match.opponent}${
                 match.actual ? ` (${match.actual[0]}-${match.actual[1]})` : ''
               }`,
             }))}
@@ -90,6 +90,3 @@ export default async function AdminRatingsPage({
   )
 }
 
-function weekLabel(weekNo: number): string {
-  return `${weekNo}주차`
-}
