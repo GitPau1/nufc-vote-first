@@ -106,10 +106,9 @@ type Story = StoryObj<typeof meta>
 /**
  * 진행중 — 제출할 경기가 남은 주차. 배지 `진행중` + "예측하기" 버튼.
  *
- * 컨테이너 배경은 `open`을 포함한 모든 단계에서 `bg-surface`로 같다(TEA-30, 2026-09-05 —
- * 여기 있던 라이트 브랜드 글로우 유틸리티는 삭제됐다). 예측 접수 중인 주차를
- * 목록 어디서든 찾게 해주는 신호는 이제 컨테이너 색이 아니라 `weekBadge`가 렌더하는
- * `진행중` 배지뿐이다.
+ * 컨테이너는 `open`이라 대각 글로우가 켜진다. 이 스토리의 경기는 `competition`을 지정하지
+ * 않아 green(기타 컵 대회 fallback) 버킷으로 떨어지므로 `.competition-wash-green`이 뜬다 —
+ * 대회색이 섞여 브랜드 파랑으로 바뀌는 예는 `CompetitionColors` 참고.
  */
 export const Open: Story = {
   args: {
@@ -119,8 +118,9 @@ export const Open: Story = {
 
 /**
  * 참여 완료 — 제출 가능한 경기를 다 제출한 주차. 경기는 아직 안 끝났고 CTA 문구는 "내 예측 보기"다.
- * 컨테이너는 다른 단계와 같은 `bg-surface`다(TEA-30) — 배지가 `참여 완료`로 바뀌어도 이 주차가
- * 여전히 접수 중이라는 건 배지 문구로만 드러난다. CTA는 `weekAction`이 정한 outline 그대로 렌더된다.
+ * 컨테이너는 `open`이라 여기서도 대각 글로우가 켜진다(`competition` 미지정 → green fallback) —
+ * 배지가 `참여 완료`로 바뀌어도 컨테이너 색은 계속 접수 중 신호를 낸다. CTA는 `weekAction`이
+ * 정한 outline 그대로 렌더된다.
  */
 export const Submitted: Story = {
   args: {
@@ -137,10 +137,12 @@ export const Submitted: Story = {
 /**
  * 부분 제출 — 첫 경기는 킥오프가 지나 잠기고(`locked`) 둘째 경기만 남은 상태.
  * `submitted`이면서 동시에 `hasPending`이라 배지는 `진행중`, CTA는 미제출 주차와 같은 "예측하기"다.
+ * 컨테이너는 `open`이라 대각 글로우다 — 두 경기 다 한글 대회명(green fallback)이라
+ * `.competition-wash-green`이 뜬다.
  *
- * 잠긴 첫 경기와 남은 둘째 경기의 **카드 배경은 같다**(컨테이너 종류와도 무관하게 둘 다 `bg-page`).
- * 잠긴 쪽은 **팀명과 킥오프 시각 톤만** `text-neutral-muted`로 내려간다(MatchWeekList.tsx:341,
- * :369, :359) — 대회명·일자는 `dimmed`와 무관하게 늘 muted다(:323, :353). 로고 흑백은 `finished`
+ * 잠긴 첫 경기와 남은 둘째 경기의 **카드 배경은 같다**(둘 다 `bg-page`, 컨테이너 색과 무관).
+ * 잠긴 쪽은 **팀명과 킥오프 시각 톤만** `text-neutral-muted`로 내려간다(MatchWeekList.tsx:345,
+ * :373, :359) — 대회명·일자는 `dimmed`와 무관하게 늘 muted다(:326, :357). 로고 흑백은 `finished`
  * 전용이라 여기선 아직 안 걸린다.
  */
 export const PartiallySubmitted: Story = {
@@ -203,9 +205,10 @@ export const Result: Story = {
 
 /**
  * 예정 — 아직 안 열린 주차. 배지 `예정` + disabled "예측 오픈 전" 버튼.
- * 컨테이너는 다른 단계와 같은 `bg-surface`이고(`border border-neutral-weak bg-surface`),
- * 경기 카드도 다른 단계와 같은 `bg-page`다 — 가라앉는 건 팀명·시각 텍스트 톤뿐이다
- * (`isDimmed`가 `weekPhase === 'upcoming'`을 포함한다, MatchWeekList.tsx:140).
+ * `upcoming`은 `open`이 아니라 대각 글로우 대상이 아니다 — 컨테이너는 `bg-surface`
+ * (`border border-neutral-weak bg-surface`), 경기 카드도 `bg-page`다 — 가라앉는 건
+ * 팀명·시각 텍스트 톤뿐이다(`isDimmed`가 `weekPhase === 'upcoming'`을 포함한다,
+ * MatchWeekList.tsx:142).
  */
 export const Upcoming: Story = {
   args: {
@@ -233,25 +236,38 @@ export const TwoMatches: Story = {
   },
 }
 
-/** 대회색 wash 3종 확인용, TEA-30 — `competition` 값이 `competitionColorBucket`이 실제로 검사하는
- * 영문 원문(`fixtures.competition_name`)과 같아야 violet/green/yellow가 갈린다(다른 스토리의
- * 한글 라벨은 전부 green fallback으로 떨어진다). 42주차는 더블 매치위크로 violet(Premier League)과
- * green(EFL Cup)을, 43주차는 yellow(Club Friendlies)를 보여준다. */
+/** 주차 컨테이너 대각 글로우 확인용 — `weekGlowClass`가 그 주 경기의 대회색 버킷 수로 색을
+ * 고른다. `competition` 값이 `competitionColorBucket`이 실제로 검사하는 영문 원문
+ * (`fixtures.competition_name`)과 같아야 violet/green/yellow가 갈린다(다른 스토리의 한글
+ * 라벨은 전부 green fallback으로 떨어진다). open 주차 4개: 44주차는 Premier League만
+ * (violet), 45주차는 EFL Cup만(green), 46주차는 Club Friendlies만(yellow), 47주차는
+ * Premier League + EFL Cup 더블 매치위크로 대회색이 섞여 브랜드 파랑(`.spotlight-glow-brand`)이
+ * 된다. */
 export const CompetitionColors: Story = {
   args: {
     weeks: [
       mockWeek({
-        weekNo: 42,
+        weekNo: 44,
         status: 'open',
-        matches: [
-          mockMatch({ id: 'w42a', competition: 'Premier League', opponent: '에버튼', kickoff: '8월 23일' }),
-          mockMatch({ id: 'w42b', competition: 'EFL Cup', opponent: '브렌트포드', isHome: false, kickoff: '8월 26일' }),
-        ],
+        matches: [mockMatch({ id: 'w44', competition: 'Premier League', opponent: '에버튼', kickoff: '8월 23일' })],
       }),
       mockWeek({
-        weekNo: 43,
+        weekNo: 45,
         status: 'open',
-        matches: [mockMatch({ id: 'w43a', competition: 'Club Friendlies', opponent: '첼시', kickoff: '8월 30일' })],
+        matches: [mockMatch({ id: 'w45', competition: 'EFL Cup', opponent: '브렌트포드', isHome: false, kickoff: '8월 26일' })],
+      }),
+      mockWeek({
+        weekNo: 46,
+        status: 'open',
+        matches: [mockMatch({ id: 'w46', competition: 'Club Friendlies', opponent: '첼시', kickoff: '8월 30일' })],
+      }),
+      mockWeek({
+        weekNo: 47,
+        status: 'open',
+        matches: [
+          mockMatch({ id: 'w47a', competition: 'Premier League', opponent: '아스날', kickoff: '9월 3일' }),
+          mockMatch({ id: 'w47b', competition: 'EFL Cup', opponent: '풀럼', isHome: false, kickoff: '9월 6일' }),
+        ],
       }),
     ],
   },
@@ -286,10 +302,10 @@ export const NoMatches: Story = {
  * 실제 목록 — 한 달 안에 결과·진행중·예정·경기 없는 주가 섞인다.
  * 상태별 스토리에서 못 보이는 것 세 가지를 여기서 본다.
  *
- * 1. **컨테이너 색이 아니라 배지로만 구분된다.** 39주차만 `open`이지만 컨테이너는 다른 주차와
- *    똑같은 `bg-surface`다(TEA-30 — 이전에 있던 라이트 브랜드 글로우 유틸리티 삭제) — 활성
- *    주차를 위로 끌어올리던 정렬(`openWeeksFirst`)도 폐기된 뒤라, "지금 예측할 수 있는 주"를
- *    가리키는 건 39주차의 `진행중` 배지뿐이다.
+ * 1. **컨테이너 색과 배지가 함께 구분한다.** 39주차만 `open`이라 그 컨테이너만 대각 글로우
+ *    (`competition` 미지정 → green fallback)가 켜지고 나머지는 `bg-surface`다 — 활성 주차를
+ *    위로 끌어올리던 정렬(`openWeeksFirst`)은 폐기된 뒤라, 위치가 아니라 39주차의 글로우
+ *    컨테이너 + `진행중` 배지가 함께 "지금 예측할 수 있는 주"를 가리킨다.
  * 2. 위→아래로 "결과 → 진행중 → 예정"으로 흐르는 **킥오프 오름차순** 그대로의 순서. 부모가
  *    재정렬하지 않는다(PredictListClient.tsx:47, :60 — 달 필터 + `toPredictWeeks` map뿐).
  * 3. 주차마다 55ms씩 밀리는 `animate-enter` 순차 등장.
@@ -341,8 +357,9 @@ export const FullMonth: Story = {
  * 대신 팀 칸이 `minmax(0,1fr)` 트랙 안에서 가운데 쪽으로 붙어 있어(`side`별 `justify-end`/
  * `justify-start`, MatchWeekList.tsx:426-430) 로고·팀명 덩어리가 가운데에 모이고 카드 좌우
  * 바깥쪽에 빈 여백이 생긴다 — 폭이 커질수록 이 여백만 커진다.
- * 위 39주차(`open`)와 아래 38주차(`result`)는 컨테이너 배경이 같은 `bg-surface`다(TEA-30) —
- * 여기선 그 위 경기 카드 표면(대회색 wash 대 `bg-page`)이 갈리는지를 나란히 본다.
+ * 위 39주차(`open`)는 컨테이너가 대각 글로우(두 경기 다 한글 대회명이라 green fallback →
+ * `.competition-wash-green`)고, 아래 38주차(`result`)는 `bg-surface`다 — 경기 카드는 두
+ * 주차 다 `bg-page`로 같다는 것도 나란히 본다.
  */
 export const DesktopWidth: Story = {
   decorators: [(Story: () => React.JSX.Element) => <div style={{ width: 720 }}><Story /></div>],

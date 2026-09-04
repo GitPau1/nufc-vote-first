@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { competitionColorBucket, COMPETITION_GLOW, COMPETITION_WASH, COMPETITION_BADGE } from './competitionColor.ts'
+import { competitionColorBucket, COMPETITION_GLOW, COMPETITION_WASH, COMPETITION_BADGE, weekGlowClass, WEEK_GLOW_BRAND } from './competitionColor.ts'
 
 test('Premier League → violet', () => {
   assert.equal(competitionColorBucket('Premier League'), 'violet')
@@ -27,4 +27,23 @@ test('룩업 3개는 버킷 3종을 전부 덮고 클래스명 접두어가 맞�
       assert.equal(table[bucket], `${prefix}${bucket}`)
     }
   }
+})
+
+test('weekGlowClass: Premier League 하나 → competition-wash-violet', () => {
+  assert.equal(weekGlowClass(['Premier League']), 'competition-wash-violet')
+})
+test('weekGlowClass: EFL Cup + FA Cup(같은 버킷) → competition-wash-green', () => {
+  assert.equal(weekGlowClass(['EFL Cup', 'FA Cup']), 'competition-wash-green')
+})
+test('weekGlowClass: Club Friendlies 하나 → competition-wash-yellow', () => {
+  assert.equal(weekGlowClass(['Club Friendlies']), 'competition-wash-yellow')
+})
+test('weekGlowClass: [null] → competition-wash-green (fallback)', () => {
+  assert.equal(weekGlowClass([null]), 'competition-wash-green')
+})
+test('weekGlowClass: Premier League + EFL Cup(버킷 2종) → spotlight-glow-brand', () => {
+  assert.equal(weekGlowClass(['Premier League', 'EFL Cup']), WEEK_GLOW_BRAND)
+})
+test('weekGlowClass: 경기 없음([]) → spotlight-glow-brand', () => {
+  assert.equal(weekGlowClass([]), WEEK_GLOW_BRAND)
 })

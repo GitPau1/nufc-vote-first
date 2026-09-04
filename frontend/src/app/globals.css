@@ -181,12 +181,19 @@
     );
   }
 
+  /* MatchWeekList open 주차 컨테이너 — 그 주에 대회색이 2종 이상 섞였을 때(브랜드 파랑).
+     TEA-30에서 세로→대각(135deg, 55% 소멸)으로 지오메트리 변경. */
+  .spotlight-glow-brand {
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--p-blue-700) 8%, transparent) 0%, transparent 55%),
+      var(--sem-bg-surface);
+  }
+
   /* 브랜드 스팟라이트 글로우(다크 카드용) — 베이스를 bg-neutral-strong으로 쓰는 카드(MatchdayHero 등)용.
-     이름은 쌍이지만 두 유틸리티는 이제 지오메트리·색 구성·계수가 전부 갈렸다: 이쪽은 코너
-     250px 2겹(blue-700/blue-600 각 15%)이고, 라이트는 카드 밖에 중심을 둔 블롭 2겹
-     (blue-700 15% + cyan-600 14%)이다. 라이트가 2026-08-25에 코너 → 블롭으로 바뀔 때
-     여기는 따라가지 않았다 — 히어로는 카드 높이가 커서 코너 반경이 부족하지 않다.
-     한쪽을 고칠 때 다른 쪽을 따라 맞추지 않는다. */
+     이름은 쌍이지만 두 유틸리티는 지오메트리·색 구성·계수가 갈렸다: 이쪽은 코너 250px
+     radial 2겹(blue-700/blue-600 각 15%)이고, 라이트(.spotlight-glow-brand)는 135deg 대각
+     linear 1겹(blue-700 8%, 55%에서 소멸)이다 — 히어로는 카드 높이가 커서 코너 반경이
+     부족하지 않다. 한쪽을 고칠 때 다른 쪽을 따라 맞추지 않는다. */
   .spotlight-glow-brand-strong {
     background:
       radial-gradient(250px at 0% 0%, color-mix(in srgb, var(--p-blue-700) 15%, transparent) 0%, transparent 70%),
@@ -225,23 +232,22 @@
       var(--sem-bg-neutral-strong);
   }
 
-  /* 대회색 라이트 wash 3종 — MatchWeekList의 MatchInfoCard 전용 (TEA-30). 주차 컨테이너에
-     쓰이던 라이트 브랜드 글로우 유틸리티(TEA-30에서 삭제)와 같은 지오메트리(세로 linear,
-     25%에서 소멸)를 계승하되 베이스는 bg-page(카드 기존 베이스). */
+  /* MatchWeekList 주차 컨테이너(open) 전용 대각 글로우 — 그 주 경기가 한 대회색일 때
+     (TEA-30, 2026-09-05 검수 반영). 135deg 대각으로 55%에서 소멸, 베이스는 bg-surface. */
   .competition-wash-violet {
     background:
-      linear-gradient(to bottom, color-mix(in srgb, var(--p-violet-700) 8%, transparent) 0%, transparent 25%),
-      var(--sem-bg-page);
+      linear-gradient(135deg, color-mix(in srgb, var(--p-violet-700) 8%, transparent) 0%, transparent 55%),
+      var(--sem-bg-surface);
   }
   .competition-wash-green {
     background:
-      linear-gradient(to bottom, color-mix(in srgb, var(--p-green-700) 8%, transparent) 0%, transparent 25%),
-      var(--sem-bg-page);
+      linear-gradient(135deg, color-mix(in srgb, var(--p-green-700) 8%, transparent) 0%, transparent 55%),
+      var(--sem-bg-surface);
   }
   .competition-wash-yellow {
     background:
-      linear-gradient(to bottom, color-mix(in srgb, var(--p-yellow-700) 8%, transparent) 0%, transparent 25%),
-      var(--sem-bg-page);
+      linear-gradient(135deg, color-mix(in srgb, var(--p-yellow-700) 8%, transparent) 0%, transparent 55%),
+      var(--sem-bg-surface);
   }
 
   /* 대회색 배지 3종 — PredictionFlowClient·PredictionDone 공용 (TEA-30). 100단계 배경 + 800단계

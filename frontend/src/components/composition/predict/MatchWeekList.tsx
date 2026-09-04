@@ -6,7 +6,7 @@ import { Button } from '@/components/primitives/button'
 import { TeamBadge } from './shared'
 import { weekLabel } from '@/lib/predictions/week'
 import { cn } from '@/lib/utils'
-import { competitionColorBucket, COMPETITION_WASH } from '@/lib/predictions/competitionColor'
+import { weekGlowClass } from '@/lib/predictions/competitionColor'
 
 /**
  * 클릭/예측의 단위는 "주차(week)"다 — 더블 매치위크(경기 2개)도 한 예측 세션으로 함께 열리고
@@ -18,7 +18,7 @@ export type WeekSessionStatus = 'open' | 'result' | 'upcoming'
 
 export interface PredictWeekMatch {
   id: string
-  /** 미지정 시 텍스트 미표시, 색은 green fallback (TEA-30) */
+  /** 미지정 시 텍스트 미표시, 색 판정은 green fallback */
   competition?: string
   opponent: string
   /** true면 우리 팀이 홈(좌측) — false면 원정이라 상대가 좌측, 우리 팀이 우측에 온다 */
@@ -197,7 +197,9 @@ export function MatchWeekList({
  * 안에 경기 카드가 세로로 쌓이고, 진입은 하단 버튼 하나로만 한다.
  * 경기가 1개든 2개든 같은 카드를 쓴다(더블 매치위크를 따로 취급하지 않는다).
  *
- * 대회 구분은 경기 카드(MatchInfoCard) 배경색이 담당한다(TEA-30, 2026-09-05).
+ * 대회 구분은 컨테이너 배경이 담당한다: 예측 접수 중인 주차(open)만 대각 글로우를 쓰고,
+ * 그 주 경기의 대회색이 하나면 그 색, 둘 이상(또는 경기 없음)이면 브랜드 파랑이다
+ * (weekGlowClass). open이 아닌 주차는 흰 면(bg-surface). 경기 카드는 항상 bg-page.
  */
 function WeekSessionCard({
   week,
@@ -215,14 +217,18 @@ function WeekSessionCard({
   const badge = weekBadge(week)
   const action = weekAction(week)
   const isEmpty = week.matches.length === 0
+  // open 주차만 대각 글로우 — 그 주 경기의 대회색이 하나면 그 색, 둘 이상(또는 경기 없음)이면 브랜드 파랑.
+  const containerBg = weekPhase(week) === 'open'
+    ? weekGlowClass(week.matches.map(match => match.competition))
+    : 'bg-surface'
 
   return (
     <section
       style={{ animationDelay: `${delayMs}ms` }}
       className={cn(
         'animate-enter rounded-lg border border-neutral-weak p-4',
-        // 주차 컨테이너는 항상 bg-surface(TEA-30: open 주차 파랑 글로우 제거 — 접수 상태는 옆 Badge가 담당).
-        'bg-surface'
+        // 글로우 유틸리티는 배경을 통째로 정하므로 bg-surface를 함께 주지 않는다.
+        containerBg
       )}
     >
       <div className="mb-3 flex items-center gap-2">
@@ -283,7 +289,7 @@ function WeekSessionCard({
  * "N라운드"는 실제 라운드가 아니라 ISO 주차 번호였고(lib/predictions/week.ts:88-94),
  * `fixtures`에 라운드 컬럼이 없어서 삭제했다.
  *
- * 표면은 예측 가능(!dimmed)이면 대회색 wash, 아니면 bg-page(TEA-30). 테두리는 없다 —
+ * 표면은 항상 `bg-page` — 대회색은 주차 컨테이너 글로우가 담당한다. 테두리는 없다 —
  * 컨테이너가 흰 면(`bg-surface` 또는 글로우 베이스)이라 한 단계 낮은 `bg-page`만으로 갈린다.
  */
 function MatchInfoCard({
@@ -305,15 +311,12 @@ function MatchInfoCard({
   // 가라앉는 경기의 2차 텍스트 톤 — 카드 표면이 두 경우 다 밝은 면이라 컨테이너와 무관하게 같다.
   const strongText = 'text-neutral'
   const mutedText = 'text-neutral-muted'
-  const bgClass = !dimmed
-    ? COMPETITION_WASH[competitionColorBucket(match.competition)]
-    : 'bg-page'
 
   // `min-w-0`: flex item의 min-width 초깃값 auto는 min-content 아래로 안 줄어든다.
   // 카드가 그 하한 아래로도 줄 수 있어야 좁은 모바일 폭에서 가로로 터지지 않는다.
   // `pb-5`(20px): 아래쪽만 더 줘서 시각적 무게를 아래로 배분한다.
   return (
-    <div className={cn('min-w-0 rounded-lg p-3 pb-5', bgClass)}>
+    <div className="min-w-0 rounded-lg bg-page p-3 pb-5">
       {/*
         대회명은 dimmed에서도 톤을 더 낮추지 않는다 — text-neutral-subtle(#a2a5a9)은
         카드 배경 위에서 AA(4.5:1) 미달이다(bg-page 2.37:1). 가라앉는 효과는 아래
