@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Coins, Wallet, CircleHelp } from 'lucide-react'
+import { CircleHelp, Coins, Wallet } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/primitives/avatar'
 import { Button } from '@/components/primitives/button'
 import { cn } from '@/lib/utils'

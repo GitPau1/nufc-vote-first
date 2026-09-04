@@ -131,11 +131,12 @@ test('prediction flow tracks the funnel entry and per-step completion', () => {
   assert.match(file, /if \(submitted\) return/)
   assert.match(file, /trackEvent\('prediction_step_completed'/)
   assert.match(file, /onClick=\{\(\) => completeStep\('score', 'pick'\)\}/)
-  // pick의 "다음"은 고정 순서 a-b-a-b-c를 진행시킨다(feature-spec §9) — 마지막 경기가 아니면
-  // 다음 경기의 score로, 마지막이면 confirm으로. 두 completeStep 호출 모두 여기 있어야 한다.
+  // pick의 "다음"은 고정 순서 a-b-a-b-c를 진행시킨다(feature-spec §9) — 실제로 다음 경기의
+  // score로 갈지 confirm으로 갈지는 flow-cursor.ts의 computeNextFromPick이 정하고(로직 자체는
+  // flow-cursor.test.mjs가 검증), 여기서는 그 결과(next.step)를 그대로 이벤트에 실어보낸다.
   assert.match(file, /onClick=\{goNextFromPick\}/)
-  assert.match(file, /completeStep\('pick', 'score'\)/)
-  assert.match(file, /completeStep\('pick', 'confirm'\)/)
+  assert.match(file, /const next = computeNextFromPick\(\{ step, matchCursor, returnToConfirm \}, pending\.length\)/)
+  assert.match(file, /completeStep\('pick', next\.step\)/)
   // 스코어는 0-0 초기값이라 "미입력"이 없다 — 손대지 않은 경기 수로 대체
   assert.match(file, /untouched_score_count/)
   // "그대로 적용"(픽 복사) 버튼은 이 재설계로 완전히 폐기됐다 — 되살아나면 회귀다.

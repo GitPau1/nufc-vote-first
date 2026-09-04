@@ -50,15 +50,26 @@ test('copyPicks ("그대로 적용") is fully removed, not just unused', () => {
 })
 
 // score/pick 단계는 pending.length와 무관하게 matchCursor가 가리키는 경기 하나만 보여준다.
-test('score/pick steps are driven by a matchCursor instead of stacking every pending match', () => {
+// 실제 전이 규칙(다음 경기로 넘어갈지, confirm으로 갈지, "이전"이 어디로 되돌리는지)은
+// flow-cursor.ts로 분리돼 flow-cursor.test.mjs가 로직 자체를 실행해 검증한다(코드리뷰
+// 2026-09-05 — 소스 문자열 검사로는 confirm에서 온 왕복 같은 실제 동작을 못 잡는다).
+test('score/pick steps are driven by a matchCursor, delegating transition rules to flow-cursor.ts', () => {
   assert.match(file, /const \[matchCursor, setMatchCursor\] = useState\(0\)/)
+  assert.match(file, /const \[returnToConfirm, setReturnToConfirm\] = useState\(false\)/)
   assert.match(file, /const currentMatch = pending\[matchCursor\]/)
-  // "다음"(pick)은 마지막 경기가 아니면 커서를 올리고 score로, 마지막이면 confirm으로 보낸다.
+  assert.match(
+    file,
+    /import \{\s*computeNextFromPick,\s*computePrevStep,\s*startEditFromConfirm,\s*isFirstFlowStep,\s*flowPipIndex,\s*\} from '\.\/flow-cursor'/,
+  )
   assert.match(file, /function goNextFromPick\(\)/)
-  assert.match(file, /matchCursor < pending\.length - 1/)
-  assert.match(file, /setMatchCursor\(cursor => cursor \+ 1\)/)
-  // "이전"은 대칭 — 첫 경기가 아니면 이전 경기의 pick으로 돌아간다.
-  assert.match(file, /setMatchCursor\(cursor => cursor - 1\)/)
+  assert.match(file, /computeNextFromPick\(\{ step, matchCursor, returnToConfirm \}, pending\.length\)/)
+  assert.match(file, /function goPrev\(\)/)
+  assert.match(file, /computePrevStep\(\{ step, matchCursor, returnToConfirm \}\)/)
+  // confirm의 "수정" 링크는 커서만 옮기는 게 아니라 왕복 표시(returnToConfirm)까지 켜야 한다
+  // (코드리뷰 2026-09-05 버그 수정 — 안 그러면 마지막이 아닌 경기를 고칠 때 나머지 경기를
+  // 다시 다 눌러야 confirm으로 돌아왔다).
+  assert.match(file, /startEditFromConfirm\(i, 'score'\)/)
+  assert.match(file, /startEditFromConfirm\(i, 'pick'\)/)
 })
 
 // ProgressPips는 이제 경기 수 × 2 + 1 개의 점을 동적으로 받는다(경기 하나짜리 세션은 3개로 기존과 동일).

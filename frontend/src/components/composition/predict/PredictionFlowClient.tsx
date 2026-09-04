@@ -16,6 +16,13 @@ import { PredictionDone } from './PredictionDone'
 import { PlayerPhoto, TeamBadge, ToonCost, Silhouette } from './shared'
 import { STEP_META, ProgressPips, type StepKey } from './steps'
 import {
+  computeNextFromPick,
+  computePrevStep,
+  startEditFromConfirm,
+  isFirstFlowStep,
+  flowPipIndex,
+} from './flow-cursor'
+import {
   excludeDeparted,
   POSITIONS,
   POSITION_LABEL,
@@ -126,6 +133,13 @@ export function PredictionFlowClient({
    * 세션(submit 1개, edit)에서는 항상 0이라 기존 동작과 같다.
    */
   const [matchCursor, setMatchCursor] = useState(0)
+  /**
+   * confirm 화면에서 경기 하나만 고치러 들어온 왕복 중인지(flow-cursor.ts 참고) — 켜져 있으면
+   * pick 단계 "다음"이 나머지 경기를 거치지 않고 곧장 confirm으로 돌아간다(코드리뷰 2026-09-05
+   * 버그 수정: 이 플래그가 없으면 마지막이 아닌 경기를 고칠 때 나머지 경기를 다시 다 눌러야
+   * confirm으로 돌아왔다).
+   */
+  const [returnToConfirm, setReturnToConfirm] = useState(false)
   /** 열려 있는 픽 모달이 어느 경기의 어느 포지션인지 */
   const [pickTarget, setPickTarget] = useState<{ matchId: string; position: Position } | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -246,17 +260,22 @@ export function PredictionFlowClient({
     setStep(next)
   }
 
+  /** flow-cursor.ts가 계산한 다음 상태를 세 React state(step/matchCursor/returnToConfirm)에 반영한다. */
+  function applyCursor(next: { step: StepKey; matchCursor: number; returnToConfirm: boolean }) {
+    setStep(next.step)
+    setMatchCursor(next.matchCursor)
+    setReturnToConfirm(next.returnToConfirm)
+  }
+
   /**
    * pick 단계 "다음" — 고정 순서 a-b-a-b-c(feature-spec §9.1)를 여기서 진행시킨다. 아직 볼
-   * 경기가 남았으면 커서를 올리고 그 경기의 score 단계로, 마지막 경기면 confirm으로 넘어간다.
+   * 경기가 남았으면 다음 경기의 score로, 마지막 경기면 confirm으로 넘어간다. confirm에서 경기
+   * 하나만 고치러 온 왕복 중(returnToConfirm)이면 몇 번째 경기든 곧장 confirm으로 돌아간다.
    */
   function goNextFromPick() {
-    if (matchCursor < pending.length - 1) {
-      completeStep('pick', 'score')
-      setMatchCursor(cursor => cursor + 1)
-    } else {
-      completeStep('pick', 'confirm')
-    }
+    const next = computeNextFromPick({ step, matchCursor, returnToConfirm }, pending.length)
+    completeStep('pick', next.step)
+    applyCursor(next)
   }
 
   function changeScore(fixtureId: string, side: 0 | 1, delta: number) {
@@ -339,28 +358,17 @@ export function PredictionFlowClient({
    * §9.2). 단일 경기 세션(pending.length 1, edit 포함)에서는 3(=STEP_META.length)이라 기존과 같다.
    */
   const totalSteps = pending.length * 2 + 1
-  const currentStepIndex =
-    step === 'confirm' ? totalSteps - 1 : matchCursor * 2 + (step === 'pick' ? 1 : 0)
-  /** score 단계의 첫 경기 — "이전"이 없어 뒤로가기 히스토리 가드(popstate)만 이탈을 처리하는 지점. */
-  const isVeryFirstStep = step === 'score' && matchCursor === 0
+  const currentStepIndex = flowPipIndex({ step, matchCursor, returnToConfirm }, pending.length)
+  /** score 단계의 진짜 첫 화면 — "이전"이 없어 뒤로가기 히스토리 가드(popstate)만 이탈을 처리한다. */
+  const isVeryFirstStep = isFirstFlowStep({ step, matchCursor, returnToConfirm })
   /**
    * "이전" — 고정 순서 a-b-a-b-c를 대칭으로 되돌린다(feature-spec §9.2). pick에서는 같은 경기의
-   * score로, score에서는(첫 경기가 아니면) 이전 경기의 pick으로. 단일 경기 세션(matchCursor 항상
-   * 0)에서는 기존과 동일하게 score↔pick↔confirm만 오간다.
+   * score로, score에서는(첫 경기가 아니면) 이전 경기의 pick으로. confirm에서 온 왕복 중이면 다른
+   * 경기로 새지 않고 곧장 confirm으로 취소한다. 단일 경기 세션(matchCursor 항상 0)에서는 기존과
+   * 동일하게 score↔pick↔confirm만 오간다.
    */
   function goPrev() {
-    if (step === 'confirm') {
-      setStep('pick')
-      return
-    }
-    if (step === 'pick') {
-      setStep('score')
-      return
-    }
-    if (matchCursor > 0) {
-      setMatchCursor(cursor => cursor - 1)
-      setStep('pick')
-    }
+    applyCursor(computePrevStep({ step, matchCursor, returnToConfirm }))
   }
 
   // 지금 보이는 경기의 픽 단계 남은 툰 — score/pick 단계가 항상 경기 하나만 보여주므로
@@ -449,14 +457,12 @@ export function PredictionFlowClient({
         {pending.map((match, i) => (
           <div key={match.id} className={cn('flex flex-col gap-4', i > 0 && 'mt-2')}>
             {isMulti && <MatchLabel index={i} opponent={match.opponent} />}
-            {/* 수정 링크는 그 경기로 커서를 옮긴 뒤 되돌아간다 — matchCursor를 안 맞추면
-                엉뚱한(마지막에 보던) 경기의 score/pick 화면이 뜬다. */}
+            {/* 수정 링크는 그 경기로 커서를 옮기고 returnToConfirm을 켠 채 되돌아간다 — 이걸
+                안 하면 "다음"이 나머지 경기를 다시 거치게 만드는 버그였다(코드리뷰 2026-09-05,
+                flow-cursor.test.mjs의 REGRESSION 테스트 참고). */}
             <SummarySection
               title="나의 결과 예측"
-              onEdit={() => {
-                setMatchCursor(i)
-                setStep('score')
-              }}
+              onEdit={() => applyCursor(startEditFromConfirm(i, 'score'))}
             >
               <div className="flex items-center justify-center gap-4 sm:gap-8">
                 <ConfirmTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
@@ -468,10 +474,7 @@ export function PredictionFlowClient({
             </SummarySection>
             <SummarySection
               title="나의 선수 예측"
-              onEdit={() => {
-                setMatchCursor(i)
-                setStep('pick')
-              }}
+              onEdit={() => applyCursor(startEditFromConfirm(i, 'pick'))}
             >
               <PositionRow
                 picks={picks[match.id] ?? {}}
