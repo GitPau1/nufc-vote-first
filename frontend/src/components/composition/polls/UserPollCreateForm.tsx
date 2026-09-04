@@ -13,7 +13,7 @@ import { Modal } from '@/components/primitives/modal/Modal'
 import { PollPickerContent, getPlayerMeta, type PlayerPickMode } from '@/components/primitives/modal/contents/PollPicker'
 
 type PollFormat = 'poll' | 'overall_rating'
-type UnifiedOption = { label: string; description: string; imageUrl: string; playerId: string | null }
+type UnifiedOption = { id: string; label: string; description: string; imageUrl: string; playerId: string | null }
 
 const POLL_FORMATS: Array<{ format: PollFormat; label: string; description: string }> = [
   { format: 'poll', label: '일반 투표', description: '선택지를 만들어 팬들의 의견을 모읍니다.' },
@@ -24,8 +24,8 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
   const router = useLoadingRouter()
   const [format, setFormat] = useState<PollFormat>(POLL_FORMATS[0].format)
   const [options, setOptions] = useState<UnifiedOption[]>([
-    { label: '', description: '', imageUrl: '', playerId: null },
-    { label: '', description: '', imageUrl: '', playerId: null },
+    { id: crypto.randomUUID(), label: '', description: '', imageUrl: '', playerId: null },
+    { id: crypto.randomUUID(), label: '', description: '', imageUrl: '', playerId: null },
   ])
   const [showSubjectPlayer, setShowSubjectPlayer] = useState(false)
   const [selectedSubjectPlayerId, setSelectedSubjectPlayerId] = useState<string | null>(null)
@@ -58,7 +58,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
   }
 
   function addOption() {
-    setOptions(prev => [...prev, { label: '', description: '', imageUrl: '', playerId: null }])
+    setOptions(prev => [...prev, { id: crypto.randomUUID(), label: '', description: '', imageUrl: '', playerId: null }])
   }
 
   function removeOption(index: number) {
@@ -291,7 +291,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
                 {options.map((option, index) => {
                   const connectedPlayer = option.playerId ? players.find(player => player.id === option.playerId) ?? null : null
                   return (
-                    <div key={index} className="grid grid-cols-[1fr_32px] gap-1.5 rounded-md border border-neutral-weak p-2">
+                    <div key={option.id} className="grid grid-cols-[1fr_32px] gap-1.5 rounded-md border border-neutral-weak p-2">
                       <div className="space-y-1.5">
                         <input
                           value={option.label}
