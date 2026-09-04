@@ -43,14 +43,6 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 
-/** scheduled_at → "D-N 공개 예정" */
-export function formatScheduled(scheduledAt: string): string {
-  const diff = new Date(scheduledAt).getTime() - Date.now()
-  if (diff <= 0) return '곧 공개'
-  const days = Math.floor(diff / 86400000)
-  return days >= 1 ? `D-${days} 공개 예정` : '오늘 공개 예정'
-}
-
 /**
  * 날짜 → "YYYY.MM.DD"
  *

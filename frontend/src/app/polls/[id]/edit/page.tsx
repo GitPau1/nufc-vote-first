@@ -40,7 +40,6 @@ export default async function PollEditPage({ params }: PollEditPageProps) {
 
   const editPoll = {
     status: poll.status,
-    scheduled_at: poll.scheduled_at ?? null,
     closes_at: poll.closes_at,
     created_by: poll.created_by ?? null,
   }

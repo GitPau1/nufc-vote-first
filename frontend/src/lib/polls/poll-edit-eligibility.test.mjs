@@ -39,7 +39,6 @@ test('canAccessPollEdit: 작성자 본인/active → true', () => {
   const now = new Date('2026-05-29T10:00:00.000Z')
   assert.equal(canAccessPollEdit({
     status: 'active',
-    scheduled_at: null,
     closes_at: '2026-05-29T11:00:00.000Z',
     created_by: 'user-1',
   }, { userId: 'user-1', isAdmin: false }, now), true)
@@ -50,7 +49,6 @@ test('canAccessPollEdit: 관리자/active(비작성자) → true', () => {
   const now = new Date('2026-05-29T10:00:00.000Z')
   assert.equal(canAccessPollEdit({
     status: 'active',
-    scheduled_at: null,
     closes_at: '2026-05-29T11:00:00.000Z',
     created_by: 'user-1',
   }, { userId: 'admin-1', isAdmin: true }, now), true)
@@ -61,23 +59,9 @@ test('canAccessPollEdit: 제3자/active → false', () => {
   const now = new Date('2026-05-29T10:00:00.000Z')
   assert.equal(canAccessPollEdit({
     status: 'active',
-    scheduled_at: null,
     closes_at: '2026-05-29T11:00:00.000Z',
     created_by: 'user-1',
   }, { userId: 'user-2', isAdmin: false }, now), false)
-})
-
-test('canAccessPollEdit: scheduled은 작성자·관리자도 false', () => {
-  const { canAccessPollEdit } = loadEligibilityModule()
-  const now = new Date('2026-05-29T10:00:00.000Z')
-  const poll = {
-    status: 'scheduled',
-    scheduled_at: '2026-05-29T12:00:00.000Z',
-    closes_at: '2026-05-29T13:00:00.000Z',
-    created_by: 'user-1',
-  }
-  assert.equal(canAccessPollEdit(poll, { userId: 'user-1', isAdmin: false }, now), false)
-  assert.equal(canAccessPollEdit(poll, { userId: 'admin-1', isAdmin: true }, now), false)
 })
 
 test('canAccessPollEdit: closed+작성자 → true', () => {
@@ -85,7 +69,6 @@ test('canAccessPollEdit: closed+작성자 → true', () => {
   const now = new Date('2026-05-29T10:00:00.000Z')
   assert.equal(canAccessPollEdit({
     status: 'closed',
-    scheduled_at: null,
     closes_at: '2026-05-29T09:00:00.000Z',
     created_by: 'user-1',
   }, { userId: 'user-1', isAdmin: false }, now), true)
@@ -96,7 +79,6 @@ test('getEditablePollFields: active → title/description/thumbnail_url', () => 
   const now = new Date('2026-05-29T10:00:00.000Z')
   assert.deepEqual(getEditablePollFields({
     status: 'active',
-    scheduled_at: null,
     closes_at: '2026-05-29T11:00:00.000Z',
     created_by: 'user-1',
   }, now), ['title', 'description', 'thumbnail_url'])
@@ -107,7 +89,6 @@ test('getEditablePollFields: closed → thumbnail_url만', () => {
   const now = new Date('2026-05-29T10:00:00.000Z')
   assert.deepEqual(getEditablePollFields({
     status: 'closed',
-    scheduled_at: null,
     closes_at: '2026-05-29T09:00:00.000Z',
     created_by: 'user-1',
   }, now), ['thumbnail_url'])
@@ -121,21 +102,9 @@ test('getEditablePollFields: status active + closes_at 과거(자동 마감 처�
   // 실제 편집 가능 필드와 어긋나지 않는다.
   assert.deepEqual(getEditablePollFields({
     status: 'active',
-    scheduled_at: null,
     closes_at: '2026-05-29T09:00:00.000Z',
     created_by: 'user-1',
   }, now), ['thumbnail_url'])
-})
-
-test('getEditablePollFields: scheduled → 빈 배열', () => {
-  const { getEditablePollFields } = loadEligibilityModule()
-  const now = new Date('2026-05-29T10:00:00.000Z')
-  assert.deepEqual(getEditablePollFields({
-    status: 'scheduled',
-    scheduled_at: '2026-05-29T12:00:00.000Z',
-    closes_at: '2026-05-29T13:00:00.000Z',
-    created_by: 'user-1',
-  }, now), [])
 })
 
 test('validatePollEditPayload: active에서 title/thumbnail_url → ok', () => {
@@ -143,7 +112,6 @@ test('validatePollEditPayload: active에서 title/thumbnail_url → ok', () => {
   const now = new Date('2026-05-29T10:00:00.000Z')
   const result = validatePollEditPayload({
     status: 'active',
-    scheduled_at: null,
     closes_at: '2026-05-29T11:00:00.000Z',
     created_by: 'user-1',
   }, ['title', 'thumbnail_url'], now)
@@ -155,7 +123,6 @@ test('validatePollEditPayload: closed에서 title → 거절', () => {
   const now = new Date('2026-05-29T10:00:00.000Z')
   const result = validatePollEditPayload({
     status: 'closed',
-    scheduled_at: null,
     closes_at: '2026-05-29T09:00:00.000Z',
     created_by: 'user-1',
   }, ['title'], now)
@@ -167,7 +134,6 @@ test('validatePollEditPayload: closed에서 thumbnail_url → ok', () => {
   const now = new Date('2026-05-29T10:00:00.000Z')
   const result = validatePollEditPayload({
     status: 'closed',
-    scheduled_at: null,
     closes_at: '2026-05-29T09:00:00.000Z',
     created_by: 'user-1',
   }, ['thumbnail_url'], now)
@@ -179,7 +145,6 @@ test('resolvePollEditUpdate: 권한 없음 → ok:false, error 권한 문구', (
   const now = new Date('2026-05-29T10:00:00.000Z')
   const poll = {
     status: 'active',
-    scheduled_at: null,
     closes_at: '2026-05-29T11:00:00.000Z',
     created_by: 'user-1',
   }
@@ -192,7 +157,6 @@ test('resolvePollEditUpdate: active + title/description/thumbnail_url 모두 존
   const now = new Date('2026-05-29T10:00:00.000Z')
   const poll = {
     status: 'active',
-    scheduled_at: null,
     closes_at: '2026-05-29T11:00:00.000Z',
     created_by: 'user-1',
   }
@@ -212,7 +176,6 @@ test('resolvePollEditUpdate: closed에서 title 존재 → ok:false, 허용 안 
   const now = new Date('2026-05-29T10:00:00.000Z')
   const poll = {
     status: 'closed',
-    scheduled_at: null,
     closes_at: '2026-05-29T09:00:00.000Z',
     created_by: 'user-1',
   }
@@ -225,7 +188,6 @@ test('resolvePollEditUpdate: closed에서 thumbnail_url만 존재 → ok, 부분
   const now = new Date('2026-05-29T10:00:00.000Z')
   const poll = {
     status: 'closed',
-    scheduled_at: null,
     closes_at: '2026-05-29T09:00:00.000Z',
     created_by: 'user-1',
   }
@@ -238,7 +200,6 @@ test('resolvePollEditUpdate: active + title이 공백뿐 → ok:false, 제목 �
   const now = new Date('2026-05-29T10:00:00.000Z')
   const poll = {
     status: 'active',
-    scheduled_at: null,
     closes_at: '2026-05-29T11:00:00.000Z',
     created_by: 'user-1',
   }

@@ -11,7 +11,6 @@ const poll: PollDetail = {
   status: 'active',
   thumbnail_url: null,
   closes_at: new Date(Date.now() + 3 * 86_400_000).toISOString(),
-  scheduled_at: null,
   created_at: new Date().toISOString(),
   player_id: null,
   created_by: null,

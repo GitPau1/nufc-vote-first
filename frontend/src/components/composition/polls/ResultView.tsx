@@ -68,7 +68,7 @@ export function ResultView({ poll, voteCounts, myOptionId, comments, canEdit }: 
   const total    = counts.reduce((a, b) => a + b, 0)
   const isClosed = poll.status === 'closed'
   const resultItems = buildResultItems(poll, voteCounts)
-  const pollDate = formatPollDate(poll.created_at ?? poll.scheduled_at ?? poll.closes_at)
+  const pollDate = formatPollDate(poll.created_at ?? poll.closes_at)
 
   useEffect(() => {
     trackEvent('poll_result_viewed', {

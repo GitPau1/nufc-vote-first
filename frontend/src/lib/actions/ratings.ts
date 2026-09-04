@@ -47,7 +47,7 @@ export async function submitRatingVotes(pollId: string, ratings: RatingInput[]):
 
   const { data: poll, error: pollError } = await db
     .from('polls')
-    .select('type, status, scheduled_at, closes_at')
+    .select('type, status, closes_at')
     .eq('id', pollId)
     .single()
 

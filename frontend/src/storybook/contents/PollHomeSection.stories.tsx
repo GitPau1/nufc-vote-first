@@ -13,7 +13,6 @@ function mockPoll(overrides: Partial<PollListItem>): PollListItem {
     status: 'active',
     thumbnail_url: null,
     closes_at: new Date(Date.now() + 3 * 86_400_000).toISOString(),
-    scheduled_at: null,
     created_at: new Date(Date.now() - 5 * 86_400_000).toISOString(),
     player_id: null,
     created_by: null,

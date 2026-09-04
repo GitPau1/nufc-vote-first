@@ -24,7 +24,6 @@ export type PollListItem = {
   status: PollStatus
   thumbnail_url?: string | null
   closes_at: string
-  scheduled_at: string | null
   created_at: string
   player_id: string | null
   created_by?: string | null
@@ -42,7 +41,6 @@ export type PollDetail = {
   status: PollStatus
   thumbnail_url?: string | null
   created_at?: string | null
-  scheduled_at?: string | null
   closes_at: string
   player_id: string | null
   created_by?: string | null
@@ -207,12 +205,12 @@ export async function getPollFormPlayers(): Promise<PollFormPlayer[]> {
 // vote_count는 여기 임베드하지 않는다 — votes RLS(본인 행 전용)로 anon 목록 세션에선 0이 되기 때문.
 // poll별 총계는 mapPollRows에서 service_role로 getPollVoteCounts가 따로 센다.
 const POLL_LIST_SELECT = `
-  id, type, title, description, status, thumbnail_url, closes_at, scheduled_at, created_at, player_id, created_by,
+  id, type, title, description, status, thumbnail_url, closes_at, created_at, player_id, created_by,
   player:players(id, name, position, squad_number, photo_url, is_active, squad_status),
   poll_options(id, poll_id, label, description, player_id, image_url, display_order, created_at)
 `
 const POLL_LIST_SELECT_FALLBACK = `
-  id, type, title, description, status, closes_at, scheduled_at, created_at, player_id, created_by,
+  id, type, title, description, status, closes_at, created_at, player_id, created_by,
   player:players(id, name, position, squad_number, photo_url, is_active),
   poll_options(id, poll_id, label, player_id, display_order, created_at)
 `
@@ -242,12 +240,10 @@ async function mapPollRows(
     description: row.description as string | null,
     status: getEffectivePollStatus({
       status: row.status as PollStatus,
-      scheduled_at: row.scheduled_at as string | null,
       closes_at: row.closes_at as string,
     }, now),
     thumbnail_url: row.thumbnail_url as string | null,
     closes_at: row.closes_at as string,
-    scheduled_at: row.scheduled_at as string | null,
     created_at: row.created_at as string,
     player_id: row.player_id as string | null,
     created_by: row.created_by as string | null,
@@ -297,11 +293,10 @@ export const getPollList = unstable_cache(getPollListUncached, ['public-poll-lis
 
 export type PollHomeSections = {
   active: PollListItem[]
-  scheduled: PollListItem[]
   closed: PollListItem[]
 }
 
-// 홈 화면 캐러셀 3종(진행중/예정/종료) 당 최대로 보여줄 개수. 캐러셀은 "미리보기"라 전량을
+// 홈 화면 캐러셀 2종(진행중/종료) 당 최대로 보여줄 개수. 캐러셀은 "미리보기"라 전량을
 // 다 보여줄 필요가 없다 — 전체는 /polls의 전체보기로 간다.
 const HOME_SECTION_ITEM_LIMIT = 8
 // 위 3개 버킷을 나누기 위해 최근 생성된 투표를 얼마나 훑을지. 너무 오래된 종료 투표까지
@@ -331,39 +326,30 @@ async function getPollHomeSectionsUncached(): Promise<PollHomeSections> {
 
   if (error) {
     console.error('getPollHomeSections error:', error)
-    return { active: [], scheduled: [], closed: [] }
+    return { active: [], closed: [] }
   }
 
   const polls = await mapPollRows(data ?? [], supabase, new Date())
   return bucketPollsByStatus(polls)
 }
 
-/** effective status 기준으로 진행중/예정/종료로 나누고, 섹션별로 의미 있는 순서로 정렬·상한을 적용한다. */
+/** effective status 기준으로 진행중/종료로 나누고, 섹션별로 의미 있는 순서로 정렬·상한을 적용한다. */
 function bucketPollsByStatus(polls: PollListItem[]): PollHomeSections {
   const active: PollListItem[] = []
-  const scheduled: PollListItem[] = []
   const closed: PollListItem[] = []
 
   for (const poll of polls) {
     if (poll.status === 'active') active.push(poll)
-    else if (poll.status === 'scheduled') scheduled.push(poll)
     else closed.push(poll)
   }
 
   // 진행중: 마감 임박한 것부터 — 지금 참여를 유도해야 하는 우선순위.
   active.sort((a, b) => new Date(a.closes_at).getTime() - new Date(b.closes_at).getTime())
-  // 예정: 곧 공개될 것부터.
-  scheduled.sort((a, b) => {
-    const aAt = a.scheduled_at ? new Date(a.scheduled_at).getTime() : Infinity
-    const bAt = b.scheduled_at ? new Date(b.scheduled_at).getTime() : Infinity
-    return aAt - bAt
-  })
   // 종료: 최근에 끝난 것부터.
   closed.sort((a, b) => new Date(b.closes_at).getTime() - new Date(a.closes_at).getTime())
 
   return {
     active: active.slice(0, HOME_SECTION_ITEM_LIMIT),
-    scheduled: scheduled.slice(0, HOME_SECTION_ITEM_LIMIT),
     closed: closed.slice(0, HOME_SECTION_ITEM_LIMIT),
   }
 }
@@ -379,7 +365,7 @@ export async function getPollById(id: string): Promise<PollDetail | null> {
   let { data, error } = await supabase
     .from('polls')
     .select(`
-      id, type, title, description, status, thumbnail_url, created_at, scheduled_at, closes_at, player_id, created_by,
+      id, type, title, description, status, thumbnail_url, created_at, closes_at, player_id, created_by,
       player:players(id, name, position, squad_number, photo_url, is_active, squad_status),
       poll_options(id, poll_id, label, description, player_id, image_url, display_order, created_at,
         option_player:players(id, name, position, squad_number, photo_url, is_active, squad_status))
@@ -391,7 +377,7 @@ export async function getPollById(id: string): Promise<PollDetail | null> {
     const fallback = await supabase
       .from('polls')
       .select(`
-        id, type, title, description, status, created_at, scheduled_at, closes_at, player_id, created_by,
+        id, type, title, description, status, created_at, closes_at, player_id, created_by,
         player:players(id, name, position, squad_number, photo_url, is_active),
         poll_options(id, poll_id, label, player_id, display_order, created_at,
           option_player:players(id, name, position, squad_number, photo_url, is_active))
@@ -429,12 +415,10 @@ export async function getPollById(id: string): Promise<PollDetail | null> {
     description: data.description as string | null,
     status: getEffectivePollStatus({
       status: data.status as PollStatus,
-      scheduled_at: data.scheduled_at as string | null,
       closes_at: data.closes_at as string,
     }),
     thumbnail_url: data.thumbnail_url as string | null,
     created_at: data.created_at as string | null,
-    scheduled_at: data.scheduled_at as string | null,
     closes_at: data.closes_at as string,
     player_id: data.player_id as string | null,
     created_by: data.created_by as string | null,
