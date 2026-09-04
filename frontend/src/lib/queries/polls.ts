@@ -127,14 +127,6 @@ async function getPollVoteCounts(pollIds: string[]): Promise<Map<string, number>
   return new Map(data.map(row => [row.id, row.vote_count?.[0]?.count ?? 0]))
 }
 
-function isMissingColumnError(error: AnyRow): boolean {
-  const message = String(error?.message ?? '')
-  return (
-    (message.includes('column') && message.includes('does not exist')) ||
-    (message.includes('schema cache') && (message.includes('image_url') || message.includes('description') || message.includes('squad_status')))
-  )
-}
-
 function normalizePlayer(player: PlayerRow | null): PlayerRow | null {
   if (!player) return null
   return {
@@ -172,19 +164,10 @@ export async function getPollFormPlayers(): Promise<PollFormPlayer[]> {
   }
 
   const supabase = await createClient()
-  let { data, error } = await supabase
+  const { data, error } = await supabase
     .from('players')
     .select('id, name, position, squad_number, photo_url, is_active, squad_status')
     .order('squad_number', { ascending: true }) as { data: AnyRow[] | null; error: AnyRow }
-
-  if (error && isMissingColumnError(error)) {
-    const fallback = await supabase
-      .from('players')
-      .select('id, name, position, squad_number, photo_url, is_active')
-      .order('squad_number', { ascending: true }) as { data: AnyRow[] | null; error: AnyRow }
-    data = fallback.data
-    error = fallback.error
-  }
 
   if (error) {
     console.error('getPollFormPlayers error:', error)
@@ -208,11 +191,6 @@ const POLL_LIST_SELECT = `
   id, type, title, description, status, thumbnail_url, closes_at, created_at, player_id, created_by,
   player:players(id, name, position, squad_number, photo_url, is_active, squad_status),
   poll_options(id, poll_id, label, description, player_id, image_url, display_order, created_at)
-`
-const POLL_LIST_SELECT_FALLBACK = `
-  id, type, title, description, status, closes_at, created_at, player_id, created_by,
-  player:players(id, name, position, squad_number, photo_url, is_active),
-  poll_options(id, poll_id, label, player_id, display_order, created_at)
 `
 
 /** poll row → PollListItem 매핑. creator_name·overall_rating 참여자 수 조회까지 여기서 같이 한다. */
@@ -262,22 +240,11 @@ async function getPollListUncached(page = 0): Promise<PollListItem[]> {
   const from = page * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
 
-  let { data, error } = await supabase
+  const { data, error } = await supabase
     .from('polls')
     .select(POLL_LIST_SELECT)
     .order('created_at', { ascending: false })
     .range(from, to) as { data: AnyRow[] | null; error: AnyRow }
-
-  if (error && isMissingColumnError(error)) {
-    const fallback = await supabase
-      .from('polls')
-      .select(POLL_LIST_SELECT_FALLBACK)
-      .order('created_at', { ascending: false })
-      .range(from, to) as { data: AnyRow[] | null; error: AnyRow }
-
-    data = fallback.data
-    error = fallback.error
-  }
 
   if (error) {
     console.error('getPollList error:', error)
@@ -307,22 +274,11 @@ async function getPollHomeSectionsUncached(): Promise<PollHomeSections> {
   if (IS_MOCK) return mockGetPollHomeSections()
   const supabase = createPublicClient()
 
-  let { data, error } = await supabase
+  const { data, error } = await supabase
     .from('polls')
     .select(POLL_LIST_SELECT)
     .order('created_at', { ascending: false })
     .limit(HOME_SECTION_FETCH_LIMIT) as { data: AnyRow[] | null; error: AnyRow }
-
-  if (error && isMissingColumnError(error)) {
-    const fallback = await supabase
-      .from('polls')
-      .select(POLL_LIST_SELECT_FALLBACK)
-      .order('created_at', { ascending: false })
-      .limit(HOME_SECTION_FETCH_LIMIT) as { data: AnyRow[] | null; error: AnyRow }
-
-    data = fallback.data
-    error = fallback.error
-  }
 
   if (error) {
     console.error('getPollHomeSections error:', error)
@@ -362,7 +318,7 @@ export async function getPollById(id: string): Promise<PollDetail | null> {
   if (IS_MOCK) return mockGetPollById(id)
   const supabase = await createClient()
 
-  let { data, error } = await supabase
+  const { data, error } = await supabase
     .from('polls')
     .select(`
       id, type, title, description, status, thumbnail_url, created_at, closes_at, player_id, created_by,
@@ -372,22 +328,6 @@ export async function getPollById(id: string): Promise<PollDetail | null> {
     `)
     .eq('id', id)
     .single() as { data: AnyRow | null; error: AnyRow }
-
-  if (error && isMissingColumnError(error)) {
-    const fallback = await supabase
-      .from('polls')
-      .select(`
-        id, type, title, description, status, created_at, closes_at, player_id, created_by,
-        player:players(id, name, position, squad_number, photo_url, is_active),
-        poll_options(id, poll_id, label, player_id, display_order, created_at,
-          option_player:players(id, name, position, squad_number, photo_url, is_active))
-      `)
-      .eq('id', id)
-      .single() as { data: AnyRow | null; error: AnyRow }
-
-    data = fallback.data
-    error = fallback.error
-  }
 
   if (error || !data) return null
 

@@ -127,9 +127,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated, canEdit }: Over
             ? '이미 참여한 평가입니다'
             : result.error === 'incomplete'
               ? '모든 선수를 평가해주세요'
-              : result.error === 'setup_required'
-                ? '전체 평가 DB 마이그레이션이 필요합니다'
-                : '제출에 실패했습니다. 다시 시도해주세요'
+              : '제출에 실패했습니다. 다시 시도해주세요'
         )
       }
     })
