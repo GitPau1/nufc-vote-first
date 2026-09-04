@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-client'
 import { createImageStoragePath, getImageUploadPreset, optimizeImageForUpload } from '@/lib/images/optimize'
 import { PLAYER_PHOTOS_BUCKET, POLL_UPLOAD_FOLDERS } from '@/lib/images/storage-cleanup'
 
@@ -19,11 +20,7 @@ export async function uploadPollImage(formData: FormData): Promise<{ url?: strin
     const folder = ALLOWED_FOLDERS.has(folderInput) ? folderInput : 'poll-thumbnails'
     const preset = getImageUploadPreset(formData.get('preset'))
     const optimized = await optimizeImageForUpload(file, preset)
-    const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-    const serviceSupabase = createServiceClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    )
+    const serviceSupabase = await getServiceRoleClient()
     const path = createImageStoragePath(`${folder}/${user.id}`, file.name)
 
     const { error } = await serviceSupabase.storage

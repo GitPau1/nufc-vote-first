@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { IS_MOCK } from '@/lib/config'
 import type { AnySupabase } from '@/lib/supabase/admin'
 import type { CommentItem } from '@/lib/queries/comments'
+import { getServiceRoleClient } from '@/lib/supabase/service-client'
 
 /**
  * `not_voted` = 투표에 참여하지 않은 사용자의 댓글 작성 시도.
@@ -170,11 +171,7 @@ export async function updateComment(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'unauthenticated' }
 
-  const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-  const serviceSupabase = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  const serviceSupabase = await getServiceRoleClient()
 
   const { data: existing } = await serviceSupabase
     .from('comments')
@@ -212,11 +209,7 @@ export async function deleteComment(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'unauthenticated' }
 
-  const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-  const serviceSupabase = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  const serviceSupabase = await getServiceRoleClient()
 
   const { data: existing } = await serviceSupabase
     .from('comments')

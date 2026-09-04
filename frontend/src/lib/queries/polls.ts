@@ -1,5 +1,6 @@
 import { unstable_cache } from 'next/cache'
 import { createClient, createPublicClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-client'
 import type { PollType, PollStatus, PlayerRow, PollOptionRow } from '@/types/database'
 import { PAGE_SIZE } from '@/lib/constants'
 import { IS_MOCK } from '@/lib/config'
@@ -111,11 +112,7 @@ async function getRatingParticipantCounts(
 async function getPollVoteCounts(pollIds: string[]): Promise<Map<string, number>> {
   if (pollIds.length === 0) return new Map()
 
-  const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-  const supabase = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  const supabase = await getServiceRoleClient()
 
   const { data, error } = await supabase
     .from('polls')
@@ -139,11 +136,7 @@ async function getCreatorNamesById(ids: string[]): Promise<Map<string, string>> 
   const uniqueIds = Array.from(new Set(ids.filter(Boolean)))
   if (uniqueIds.length === 0) return new Map()
 
-  const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-  const supabase = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  const supabase = await getServiceRoleClient()
 
   const { data, error } = await supabase
     .from('users')
@@ -376,11 +369,7 @@ export async function getVoteCounts(pollId: string): Promise<VoteCountMap> {
 
   // votes는 본인 행만 RLS로 열려 있어(votes: select own) 사용자 세션 클라이언트로는
   // 집계가 본인 표만 세게 된다. 선택지별 전체 집계는 service_role로 서버에서만 읽는다.
-  const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-  const supabase = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  const supabase = await getServiceRoleClient()
 
   // 행을 다 끌어와 JS로 세면 PostgREST db-max-rows(1,000)에 조용히 잘린다 — 에러 없이 틀린 숫자가 나온다.
   // DB가 세서 숫자만 받는다. votes↔poll_options FK가 두 개(option_id / option_matches_poll)라 힌트가 필요하다.

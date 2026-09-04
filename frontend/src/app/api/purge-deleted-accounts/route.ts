@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-client'
 
 export async function POST(request: Request) {
   const secret = process.env.ACCOUNT_PURGE_SECRET
@@ -13,11 +14,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ purged: 0 })
   }
 
-  const { createClient } = await import('@supabase/supabase-js')
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  const supabase = await getServiceRoleClient()
 
   // 요청 바디의 userIds를 무조건 믿지 않는다 — 시크릿이 새도 실제 24시간 지난 계정만 지울 수 있게 제한.
   const { data: dueUsers } = await supabase
