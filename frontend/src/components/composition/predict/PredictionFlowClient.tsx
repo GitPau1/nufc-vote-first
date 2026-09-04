@@ -13,7 +13,7 @@ import { ConfirmContent } from '@/components/primitives/modal/contents/Confirm'
 import { LoginContent } from '@/components/primitives/modal/contents/Login'
 import { PlayerPickContent } from '@/components/primitives/modal/contents/PlayerPick'
 import { PredictionDone } from './PredictionDone'
-import { PlayerPhoto, TeamBadge, ToonCost, BudgetBar, Silhouette } from './shared'
+import { PlayerPhoto, TeamBadge, ToonCost, Silhouette } from './shared'
 import { STEP_META, ProgressPips, type StepKey } from './steps'
 import {
   excludeDeparted,
@@ -70,7 +70,10 @@ const ERROR_MESSAGE: Record<SubmitError, string> = {
  * 제목/설명은 카드 헤더(좌), 진행 표시는 ProgressPips(우). 데스크탑은 세 스텝을 같은 그리드
  * 칸에 겹쳐 쌓아 높이를 가장 큰 '확인' 단계에 맞춘다(스텝 전환 시 컨테이너 높이 고정). 버튼은
  * 데스크탑에서 카드 하단 푸터(우측 이전/다음·제출 + 좌측 상태), 모바일에서 StickyActionBar.
- * 더블 매치위크는 이번 개편 대상이 아니라 기존 방식(경기별 블록 세로 스택 + BudgetBar)을 유지한다.
+ * 더블 매치위크 입력 흐름(2026-09-04 재설계, feature-spec §9): score/pick 단계는 경기 수와
+ * 무관하게 항상 `pending[matchCursor]` 하나만 보여준다 — 경기 1 스코어→픽→경기 2 스코어→픽→
+ * confirm(두 경기 다 같이) 고정 순서로 `matchCursor`가 오간다. "그대로 적용"(픽 복사)은 폐기됐다.
+ * confirm 단계만 예전처럼 pending 전체를 한 화면에 모아 보여주고, 제출은 한 번만 호출한다.
  */
 export function PredictionFlowClient({
   week,
@@ -117,6 +120,12 @@ export function PredictionFlowClient({
     }
     return { [pending[0].id]: resolved }
   })
+  /**
+   * 지금 스코어·픽을 입력 중인 경기 인덱스(고정 순서 a-b-a-b-c, feature-spec §9). score/pick
+   * 단계는 이제 pending.length와 무관하게 이 커서가 가리키는 경기 하나만 보여준다. 단일 경기
+   * 세션(submit 1개, edit)에서는 항상 0이라 기존 동작과 같다.
+   */
+  const [matchCursor, setMatchCursor] = useState(0)
   /** 열려 있는 픽 모달이 어느 경기의 어느 포지션인지 */
   const [pickTarget, setPickTarget] = useState<{ matchId: string; position: Position } | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -127,14 +136,18 @@ export function PredictionFlowClient({
    * 이 모달이 다시 열린 상태로 돌아온다(onLoginSuccess). 자동 제출은 하지 않는다. */
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false)
   const [submitting, startTransition] = useTransition()
-  /** "그대로 적용"을 한 번이라도 썼는지 — 픽 단계 완료 이벤트에만 실어보낸다. */
-  const copyUsedRef = useRef(false)
   /** 뒤로가기 히스토리 가드(AI-004)에서 "그만두기"를 확정한 뒤 세우는 재진입 플래그 —
    * 이 순간부터는 popstate가 와도 이탈 확인 모달을 다시 띄우지 않는다(진짜 이탈이 진행 중이라서). */
   const leavingRef = useRef(false)
 
-  // 경기마다 3포지션이 다 채워져야 다음 단계로 넘어갈 수 있다.
+  // 경기마다 3포지션이 다 채워져야 다음 단계로 넘어갈 수 있다(제출 버튼의 최종 안전망).
   const allPicked = pending.every(match => POSITIONS.every(position => picks[match.id]?.[position]))
+  /** score/pick 단계가 지금 보여주는 경기 — matchCursor가 가리키는 하나뿐이다. */
+  const currentMatch = pending[matchCursor]
+  /** pick 단계 "다음" 버튼은 지금 보이는 경기만 다 채워지면 눌린다(전체가 아니라). */
+  const currentMatchPicked = currentMatch
+    ? POSITIONS.every(position => picks[currentMatch.id]?.[position])
+    : false
   /** 픽 모달 "선택 가능 목록"에만 쓴다 — 떠난 선수는 새로 고를 수 없다. 이미 고른 픽 조회(L502)는
    * candidates를 그대로 쓴다(클릭된 id는 항상 이 목록에서 나온 값이라 걸러도 무방하지만, 과거
    * 픽 이름 표시와 같은 원칙을 지키려 원본을 남겨둔다). */
@@ -220,17 +233,30 @@ export function PredictionFlowClient({
       step: from,
       match_count: pending.length,
       is_multi: isMulti,
+      // 스코어는 전부 0-0으로 초기화돼 있어 "미입력" 상태가 없다. 대신 0-0을 그대로 넘긴
+      // 경기 수를 본다 — 스테퍼를 아예 만지지 않고 통과하는 비율이 드러난다.
       ...(from === 'score'
-        // 스코어는 전부 0-0으로 초기화돼 있어 "미입력" 상태가 없다. 대신 0-0을 그대로 넘긴
-        // 경기 수를 본다 — 스테퍼를 아예 만지지 않고 통과하는 비율이 드러난다.
         ? {
             untouched_score_count: pending.filter(
               match => (scores[match.id]?.[0] ?? 0) === 0 && (scores[match.id]?.[1] ?? 0) === 0,
             ).length,
           }
-        : { used_copy_picks: copyUsedRef.current }),
+        : {}),
     })
     setStep(next)
+  }
+
+  /**
+   * pick 단계 "다음" — 고정 순서 a-b-a-b-c(feature-spec §9.1)를 여기서 진행시킨다. 아직 볼
+   * 경기가 남았으면 커서를 올리고 그 경기의 score 단계로, 마지막 경기면 confirm으로 넘어간다.
+   */
+  function goNextFromPick() {
+    if (matchCursor < pending.length - 1) {
+      completeStep('pick', 'score')
+      setMatchCursor(cursor => cursor + 1)
+    } else {
+      completeStep('pick', 'confirm')
+    }
   }
 
   function changeScore(fixtureId: string, side: 0 | 1, delta: number) {
@@ -242,12 +268,6 @@ export function PredictionFlowClient({
       next[side] = Math.min(MAX_SCORE, Math.max(0, next[side] + delta))
       return { ...prev, [fixtureId]: next }
     })
-  }
-
-  /** "그대로 적용" — 첫 경기 픽을 다른 경기에 복사한다. 경기끼리 같은 선수를 골라도 제약에 걸리지 않는다. */
-  function copyPicks(fromMatchId: string, toMatchId: string) {
-    copyUsedRef.current = true
-    setPicks(prev => ({ ...prev, [toMatchId]: { ...prev[fromMatchId] } }))
   }
 
   function handleSubmit() {
@@ -314,22 +334,45 @@ export function PredictionFlowClient({
 
   const stepMeta = STEP_META.find(s => s.key === step)!
   const stepDesc = isMulti && stepMeta.descMulti ? stepMeta.descMulti : stepMeta.desc
-  const stepOrder = STEP_META.map(s => s.key)
-  const goPrev = () => {
-    const idx = stepOrder.indexOf(step)
-    if (idx > 0) setStep(stepOrder[idx - 1])
+  /**
+   * ProgressPips 점 개수/위치 — 경기마다 (score, pick) 2단계 + 마지막 confirm 1단계(feature-spec
+   * §9.2). 단일 경기 세션(pending.length 1, edit 포함)에서는 3(=STEP_META.length)이라 기존과 같다.
+   */
+  const totalSteps = pending.length * 2 + 1
+  const currentStepIndex =
+    step === 'confirm' ? totalSteps - 1 : matchCursor * 2 + (step === 'pick' ? 1 : 0)
+  /** score 단계의 첫 경기 — "이전"이 없어 뒤로가기 히스토리 가드(popstate)만 이탈을 처리하는 지점. */
+  const isVeryFirstStep = step === 'score' && matchCursor === 0
+  /**
+   * "이전" — 고정 순서 a-b-a-b-c를 대칭으로 되돌린다(feature-spec §9.2). pick에서는 같은 경기의
+   * score로, score에서는(첫 경기가 아니면) 이전 경기의 pick으로. 단일 경기 세션(matchCursor 항상
+   * 0)에서는 기존과 동일하게 score↔pick↔confirm만 오간다.
+   */
+  function goPrev() {
+    if (step === 'confirm') {
+      setStep('pick')
+      return
+    }
+    if (step === 'pick') {
+      setStep('score')
+      return
+    }
+    if (matchCursor > 0) {
+      setMatchCursor(cursor => cursor - 1)
+      setStep('pick')
+    }
   }
 
-  // 단일 경기 픽 단계의 남은 툰(더블 매치위크는 경기별 BudgetBar가 대신 보여준다).
-  const singleSpent =
-    !isMulti && pending[0]
-      ? POSITIONS.reduce((sum, position) => sum + (picks[pending[0].id]?.[position]?.cost ?? 0), 0)
-      : 0
+  // 지금 보이는 경기의 픽 단계 남은 툰 — score/pick 단계가 항상 경기 하나만 보여주므로
+  // (feature-spec §9.2, 경기별 BudgetBar 제거) 더블 매치위크에서도 이 하나로 충분하다.
+  const currentSpent = currentMatch
+    ? POSITIONS.reduce((sum, position) => sum + (picks[currentMatch.id]?.[position]?.cost ?? 0), 0)
+    : 0
 
   // 푸터 좌측(데스크탑) / 카드 하단(모바일)에 붙는 상태. 픽=남은 툰, 확인=킥오프 전까지 수정 가능 안내.
   const statusNode =
-    step === 'pick' && !isMulti ? (
-      <ToonCounter remaining={BUDGET - singleSpent} total={BUDGET} />
+    step === 'pick' ? (
+      <ToonCounter remaining={BUDGET - currentSpent} total={BUDGET} />
     ) : step === 'confirm' ? (
       <span className="text-label-2 text-neutral-muted">킥오프 전까지 다시 수정할 수 있어요</span>
     ) : null
@@ -345,7 +388,7 @@ export function PredictionFlowClient({
     }
     if (step === 'pick') {
       return (
-        <Button size="lg" className={className} disabled={!allPicked} onClick={() => completeStep('pick', 'confirm')}>
+        <Button size="lg" className={className} disabled={!currentMatchPicked} onClick={goNextFromPick}>
           다음
         </Button>
       )
@@ -354,7 +397,9 @@ export function PredictionFlowClient({
       <Button
         size="lg"
         className={className}
-        disabled={submitting || !!scoreRangeError}
+        // allPicked는 이제 각 경기 pick 단계의 "다음"이 이미 보장하는 조건이지만, 제출 버튼에도
+        // 최종 안전망으로 남겨둔다(고정 순서를 우회해 confirm에 직접 도달하는 경우를 방어).
+        disabled={submitting || !!scoreRangeError || !allPicked}
         onClick={() => setSubmitConfirmOpen(true)}
       >
         {mode === 'edit' ? (submitting ? '수정 중…' : '수정하기') : submitting ? '제출 중…' : '제출하기'}
@@ -362,79 +407,57 @@ export function PredictionFlowClient({
     )
   }
 
-  /** 스텝별 본문 — 데스크탑에서 세 스텝을 같은 그리드 칸에 겹쳐 쌓아 높이를 최대('확인')에 맞춘다. */
+  /**
+   * 스텝별 본문 — 데스크탑에서 세 스텝을 같은 그리드 칸에 겹쳐 쌓아 높이를 최대('확인')에 맞춘다.
+   * score/pick은 pending.length와 무관하게 항상 matchCursor가 가리키는 경기 하나만 보여준다
+   * (더블 매치위크의 경기별 스택·BudgetBar·"그대로 적용"은 feature-spec §9로 폐기됐다 — 대신
+   * 고정 순서로 경기를 하나씩 돈다). confirm만 예전처럼 pending 전체를 한 화면에 모아 보여준다.
+   */
   function stepBody(key: StepKey) {
     if (key === 'score') {
+      if (!currentMatch) return null
       return (
-        // 더블 매치위크는 경기별 입력 블록이 세로로 쌓인다 — 픽은 주 단위라 다음 스텝에서 한 번만.
-        <div className="flex flex-col gap-8">
-          {pending.map((match, i) => (
-            <div key={match.id}>
-              {isMulti && <MatchLabel index={i} opponent={match.opponent} />}
-              <MatchMeta weekNo={week.weekNo} match={match} />
-              <div className="mt-6 flex items-center justify-center gap-4 sm:gap-6">
-                <TeamColumn logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
-                <ScoreStepper
-                  value={scores[match.id]?.[0] ?? 0}
-                  onChange={delta => changeScore(match.id, 0, delta)}
-                />
-                <ScoreStepper
-                  value={scores[match.id]?.[1] ?? 0}
-                  onChange={delta => changeScore(match.id, 1, delta)}
-                />
-                <TeamColumn logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
-              </div>
-            </div>
-          ))}
+        <div>
+          <MatchMeta weekNo={week.weekNo} match={currentMatch} />
+          <div className="mt-6 flex items-center justify-center gap-4 sm:gap-6">
+            <TeamColumn logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
+            <ScoreStepper
+              value={scores[currentMatch.id]?.[0] ?? 0}
+              onChange={delta => changeScore(currentMatch.id, 0, delta)}
+            />
+            <ScoreStepper
+              value={scores[currentMatch.id]?.[1] ?? 0}
+              onChange={delta => changeScore(currentMatch.id, 1, delta)}
+            />
+            <TeamColumn logoUrl={teamLogoUrl(currentMatch.opponentId)} name={currentMatch.opponent} />
+          </div>
         </div>
       )
     }
     if (key === 'pick') {
+      if (!currentMatch) return null
       return (
-        <div className="flex flex-col gap-7">
-          {pending.map((match, i) => (
-            <div key={match.id}>
-              {isMulti && (
-                <div className="mb-3 flex items-center justify-between">
-                  <MatchLabel index={i} opponent={match.opponent} />
-                  {i > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => copyPicks(pending[0].id, match.id)}
-                      className="text-label-2 font-medium text-brand"
-                    >
-                      그대로 적용
-                    </button>
-                  )}
-                </div>
-              )}
-              {/* 더블 매치위크만 경기별 예산 게이지를 인라인으로 둔다 — 단일 경기는 푸터 남은 툰이 대신한다. */}
-              {isMulti && (
-                <div className="mb-3">
-                  <BudgetBar
-                    spent={POSITIONS.reduce(
-                      (sum, position) => sum + (picks[match.id]?.[position]?.cost ?? 0),
-                      0,
-                    )}
-                  />
-                </div>
-              )}
-              <PositionRow
-                picks={picks[match.id] ?? {}}
-                onOpen={position => setPickTarget({ matchId: match.id, position })}
-              />
-            </div>
-          ))}
-        </div>
+        <PositionRow
+          picks={picks[currentMatch.id] ?? {}}
+          onOpen={position => setPickTarget({ matchId: currentMatch.id, position })}
+        />
       )
     }
-    // confirm — 경기별로 결과/선수 요약 섹션. 선수 픽은 주 단위 1세트라 경기 카드 안에 그대로 붙는다.
+    // confirm — 경기별로 결과/선수 요약 섹션. 선수 픽은 경기별 1세트라 경기 카드 안에 그대로 붙는다.
     return (
       <div className="flex flex-col gap-4">
         {pending.map((match, i) => (
           <div key={match.id} className={cn('flex flex-col gap-4', i > 0 && 'mt-2')}>
             {isMulti && <MatchLabel index={i} opponent={match.opponent} />}
-            <SummarySection title="나의 결과 예측" onEdit={() => setStep('score')}>
+            {/* 수정 링크는 그 경기로 커서를 옮긴 뒤 되돌아간다 — matchCursor를 안 맞추면
+                엉뚱한(마지막에 보던) 경기의 score/pick 화면이 뜬다. */}
+            <SummarySection
+              title="나의 결과 예측"
+              onEdit={() => {
+                setMatchCursor(i)
+                setStep('score')
+              }}
+            >
               <div className="flex items-center justify-center gap-4 sm:gap-8">
                 <ConfirmTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
                 <span className="text-title-2 font-semibold">
@@ -443,7 +466,13 @@ export function PredictionFlowClient({
                 <ConfirmTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
               </div>
             </SummarySection>
-            <SummarySection title="나의 선수 예측" onEdit={() => setStep('pick')}>
+            <SummarySection
+              title="나의 선수 예측"
+              onEdit={() => {
+                setMatchCursor(i)
+                setStep('pick')
+              }}
+            >
               <PositionRow
                 picks={picks[match.id] ?? {}}
                 onOpen={position => setPickTarget({ matchId: match.id, position })}
@@ -464,7 +493,7 @@ export function PredictionFlowClient({
             <h1 className="text-heading-2 font-semibold text-neutral">{stepMeta.name}</h1>
             <p className="mt-1 text-label-2 text-neutral-muted">{stepDesc}</p>
           </div>
-          <ProgressPips current={step} />
+          <ProgressPips current={step} total={totalSteps} activeIndex={currentStepIndex} />
         </div>
 
         {/* 모바일 선수 예측: 남은 툰을 목록 위에 둔다 — 하단 고정 바에 가려지지 않게 목록을 맨 아래로.
@@ -503,7 +532,7 @@ export function PredictionFlowClient({
           <div className="flex min-h-[56px] items-center justify-between gap-4">
             <div>{statusNode}</div>
             <div className="flex gap-2">
-              {step !== 'score' && (
+              {!isVeryFirstStep && (
                 <Button variant="ghost" size="lg" className="w-[100px]" onClick={goPrev}>
                   이전
                 </Button>
@@ -518,12 +547,12 @@ export function PredictionFlowClient({
           sm:hidden으로 모바일 전용이다(fixed→static 전환 로직은 StickyActionBar가 소유). */}
       <StickyActionBar className="border-neutral-weak sm:hidden">
         <div className="mx-auto flex max-w-shell gap-2">
-          {step !== 'score' && (
+          {!isVeryFirstStep && (
             <Button variant="ghost" size="lg" className="flex-1" onClick={goPrev}>
               이전
             </Button>
           )}
-          {primaryButton(step !== 'score' ? 'flex-[2]' : 'w-full')}
+          {primaryButton(!isVeryFirstStep ? 'flex-[2]' : 'w-full')}
         </div>
       </StickyActionBar>
 

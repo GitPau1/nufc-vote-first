@@ -417,6 +417,64 @@ design-brief §5·§9가 위임한 범위를 넘어서는 신규 화면/카피�
 
 ---
 
+## 9. 더블 매치위크 "둘 다 예측하기" 흐름 재설계 (2026-09-04, §3.3 갱신)
+
+시안-v3~v7.html 검토 과정에서 사용자가 "둘 다 예측하기"의 실제 동작 방식을 여러 번 바꿨다. **최종
+확정은 시안-v7.html**이고, 아래가 §3.3을 대체하는 내용이다. (v3~v6에서 다룬 "매치 탭 자유 전환" 방식은
+전부 폐기됐다 — 최종 결정에 반영되지 않는다.)
+
+### 9.1 확정된 흐름 — 고정 순서 a-b-a-b-c
+
+`?match=both`로 들어오면(§3.1의 2번 분기, `matchTargets = pending` 그대로) `PredictionFlowClient`가
+**경기 수만큼 (스코어→픽)을 반복하고 마지막에 공통 확인 화면 하나**를 보여준다. 경기 2개 기준:
+
+1. (a) 경기 1 스코어 입력
+2. (b) 경기 1 선수 픽
+3. (a) 경기 2 스코어 입력
+4. (b) 경기 2 선수 픽
+5. (c) **확인 — 두 경기를 한 화면에서 같이 보고, "제출하기" 하나로 한 번에 제출**
+
+자유 전환(탭)이 아니라 **고정 순서**다 — "이전" 버튼으로만 되돌아갈 수 있다.
+
+### 9.2 `PredictionFlowClient.tsx` 내부 구조 변경
+
+- **기존 `isMulti` 분기(경기별 블록 세로 스택 + 경기별 `BudgetBar` + "그대로 적용" `copyPicks`)는
+  스코어·픽 "입력" 단계에서 완전히 제거한다.** 이 두 단계는 이제 `pending.length`와 무관하게 항상
+  "경기 하나만 보여주는" 기존 싱글 매치 레이아웃을 쓴다 — `MatchLabel`, 경기별 `BudgetBar` 스택,
+  `copyPicks` 관련 코드/버튼을 전부 들어낸다.
+- **"그대로 적용" 기능(`copyPicks`, 관련 버튼·상태) 완전 삭제.**
+- **스텝 상태 기계를 확장한다.** 기존 `STEP_META`(`score`/`pick`/`confirm` 3개 고정)를 그대로 두되,
+  `pending.length > 1`일 때는 내부적으로 "지금 몇 번째 경기의 몇 번째 단계인지"를 추적하는 커서가
+  필요하다(예: `matchCursor: number` state 추가, `score`/`pick` 단계는 `pending[matchCursor]`
+  기준으로 렌더). `pick` 단계의 "다음"을 누르면: `matchCursor`가 마지막 경기가 아니면
+  `matchCursor + 1`로 올리고 `score` 단계로 되돌아가고, 마지막 경기면 `confirm` 단계로 넘어간다.
+  "이전"도 대칭으로 되돌린다(첫 경기의 score 단계에서 "이전"을 누르면 화면 이탈 확인 모달, 나머지는
+  이전 경기의 pick 단계로).
+- **`ProgressPips`는 세션이 다루는 전체 스텝 수(경기 수 × 2 + 1)에 맞춰 점 개수를 늘린 버전을 쓴다.**
+  컴포넌트 자체(모양·색)는 안 바꾸고 개수만 동적으로 넘긴다 — `steps.tsx`의 `ProgressPips`가 `current`
+  하나만 받는 지금 시그니처를 `total`/`activeCount`를 받도록 확장할지, 아니면 호출부에서 점 배열을
+  직접 조립할지는 개발자 판단(둘 다 시안-v7.html의 렌더 결과와 같으면 됨).
+- **확인(c) 단계는 기존 `isMulti` 확인 단계 패턴을 그대로 재사용한다** — `MatchLabel` + `SummarySection`
+  ×2(결과 예측/선수 예측)가 경기별로 반복되는 구조는 이미 있던 코드이니 스코어/픽 입력 단계처럼 걷어낼
+  필요가 없다. 다만 지금은 이 확인 화면이 "`isMulti`일 때의 유일한 진입 경로"였는데, 이제는 "고정
+  순서의 마지막 단계"로 도달 경로만 바뀐다.
+- **제출**: 확인 단계의 "제출하기"는 `submitWeekPrediction(week.weekKey, matchIds, input)`을
+  **한 번만** 호출한다 — `matchIds`는 이미 두 경기 id를 다 담고 있고(§2.3.1에서 이미 다중 id를
+  지원하도록 설계됨), `input.scores`/`input.picks`도 두 경기 키를 다 채운 상태이므로 **서버 액션은
+  추가 변경이 필요 없다.** "경기마다 따로 제출"(2026-09-04 오전 결정)은 이 재설계로 폐기됐다 — 최종은
+  한 번에 묶어 제출이다.
+- **크레스트 모양**: 원형(`rounded-pill`, 기존 `TeamBadge` 폴백과 동일)을 그대로 쓴다 — 시안 과정에서
+  잠깐 정사각형으로 바꿨다가 최종적으로 원래대로 되돌아갔다.
+
+### 9.3 영향 없는 것
+
+- §2(DB·서버 액션), §3.1(진입 라우팅), §3.2(완료 허브), §3.4/3.5(`PredictionMatchSelect`)는 이번
+  재설계와 무관 — 그대로 유지한다. `PredictionMatchSelect`의 "둘 다 예측하기" 버튼은 여전히
+  `?match=both`로 이동할 뿐, 그 뒤 `PredictionFlowClient` 내부 동작만 바뀐 것이다.
+- §7의 카피 확정 사항(경기 선택 화면, 유예 섹션, 수정 확인 모달)도 그대로 유지.
+
+---
+
 ## 8. 테스트 계획 (plan.md와 함께 상세화)
 
 - `frontend/src/lib/predictions/submit.test.mjs` — 기존 테스트 전부 통과 확인(함수 변경 없음, 회귀
@@ -431,6 +489,10 @@ design-brief §5·§9가 위임한 범위를 넘어서는 신규 화면/카피�
 - 신규 `frontend/src/components/composition/predict/*.test.mjs` — PredictionDone의
   submitted/deferred/missed 3분류 분기, PredictionFlowClient의 edit 모드 분기 존재 여부를 소스 문자열
   검사로 확인(기존 파일들과 같은 패턴).
+- (§9 신규) `PredictionFlowClient.tsx`에 `copyPicks`/"그대로 적용" 관련 코드가 **더 이상 없는지**
+  확인하는 부정 검사(`assert.doesNotMatch`)를 추가한다 — 제거 확정 사항이 실제로 지켜졌는지 회귀
+  방지용. `matchCursor`(또는 동등한 커서 상태) 존재, `ProgressPips` 호출부가 동적 개수를 넘기는지도
+  소스 문자열로 확인.
 - `npm test`(전체 94→더 늘어난 개수) / `npm run lint` / `npm run build`는 구현 완료 후 **1회**
   게이트로 실행(개발자 에이전트 규칙 §3-6).
 - **DB 마이그레이션은 로컬/스테이징에서 `supabase db push` 전 사람 확인** — 프로덕션 RLS 변경이라

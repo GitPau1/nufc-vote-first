@@ -39,3 +39,30 @@ test('the submit confirm modal overrides ConfirmContent default copy for the edi
   assert.match(file, /title=\{mode === 'edit' \? '이대로 수정할까요\?' : '이대로 제출할까요\?'\}/)
   assert.match(file, /confirmLabel=\{mode === 'edit' \? '수정하기' : undefined\}/)
 })
+
+// 더블 매치위크 "둘 다 예측하기" 재설계(feature-spec.md §9, 2026-09-04) — "그대로 적용"(픽 복사)은
+// 고정 순서 a-b-a-b-c 흐름으로 대체돼 완전히 폐기됐다. 되살아나면 회귀다.
+test('copyPicks ("그대로 적용") is fully removed, not just unused', () => {
+  assert.doesNotMatch(file, /function copyPicks/)
+  assert.doesNotMatch(file, /copyUsedRef/)
+  // 실제 렌더되는 버튼 텍스트만 잡는다 — 폐기 사실을 설명하는 주석에서 이름을 언급하는 것은 허용.
+  assert.doesNotMatch(file, />\s*그대로 적용\s*</)
+})
+
+// score/pick 단계는 pending.length와 무관하게 matchCursor가 가리키는 경기 하나만 보여준다.
+test('score/pick steps are driven by a matchCursor instead of stacking every pending match', () => {
+  assert.match(file, /const \[matchCursor, setMatchCursor\] = useState\(0\)/)
+  assert.match(file, /const currentMatch = pending\[matchCursor\]/)
+  // "다음"(pick)은 마지막 경기가 아니면 커서를 올리고 score로, 마지막이면 confirm으로 보낸다.
+  assert.match(file, /function goNextFromPick\(\)/)
+  assert.match(file, /matchCursor < pending\.length - 1/)
+  assert.match(file, /setMatchCursor\(cursor => cursor \+ 1\)/)
+  // "이전"은 대칭 — 첫 경기가 아니면 이전 경기의 pick으로 돌아간다.
+  assert.match(file, /setMatchCursor\(cursor => cursor - 1\)/)
+})
+
+// ProgressPips는 이제 경기 수 × 2 + 1 개의 점을 동적으로 받는다(경기 하나짜리 세션은 3개로 기존과 동일).
+test('ProgressPips receives a dynamic dot count instead of always assuming 3 fixed steps', () => {
+  assert.match(file, /const totalSteps = pending\.length \* 2 \+ 1/)
+  assert.match(file, /<ProgressPips current=\{step\} total=\{totalSteps\} activeIndex=\{currentStepIndex\} \/>/)
+})

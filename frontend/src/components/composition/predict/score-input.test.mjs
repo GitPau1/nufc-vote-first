@@ -45,9 +45,9 @@ test('out-of-range score surfaces an error and blocks advancing instead of faili
   assert.match(file, /\{visibleError && \(/)
   assert.match(file, /role="alert"/)
 
-  // 넘어가기·제출이 함께 잠긴다
+  // 넘어가기·제출이 함께 잠긴다(제출 버튼은 allPicked까지 최종 안전망으로 본다 — feature-spec §9)
   assert.match(file, /disabled=\{!!scoreRangeError\}/)
-  assert.match(file, /disabled=\{submitting \|\| !!scoreRangeError\}/)
+  assert.match(file, /disabled=\{submitting \|\| !!scoreRangeError \|\| !allPicked\}/)
 })
 
 test('MAX_SCORE stays the single source shared with server validation', () => {

@@ -1,0 +1,473 @@
+<h2>승부예측 제출 수정·부분 제출 — 화면 시안 v6 (매치 탭 — 참고 이미지 반영)</h2>
+<p class="lead">
+  v1~v5는 그대로 보존합니다. 사용자가 보내온 참고 이미지 2장을 반영해 매치 탭을 다시 그렸습니다.
+  색 토큰은 임의로 고르지 않고 프로젝트 안에서 같은 의미로 이미 쓰이는 조합을 찾아 그대로 가져왔습니다 —
+  아래 "찾은 색 토큰" 박스 참고.
+</p>
+
+<style>
+  body { font-family: -apple-system, "Apple SD Gothic Neo", sans-serif; }
+  .lead { max-width: 900px; margin: 0 auto 16px; font-size: 14px; line-height: 1.6; color: #444; }
+  h3.sec { margin: 44px auto 4px; max-width: 900px; text-align: left; font-size: 19px; }
+  p.sec-note { max-width: 900px; margin: 0 auto 18px; font-size: 13px; color: #666; line-height: 1.6; }
+  .frame-row { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; align-items: flex-start; margin: 12px auto; max-width: 1100px; }
+  .frame-col { display: flex; flex-direction: column; align-items: center; }
+  .frame-tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .03em; color: #115aff; background: #d8f1ff; padding: 3px 10px; border-radius: 9999px; margin-bottom: 8px; }
+  .device-shell { border: 1px solid #d8d9da; border-radius: 16px; overflow: hidden; background: #fafafb; }
+  iframe { border: none; display: block; width: 100%; }
+
+  .found-box { border: 1px solid #b7d4ff; background: #edf5ff; border-radius: 12px; padding: 14px 16px; margin: 18px auto; max-width: 680px; font-size: 13.5px; color: #1a1b1c; line-height: 1.75; }
+  .found-box .found-label { font-size: 11px; font-weight: 700; color: #115aff; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+  .found-box table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  .found-box th, .found-box td { text-align: left; padding: 5px 8px; border-bottom: 1px solid #d8e6ff; font-size: 13px; }
+  .found-box th { font-weight: 700; color: #115aff; }
+  .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; border: 1px solid rgba(0,0,0,.1); }
+
+  .decision-box { border: 1px solid #b7e3c2; background: #f4fff5; border-radius: 12px; padding: 14px 16px; margin: 18px auto; max-width: 620px; font-size: 13.5px; color: #1a1b1c; line-height: 1.7; }
+  .decision-box .decision-label { font-size: 11px; font-weight: 700; color: #008728; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+
+  .rationale-box { border: 1px dashed #a2a5a9; border-radius: 12px; padding: 12px 14px; background: #fff; margin: 16px auto; max-width: 680px; font-size: 13.5px; line-height: 1.65; }
+  .rationale-box .rationale-label { font-size: 11px; font-weight: 700; letter-spacing: .04em; color: #666; text-transform: uppercase; margin-bottom: 6px; }
+  .rationale-box ul { margin: 4px 0 0; padding-left: 18px; }
+  .rationale-box li { margin-bottom: 6px; }
+
+  .flow-ref { text-align: center; font-size: 13.5px; color: #666; margin: 16px auto; padding: 14px 18px; border: 1px dashed #a2a5a9; border-radius: 12px; max-width: 620px; line-height: 1.6; }
+  .flow-note { text-align: center; font-size: 12.5px; color: #666; margin: 10px auto 0; max-width: 620px; line-height: 1.6; }
+  code { background: #f3f3f4; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+</style>
+
+<h3 class="sec">1·2. 경기 선택 화면 (제출/수정 문맥)</h3>
+<div class="flow-ref">
+  v3와 동일, 변경 없음 — <code>시안-v3.html</code>의 "1. 경기 선택 화면(제출 문맥)"·"2. 경기 선택 화면(수정 문맥)"
+  섹션을 그대로 참고하세요.
+</div>
+
+<h3 class="sec">3. 더블 매치위크 — 매치 탭 색상 3단계 (참고 이미지 반영)</h3>
+
+<div class="found-box">
+  <p class="found-label">찾은 색 토큰 — 프로젝트 실사용 근거</p>
+  참고 이미지의 "진행중 = 옅은 파란 채움 + 파란 글씨"는 <code>bg-brand-weak text-brand</code> 조합인데, 이건
+  프로젝트에서 이미 여러 곳에 쓰이는 조합입니다(<code>Badge</code> default variant, <code>ToonCost</code> 2툰
+  티어, <code>radio.tsx</code>·<code>PlayerPick.tsx</code>·<code>PollPicker.tsx</code>의 "선택됨" 상태 등).
+  "안 함 = 회색 채움"은 <code>bg-neutral-weak</code>과 <code>bg-disabled</code> 둘 다 같은 값
+  (<code>--p-neutral-200</code>, <code>#e9e9ea</code>)이라 색만 봐서는 구분이 안 되지만, <b>의미로 쓰인 선례</b>를
+  찾았습니다 — <code>components/primitives/result-progress.tsx:43</code>가 정확히 같은 이분법을 씁니다:
+  <code>highlighted ? "bg-brand-weak" : "bg-disabled"</code>(막대 강조 여부), 텍스트도
+  <code>highlighted ? "text-brand" : "text-neutral-muted"</code>(<code>:67, :76</code>)로 우리 탭과
+  1:1 대응합니다. 그래서 "안 함"엔 <code>bg-neutral-weak</code>이 아니라 <code>bg-disabled</code>를 썼습니다.
+  <table>
+    <tr><th>상태</th><th>배경</th><th>텍스트</th><th>테두리</th><th>근거</th></tr>
+    <tr><td>완료</td><td><span class="swatch" style="background:#fff;border-color:#e9e9ea"></span><code>bg-surface</code></td><td><code>text-neutral</code></td><td><code>border-neutral-weak</code></td><td>기본 카드 표면(Card 프리미티브와 동일)</td></tr>
+    <tr><td>진행중(활성)</td><td><span class="swatch" style="background:#d8f1ff"></span><code>bg-brand-weak</code></td><td><code>text-brand</code></td><td>없음(투명)</td><td><code>result-progress.tsx:43,67</code>, <code>Badge</code> default, <code>ToonCost</code> 2툰</td></tr>
+    <tr><td>안 함</td><td><span class="swatch" style="background:#e9e9ea"></span><code>bg-disabled</code></td><td><code>text-neutral-muted</code></td><td>없음(투명)</td><td><code>result-progress.tsx:43,76</code>, <code>Badge</code> outline variant</td></tr>
+  </table>
+</div>
+
+<div class="rationale-box">
+  <p class="rationale-label">이번 변경 — v5 대비</p>
+  <ul>
+    <li><b>3색 체계</b>: 완료=흰 카드+테두리, 진행중=파란 채움(테두리 없음), 안 함=회색 채움(테두리 없음) —
+    참고 이미지 그대로. 테두리 유무를 다르게 둔 채 폭이 흔들리지 않도록 셋 다 <code>border</code> 1px는
+    유지하고 완료만 <code>border-neutral-weak</code>, 나머지 둘은 <code>border-transparent</code>로 처리했습니다.</li>
+    <li><b>체크 배지 제거</b> — v5에 있던 우상단 체크 배지를 뺐습니다. 상태는 이제 색으로만 구분합니다(참고
+    이미지 지시 그대로).</li>
+    <li><b>바깥 테두리 박스 제거</b> — v5의 <code>TAB_CONTAINER</code>(<code>rounded-lg border ...
+    shadow-g200 p-3</code>)를 없앴습니다. 개별 탭 카드만 <code>flex gap-2</code>로 나열해 <code>Card</code>와
+    <code>StickyActionBar</code> 사이(v5와 같은 DOM 위치)에 바로 놓습니다 — 참고 이미지 2장이 보여준 "테두리
+    없이 바로 나열" 그대로.</li>
+    <li><b>크레스트 모양</b>: 참고 이미지가 "정사각형에 가까운 둥근 모서리 아이콘"을 보여줘, 이 목업에서는
+    자리표시자를 <code>rounded-md</code> 정사각형 박스로 바꿨습니다(기존엔 원형 <code>rounded-pill</code>이었음)
+    — 실제 앱에서 <code>TeamBadge</code>는 로고 이미지를 그대로 쓰고 원형을 강제하지 않으니(폴백만 원형),
+    실제 로고 형태에 따라 최종 모양은 달라질 수 있습니다. 이 판단은 참고 이미지 재현 목적의 추정이라
+    확정 사항은 아닙니다.</li>
+    <li>크레스트 위·구단명 아래 세로 배치, 데스크톱/모바일 둘 다, 선수 픽 단계 <code>ToonCounter</code>와
+    안 겹치는 것은 v5에서 이미 맞았던 부분이라 그대로 유지했습니다.</li>
+  </ul>
+</div>
+
+<h4 style="max-width:900px; margin:28px auto 4px; font-size:15px">3-1. 스코어 단계</h4>
+<div class="frame-row">
+  <div class="frame-col">
+    <span class="frame-tag">데스크톱 (860px) — 울브스 진행중 / 아스널 안 함</span>
+    <div class="device-shell" style="width:860px; max-width:100%"><iframe id="f-score-desktop" height="560"></iframe></div>
+  </div>
+</div>
+<div class="frame-row">
+  <div class="frame-col">
+    <span class="frame-tag">모바일 (375px)</span>
+    <div class="device-shell" style="width:375px"><iframe id="f-score-mobile" height="700"></iframe></div>
+  </div>
+</div>
+
+<h4 style="max-width:900px; margin:32px auto 4px; font-size:15px">3-2. 선수 픽 단계 (툰 카운터와 안 겹치는지 확인)</h4>
+<div class="frame-row">
+  <div class="frame-col">
+    <span class="frame-tag">데스크톱 (860px)</span>
+    <div class="device-shell" style="width:860px; max-width:100%"><iframe id="f-pick-desktop" height="600"></iframe></div>
+  </div>
+</div>
+<div class="frame-row">
+  <div class="frame-col">
+    <span class="frame-tag">모바일 (375px)</span>
+    <div class="device-shell" style="width:375px"><iframe id="f-pick-mobile" height="800"></iframe></div>
+  </div>
+</div>
+
+<p class="flow-note">울브스전을 먼저 제출한 뒤 아스널전 픽 단계를 보는 중 — "완료" 상태(흰 카드+테두리)가 실제로 어떻게 보이는지</p>
+<div class="frame-row">
+  <div class="frame-col">
+    <span class="frame-tag">모바일 (375px) — 울브스 완료 / 아스널 진행중</span>
+    <div class="device-shell" style="width:375px"><iframe id="f-pick-mobile-done" height="800"></iframe></div>
+  </div>
+</div>
+
+<h4 style="max-width:900px; margin:32px auto 4px; font-size:15px">3-3. (검증용) 경기 3개 — 완료·진행중·안 함이 한 화면에 동시에</h4>
+<p class="sec-note">실제 서비스는 대부분 경기 1~2개지만, 3가지 색상이 같이 보였을 때도 서로 구별되는지 확인하기 위한 예시입니다.</p>
+<div class="frame-row">
+  <div class="frame-col">
+    <span class="frame-tag">데스크톱 (860px) — 울브스 완료 / 아스널 진행중 / 브렌트포드 안 함</span>
+    <div class="device-shell" style="width:860px; max-width:100%"><iframe id="f-triple-desktop" height="560"></iframe></div>
+  </div>
+</div>
+<div class="frame-row">
+  <div class="frame-col">
+    <span class="frame-tag">모바일 (375px)</span>
+    <div class="device-shell" style="width:375px"><iframe id="f-triple-mobile" height="720"></iframe></div>
+  </div>
+</div>
+
+<div class="decision-box">
+  <p class="decision-label">확정 사항 재확인 (변경 없음)</p>
+  1. "그대로 적용"(픽 복사) 기능 삭제 확정.<br>
+  2. 순차 제출 확정 — 경기마다 따로 제출. 매치 탭은 화면 이동만 자유롭게 할 뿐 제출 단위는 경기 하나입니다.
+</div>
+
+<script>
+const HEAD = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.tailwindcss.com"></` + `script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: { black: "rgb(var(--c-black) / <alpha-value>)" },
+        backgroundColor: {
+          page: "var(--sem-bg-page)", surface: "var(--sem-bg-surface)", overlay: "var(--sem-bg-overlay)",
+          disabled: "var(--sem-bg-disabled)", "neutral-weak": "var(--sem-bg-neutral-weak)",
+          "neutral-weak-pressed": "var(--sem-bg-neutral-weak-pressed)", "neutral-strong": "var(--sem-bg-neutral-strong)",
+          "brand-solid": "var(--sem-bg-brand-solid)", "brand-solid-pressed": "var(--sem-bg-brand-solid-pressed)",
+          "brand-weak": "var(--sem-bg-brand-weak)", "brand-weak-pressed": "var(--sem-bg-brand-weak-pressed)",
+          "critical-solid": "var(--sem-bg-critical-solid)", "critical-solid-pressed": "var(--sem-bg-critical-solid-pressed)",
+          "critical-weak": "var(--sem-bg-critical-weak)", "critical-weak-pressed": "var(--sem-bg-critical-weak-pressed)",
+          "positive-weak": "var(--sem-bg-positive-weak)", "positive-weak-pressed": "var(--sem-bg-positive-weak-pressed)",
+          "warning-weak": "var(--sem-bg-warning-weak)", "warning-weak-pressed": "var(--sem-bg-warning-weak-pressed)",
+          "informative-weak": "var(--sem-bg-informative-weak)", "informative-weak-pressed": "var(--sem-bg-informative-weak-pressed)",
+          "magic-weak": "var(--sem-bg-magic-weak)", "magic-weak-pressed": "var(--sem-bg-magic-weak-pressed)",
+          "on-solid-weak": "var(--sem-bg-on-solid-weak)", "on-solid-strong": "var(--sem-bg-on-solid-strong)",
+          "surface-translucent": "var(--sem-bg-surface-translucent)"
+        },
+        textColor: {
+          neutral: "var(--sem-fg-neutral)", "neutral-strong": "var(--sem-fg-neutral-strong)",
+          "neutral-muted": "var(--sem-fg-neutral-muted)", "neutral-subtle": "var(--sem-fg-neutral-subtle)",
+          placeholder: "var(--sem-fg-placeholder)", disabled: "var(--sem-fg-disabled)",
+          "on-solid": "var(--sem-fg-on-solid)", "on-solid-muted": "var(--sem-fg-on-solid-muted)",
+          "on-solid-brand": "var(--sem-fg-on-solid-brand)", brand: "var(--sem-fg-brand)",
+          critical: "var(--sem-fg-critical)", positive: "var(--sem-fg-positive)",
+          warning: "var(--sem-fg-warning)", informative: "var(--sem-fg-informative)", magic: "var(--sem-fg-magic)"
+        },
+        borderColor: {
+          "neutral-weak": "var(--sem-stroke-neutral-weak)", "neutral-subtle": "var(--sem-stroke-neutral-subtle)",
+          "neutral-strong": "var(--sem-stroke-neutral-strong)", "brand-solid": "var(--sem-stroke-brand-solid)",
+          "critical-weak": "var(--sem-stroke-critical-weak)", "focus-ring": "var(--sem-stroke-focus-ring)",
+          "on-solid-weak": "var(--sem-bg-on-solid-weak)"
+        },
+        ringColor: { "brand-solid": "var(--sem-stroke-brand-solid)", "focus-ring": "var(--sem-stroke-focus-ring)" },
+        borderRadius: { xs: "var(--r-xs)", sm: "var(--r-sm)", md: "var(--r-md)", lg: "var(--r-lg)", pill: "var(--r-pill)" },
+        maxWidth: { shell: "var(--shell-w)", content: "var(--content-w)", detail: "var(--detail-w)" },
+        boxShadow: { w100: "var(--sh-w100)", w200: "var(--sh-w200)", w300: "var(--sh-w300)", g100: "var(--sh-g100)", g200: "var(--sh-g200)", g300: "var(--sh-g300)" },
+        fontFamily: { sans: ["Pretendard Variable", "Pretendard", "-apple-system", "sans-serif"] },
+        fontSize: {
+          "display-1": ["56px", { lineHeight: "72px", letterSpacing: "-0.0319em" }],
+          "display-2": ["40px", { lineHeight: "52px", letterSpacing: "-0.0282em" }],
+          "title-1": ["36px", { lineHeight: "48px", letterSpacing: "-0.027em" }],
+          "title-2": ["28px", { lineHeight: "38px", letterSpacing: "-0.0236em" }],
+          "title-3": ["24px", { lineHeight: "32px", letterSpacing: "-0.023em" }],
+          "heading-1": ["22px", { lineHeight: "30px", letterSpacing: "-0.0194em" }],
+          "heading-2": ["20px", { lineHeight: "28px", letterSpacing: "-0.012em" }],
+          "headline-1": ["18px", { lineHeight: "26px", letterSpacing: "-0.002em" }],
+          "headline-2": ["17px", { lineHeight: "24px", letterSpacing: "0em" }],
+          "body-1-normal": ["16px", { lineHeight: "24px", letterSpacing: "0.0057em" }],
+          "body-2-normal": ["15px", { lineHeight: "22px", letterSpacing: "0.0096em" }],
+          "label-1-normal": ["14px", { lineHeight: "20px", letterSpacing: "0.0145em" }],
+          "label-2": ["13px", { lineHeight: "18px", letterSpacing: "0.0194em" }],
+          "caption-1": ["12px", { lineHeight: "16px", letterSpacing: "0.0252em" }],
+          "caption-2": ["11px", { lineHeight: "14px", letterSpacing: "0.0311em" }]
+        },
+        transitionDuration: { micro: "150ms", enter: "300ms", exit: "200ms", slow: "700ms" }
+      }
+    }
+  }
+</` + `script>
+<style>
+  :root {
+    --c-black: 17 17 17;
+    --r-xs: 8px; --r-sm: 10px; --r-md: 12px; --r-lg: 16px; --r-pill: 9999px;
+    --shell-w: 480px; --content-w: 1140px; --detail-w: 680px;
+    --sh-w100: 0px 0px 2px rgba(0,0,0,.07), 0px 1px 2px rgba(0,0,0,.07);
+    --sh-w200: 0px 1px 6px rgba(0,0,0,.12);
+    --sh-w300: 0px 1px 20px rgba(0,0,0,.07);
+    --sh-g100: 0px 0px 1px rgba(0,0,0,.05), 0px 1px 1px rgba(0,0,0,.05);
+    --sh-g200: 0px 1px 4px rgba(0,0,0,.06);
+    --sh-g300: 0px 1px 15px rgba(0,0,0,.04);
+    --p-blue-400: #6ab4ff; --p-blue-700: #115aff; --p-blue-800: #0d42c0;
+    --p-red-700: #cf231a; --p-green-700: #008728; --p-orange-700: #a65e00;
+    --p-cyan-700: #007f9f; --p-violet-700: #9130e7;
+    --p-neutral-50: #fafafb; --p-neutral-100: #f3f3f4; --p-neutral-200: #e9e9ea; --p-neutral-300: #d8d9da;
+    --p-neutral-400: #bcbec0; --p-neutral-500: #a2a5a9; --p-neutral-900: #313335; --p-neutral-950: #1a1b1c;
+    --sem-bg-page: var(--p-neutral-50);
+    --sem-bg-surface: #ffffff;
+    --sem-bg-overlay: rgba(0,0,0,.45);
+    --sem-bg-disabled: var(--p-neutral-200);
+    --sem-bg-neutral-weak: var(--p-neutral-200);
+    --sem-bg-neutral-weak-pressed: var(--p-neutral-300);
+    --sem-bg-neutral-strong: var(--p-neutral-900);
+    --sem-bg-brand-solid: var(--p-blue-700);
+    --sem-bg-brand-solid-pressed: var(--p-blue-800);
+    --sem-bg-brand-weak: #d8f1ff;
+    --sem-bg-brand-weak-pressed: var(--sem-bg-brand-weak);
+    --sem-bg-critical-solid: var(--p-red-700);
+    --sem-bg-critical-solid-pressed: #981b14;
+    --sem-bg-critical-weak: #ffe8e0;
+    --sem-bg-critical-weak-pressed: var(--sem-bg-critical-weak);
+    --sem-bg-positive-weak: #f4fff5;
+    --sem-bg-positive-weak-pressed: var(--sem-bg-positive-weak);
+    --sem-bg-warning-weak: #fff5d9;
+    --sem-bg-warning-weak-pressed: var(--sem-bg-warning-weak);
+    --sem-bg-informative-weak: #f5ffff;
+    --sem-bg-informative-weak-pressed: var(--sem-bg-informative-weak);
+    --sem-bg-magic-weak: #f4e3ff;
+    --sem-bg-magic-weak-pressed: var(--sem-bg-magic-weak);
+    --sem-bg-on-solid-weak: rgba(255,255,255,.05);
+    --sem-bg-on-solid-strong: rgba(255,255,255,.1);
+    --sem-bg-surface-translucent: rgba(255,255,255,.95);
+    --sem-fg-neutral: var(--p-neutral-950);
+    --sem-fg-neutral-strong: var(--p-neutral-900);
+    --sem-fg-neutral-muted: #666666;
+    --sem-fg-neutral-subtle: var(--p-neutral-500);
+    --sem-fg-placeholder: var(--p-neutral-500);
+    --sem-fg-disabled: var(--p-neutral-400);
+    --sem-fg-on-solid: #ffffff;
+    --sem-fg-on-solid-muted: var(--p-neutral-400);
+    --sem-fg-on-solid-brand: var(--p-blue-400);
+    --sem-fg-brand: var(--p-blue-700);
+    --sem-fg-critical: var(--p-red-700);
+    --sem-fg-positive: var(--p-green-700);
+    --sem-fg-warning: var(--p-orange-700);
+    --sem-fg-informative: var(--p-cyan-700);
+    --sem-fg-magic: var(--p-violet-700);
+    --sem-stroke-neutral-weak: var(--p-neutral-200);
+    --sem-stroke-neutral-subtle: var(--p-neutral-100);
+    --sem-stroke-neutral-strong: var(--p-neutral-500);
+    --sem-stroke-brand-solid: var(--p-blue-700);
+    --sem-stroke-critical-weak: #ffd3c6;
+    --sem-stroke-focus-ring: var(--p-blue-700);
+  }
+  * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+  body { margin: 0; background: var(--sem-bg-page); color: var(--sem-fg-neutral); font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+</style>
+</head><body>`;
+
+const BTN_BASE = "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm font-semibold transition-[opacity,background-color] duration-micro hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-solid disabled:pointer-events-none disabled:bg-disabled disabled:text-disabled disabled:opacity-100";
+const BTN_DEFAULT = BTN_BASE + " bg-brand-solid text-on-solid shadow-w200 active:bg-brand-solid-pressed";
+const BTN_GHOST = BTN_BASE + " bg-transparent text-neutral-muted shadow-none active:opacity-50";
+const SIZE_LG = "h-12 px-6 text-body-2-normal";
+
+// 매치 탭 — 참고 이미지 반영: 3색 상태(완료/진행중/안 함), 바깥 박스 없이 개별 카드만 나열.
+// 색은 새로 만들지 않고 result-progress.tsx:43(highlighted ? bg-brand-weak : bg-disabled)와
+// 텍스트 :67,76(text-brand / text-neutral-muted) 조합을 그대로 가져왔다.
+const TAB_BASE = "flex flex-1 flex-col items-center gap-1.5 rounded-md border px-3 py-2.5 text-label-2 font-medium transition-opacity duration-micro hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-solid";
+const TAB_DONE = TAB_BASE + " border-neutral-weak bg-surface text-neutral";
+const TAB_ACTIVE = TAB_BASE + " border-transparent bg-brand-weak text-brand";
+const TAB_TODO = TAB_BASE + " border-transparent bg-disabled text-neutral-muted";
+
+function tabClass(state) {
+  return state === 'done' ? TAB_DONE : state === 'active' ? TAB_ACTIVE : TAB_TODO;
+}
+
+function crest(initial, size) {
+  // 크레스트 자리표시자 — 실제 로고 이미지가 들어갈 자리라 상태색과 무관하게 항상 중립 톤.
+  return '<span class="flex shrink-0 items-center justify-center rounded-md bg-disabled text-caption-2 font-semibold text-neutral-muted" style="width:' + size + 'px;height:' + size + 'px">' + initial + '</span>';
+}
+
+function matchTab({ initial, label, state }) {
+  return '<button type="button" class="' + tabClass(state) + '">' + crest(initial, 28) + '<span>' + label + '</span></button>';
+}
+
+function tabRow(tabs) {
+  // 바깥을 감싸는 테두리 박스 없음(v5의 TAB_CONTAINER 삭제) — flex로만 나열.
+  return '<div class="mt-3 flex gap-2">' + tabs.map(matchTab).join('') + '</div>';
+}
+
+function scoreStepper(value) {
+  return '' +
+'<div class="w-16 overflow-hidden rounded-md border border-neutral-weak bg-surface">' +
+'  <button type="button" aria-label="점수 증가" class="flex h-[34px] w-full items-center justify-center bg-surface text-body-1-normal text-neutral-muted">+</button>' +
+'  <div class="flex h-[52px] items-center justify-center border-y border-neutral-weak text-title-3 font-semibold">' + value + '</div>' +
+'  <button type="button" aria-label="점수 감소" class="flex h-[34px] w-full items-center justify-center bg-surface text-body-1-normal text-neutral-muted">−</button>' +
+'</div>';
+}
+
+function positionCard({ label, name, cost, filled }) {
+  if (!filled) {
+    return '' +
+'<div class="flex min-h-[150px] min-w-0 flex-1 flex-col rounded-lg border border-neutral-weak bg-page p-4 text-left">' +
+'  <span class="text-label-2 font-medium text-neutral-muted">' + label + '</span>' +
+'  <div class="flex h-20 items-center justify-end pr-[6%]">' + crest('', 72) + '</div>' +
+'  <div class="h-px bg-neutral-weak"></div>' +
+'  <div class="mt-3 flex h-7 items-center justify-between gap-2"><span class="text-label-2 text-neutral-muted">선수를 선택하세요</span></div>' +
+'</div>';
+  }
+  return '' +
+'<div class="flex min-h-[150px] min-w-0 flex-1 flex-col rounded-lg border border-neutral-weak bg-surface p-4 text-left">' +
+'  <span class="text-label-2 font-medium text-neutral-muted">' + label + '</span>' +
+'  <div class="flex h-20 items-center justify-end pr-[6%]"><div class="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-md bg-disabled"></div></div>' +
+'  <div class="h-px bg-neutral-weak"></div>' +
+'  <div class="mt-3 flex h-7 items-center justify-between gap-2">' +
+'    <span class="min-w-0 truncate text-label-1-normal font-semibold">' + name + '</span>' +
+'    <span class="inline-flex items-center rounded-pill px-2 py-1 text-caption-2 font-medium gap-1 bg-brand-weak text-brand">' + cost + '</span>' +
+'  </div>' +
+'</div>';
+}
+
+function toonCounter(remaining, total) {
+  return '' +
+'<div class="flex flex-col gap-0.5">' +
+'  <div class="flex items-baseline gap-1"><span class="text-title-3 font-semibold text-neutral">' + remaining + '</span><span class="text-label-1-normal text-neutral-subtle">/' + total + '</span></div>' +
+'  <div class="flex items-center gap-1 text-label-2 text-neutral-muted"><span class="flex items-center justify-center rounded-pill border border-neutral-subtle text-caption-2 text-neutral-subtle" style="width:14px;height:14px">?</span><span>남은 툰</span></div>' +
+'</div>';
+}
+
+function pips(activeCount) {
+  let out = '<div class="flex shrink-0 items-center gap-1.5 pt-1">';
+  for (let i = 0; i < 3; i++) out += '<span class="h-1.5 w-6 rounded-pill ' + (i < activeCount ? 'bg-brand-solid' : 'bg-neutral-weak') + '"></span>';
+  return out + '</div>';
+}
+
+function scoreStepBody({ competition, kickoff, oppInitial, oppName, score, tabs }) {
+  return '' +
+'<div class="mx-auto max-w-[860px] px-4 pb-28 pt-4 sm:px-6 sm:pb-12 sm:pt-8">' +
+'  <div class="flex flex-col rounded-lg border border-neutral-weak bg-surface text-neutral shadow-g200 p-5 sm:p-7">' +
+'    <div class="flex items-start justify-between gap-4">' +
+'      <div><h1 class="text-heading-2 font-semibold text-neutral">경기 예측</h1><p class="mt-1 text-label-2 text-neutral-muted">이번 경기의 스코어를 예측해보세요</p></div>' +
+       pips(1) +
+'    </div>' +
+'    <div class="flex flex-1 flex-col py-6 sm:py-8">' +
+'      <div class="flex flex-col gap-8"><div>' +
+'        <div class="text-center"><p class="mb-1 text-label-2 font-medium text-neutral-muted">' + competition + ' · 5라운드</p><p class="text-label-2 text-neutral-muted">' + kickoff + '</p></div>' +
+'        <div class="mt-6 flex items-center justify-center gap-4 sm:gap-6">' +
+'          <div class="flex w-[88px] flex-col items-center gap-2">' + crest('뉴', 48) + '<span class="text-center text-label-1-normal font-medium">뉴캐슬</span></div>' +
+           scoreStepper(score[0]) + scoreStepper(score[1]) +
+'          <div class="flex w-[88px] flex-col items-center gap-2">' + crest(oppInitial, 48) + '<span class="text-center text-label-1-normal font-medium">' + oppName + '</span></div>' +
+'        </div>' +
+'      </div></div>' +
+'    </div>' +
+'    <div class="mt-6 hidden border-t border-neutral-weak pt-5 sm:block">' +
+'      <div class="flex min-h-[56px] items-center justify-between gap-4"><div></div><div class="flex gap-2"><button type="button" class="' + BTN_DEFAULT + ' ' + SIZE_LG + ' w-[140px]">다음</button></div></div>' +
+'    </div>' +
+'  </div>' +
+     tabRow(tabs) +
+'  <div class="fixed inset-x-0 bottom-0 border-t border-neutral-weak bg-surface-translucent px-4 py-3 sm:hidden">' +
+'    <div class="mx-auto flex max-w-shell gap-2"><button type="button" class="' + BTN_DEFAULT + ' ' + SIZE_LG + ' w-full">다음</button></div>' +
+'  </div>' +
+'</div>';
+}
+
+function pickStepBody({ tabs, positions }) {
+  return '' +
+'<div class="mx-auto max-w-[860px] px-4 pb-28 pt-4 sm:px-6 sm:pb-12 sm:pt-8">' +
+'  <div class="flex flex-col rounded-lg border border-neutral-weak bg-surface text-neutral shadow-g200 p-5 sm:p-7">' +
+'    <div class="flex items-start justify-between gap-4">' +
+'      <div><h1 class="text-heading-2 font-semibold text-neutral">선수 예측</h1><p class="mt-1 text-label-2 text-neutral-muted">포지션별로 이번 주 활약할 선수를 골라보세요</p></div>' +
+       pips(2) +
+'    </div>' +
+'    <div class="pt-4 sm:hidden">' + toonCounter(3, 5) + '</div>' +
+'    <div class="flex flex-1 flex-col py-6 sm:py-8">' +
+'      <div class="flex flex-col gap-3 sm:flex-row sm:gap-4">' + positions.map(positionCard).join('') + '</div>' +
+'    </div>' +
+'    <div class="mt-6 hidden border-t border-neutral-weak pt-5 sm:block">' +
+'      <div class="flex min-h-[56px] items-center justify-between gap-4">' +
+'        <div>' + toonCounter(3, 5) + '</div>' +
+'        <div class="flex gap-2"><button type="button" class="' + BTN_GHOST + ' ' + SIZE_LG + ' w-[100px]">이전</button><button type="button" class="' + BTN_DEFAULT + ' ' + SIZE_LG + ' w-[140px]">다음</button></div>' +
+'      </div>' +
+'    </div>' +
+'  </div>' +
+     tabRow(tabs) +
+'  <div class="fixed inset-x-0 bottom-0 border-t border-neutral-weak bg-surface-translucent px-4 py-3 sm:hidden">' +
+'    <div class="mx-auto flex max-w-shell gap-2"><button type="button" class="' + BTN_GHOST + ' ' + SIZE_LG + ' flex-1">이전</button><button type="button" class="' + BTN_DEFAULT + ' ' + SIZE_LG + ' flex-[2]">다음</button></div>' +
+'  </div>' +
+'</div>';
+}
+
+const TABS_2_ACTIVE_TODO = [
+  { initial: 'W', label: '울브스', state: 'active' },
+  { initial: '아', label: '아스널', state: 'todo' }
+];
+const TABS_2_DONE_ACTIVE = [
+  { initial: 'W', label: '울브스', state: 'done' },
+  { initial: '아', label: '아스널', state: 'active' }
+];
+const TABS_3 = [
+  { initial: 'W', label: '울브스', state: 'done' },
+  { initial: '아', label: '아스널', state: 'active' },
+  { initial: 'B', label: '브렌트포드', state: 'todo' }
+];
+
+const BODY_SCORE = scoreStepBody({
+  competition: '프리미어리그', kickoff: '8월 30일 (홈) 오후 8:00',
+  oppInitial: 'W', oppName: '울브스', score: [2, 1], tabs: TABS_2_ACTIVE_TODO
+});
+
+const BODY_PICK = pickStepBody({
+  tabs: TABS_2_ACTIVE_TODO,
+  positions: [
+    { label: '수비수', name: '트리피어', cost: 1, filled: true },
+    { label: '미드필더', name: '루이스 마일리', cost: 2, filled: true },
+    { label: '공격수', filled: false }
+  ]
+});
+
+const BODY_PICK_DONE = pickStepBody({
+  tabs: TABS_2_DONE_ACTIVE,
+  positions: [
+    { label: '수비수', filled: false },
+    { label: '미드필더', filled: false },
+    { label: '공격수', filled: false }
+  ]
+});
+
+const BODY_TRIPLE = scoreStepBody({
+  competition: '카라바오컵', kickoff: '9월 2일 (원정) 오전 4:00',
+  oppInitial: '아', oppName: '아스널', score: [0, 0], tabs: TABS_3
+});
+
+function mount(id, body) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.srcdoc = HEAD + body + '</body></html>';
+  el.onload = function () {
+    setTimeout(function () {
+      try {
+        const h = el.contentWindow.document.documentElement.scrollHeight;
+        if (h > 0) el.style.height = (h + 16) + 'px';
+      } catch (e) {}
+    }, 350);
+  };
+}
+
+mount('f-score-desktop', BODY_SCORE);
+mount('f-score-mobile', BODY_SCORE);
+mount('f-pick-desktop', BODY_PICK);
+mount('f-pick-mobile', BODY_PICK);
+mount('f-pick-mobile-done', BODY_PICK_DONE);
+mount('f-triple-desktop', BODY_TRIPLE);
+mount('f-triple-mobile', BODY_TRIPLE);
+</script>
