@@ -75,7 +75,7 @@ DB migration은 리포 루트에서 `supabase db push` (사전에 `supabase link
 - Mock/실연동 모드는 `frontend/src/lib/config.ts`가 결정한다: `NEXT_PUBLIC_SUPABASE_URL`이 없거나 `http`로 시작하지 않으면 `IS_MOCK = true`가 되어 `lib/mock/`의 데이터를 쓴다. **기능을 mock 모드에서만 확인하고 끝내지 말 것** — 실제 Supabase 연동 시 깨질 수 있다.
 - 데이터 계층은 조회(`lib/queries/*`)와 쓰기(`lib/actions/*`)로 분리되어 있다. 스키마를 바꾀면 migration, `frontend/src/types/database.ts`(수동 관리라 drift 주의), query의 `select(...)`, action의 payload, RLS 정책을 함께 확인한다.
 - 관리자 권한은 `lib/admin.ts`의 `ADMIN_EMAILS` 판정 + `lib/supabase/admin.ts`의 service-role 클라이언트 조합으로 동작한다.
-- 투표는 제출 후 수정 불가(DB UNIQUE 제약), 결과는 참여 후에만 공개, 댓글은 투표 참여자만 작성 가능 — 이 세 제약은 UI/쿼리 어디를 고치든 깨지면 안 된다.
+- 투표는 제출 후 수정 불가(DB UNIQUE 제약) — **승부예측(predictions)은 예외로 킥오프 전까지 자유 수정 가능(2026-09-03 확정, 근거: `vault/10_gun/승부예측-랭킹-요구사항-명세서.md` NFR-001)**. 결과는 참여 후에만 공개, 댓글은 투표 참여자만 작성 가능 — 이 세 제약(승부예측의 수정 허용 예외 제외)은 UI/쿼리 어디를 고치든 깨지면 안 된다.
 
 ## Before touching DB/Supabase-related code
 
