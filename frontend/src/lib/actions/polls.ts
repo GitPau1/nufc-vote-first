@@ -71,7 +71,6 @@ export async function createUserPoll(formData: FormData): Promise<{ pollId?: str
       created_by: user.id,
       thumbnail_url: String(formData.get('thumbnail_url') ?? '').trim() || null,
       status: 'active',
-      scheduled_at: null,
       closes_at: closesAt,
     })
     .select('id')
@@ -104,7 +103,6 @@ export async function createUserPoll(formData: FormData): Promise<{ pollId?: str
 // queries/polls.ts의 AnyRow 캐스팅과 같은 우회.
 type PollEditRow = {
   status: PollEditPoll['status']
-  scheduled_at: string | null
   closes_at: string
   created_by: string | null
   thumbnail_url: string | null
@@ -132,7 +130,7 @@ export async function updateUserPoll(
   const userPromise = supabase.auth.getUser()
   const pollPromise = supabase
     .from('polls')
-    .select('status, scheduled_at, closes_at, created_by, thumbnail_url')
+    .select('status, closes_at, created_by, thumbnail_url')
     .eq('id', pollId)
     .single()
 
@@ -144,7 +142,6 @@ export async function updateUserPoll(
 
   const editPoll: PollEditPoll = {
     status: poll.status,
-    scheduled_at: poll.scheduled_at,
     closes_at: poll.closes_at,
     created_by: poll.created_by,
   }

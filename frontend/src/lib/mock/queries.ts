@@ -39,18 +39,11 @@ export async function mockGetPollHomeSections(): Promise<PollHomeSections> {
 
   const active = polls.filter(p => p.status === 'active')
     .sort((a, b) => new Date(a.closes_at).getTime() - new Date(b.closes_at).getTime())
-  const scheduled = polls.filter(p => p.status === 'scheduled')
-    .sort((a, b) => {
-      const aAt = a.scheduled_at ? new Date(a.scheduled_at).getTime() : Infinity
-      const bAt = b.scheduled_at ? new Date(b.scheduled_at).getTime() : Infinity
-      return aAt - bAt
-    })
   const closed = polls.filter(p => p.status === 'closed')
     .sort((a, b) => new Date(b.closes_at).getTime() - new Date(a.closes_at).getTime())
 
   return {
     active: active.slice(0, HOME_SECTION_ITEM_LIMIT),
-    scheduled: scheduled.slice(0, HOME_SECTION_ITEM_LIMIT),
     closed: closed.slice(0, HOME_SECTION_ITEM_LIMIT),
   }
 }
@@ -79,7 +72,6 @@ export async function mockUpdatePoll(pollId: string, formData: FormData): Promis
 
   const editPoll: PollEditPoll = {
     status: poll.status,
-    scheduled_at: poll.scheduled_at ?? null,
     closes_at: poll.closes_at,
     created_by: poll.created_by ?? null,
   }

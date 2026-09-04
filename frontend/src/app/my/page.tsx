@@ -7,7 +7,7 @@ import { AppHeader } from '@/components/composition/common/AppHeader'
 import { MyPageClient } from '@/components/composition/my/MyPageClient'
 import { RequireAuthModal } from '@/components/composition/auth/RequireAuthModal'
 
-type PollStatusForMy = 'scheduled' | 'active' | 'closed'
+type PollStatusForMy = 'active' | 'closed'
 
 export default async function MyPage() {
   // ── 목 모드: 데모 프로필 ─────────────────────────────────────
@@ -72,7 +72,7 @@ export default async function MyPage() {
     .select(`
       created_at,
       option:poll_options(label),
-      poll:polls(id, title, status, scheduled_at, closes_at)
+      poll:polls(id, title, status, closes_at)
     `)
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
@@ -81,7 +81,7 @@ export default async function MyPage() {
   type ParticipatedVoteRow = {
     created_at: string
     option: JoinedOne<{ label: string }>
-    poll: JoinedOne<{ id: string; title: string; status: PollStatusForMy; scheduled_at: string | null; closes_at: string }>
+    poll: JoinedOne<{ id: string; title: string; status: PollStatusForMy; closes_at: string }>
   }
 
   function one<T>(value: JoinedOne<T>): T | null {

@@ -31,9 +31,9 @@ test('home hero prefers the fixture and otherwise picks the most urgent poll det
 
   // 경기 정보가 있으면 MatchdayHero, 없을 때만 투표 배너로 대체한다.
   assert.match(home, /fixture \? <MatchdayHero fixture=\{fixture\} \/> : heroPoll && <PollHeroCard poll=\{heroPoll\} \/>/)
-  // 진행중 → 예정 → 종료 순으로 하나. 무작위 선정이 아니라 이 순서가 계약이다 —
+  // 진행중 → 종료 순으로 하나. 무작위 선정이 아니라 이 순서가 계약이다 —
   // 새로고침마다 배너가 바뀌면 "지금 뭘 해야 하는지"가 흐려진다.
-  assert.match(home, /const heroPoll = active\[0\] \?\? scheduled\[0\] \?\? closed\[0\] \?\? null/)
+  assert.match(home, /const heroPoll = active\[0\] \?\? closed\[0\] \?\? null/)
   assert.doesNotMatch(home, /Math\.random/)
   // 히어로로 뽑힌 투표는 아래 섹션 목록에서 빠지지 않는다.
   assert.doesNotMatch(home, /filter\([^)]*heroPoll/)

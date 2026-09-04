@@ -22,10 +22,10 @@ interface HomeClientProps {
  * 하나도 없어도 히어로는 계속 보여야 한다.
  */
 export function HomeClient({ sections, fixture }: HomeClientProps) {
-  const { active, scheduled, closed } = sections
-  const hasPolls = active.length > 0 || scheduled.length > 0 || closed.length > 0
-  // 히어로는 지금 가장 급한 것(마감 임박한 진행중 → 곧 공개될 예정 → 최근 종료) 하나만 보여준다.
-  const heroPoll = active[0] ?? scheduled[0] ?? closed[0] ?? null
+  const { active, closed } = sections
+  const hasPolls = active.length > 0 || closed.length > 0
+  // 히어로는 지금 가장 급한 것(마감 임박한 진행중 → 최근 종료) 하나만 보여준다.
+  const heroPoll = active[0] ?? closed[0] ?? null
 
   return (
     <div className="mx-auto flex max-w-content flex-col gap-8 px-5 pt-4 pb-10 animate-enter">
@@ -34,7 +34,6 @@ export function HomeClient({ sections, fixture }: HomeClientProps) {
       {hasPolls ? (
         <>
           <PollHomeSection title="진행 중인 투표" polls={active} />
-          <PollHomeSection title="예정된 투표" polls={scheduled} />
           <PollHomeSection title="종료된 투표" polls={closed} action={{ label: '전체보기', href: '/polls' }} />
         </>
       ) : (

@@ -1,7 +1,7 @@
 // DB schema types for the poll-only application.
 
 export type PollType = 'evaluation' | 'selection' | 'subject_options' | 'question_targets' | 'free_choice' | 'overall_rating'
-export type PollStatus = 'scheduled' | 'active' | 'closed'
+export type PollStatus = 'active' | 'closed'
 /** season_squads.position — GK는 승부예측 픽 후보가 아니다(DEF/MID/FWD만 픽 대상). */
 export type SquadPosition = 'GK' | 'DEF' | 'MID' | 'FWD'
 export type Position = 'GK' | 'DEF' | 'MID' | 'FWD' | 'MGR'
@@ -60,7 +60,6 @@ export interface Database {
           created_by: string | null
           status: PollStatus
           thumbnail_url: string | null
-          scheduled_at: string | null
           closes_at: string
           created_at: string
         }

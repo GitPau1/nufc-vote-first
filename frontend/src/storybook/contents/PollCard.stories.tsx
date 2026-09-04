@@ -12,7 +12,6 @@ function mockPoll(overrides: Partial<PollListItem>): PollListItem {
     status: 'active',
     thumbnail_url: null,
     closes_at: new Date(Date.now() + 3 * 86_400_000).toISOString(),
-    scheduled_at: null,
     created_at: new Date(Date.now() - 5 * 86_400_000).toISOString(),
     player_id: null,
     created_by: null,
@@ -60,12 +59,6 @@ export const ClosingSoon: Story = {
   },
 }
 
-export const Scheduled: Story = {
-  args: {
-    poll: mockPoll({ status: 'scheduled', scheduled_at: new Date(Date.now() + 2 * 86_400_000).toISOString() }),
-  },
-}
-
 export const Closed: Story = {
   args: { poll: mockPoll({ status: 'closed', vote_count: 8421 }) },
 }
@@ -78,7 +71,6 @@ export const VerticalGrid: Story = {
     <div className="grid grid-cols-3 gap-4" style={{ maxWidth: 760 }}>
       <PollCard variant="vertical" poll={mockPoll({ status: 'active' })} />
       <PollCard variant="vertical" poll={mockPoll({ closes_at: new Date(Date.now() + 5 * 3_600_000).toISOString() })} />
-      <PollCard variant="vertical" poll={mockPoll({ status: 'scheduled', scheduled_at: new Date(Date.now() + 2 * 86_400_000).toISOString() })} />
       <PollCard variant="vertical" poll={mockPoll({ status: 'closed', vote_count: 8421 })} />
     </div>
   ),

@@ -30,36 +30,21 @@ test('allows voting only for active polls inside the voting window', () => {
 
   assert.equal(canSubmitVote({
     status: 'active',
-    scheduled_at: null,
     closes_at: '2026-05-29T11:00:00.000Z',
   }, now), true)
 })
 
-test('blocks scheduled, closed, not-yet-open, and expired polls', () => {
+test('blocks closed and expired polls', () => {
   const { canSubmitVote } = loadEligibilityModule()
   const now = new Date('2026-05-29T10:00:00.000Z')
 
   assert.equal(canSubmitVote({
-    status: 'scheduled',
-    scheduled_at: '2026-05-29T09:00:00.000Z',
-    closes_at: '2026-05-29T11:00:00.000Z',
-  }, now), false)
-
-  assert.equal(canSubmitVote({
     status: 'closed',
-    scheduled_at: null,
     closes_at: '2026-05-29T11:00:00.000Z',
   }, now), false)
 
   assert.equal(canSubmitVote({
     status: 'active',
-    scheduled_at: '2026-05-29T10:30:00.000Z',
-    closes_at: '2026-05-29T11:00:00.000Z',
-  }, now), false)
-
-  assert.equal(canSubmitVote({
-    status: 'active',
-    scheduled_at: null,
     closes_at: '2026-05-29T09:59:59.000Z',
   }, now), false)
 })
