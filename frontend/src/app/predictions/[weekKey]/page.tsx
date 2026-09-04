@@ -85,6 +85,12 @@ export default async function PredictionFlowPage({
   if (editTarget && editExistingScore) {
     body = (
       <PredictionFlowClient
+        // matchIds+mode로 키를 준다 — 같은 라우트에서 검색 파라미터만 바뀌는 클라이언트 내비게이션
+        // (허브 ↔ 다른 경기 수정 ↔ 새 제출)마다 React가 리마운트하게 강제한다. key가 없으면
+        // useState(scores/picks) 초기값이 최초 마운트 시점에 고정돼, 다른 경기로 다시 들어와도
+        // initialValues가 무시되고 이전 세션 상태가 그대로 남는다("수정하기=초기화됨",
+        // "제출 시 매번 incomplete"의 근본 원인, 2026-09-04 실사용 중 발견).
+        key={`edit:${editTarget.id}`}
         week={week}
         pending={[editTarget]}
         candidates={candidates}
@@ -99,6 +105,7 @@ export default async function PredictionFlowPage({
   } else if (matchTargets.length > 0) {
     body = (
       <PredictionFlowClient
+        key={`submit:${matchTargets.map(match => match.id).join(',')}`}
         week={week}
         pending={matchTargets}
         candidates={candidates}
@@ -109,7 +116,14 @@ export default async function PredictionFlowPage({
   } else if (prediction) {
     // 이 주에 뭐라도 이미 제출됐으면 완료 허브(제출됨/유예됨/마감됨 3분류, PredictionDone).
     body = (
-      <PredictionFlowClient week={week} pending={[]} candidates={candidates} matchIds={[]} submitted={prediction} />
+      <PredictionFlowClient
+        key="done"
+        week={week}
+        pending={[]}
+        candidates={candidates}
+        matchIds={[]}
+        submitted={prediction}
+      />
     )
   } else if (pending.length > 1) {
     // 더블 매치위크에서 아무것도 제출 안 한 첫 진입 — 어느 경기부터 할지 고르는 화면.
@@ -118,6 +132,7 @@ export default async function PredictionFlowPage({
     // 싱글 매치위크(또는 더블 중 하나만 남음)는 선택 화면 없이 바로 그 경기 플로우로.
     body = (
       <PredictionFlowClient
+        key={`submit:${pending.map(match => match.id).join(',')}`}
         week={week}
         pending={pending}
         candidates={candidates}
