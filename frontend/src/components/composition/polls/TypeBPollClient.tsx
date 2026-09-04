@@ -94,7 +94,7 @@ export function TypeBPollClient({ poll, isAuthenticated, canEdit }: TypeBPollCli
     ?? poll.player?.photo_url
     ?? `https://placehold.co/680x252/0c2340/41b6e6?text=${encodeURIComponent(poll.title.slice(0, 4))}`
 
-  const pollDate = formatPollDate(poll.created_at ?? poll.scheduled_at ?? poll.closes_at)
+  const pollDate = formatPollDate(poll.created_at ?? poll.closes_at)
 
   return (
     <div className="flex min-h-screen flex-col bg-page">

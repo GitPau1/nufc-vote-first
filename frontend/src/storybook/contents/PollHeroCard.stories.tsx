@@ -14,7 +14,6 @@ function mockPoll(overrides: Partial<PollListItem>): PollListItem {
     status: 'active',
     thumbnail_url: HERO_IMAGE,
     closes_at: new Date(Date.now() + 3 * 86_400_000).toISOString(),
-    scheduled_at: null,
     created_at: new Date(Date.now() - 5 * 86_400_000).toISOString(),
     player_id: null,
     created_by: null,
@@ -66,22 +65,10 @@ export const ClosingSoon: Story = {
   },
 }
 
-/** 종료된 투표가 히어로에 올라오는 경우(진행중·공개예정이 하나도 없을 때) — 뱃지가 "종료됨". 흐림/흑백 처리는 없다. */
+/** 종료된 투표가 히어로에 올라오는 경우(진행중이 하나도 없을 때) — 뱃지가 "종료됨". 흐림/흑백 처리는 없다. */
 export const Closed: Story = {
   ...mobileWidth,
   args: { poll: mockPoll({ status: 'closed', vote_count: 8421 }) },
-}
-
-/** 공개 예정 — 뱃지가 공개 일시(`scheduled_at`)로 바뀐다. */
-export const Scheduled: Story = {
-  ...mobileWidth,
-  args: {
-    poll: mockPoll({
-      status: 'scheduled',
-      scheduled_at: new Date(Date.now() + 2 * 86_400_000).toISOString(),
-      vote_count: 0,
-    }),
-  },
 }
 
 /** 설명이 있으면 제목 아래 한 줄이 더 붙는다 — 오버레이 그라데이션 안에 3줄이 들어가도 안 눌리는지 본다. */

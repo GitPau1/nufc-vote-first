@@ -45,7 +45,7 @@ export default async function PollPage({ params }: PollPageProps) {
   // getHeaderAuth()(비캐시 getUser + users 테이블 SELECT)를 또 부르지 않는다 — 위에서 이미
   // 얻은 user로 충분하다(createUserPoll·sync-fixtures.ts가 이미 쓰는 방식과 동일).
   const canEdit = canAccessPollEdit(
-    { status: poll.status, scheduled_at: poll.scheduled_at ?? null, closes_at: poll.closes_at, created_by: poll.created_by ?? null },
+    { status: poll.status, closes_at: poll.closes_at, created_by: poll.created_by ?? null },
     { userId: user?.id ?? null, isAdmin: isAdmin(user?.email) }
   )
 

@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import type { PollListItem } from '@/lib/queries/polls'
 import { getSourcePage, trackEvent } from '@/lib/analytics/mixpanel'
 import { getEffectivePollStatus } from '@/lib/polls/status'
-import { formatScheduled, formatDate } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
 import { Badge, type BadgeProps } from '@/components/primitives/badge'
 
 interface PollCardProps {
@@ -28,16 +28,13 @@ export function getThumbnailUrl(poll: PollListItem): string {
 }
 
 /**
- * 상태 라벨/톤이 실제로 읽는 건 status·scheduled_at·closes_at 셋뿐이라 그만큼만 요구한다.
+ * 상태 라벨/톤이 실제로 읽는 건 status·closes_at 둘뿐이라 그만큼만 요구한다.
  * PollListItem(목록)뿐 아니라 PollDetail(상세)도 그대로 넘길 수 있어야 하기 때문 —
- * PollDetail은 scheduled_at이 optional이고 vote_count가 없다.
+ * PollDetail은 vote_count가 없다.
  */
-type PollStatusSource = Pick<PollListItem, 'status' | 'closes_at'> & {
-  scheduled_at?: string | null
-}
+type PollStatusSource = Pick<PollListItem, 'status' | 'closes_at'>
 
 export function getStatusLabel(poll: PollStatusSource): string {
-  if (poll.status === 'scheduled') return poll.scheduled_at ? formatScheduled(poll.scheduled_at) : '공개 예정'
   if (poll.status === 'closed') return '종료됨'
   return poll.closes_at ? formatTimeLeft(poll.closes_at) : '진행중'
 }

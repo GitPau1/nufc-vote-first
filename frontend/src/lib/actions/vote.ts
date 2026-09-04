@@ -14,7 +14,6 @@ type VoteResult =
 type VotePollRow = {
   type: PollType
   status: PollStatus
-  scheduled_at: string | null
   closes_at: string
   created_by: string | null
   created_at: string
@@ -44,7 +43,7 @@ export async function submitVote(pollId: string, optionId: string): Promise<Vote
 
   const { data: poll, error: pollError } = await supabase
     .from('polls')
-    .select('type, status, scheduled_at, closes_at, created_by, created_at')
+    .select('type, status, closes_at, created_by, created_at')
     .eq('id', pollId)
     .single() as { data: VotePollRow | null; error: { message?: string } | null }
 

@@ -3,7 +3,6 @@ import { getEffectivePollStatus } from '@/lib/polls/status'
 
 export type PollEditPoll = {
   status: PollStatus
-  scheduled_at: string | null
   closes_at: string
   created_by: string | null
 }
@@ -15,10 +14,11 @@ export type PollEditActor = {
 
 export type EditablePollField = 'title' | 'description' | 'thumbnail_url'
 
-/** 진입 가능 여부: scheduled 제외 + 작성자 본인 또는 관리자만. */
+/** 진입 가능 여부: 작성자 본인 또는 관리자만.
+ *  now는 더 이상 이 함수에서 쓰이지 않지만, resolvePollEditUpdate 등 호출부가 다른 함수와
+ *  같은 시그니처로 맞춰 넘기고 있어 그대로 받는다. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function canAccessPollEdit(poll: PollEditPoll, actor: PollEditActor, now = new Date()): boolean {
-  const status = getEffectivePollStatus(poll, now)
-  if (status === 'scheduled') return false
   if (actor.isAdmin) return true
   return !!actor.userId && actor.userId === poll.created_by
 }
@@ -26,9 +26,7 @@ export function canAccessPollEdit(poll: PollEditPoll, actor: PollEditActor, now 
 /** 상태별 저장 가능 필드. */
 export function getEditablePollFields(poll: PollEditPoll, now = new Date()): EditablePollField[] {
   const status = getEffectivePollStatus(poll, now)
-  if (status === 'active') return ['title', 'description', 'thumbnail_url']
-  if (status === 'closed') return ['thumbnail_url']
-  return []
+  return status === 'active' ? ['title', 'description', 'thumbnail_url'] : ['thumbnail_url']
 }
 
 /** 서버 액션이 payload 키를 검사할 때 쓴다 — 허용 안 된 키가 있으면 거절. */

@@ -13,7 +13,7 @@ interface HomeClientProps {
 }
 
 /**
- * 홈(`/`) 화면. 히어로 배너 + 진행중/예정/종료 3개 섹션.
+ * 홈(`/`) 화면. 히어로 배너 + 진행중/종료 2개 섹션.
  * 전체 투표 목록(탭 + 무한 스크롤)은 `/polls`에 그대로 남아 있고, "종료된 투표" 섹션의
  * "전체보기"가 거기로 이동한다 — 이 화면엔 전체 목록을 다시 넣지 않는다.
  *
@@ -22,10 +22,10 @@ interface HomeClientProps {
  * 하나도 없어도 히어로는 계속 보여야 한다.
  */
 export function HomeClient({ sections, fixture }: HomeClientProps) {
-  const { active, scheduled, closed } = sections
-  const hasPolls = active.length > 0 || scheduled.length > 0 || closed.length > 0
-  // 히어로는 지금 가장 급한 것(마감 임박한 진행중 → 곧 공개될 예정 → 최근 종료) 하나만 보여준다.
-  const heroPoll = active[0] ?? scheduled[0] ?? closed[0] ?? null
+  const { active, closed } = sections
+  const hasPolls = active.length > 0 || closed.length > 0
+  // 히어로는 지금 가장 급한 것(마감 임박한 진행중 → 최근 종료) 하나만 보여준다.
+  const heroPoll = active[0] ?? closed[0] ?? null
 
   return (
     <div className="mx-auto flex max-w-content flex-col gap-8 px-5 pt-4 pb-10 animate-enter">
@@ -34,7 +34,6 @@ export function HomeClient({ sections, fixture }: HomeClientProps) {
       {hasPolls ? (
         <>
           <PollHomeSection title="진행 중인 투표" polls={active} />
-          <PollHomeSection title="예정된 투표" polls={scheduled} />
           <PollHomeSection title="종료된 투표" polls={closed} action={{ label: '전체보기', href: '/polls' }} />
         </>
       ) : (

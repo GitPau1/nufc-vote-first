@@ -12,7 +12,7 @@ interface PollListClientProps {
   headerRight?: React.ReactNode
 }
 
-type PollTab = 'all' | 'active' | 'scheduled' | 'closed'
+type PollTab = 'all' | 'active' | 'closed'
 
 function Spinner() {
   return (
@@ -65,21 +65,19 @@ export function PollListClient({ initialPolls, headerRight }: PollListClientProp
     status: getEffectivePollStatus(poll, new Date(now)),
   }))
   const active    = effectivePolls.filter(p => p.status === 'active')
-  const scheduled = effectivePolls.filter(p => p.status === 'scheduled')
   const closed    = effectivePolls.filter(p => p.status === 'closed')
   const visiblePolls = activeTab === 'all' ? effectivePolls
     : activeTab === 'active' ? active
-    : activeTab === 'scheduled' ? scheduled
     : closed
   const listPolls = visiblePolls
 
-  const tabCounts = { activeCount: active.length, scheduledCount: scheduled.length, closedCount: closed.length }
+  const tabCounts = { activeCount: active.length, closedCount: closed.length }
 
   if (polls.length === 0 && !loading) {
     return (
       <div className="px-5 pt-4 animate-enter">
         <div className="mb-4 flex items-center justify-between gap-3">
-          <PollTabs activeTab={activeTab} activeCount={0} scheduledCount={0} closedCount={0} onChange={setActiveTab} />
+          <PollTabs activeTab={activeTab} activeCount={0} closedCount={0} onChange={setActiveTab} />
           {headerRight}
         </div>
         <div className="flex flex-col items-center justify-center py-24 gap-2">
@@ -115,7 +113,6 @@ export function PollListClient({ initialPolls, headerRight }: PollListClientProp
             <p className="text-label-1-normal font-medium text-neutral">
               {activeTab === 'all' ? '투표가 없습니다'
                 : activeTab === 'active' ? '진행 중인 투표가 없습니다'
-                : activeTab === 'scheduled' ? '예정된 투표가 없습니다'
                 : '종료된 투표가 없습니다'}
             </p>
           </div>
@@ -131,20 +128,17 @@ export function PollListClient({ initialPolls, headerRight }: PollListClientProp
 function PollTabs({
   activeTab,
   activeCount,
-  scheduledCount,
   closedCount,
   onChange,
 }: {
   activeTab: PollTab
   activeCount: number
-  scheduledCount: number
   closedCount: number
   onChange: (tab: PollTab) => void
 }) {
   const tabs = [
     { id: 'all' as const, label: '전체' },
     { id: 'active' as const, label: '진행중', count: activeCount },
-    { id: 'scheduled' as const, label: '예정', count: scheduledCount },
     { id: 'closed' as const, label: '종료', count: closedCount },
   ]
 

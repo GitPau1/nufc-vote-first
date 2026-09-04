@@ -69,7 +69,6 @@ export const MOCK_POLL_LIST: PollListItem[] = [
     title: '이삭 맨시티전 활약 평가',
     status: 'active',
     closes_at: new Date(Date.now() + 5 * 86400_000).toISOString(),
-    scheduled_at: null,
     created_at: new Date(Date.now() - 2 * 86400_000).toISOString(),
     player_id: isak.id,
     player: isak,
@@ -82,7 +81,6 @@ export const MOCK_POLL_LIST: PollListItem[] = [
     title: '이번 시즌 뉴캐슬 최고 공격수',
     status: 'active',
     closes_at: new Date(Date.now() + 7 * 86400_000).toISOString(),
-    scheduled_at: null,
     created_at: new Date(Date.now() - 3 * 86400_000).toISOString(),
     player_id: null,
     player: null,
@@ -99,7 +97,6 @@ export const MOCK_POLL_LIST: PollListItem[] = [
     title: '브루노 이번 시즌 미드필드 기여도',
     status: 'active',
     closes_at: new Date(Date.now() + 2 * 86400_000).toISOString(),
-    scheduled_at: null,
     created_at: new Date(Date.now() - 4 * 86400_000).toISOString(),
     player_id: bruno.id,
     player: bruno,
@@ -107,25 +104,11 @@ export const MOCK_POLL_LIST: PollListItem[] = [
     vote_count: 1534,
   },
   {
-    id: 'poll-3',
-    type: 'evaluation',
-    title: '고든 아스날전 측면 돌파 평점',
-    status: 'scheduled',
-    closes_at: new Date(Date.now() + 9 * 86400_000).toISOString(),
-    scheduled_at: new Date(Date.now() + 3 * 86400_000).toISOString(),
-    created_at: new Date(Date.now() - 1 * 86400_000).toISOString(),
-    player_id: gordon.id,
-    player: gordon,
-    poll_options: evalOptions('poll-3'),
-    vote_count: 0,
-  },
-  {
     id: 'poll-4',
     type: 'evaluation',
     title: '트리피어 이번 시즌 종합 평가',
     status: 'closed',
     closes_at: new Date(Date.now() - 3 * 86400_000).toISOString(),
-    scheduled_at: null,
     created_at: new Date(Date.now() - 14 * 86400_000).toISOString(),
     player_id: trippier.id,
     player: trippier,
@@ -138,7 +121,6 @@ export const MOCK_POLL_LIST: PollListItem[] = [
     title: '24-25 시즌 최고의 수문장',
     status: 'closed',
     closes_at: new Date(Date.now() - 5 * 86400_000).toISOString(),
-    scheduled_at: null,
     created_at: new Date(Date.now() - 20 * 86400_000).toISOString(),
     player_id: null,
     player: null,
@@ -154,7 +136,6 @@ export const MOCK_POLL_LIST: PollListItem[] = [
     title: '뉴캐슬 스쿼드 이번 시즌 전체평점',
     status: 'active',
     closes_at: new Date(Date.now() + 6 * 86400_000).toISOString(),
-    scheduled_at: null,
     created_at: new Date(Date.now() - 1 * 86400_000).toISOString(),
     player_id: null,
     player: null,
@@ -167,7 +148,6 @@ export const MOCK_POLL_LIST: PollListItem[] = [
     title: '24-25 시즌 뉴캐슬 스쿼드 전체평점',
     status: 'closed',
     closes_at: new Date(Date.now() - 4 * 86400_000).toISOString(),
-    scheduled_at: null,
     created_at: new Date(Date.now() - 25 * 86400_000).toISOString(),
     player_id: null,
     player: null,
@@ -207,14 +187,6 @@ export const MOCK_POLL_DETAIL: Record<string, PollDetail> = {
     closes_at: new Date(Date.now() + 2 * 86400_000).toISOString(),
     player_id: bruno.id, player: bruno,
     poll_options: evalOptions('poll-2'),
-  },
-  'poll-3': {
-    id: 'poll-3', type: 'evaluation', status: 'scheduled',
-    title: '고든 아스날전 측면 돌파 평점',
-    description: '아스날 원정에서 앤서니 고든의 측면 활동량과 돌파력을 평가해주세요.',
-    closes_at: new Date(Date.now() + 9 * 86400_000).toISOString(),
-    player_id: gordon.id, player: gordon,
-    poll_options: evalOptions('poll-3'),
   },
   'poll-4': {
     id: 'poll-4', type: 'evaluation', status: 'closed',
@@ -411,7 +383,7 @@ export type ParticipatedPoll = {
   pollTitle: string
   optionLabel: string
   votedAt: string
-  pollStatus: 'scheduled' | 'active' | 'closed'
+  pollStatus: 'active' | 'closed'
 }
 
 export const MOCK_PARTICIPATED: ParticipatedPoll[] = [
