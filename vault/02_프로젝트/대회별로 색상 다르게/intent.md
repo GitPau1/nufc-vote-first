@@ -111,6 +111,6 @@ developer 에이전트가 쓴 `feature-spec.md`·`plan.md`의 "사람 확정 필
 
 1. ~~designer → `design-brief.md`~~ · ~~designer → `노란-팔레트-제안.md`~~ · ~~design-brief 최종 갱신~~ · ~~developer → `feature-spec.md` + `plan.md`~~ · ~~plan 승인~~ (전부 완료)
 2. ~~linear-ops → 이슈 생성~~ (완료: **TEA-30**, 브랜치 `geonhaa/tea-30-승부예측-화면-대회별-색상-적용-노란-팔레트-신설`). 프로젝트 설명 갱신은 linear-ops 도구에 `save_project`가 없어 미처리 — 처리 방식 사람 확인
-3. `origin/main` 기준 worktree 생성(현재 체크아웃에 마케팅 WIP가 있어 분리) → 이 폴더 문서 6개를 그 브랜치에 커밋
-4. `plan.md` 단계별 새 developer 에이전트: ①② 병렬 → ③④⑤ 병렬 → ⑥ → ⑦ 검증 → ⑧ 화면 검수(지적은 라운드 종료 후 1왕복)
-5. 코드 리뷰(`medium` 1회) → PR (`Fixes TEA-XX`) → 사람 머지
+3. ~~worktree 생성 + 문서 커밋~~ (완료: `.claude/worktrees/tea-30`, 첫 커밋 cc54754)
+4. ~~①② → ③④⑤ → ⑥~~ (완료. ⑥은 세션 한도로 2회에 나눠 실행, DesignToken.mdx 추가 갱신) → ~~⑦ 검증~~ (완료 2026-09-05: test 226/0 · lint 0 · build 0 · build-storybook 0, 새 경고 0건) → ⑧ 화면 검수: Chrome 확장 미연결로 사람이 `localhost:4300` 직접 확인 (진행 중)
+5. ~~코드 리뷰(`medium` 1회)~~ (완료: CRITICAL/HIGH/MEDIUM 없음, 머지 가능. 관찰: 대회명 원문 정확 일치 — 공백/대소문자 변형은 green fallback) → PR (`Fixes TEA-30`) → 사람 머지
