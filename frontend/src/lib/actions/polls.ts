@@ -16,7 +16,7 @@ export async function loadMorePolls(page: number) {
 }
 
 export async function createUserPoll(formData: FormData): Promise<{ pollId?: string; error?: string }> {
-  const type = (formData.get('type') as PollType) || 'subject_options'
+  const type = (formData.get('type') as PollType) || 'poll'
 
   if (IS_MOCK) {
     return { pollId: 'poll-1' }
@@ -46,14 +46,13 @@ export async function createUserPoll(formData: FormData): Promise<{ pollId?: str
   options = options
     .map(option => ({
       label: String(option.label ?? '').trim(),
-      description: type === 'free_choice' && option.description ? String(option.description).trim() : null,
+      description: option.description ? String(option.description).trim() : null,
       player_id: option.player_id ?? null,
       image_url: option.image_url ? String(option.image_url).trim() : null,
     }))
     .filter(option => option.label)
 
   if (options.length < 2) return { error: '선택지를 최소 2개 입력해주세요.' }
-  if (type === 'subject_options' && !playerId) return { error: '대상 선수를 선택해주세요.' }
 
   const { createClient: createServiceClient } = await import('@supabase/supabase-js')
   const serviceSupabase = createServiceClient(
@@ -67,7 +66,7 @@ export async function createUserPoll(formData: FormData): Promise<{ pollId?: str
       title,
       type,
       description: String(formData.get('description') ?? '').trim() || null,
-      player_id: type === 'subject_options' ? playerId : null,
+      player_id: playerId,
       created_by: user.id,
       thumbnail_url: String(formData.get('thumbnail_url') ?? '').trim() || null,
       status: 'active',

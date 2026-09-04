@@ -167,6 +167,7 @@ export async function getPollFormPlayers(): Promise<PollFormPlayer[]> {
   const { data, error } = await supabase
     .from('players')
     .select('id, name, position, squad_number, photo_url, is_active, squad_status')
+    .eq('is_active', true)
     .order('squad_number', { ascending: true }) as { data: AnyRow[] | null; error: AnyRow }
 
   if (error) {
