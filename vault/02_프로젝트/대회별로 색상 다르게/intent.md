@@ -107,6 +107,15 @@ designer 에이전트가 작성한 `design-brief.md`의 "확정 필요" 5개 항
 
 developer 에이전트가 쓴 `feature-spec.md`·`plan.md`의 "사람 확정 필요" 9개 + 파생 1개를 전부 확정했다 (값은 `plan.md` 0번 표). 코드 실측에서 design-brief 전제와 어긋난 5건(`-strong` 글로우가 PredictionResult에서도 사용 중 → 정의 유지 / `.spotlight-glow-brand`는 실사용 0건이 됨 → 삭제+Storybook 갱신 / PredictionDone은 대회명 미표시 → 배지 신규 추가, 마감 카드 포함 / null 대회명 텍스트 기본값 삭제 / mock에 친선경기 추가)도 여기서 결정됐다. **구현 착수 승인.**
 
+## ⑧ 화면 검수 반영 — MatchWeekList 규칙 변경 (2026-09-05, 사람 확정)
+
+localhost:4300 검수에서 사용자가 이미지(37주차 컨테이너 왼쪽 위→오른쪽 아래 옅은 글로우)로 방향을 냈고, 시안 6번 섹션(A~D)에서 **B(컨테이너 파랑 대각 글로우 + 카드 무색)**를 고른 뒤 다음으로 구체화했다:
+
+- **주차 컨테이너**: `open`(배지 진행중·참여 완료 둘 다)이면 대각 글로우(`135deg`, 700단계 8% → 투명 55%, 베이스 `bg-surface`). **색 = 그 주 경기들의 대회색 버킷이 하나면 그 색, 둘 이상이면 브랜드 파랑**(EFL Cup+FA Cup처럼 같은 버킷 2개는 초록 하나로 본다). 경기 없는 주는 파랑. open이 아니면 `bg-surface`.
+- **경기 카드**: 대회색 wash **제거** — 항상 `bg-page`. 텍스트 규칙(대회명 없으면 미표시)은 유지.
+- 이 결정은 "시안 검토 후 추가 확정"의 **컨테이너 글로우 삭제를 번복**하고, design-brief 3-2의 카드 wash를 폐기한다. `.spotlight-glow-brand`(non-strong)는 대각 공식으로 **복원**, `.competition-wash-*` 3종은 카드용(세로)에서 컨테이너용(대각)으로 용도 변경. 매핑 헬퍼 `weekGlowClass()`(이름 제안) 추가.
+- MatchdayHero(다크 글로우)·PredictionFlowClient/PredictionDone(배지)·노란 팔레트는 변경 없음.
+
 ## 다음 단계
 
 1. ~~designer → `design-brief.md`~~ · ~~designer → `노란-팔레트-제안.md`~~ · ~~design-brief 최종 갱신~~ · ~~developer → `feature-spec.md` + `plan.md`~~ · ~~plan 승인~~ (전부 완료)

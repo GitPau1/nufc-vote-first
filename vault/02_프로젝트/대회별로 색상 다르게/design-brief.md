@@ -4,6 +4,7 @@
 개정: 2026-09-04 · 6번 "확정 필요" 5개 항목 전부 사람 승인 완료(그중 MatchdayHero 방향은 초안에서 변경됨, 3-1번 참고) — `intent.md` "design-brief 승인 결과" 섹션 반영
 개정 2: 2026-09-05 · 시안(`시안.html`) 검토 후 MatchWeekList 주차 컨테이너 글로우 삭제 확정(3-2번 변경, 초안 "건드리지 않는다"에서 변경됨) — `intent.md` "시안 검토 후 추가 확정" 섹션 반영, 오케스트레이터가 직접 갱신
 개정 3: 2026-09-05 · **친선경기 색상이 orange 대체 → 정식 `--p-yellow-*` 팔레트 신설로 전면 교체됨.** 시안 위에서 실측 비교하며 배지 공식(12%+700 → 100+800, 3색 공통)·다크 글로우 공식(오렌지 예외 폐기, 3색 다 표준 공식)까지 재확정 — 2번·3-1번·3-3번·4번·5번·6번·7번 전부 갱신. `intent.md` "최종 색상 확정" 섹션 반영, 오케스트레이터가 직접 갱신. 팔레트 계산 근거는 `노란-팔레트-제안.md` 참고.
+개정 4: 2026-09-05 · **화면 검수(⑧) 반영 — MatchWeekList 최종 규칙 변경.** 주차 컨테이너에 대회색 대각 글로우(단일 대회색이면 그 색, 섞이면 브랜드 파랑, `open`만), 경기 카드 wash 폐기(항상 `bg-page`). 3-2번 최종 블록·3-4 표·6-3·7번 갱신. 시안 6번 섹션(A~D) 중 B 선택 후 구체화. `intent.md` "⑧ 화면 검수 반영" 참고, 오케스트레이터가 직접 갱신
 입력: `intent.md`(단일 소스) · `노란-팔레트-제안.md` · `시안.html` · `MatchdayHero.tsx` · `MatchWeekList.tsx` · `PredictionFlowClient.tsx` · `PredictionDone.tsx` · `shared.tsx` · `PredictionResult.tsx` · `globals.css` · `tailwind.config.ts` · `badge.tsx` 실제 코드 확인
 승인권자: 사용자 (프로덕트 디자이너) — 전부 승인 완료, 추가 확인 불필요
 
@@ -89,9 +90,13 @@ color: var(--p-{색}-800);
   - 근거: 이 기능의 다른 무채색 지점(MatchWeekList의 `bg-page`)도 전부 그라디언트가 아니라 평면 시맨틱 배경이다 — 종료 카드에만 별도 회색 그라디언트를 만들면 같은 기능 안에서 컴포넌트마다 "무채색"의 구현 방식이 갈린다. `bg-neutral-strong`은 애초에 `.spotlight-glow-brand-strong`이 베이스로 쓰던 값이라(`globals.css` L220 `var(--sem-bg-neutral-strong)`) 그라디언트 레이어만 빼면 이 색이 그대로 남아 — 새 값을 정할 필요조차 없다.
   - 종료 상태에서도 최우수 선수 카드(`RatingCard`의 `award-gold`, `MatchRatingsRow` L221)는 이번 기능과 무관하므로 그대로 유지한다 — 카드 배경(이제 무채색)과 최우수 선수 배지(골드)는 서로 다른 레이어라 충돌하지 않는다.
 
-### 3-2. MatchWeekList (라이트 카드) — 경기 카드(`MatchInfoCard`) 배경 + 주차 컨테이너 글로우 삭제 (2026-09-05 사람 확정, 초안에서 변경됨)
+### 3-2. MatchWeekList (라이트) — **최종(2026-09-05 화면 검수 반영): 주차 컨테이너에 대회색 대각 글로우, 경기 카드는 색 없음**
 
-> 이 절의 "주차 컨테이너는 건드리지 않는다"는 초안 판단은 시안 검토 후 사람이 기각했다. 최종 확정은 컨테이너 글로우를 **삭제**하는 것이다. intent.md "시안 검토 후 추가 확정" 참고.
+> **이 절은 두 번 바뀌었다.** 초안 "컨테이너 글로우 유지 + 카드 wash" → 시안 검토 후 "컨테이너 글로우 삭제 + 카드 wash" → **화면 검수 후 최종 "컨테이너에 대회색 대각 글로우 + 카드 무색"**. 아래 회색 인용 블록 밖의 본문 중 "카드 wash"·"컨테이너 삭제" 서술은 이력이며, 최종 규칙은 이 블록이다(intent.md "⑧ 화면 검수 반영" 참고).
+>
+> - 컨테이너(`WeekSessionCard`): `weekPhase(week) === 'open'`(진행중·참여 완료)이면 `linear-gradient(135deg, color-mix(in srgb, var(--p-{색}-700) 8%, transparent) 0%, transparent 55%), var(--sem-bg-surface)`. {색} = 그 주 경기들의 대회색 버킷이 하나면 그 버킷(`.competition-wash-{violet,green,yellow}` — 용도 변경, 이름 유지), 둘 이상이거나 경기가 없으면 브랜드 파랑(`.spotlight-glow-brand` 복원, 같은 공식에 `--p-blue-700`). open이 아니면 `bg-surface`.
+> - 경기 카드(`MatchInfoCard`): 항상 `bg-page`. 대회색 wash 없음. 텍스트는 `match.competition && <p>`(기본값 없음) 유지.
+> - 근거: 사용자가 실제 화면을 보고 "컨테이너에 왼쪽 위→오른쪽 아래 옅은 글로우"를 요청(이미지 제시), 시안 A~D 중 B를 선택한 뒤 "대회색으로, 섞이면 파랑"으로 구체화. 같은 버킷 2개(EFL Cup+FA Cup)는 색이 하나라 그 색.
 
 - **어디**: 경기 하나짜리 카드(`MatchInfoCard`, `bg-page` 평면색, `MatchWeekList.tsx` L317)의 배경을 대회색 라이트 버전으로 바꾼다. **주차 컨테이너(`WeekSessionCard`)의 기존 `spotlight-glow-brand`(L229, "예측 접수 중" 파랑 강조)는 삭제한다** — `highlighted ? 'spotlight-glow-brand' : 'bg-surface'` 분기 자체를 없애고 컨테이너는 항상 `bg-surface`로 간다.
   - **왜 삭제해도 되는가**: "예측 접수 중" 정보는 이 글로우가 유일한 표시가 아니다 — 같은 카드의 "N주차" 옆에 이미 독립적인 `Badge`(`weekBadge(week)`, "진행중"/"참여 완료" 등, `MatchWeekList.tsx` L222-231)가 같은 정보를 텍스트로 보여준다. 글로우는 그 정보의 배경 강조 하나였을 뿐이라 지워도 정보 손실이 없다.
@@ -113,7 +118,7 @@ color: var(--p-{색}-800);
 | 컴포넌트 | 카드 톤 | 색 적용 위치 | 활성 조건 | 비활성 시 |
 |---|---|---|---|---|
 | MatchdayHero | 다크 | 카드 배경 전체 (기존 파랑 글로우 완전 대체) | `!fixture.finished` (진행 중 + 예정) | 평면 `bg-neutral-strong` (그라디언트 없음) |
-| MatchWeekList | 라이트 | 경기 카드(`MatchInfoCard`) 배경 (주차 컨테이너 파랑 글로우는 삭제) | `!isDimmed(week, match)` | 기존 `bg-page` 그대로 |
+| MatchWeekList | 라이트 | **주차 컨테이너 배경(대각 글로우)** — 단일 대회색이면 그 색, 섞이면 브랜드 파랑. 경기 카드는 항상 `bg-page`(최종, 검수 반영) | `weekPhase(week) === 'open'` | `bg-surface` |
 | PredictionFlowClient | 카드 없음 | 대회명 배지 | 항상 (진입 조건상 이미 예측 가능한 경기만 옴) | 해당 없음 |
 
 ---
@@ -154,6 +159,11 @@ intent.md가 미확정으로 남긴 질문(L53)에 대해 아래 추천안 그�
 7. **배지 공식 변경**: "12% 섞은 배경 + 700 텍스트" → "**100단계 배경 + 800단계 텍스트**"(2-3번). 3색 공통 — 노랑만이 아니라 보라·초록도 이 공식으로 바뀐다.
 8. **다크 카드 글로우 — 오렌지 보정 폐기**: 4번의 400/300 @25% 보정안은 쓰지 않는다. 노랑도 3색과 같은 표준 공식(700/600 @15%)을 그대로 쓴다.
 
+### 6-3. 2026-09-05 화면 검수 반영 — MatchWeekList 최종 (intent.md "⑧ 화면 검수 반영")
+
+9. **주차 컨테이너 글로우 복원 + 대회색**: 6-1의 "컨테이너 글로우 삭제"는 번복. `open` 주차 컨테이너에 대각 글로우(135deg, 8%, 55% 소멸) — 그 주 대회색 버킷이 하나면 그 색(`.competition-wash-*` 용도 변경), 둘 이상/경기 없음이면 브랜드 파랑(`.spotlight-glow-brand` 복원).
+10. **경기 카드 wash 폐기**: `MatchInfoCard`는 항상 `bg-page`. `!isDimmed` 색 분기는 사라지고 텍스트 톤 분기만 남는다.
+
 ---
 
 ## 7. 개발자 제약사항 요약
@@ -166,7 +176,7 @@ intent.md가 미확정으로 남긴 질문(L53)에 대해 아래 추천안 그�
 - 색상 버킷 매핑은 `fixtures.competition_name` 원문 문자열 기준이다 — `MatchdayHero.competitionName`/`MatchWeekList.match.competition`/`PredictionFlowClient.match.competition` 셋 다 이미 이 원문을 그대로 노출 중이라(번역/가공 없음, `week.ts` L159,320, `fixtures.ts` L104) 별도 매핑 데이터 가공 없이 문자열 그대로 버킷 판정에 쓸 수 있다.
 - 그라디언트/배지는 배경(또는 배지 자체)만 물들이고, 기존 텍스트 색 체계(`text-neutral-muted` 등)는 그대로 둔다 — 3번 각 항목 참고.
 - **`MatchdayHero`는 기존 `.spotlight-glow-brand-strong`(상시 파랑)을 완전히 대체·삭제한다** — "무채색일 때만 기존 스타일 유지"가 아니라 파랑 자체가 사라지고, 색 유무는 `fixture.finished` 하나로 갈린다: `!fixture.finished`(진행 중+예정) → 대회색, `finished` → `bg-neutral-strong` 평면(그라디언트 레이어 없음). `isUpcoming`/`isLive`를 별도로 분기할 필요 없다 — 3-1번 참고.
-- **`MatchWeekList`의 `WeekSessionCard`도 기존 `spotlight-glow-brand`(상시 파랑)를 삭제한다** — `highlighted ? 'spotlight-glow-brand' : 'bg-surface'` 분기를 없애고 컨테이너는 항상 `bg-surface`. "예측 접수 중" 정보는 옆의 `Badge`가 계속 담당하므로 정보 손실 없음 — 3-2번 참고.
+- **`MatchWeekList`의 `WeekSessionCard`(최종, 검수 반영)**: `weekPhase(week) === 'open'`이면 `weekGlowClass(week.matches.map(m => m.competition))`(단일 버킷 → `.competition-wash-{색}`, 그 외 → `.spotlight-glow-brand`), 아니면 `bg-surface`. `.spotlight-glow-brand`는 대각 공식으로 복원, `.competition-wash-*`는 컨테이너용 대각 공식으로 변경(베이스 `bg-surface`). `MatchInfoCard`는 항상 `bg-page` — 3-2번 최종 블록 참고. (6-1의 "삭제" 지시는 이 항목으로 대체된다.)
 - 클래스명·구현 위치(유틸리티 vs 컴포넌트 인라인)는 개발자 재량.
 
 ---
