@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Trash2, ChevronRight, Pencil, Check, X } from 'lucide-react'
+import { Trash2, ChevronRight, Pencil, Check, X, FileText, Shield } from 'lucide-react'
+import { useLoadingRouter } from '@/components/primitives/navigation-loading'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/primitives/avatar'
 import { Button } from '@/components/primitives/button'
 import { Card, CardContent } from '@/components/primitives/card'
@@ -38,6 +39,7 @@ export function MyPageClient({
   totalPoints,
   profileGrades,
 }: MyPageClientProps) {
+  const router = useLoadingRouter()
   const [nameValue, setNameValue]         = useState(displayName)
   const [isEditingName, setIsEditingName] = useState(false)
   const [editInput, setEditInput]         = useState(displayName)
@@ -71,14 +73,25 @@ export function MyPageClient({
     }
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (isMockMode) {
       alert('데모 모드에서는 지원하지 않습니다.')
       return
     }
-    if (confirm('정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-      // submitDeleteAccount()
+    if (!confirm('정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return
+
+    const { submitDeleteAccount } = await import('@/lib/actions/auth')
+    const result = await submitDeleteAccount()
+    if (result.error) {
+      alert(result.error)
+      return
     }
+
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/')
+    router.refresh()
   }
 
   return (
@@ -206,6 +219,24 @@ export function MyPageClient({
               </CardContent>
             </Card>
           )}
+        </div>
+
+        <Separator />
+
+        {/* 약관 및 정책 */}
+        <div className="flex flex-col gap-2">
+          <Button asChild variant="outline" size="lg" className="justify-start">
+            <Link href="/terms">
+              <FileText className="h-4 w-4" />
+              이용약관
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg" className="justify-start">
+            <Link href="/privacy">
+              <Shield className="h-4 w-4" />
+              개인정보처리방침
+            </Link>
+          </Button>
         </div>
 
         <Separator />

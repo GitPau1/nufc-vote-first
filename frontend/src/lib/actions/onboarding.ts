@@ -29,7 +29,7 @@ export async function saveNickname(formData: FormData): Promise<{ error?: string
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '로그인이 필요합니다.' }
 
-  // upsert: 행이 없으면 생성, 있으면 display_name만 업데이트
+  // upsert: 행이 없으면 생성, 있으면 display_name·동의 시각 업데이트
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase as any)
     .from('users')
@@ -38,6 +38,7 @@ export async function saveNickname(formData: FormData): Promise<{ error?: string
       email: user.email ?? '',
       avatar_url: user.user_metadata?.avatar_url ?? null,
       display_name: displayName,
+      terms_accepted_at: new Date().toISOString(),
     }, { onConflict: 'id' })
 
   if (error) {

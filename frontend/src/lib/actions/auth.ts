@@ -16,6 +16,7 @@ export type HeaderAuth = {
 
 type HeaderProfile = {
   display_name: string | null
+  deleted_at: string | null
 }
 
 export async function getHeaderAuth(): Promise<HeaderAuth | null> {
@@ -46,7 +47,7 @@ export async function getHeaderAuth(): Promise<HeaderAuth | null> {
   const [{ data: profile }, mySeasonRow, iconThresholds] = await Promise.all([
     supabase
       .from('users')
-      .select('display_name')
+      .select('display_name, deleted_at')
       .eq('id', data.user.id)
       .single<HeaderProfile>(),
     getMySeasonRow(data.user.id),
@@ -55,12 +56,38 @@ export async function getHeaderAuth(): Promise<HeaderAuth | null> {
   const totalPoints = mySeasonRow?.total_points ?? 0
   const avatarUrl = resolveProfileIconUrl(totalPoints, iconThresholds)
 
+  // 24시간 유예 안에 재로그인하면 탈퇴를 취소한다. pg_cron이 24시간 지난 계정은
+  // auth.users를 하드 삭제하므로, 기존 id로 로그인에 성공했다는 것 자체가
+  // "아직 안 지워졌다"를 보장한다 — 별도 만료 체크가 필요 없다.
+  if (profile?.deleted_at) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any).from('users').update({ deleted_at: null }).eq('id', data.user.id)
+  }
+
   return {
     userId: data.user.id,
     displayName: profile?.display_name ?? data.user.user_metadata?.name ?? undefined,
     avatarUrl: avatarUrl ?? undefined,
     isAdmin: isAdmin(data.user.email),
   }
+}
+
+export async function submitDeleteAccount(): Promise<{ error?: string }> {
+  if (IS_MOCK) return {} // MyPageClient가 이미 이 분기 이전에 alert로 막지만 방어적으로 유지
+
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '로그인이 필요합니다.' }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any)
+    .from('users')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', user.id)
+
+  if (error) return { error: '탈퇴 처리 중 오류가 발생했습니다.' }
+  return {}
 }
 
 export async function mockLogin() {
