@@ -995,4 +995,118 @@ feature-spec.md §4-1이 제안한 "fallback 공용 헬퍼 추출"은 Step 3에�
 10. Step 1-18: mock `poll-3` fixture(원래 "공개 예정" 데모) 처리 — **확정: 삭제** (`MOCK_POLL_LIST`·`MOCK_POLL_DETAIL`의 `poll-3` 블록 전체 제거, 대체 데모 없음).
 11. Step 4b(4-4): `PollClient.tsx` 병합의 정확한 레이아웃(커버 오버레이 분기 vs 글 컨테이너 분기의 세부 마크업)은 intent.md가 "표지 오버레이·선수 정보 카드만 조건부"라고만 명시했을 뿐 세부는 정하지 않음 — 이 plan은 기존 TypeA/TypeB 마크업을 각 분기에 거의 그대로 옮기는 안(동작 변화 최소화)을 제안. 다른 시각 결과를 원하면 승인 전에 알려달라(필요시 designer 경유).
 
-이 외 feature-spec.md의 "사람 확인 필요" 9건은 intent.md 확정 표에서 전부 답이 나왔고, 이 plan의 각 Step에 그대로 반영했다(예: #3 컴포넌트 통합 → "합친다"로 확정, #6 TEA-28 새 이름 → 이번 plan 범위 밖).
+이 외 feature-spec.md의 "사람 확인 필요" 9건은 intent.md 확정 표에서 전부 답이 나왔고, 이 plan의 각 Step에 그대로 반영했다(예: #3 컴포넌트 통합 → "합친다"로 확정, #6 TEA-28 새 이름 → 2026-09-05 별도 확정, 아래 Step 6).
+
+---
+
+## Step 6 — TEA-28: 코드 구조 정리 (동작 변화 없음)
+
+intent.md #6(2026-09-05 확정)을 그대로 구현한다. 이 Step은 Step 1~5(TEA-25/26/27/29)가 이미 머지된 뒤, 별도 브랜치(Linear TEA-28 브랜치)에서 진행한다. 세 하위 단계는 서로 다른 파일을 건드리므로 **독립적으로 커밋·리뷰 가능**(6-A/6-B/6-C 순서 무관, 병렬 작업 가능).
+
+feature-spec.md §4-1(fallback 공용 헬퍼)과 §4-3(handleConfirm 공유 훅)은 각각 TEA-29·TEA-26에서 이미 대상이 사라져 **항목 종결, 구현 없음**.
+
+### 6-A. service-role 클라이언트 헬퍼
+
+새 파일 `frontend/src/lib/supabase/service-client.ts`:
+
+```ts
+export async function getServiceRoleClient() {
+  const { createClient } = await import('@supabase/supabase-js')
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  )
+}
+```
+
+권한 검사는 하지 않는다(호출부가 각자 필요한 권한 검사를 이미 하고 있으므로 그대로 둔다). 아래 13곳의 `await import('@supabase/supabase-js')` + `createClient(...)` 블록을 `await getServiceRoleClient()` 호출로 치환한다:
+
+- `app/api/purge-deleted-accounts/route.ts:16-20`
+- `lib/images/profile-icons.ts:23-27`
+- `lib/queries/polls.ts:114-118, 142-146, 379-383`
+- `lib/queries/comments.ts:82-86`
+- `lib/actions/comments.ts:173-177, 215-219`
+- `lib/actions/player-pick-one.ts:50-54, 78-82`
+- `lib/actions/polls.ts:63-67, 166-170`
+- `lib/actions/images.ts:22-26`
+- `lib/supabase/admin.ts:7-19`(`requireAdminClient`) — `isAdmin` 권한 검사는 그대로 두고, 검사를 통과한 뒤의 클라이언트 생성 부분만 `getServiceRoleClient()` 호출로 교체
+
+**제외**: `lib/actions/sync-fixtures.ts:43-44`는 `createClient(supabase-js)`가 아니라 외부 API를 `fetch`로 직접 호출하는 코드라 service-role 클라이언트 생성 패턴이 아니다 — 대상에서 제외.
+
+각 치환 지점에서 기존 `import('@supabase/supabase-js')`의 동적 import 문 자체는 사라지고 헬퍼 쪽 정적 `import { getServiceRoleClient } from '@/lib/supabase/service-client'`로 대체된다.
+
+#### 영향받는 테스트
+
+문자열 검사 테스트 중 `SUPABASE_SERVICE_ROLE_KEY` / `createClient(supabase-js)` 패턴을 직접 assert하는 파일은 없음(grep 확인 — 0건). `comment-permission.test.mjs:8`은 `lib/actions/comments.ts` 소스를 읽지만 검사 대상은 `submitComment`의 비참여자 거부 에러 코드이지 클라이언트 생성부가 아니므로 영향 없음(파일이 바뀌어도 해당 검사 문자열은 그대로 남는다 — 실행 확인 필요).
+
+### 6-B. `lib/queries/ratings.ts` 분리
+
+새 파일 `frontend/src/lib/queries/ratings.ts`로 아래 4개 함수만 이동(`lib/queries/polls.ts`에서 삭제):
+
+- `getRatingParticipantCounts`(polls.ts:86, 비export, 내부 호출부는 polls.ts:211 `getPollList`)
+- `getMyRatingVoteCount`(polls.ts:414, export)
+- `getRatingResults`(polls.ts:431, export)
+- `getCurrentSeasonStatsForOptions`(polls.ts:497, 비export, 내부 호출부는 polls.ts:346 `getPollById`)
+
+**타입 3종(`RatingResultItem`·`RatingCommentItem`·`PollPlayerSeasonStats`)도 함수 4개와 함께 `ratings.ts`로 옮긴다(2026-09-05 사용자 확정, 기존 "타입은 유지" 결정을 대체).** `PollDetail`(polls.ts)은 `current_season_stats` 필드에서 `PollPlayerSeasonStats`를 쓰므로 polls.ts는 `import type { PollPlayerSeasonStats } from './ratings'`로 가져온다. `getRatingResults`는 인자로 `PollDetail`을 받으므로 ratings.ts는 `import type { PollDetail } from './polls'`로 가져온다. 즉 polls.ts→ratings.ts는 런타임 함수 4개 + 타입 1개 import, ratings.ts→polls.ts는 타입 전용(`import type`) import 1개뿐 — **실측 확인: ratings.ts에는 polls.ts로부터의 런타임 import가 전혀 없다(타입만 가져옴, 컴파일 타임에 지워짐). 따라서 런타임 순환 참조는 애초에 발생하지 않는다** — `npm run build` 성공으로 확인됨(2026-09-05).
+
+두 비export 헬퍼(`getRatingParticipantCounts`, `getCurrentSeasonStatsForOptions`)는 ratings.ts에서 `export`로 바꿔 polls.ts가 import할 수 있게 한다(다른 곳에서 새로 쓰라는 뜻은 아니고 모듈 경계를 넘기기 위한 최소 변경).
+
+#### import 경로 수정 대상
+
+- `app/polls/[id]/page.tsx:3` — `getMyRatingVoteCount, getRatingResults`를 `@/lib/queries/polls`가 아니라 `@/lib/queries/ratings`에서 import(같은 줄의 `getPollById, getVoteCounts, getMyVote`는 polls.ts에 남으므로 import문을 두 줄로 분리)
+- `lib/queries/polls.ts` — 위 두 비export 함수를 ratings.ts에서 import
+
+타입도 함께 옮기므로 `RatingResultItem`/`RatingCommentItem`/`PollPlayerSeasonStats`만 쓰는 `lib/mock/queries.ts`, `lib/mock/data.ts`, `components/composition/polls/OverallRatingResultView.tsx`의 해당 import도 `@/lib/queries/ratings`로 수정한다(같은 줄에 polls.ts 전용 타입이 섞여 있으면 두 줄로 분리).
+
+#### `lib/queries/cache-policy.test.mjs:14` 판단
+
+이 테스트는 `['polls.ts', 'player-pick-one.ts', 'fixtures.ts', 'predictions.ts']` 파일 목록이 전부 `unstable_cache`를 쓰는지 하드코딩으로 검사한다(공개 조회가 캐시되는지 보장하는 회귀 테스트). 이동하는 4개 함수는 `unstable_cache`를 쓰지 않는다(로그인 사용자 개인화 조회라 애초에 캐시 대상이 아님 — polls.ts에서 `unstable_cache`를 쓰는 곳은 `getPollList`/`getPollHomeSections`뿐, 실측 확인). 따라서 **`ratings.ts`를 이 목록에 추가하지 않는다** — 추가하면 `unstable_cache`가 없는 파일이라 테스트가 오히려 깨진다. 목록에 추가할 이유(캐시 의무 대상)가 없으므로 항목 그대로 둔다.
+
+#### 영향받는 테스트
+
+- `lib/queries/cache-policy.test.mjs` — 위 판단대로 수정 없음, 실행 확인만.
+- `date-timezone-policy.test.mjs`는 `formatPollDate`만 검사(6-C 대상) — ratings 이동과 무관.
+- 그 외 ratings 함수 4개를 문자열로 검사하는 테스트 없음(grep 확인).
+
+### 6-C. `lib/polls/format.ts` 분리
+
+새 파일 `frontend/src/lib/polls/format.ts`로 `ResultView.tsx`의 두 함수를 이동:
+
+- `formatPollDate`(ResultView.tsx:40-48)
+- `getOptionThumb`(ResultView.tsx:54-63, `PlayerRow`/`PollOptionRow` 타입은 `@/types/database`에서 그대로 import)
+
+`ResultView.tsx`에서 두 함수 정의를 삭제하고 `import { formatPollDate, getOptionThumb } from '@/lib/polls/format'`로 대체(내부에서 계속 쓰므로). re-export는 두지 않는다 — 아래 두 파일도 import 경로를 새 파일로 직접 바꾼다:
+
+- `components/composition/polls/PollClient.tsx:22` — `import { formatPollDate, getOptionThumb } from './ResultView'` → `from '@/lib/polls/format'`
+- `components/composition/polls/UserPollEditForm.tsx:13` — 동일하게 경로 변경
+
+#### 영향받는 테스트
+
+- `lib/date-timezone-policy.test.mjs:70`: `['components/composition/polls/ResultView.tsx', 'export function formatPollDate']`로 위치를 고정 검사 — 새 위치 `['lib/polls/format.ts', 'export function formatPollDate']`로 단정문을 다시 쓴다.
+- `components/composition/polls/result-view-figma-contract.test.mjs:66`: `assert.match(resultView, /getOptionThumb/)` — `ResultView.tsx` 소스에 `getOptionThumb` 문자열이 있는지만 보는 검사라 함수 정의든 `import { getOptionThumb } from '@/lib/polls/format'` 호출부든 문자열만 남아있으면 통과한다. 6-C에서 ResultView.tsx가 이 함수를 계속 import해서 쓰므로(정의를 지우고 호출은 남김) **그대로 통과 예상** — 재작성 불필요, 실행해서 확인만 한다.
+
+### 검증
+
+```bash
+cd frontend && npm test && npm run lint && npm run build
+```
+
+### 불변 제약 영향 확인
+
+- 투표 제출 후 수정 불가: 이 Step은 `lib/actions/vote.ts`·`lib/actions/predictions.ts`를 건드리지 않는다 — 영향 없음.
+- 결과는 참여 후에만 공개: `getRatingResults`(6-B에서 이동) 호출부(`app/polls/[id]/page.tsx`)의 호출 조건은 그대로 두고 함수 위치만 바뀐다 — 영향 없음.
+- 댓글은 투표 참여자만 작성 가능: 6-A가 `lib/actions/comments.ts`의 클라이언트 생성부만 바꾸고 `submitComment`의 참여자 검사 로직은 그대로 둔다 — 영향 없음.
+
+### 완료 기준
+
+- `npm test && npm run lint && npm run build` 전체 통과.
+- `grep -rn "await import('@supabase/supabase-js')" frontend/src`가 0건(전부 `getServiceRoleClient()`로 치환됨).
+- `frontend/src/lib/queries/ratings.ts`, `frontend/src/lib/polls/format.ts`, `frontend/src/lib/supabase/service-client.ts` 3개 파일 존재.
+
+### 문서 갱신 대상 (구현 완료 후)
+
+- `vault/99_old/AGENT_MAINTENANCE_GUIDE.md` — service-role 클라이언트 생성이 이제 `lib/supabase/service-client.ts`의 `getServiceRoleClient()` 단일 지점이라는 내용 추가(기존에 13곳 각자 생성했다는 서술이 있다면 갱신).
+- `vault/99_old/SUPABASE_DATA_CONNECTIONS.md` — 평점(rating) 관련 조회 함수 위치가 `lib/queries/polls.ts`→`lib/queries/ratings.ts`로 이동했음을 반영.
+- 새 파일 3개(`lib/supabase/service-client.ts`, `lib/queries/ratings.ts`, `lib/polls/format.ts`)를 두 문서의 "주요 파일 목록"에 추가.
+- 이동한 함수 2개(`formatPollDate`, `getOptionThumb`)의 새 위치(`lib/polls/format.ts`)를 두 문서 어딘가에서 옛 위치(ResultView.tsx)로 언급하고 있다면 갱신.

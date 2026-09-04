@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-client'
 import { IS_MOCK } from '@/lib/config'
 import { getPollList } from '@/lib/queries/polls'
 import { datetimeLocalToKoreaIso } from '@/lib/datetime'
@@ -60,11 +61,7 @@ export async function createUserPoll(formData: FormData): Promise<{ pollId?: str
     return { error: '같은 선수를 여러 선택지에 연결할 수 없습니다.' }
   }
 
-  const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-  const serviceSupabase = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  const serviceSupabase = await getServiceRoleClient()
 
   const { data: poll, error: pollError } = await serviceSupabase
     .from('polls')
@@ -163,11 +160,7 @@ export async function updateUserPoll(
   if (!resolved.ok) return { error: resolved.error }
   const payload = resolved.payload
 
-  const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-  const serviceSupabase = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  const serviceSupabase = await getServiceRoleClient()
   const oldThumbnailUrl = poll.thumbnail_url
   const { error: updateError } = await serviceSupabase.from('polls').update(payload).eq('id', pollId)
   if (updateError) return { error: updateError.message }

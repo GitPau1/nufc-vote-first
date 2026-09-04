@@ -1,5 +1,6 @@
 import { unstable_cache } from 'next/cache'
 import { IS_MOCK, SUPABASE_URL } from '@/lib/config'
+import { getServiceRoleClient } from '@/lib/supabase/service-client'
 
 /** 시즌 누적 점수(total_points)에 따른 등급 아이콘이 모여 있는 공개 버킷.
  *  파일명 자체가 "이 점수 이상부터 적용" 임계값이다 — `{숫자}.webp` (예: 0.webp, 500.webp, 2000.webp).
@@ -20,11 +21,7 @@ const THRESHOLD_FILENAME = /^(\d+)\.webp$/
 async function getProfileIconThresholdsUncached(): Promise<number[]> {
   if (IS_MOCK) return []
 
-  const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-  const serviceSupabase = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  const serviceSupabase = await getServiceRoleClient()
 
   const { data, error } = await serviceSupabase.storage.from(PROFILE_ICONS_BUCKET).list()
   // 조회 실패는 던진다 — unstable_cache가 실패 결과를 캐시하지 않게 한다(다음 요청서 재시도).

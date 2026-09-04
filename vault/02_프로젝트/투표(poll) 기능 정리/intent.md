@@ -102,7 +102,7 @@ feature-spec.md 끝의 목록 번호 기준. 여기 적힌 것이 plan.md의 입
 | 3 | TypeA/TypeB 컴포넌트 통합 (spec §2-3) | **합친다** — 하나의 PollClient로. 표지 오버레이·선수 정보 카드는 `poll.player_id` 유무로 조건 렌더. `design-foundation.test.mjs`·`login-modal.test.mjs`의 파일 경로 단정문은 새 파일 기준으로 재작성(테스트를 지우지 않는다). 사용자가 스코프 확대를 승인한 항목 |
 | 4 | `getPollFormPlayers()` 후보 필터 (spec §2-6) | **`is_active = true`만 노출** |
 | 5 | 표지 높이 상수 위치·`PollHeroCard` 포함 (spec §3-1) | `PollHeroCard`는 **범위 밖(252 유지)**. 상수 추출은 선택되지 않음 → 5개 컴포넌트에 `h-[160px] sm:h-[252px]`를 각각 직접 쓴다(새 상수/파일 만들지 않음) |
-| 6 | TEA-28 새 이름 5개 (spec §4) | **TEA-28 plan 단계에서 따로 결정** — 이번 plan.md 범위에서 TEA-28 제외 |
+| 6 | TEA-28 새 이름 5개 (spec §4) | **확정(2026-09-05)**. 4-1 fallback 헬퍼: TEA-29에서 fallback 자체가 삭제돼 대상 없음 — 항목 종결. 4-2 service-role 헬퍼: 새 파일 `frontend/src/lib/supabase/service-client.ts`에 `getServiceRoleClient()` export(클라이언트 생성만, 권한 검사 없음), 13곳 전부 치환(`lib/supabase/admin.ts`의 `requireAdminClient` 포함). 4-3 handleConfirm 훅: TEA-26에서 PollClient로 통합돼 대상 없음 — 항목 종결. 4-4 파일 분리: `lib/queries/polls.ts`의 평점 관련 함수 4개(`getRatingParticipantCounts`, `getMyRatingVoteCount`, `getRatingResults`, `getCurrentSeasonStatsForOptions`)만 새 파일 `frontend/src/lib/queries/ratings.ts`로 이동, 타입(`RatingResultItem`/`RatingCommentItem`/`PollPlayerSeasonStats`)은 polls.ts에 유지, `actions/comments.ts`는 유지. 4-5 `ResultView.tsx`의 `formatPollDate`·`getOptionThumb` → 새 파일 `frontend/src/lib/polls/format.ts`로 이동, re-export 없음. 상세 구현 계획은 plan.md Step 6. |
 | 7 | 선택지 이미지 고아 파일 정리 (spec §5-2) | **안 만든다** |
 | 8 | `setup_required` 방어 코드 (spec §5-3) | **지운다** — `lib/actions/ratings.ts`의 `isMissingRatingSchemaError`·`setup_required` 반환, `OverallRatingPollClient.tsx`의 해당 문구 분기 삭제 |
 | 9 | `polls.scheduled_at` 컬럼 (spec TEA-25) | **DROP COLUMN** — 마이그레이션 1건 |

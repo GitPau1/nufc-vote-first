@@ -70,7 +70,8 @@ DB나 Supabase 연동을 건드릴 때:
 
 투표:
 
-- 조회: `frontend/src/lib/queries/polls.ts`
+- 조회: `frontend/src/lib/queries/polls.ts`. 평점 투표 조회 4종(`getRatingParticipantCounts`/`getMyRatingVoteCount`/`getRatingResults`/`getCurrentSeasonStatsForOptions`)과 타입 3종(`PollPlayerSeasonStats`/`RatingCommentItem`/`RatingResultItem`)은 TEA-28로 `frontend/src/lib/queries/ratings.ts`로 이동했다.
+- 날짜 표시/썸네일 헬퍼(`formatPollDate`/`getOptionThumb`)는 TEA-28로 `ResultView.tsx`에서 `frontend/src/lib/polls/format.ts`로 이동했다.
 - 투표 생성: 서버 액션은 `frontend/src/lib/actions/polls.ts`의 `createUserPoll`, 폼은 `frontend/src/components/composition/polls/UserPollCreateForm.tsx`("일반 투표"/"전체 평점" 2형식, 일반 투표는 대상 선수 전체 연결 토글 + 선택지별 선수 연결을 옵션으로 제공), 화면은 `frontend/src/app/polls/create/page.tsx`. 후보 선수 목록(`getPollFormPlayers()`)은 `is_active = true`만 노출.
 - 투표 제출: `frontend/src/lib/actions/vote.ts`
 - 투표 가능 여부: `frontend/src/lib/polls/vote-eligibility.ts`
@@ -126,7 +127,7 @@ DB나 Supabase 연동을 건드릴 때:
 - 화면: `frontend/src/app/admin/page.tsx`(링크 허브), `frontend/src/app/admin/ratings/page.tsx`(경기별 선수 평점)
 - action: `frontend/src/lib/actions/fixture-ratings.ts`(평점 손보정), `frontend/src/lib/actions/sync-fixtures.ts`(Edge Function 수동 트리거)
 - 권한 판정: `frontend/src/lib/admin.ts`
-- service-role client: `frontend/src/lib/supabase/admin.ts`
+- service-role client: 생성 단일 지점은 `frontend/src/lib/supabase/service-client.ts`의 `getServiceRoleClient()`(권한 검사 없음). 관리자 권한 검사가 필요한 쓰기는 이를 감싸는 `frontend/src/lib/supabase/admin.ts`의 `requireAdminClient()`를 쓴다. 새 service-role 사용은 `getServiceRoleClient()`를 쓴다.
 
 ## 테스트/타입 명령
 

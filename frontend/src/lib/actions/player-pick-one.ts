@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { IS_MOCK } from '@/lib/config'
 import { getKstWeekStart } from '@/lib/players/pick-one-rating'
+import { getServiceRoleClient } from '@/lib/supabase/service-client'
 
 type PickOneChoiceResult =
   | { success: true; remaining: number }
@@ -47,11 +48,7 @@ export async function getPickOneDailyChoiceStatus(): Promise<{ limit: number; re
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { limit: PICK_ONE_DAILY_CHOICE_LIMIT, remaining: null }
 
-  const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-  const serviceSupabase = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  const serviceSupabase = await getServiceRoleClient()
   const count = await getDailyChoiceCount(serviceSupabase, user.id)
 
   return {
@@ -75,11 +72,7 @@ export async function submitPickOneChoice(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'unauthenticated' }
 
-  const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-  const serviceSupabase = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  const serviceSupabase = await getServiceRoleClient()
 
   const { data: players } = await serviceSupabase
     .from('players')

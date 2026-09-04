@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
-import { getPollById, getVoteCounts, getMyVote, getMyRatingVoteCount, getRatingResults } from '@/lib/queries/polls'
+import { getPollById, getVoteCounts, getMyVote } from '@/lib/queries/polls'
+import { getMyRatingVoteCount, getRatingResults } from '@/lib/queries/ratings'
 import { getComments } from '@/lib/queries/comments'
 import { PollClient } from '@/components/composition/polls/PollClient'
 import { OverallRatingPollClient } from '@/components/composition/polls/OverallRatingPollClient'

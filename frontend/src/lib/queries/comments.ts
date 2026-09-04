@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-client'
 import { IS_MOCK } from '@/lib/config'
 import { mockGetComments } from '@/lib/mock/queries'
 import { getProfileIconThresholdsSafe, resolveProfileIconUrl } from '@/lib/images/profile-icons'
@@ -79,11 +80,7 @@ export async function getComments(
 
       // votes는 본인 행만 RLS로 열려 있다(votes: select own). 댓글 작성자들이 어떤 선택지에
       // 투표했는지 라벨로 보여주려면 교차조회가 필요하므로 service_role로 서버에서만 읽는다.
-      const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-      const admin = createServiceClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      )
+      const admin = await getServiceRoleClient()
 
       const { data: voteData } = await admin
         .from('votes')
