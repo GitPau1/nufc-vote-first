@@ -94,7 +94,7 @@ export function PollClient({ poll, isAuthenticated, canEdit }: PollClientProps) 
 
           {showSubjectPlayer ? (
             /* 구 TypeA — 커버에 칩+제목 오버레이. '평가' 칩은 삭제됨(TEA-26). 높이는 TEA-27 반응형(Step 6). */
-            <div className="relative h-[160px] overflow-hidden rounded-lg">
+            <div className="relative h-[160px] sm:h-[252px] overflow-hidden rounded-lg">
               <img src={coverUrl} alt={poll.title} className="w-full h-full object-cover" />
               <div className="banner-text-overlay absolute inset-0" />
               <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
@@ -121,7 +121,7 @@ export function PollClient({ poll, isAuthenticated, canEdit }: PollClientProps) 
             /* 구 TypeB — 커버 단독 블록 + 글 컨테이너 */
             <div className="flex flex-col gap-3">
               <div className="overflow-hidden rounded-lg bg-disabled">
-                <img src={coverUrl} alt={poll.title} className="h-[252px] w-full object-cover" />
+                <img src={coverUrl} alt={poll.title} className="h-[160px] sm:h-[252px] w-full object-cover" />
               </div>
               <section className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
                 <h1 className="break-keep text-heading-2 sm:text-heading-1 font-semibold text-neutral">{poll.title}</h1>

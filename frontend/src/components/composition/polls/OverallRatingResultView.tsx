@@ -52,7 +52,7 @@ export function OverallRatingResultView({ poll, results, hasVoted, canEdit }: Ov
             흰 글씨를 얹을 이유가 없다(TypeBPollClient가 같은 이유로 오버레이를 뺀 선례). */}
         <main className="mx-auto flex w-full max-w-[860px] flex-col gap-3 px-4 pb-8 pt-4 sm:px-6 sm:pt-8">
           <div className="overflow-hidden rounded-lg bg-disabled">
-            <img src={coverUrl} alt={poll.title} className="h-[252px] w-full object-cover" />
+            <img src={coverUrl} alt={poll.title} className="h-[160px] sm:h-[252px] w-full object-cover" />
           </div>
 
           <Card className="p-5 sm:p-7">

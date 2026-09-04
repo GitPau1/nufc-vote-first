@@ -94,7 +94,7 @@ export function UserPollEditForm({ poll, editableFields }: UserPollEditFormProps
         )}
 
         {canEditDescription ? (
-          <input name="description" defaultValue={poll.description ?? ''} className="input-field" placeholder="설명(선택)" />
+          <textarea name="description" defaultValue={poll.description ?? ''} className="input-field min-h-[72px] resize-none py-2" placeholder="설명(선택)" />
         ) : (
           poll.description && <p className="text-label-1-reading text-neutral-muted">{poll.description}</p>
         )}

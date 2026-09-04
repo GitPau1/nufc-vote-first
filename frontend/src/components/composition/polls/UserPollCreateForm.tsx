@@ -226,7 +226,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
         <section className="space-y-3 rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200">
           <p className="text-label-1-normal font-medium text-neutral">기본 정보</p>
           <input name="title" required className="input-field" placeholder="투표 제목" />
-          <input name="description" className="input-field" placeholder="설명(선택)" />
+          <textarea name="description" className="input-field min-h-[72px] resize-none py-2" placeholder="설명(선택)" />
           <input name="thumbnail_url" className="input-field" placeholder="대표 이미지 URL(선택)" />
           <CroppedImageInput
             name="thumbnail_image_file"

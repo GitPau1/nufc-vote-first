@@ -107,7 +107,7 @@ export function ResultView({ poll, voteCounts, myOptionId, comments, canEdit }: 
             <img
               src={coverUrl}
               alt={poll.title}
-              className="h-[252px] w-full object-cover"
+              className="h-[160px] sm:h-[252px] w-full object-cover"
             />
           </div>
 

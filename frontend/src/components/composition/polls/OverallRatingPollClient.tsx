@@ -150,7 +150,7 @@ export function OverallRatingPollClient({ poll, isAuthenticated, canEdit }: Over
       <div className="mx-auto flex-1 w-full max-w-detail overflow-y-auto pb-[92px] animate-enter sm:flex-none sm:overflow-visible sm:pb-0">
         <div className="space-y-4 px-4 py-4">
           <div className="overflow-hidden rounded-lg bg-disabled">
-            <img src={coverUrl} alt={poll.title} className="h-[252px] w-full object-cover" />
+            <img src={coverUrl} alt={poll.title} className="h-[160px] sm:h-[252px] w-full object-cover" />
           </div>
 
           <div>
