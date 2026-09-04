@@ -1,0 +1,400 @@
+<h2>승부예측 제출 수정·부분 제출 — 화면 시안 v3 (실제 컴포넌트 마크업 기반 와이어프레임)</h2>
+<p class="lead">
+  v1·v2는 CSS 변수를 새로 만들어 시각적으로 "비슷하게" 그린 목업이었습니다. 이번 v3은 방식을 바꿨습니다 —
+  <code>frontend/src/components/composition/predict/PredictionFlowClient.tsx</code>,
+  <code>PredictionMatchSelect.tsx</code>, <code>steps.tsx</code>,
+  <code>components/primitives/card.tsx</code>, <code>components/primitives/button.tsx</code>를 먼저 읽고
+  그 안의 <b>실제 Tailwind 클래스 문자열을 그대로 복사</b>해서 조립했습니다. 각 프레임은 독립된
+  <code>&lt;iframe&gt;</code>에 실제 프로젝트와 같은 Tailwind 설정(<code>tailwind.config.ts</code>) +
+  같은 디자인 토큰(<code>globals.css</code>의 <code>--sem-*</code>)을 그대로 로드해서 렌더링합니다 —
+  화면을 인터넷 연결 상태에서 열어야 정상적으로 보입니다(Tailwind CDN 스크립트를 불러옵니다).
+</p>
+<p class="lead">
+  <b>이번에 고치는 것 3가지</b> (사용자 지적):
+  ① 경기 선택 화면이 <code>PredictionFlowClient</code>의 실제 헤더(제목 좌측+진행 pill 우측)·<code>Card</code>·
+  <code>Button</code> 패턴과 안 맞음 → 재사용하도록 다시 그림.
+  ② 데스크톱에서 경기 카드가 세로 스택 → 가로 배열로, "둘 다 예측하기" 버튼 배치도 재조정.
+  ③ 더블 매치위크 "둘 다 예측하기"를 기존 합쳐진 화면(<code>isMulti</code> 분기 + 경기별 BudgetBar 스택 +
+  "그대로 적용") 대신 <b>싱글 매치 플로우를 경기 1 → 경기 2 순서로 두 번 타는 방식</b>(오케스트레이터 제안,
+  사용자 확인 대기 중)으로 바꿨을 때의 화면.
+</p>
+
+<style>
+  body { font-family: -apple-system, "Apple SD Gothic Neo", sans-serif; }
+  .lead { max-width: 900px; margin: 0 auto 16px; font-size: 14px; line-height: 1.6; color: #444; }
+  h3.sec { margin: 44px auto 4px; max-width: 900px; text-align: left; font-size: 19px; }
+  p.sec-note { max-width: 900px; margin: 0 auto 18px; font-size: 13px; color: #666; line-height: 1.6; }
+  .frame-row { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; align-items: flex-start; margin: 12px auto; max-width: 1000px; }
+  .frame-col { display: flex; flex-direction: column; align-items: center; }
+  .frame-tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .03em; color: #115aff; background: #d8f1ff; padding: 3px 10px; border-radius: 9999px; margin-bottom: 8px; }
+  .device-shell { border: 1px solid #d8d9da; border-radius: 16px; overflow: hidden; background: #fafafb; }
+  iframe { border: none; display: block; width: 100%; }
+
+  .alt-box { border: 1px dashed #a2a5a9; border-radius: 12px; padding: 12px 14px; background: #fff; margin: 16px auto; max-width: 620px; font-size: 14px; }
+  .alt-box .alt-label { font-size: 11px; font-weight: 700; letter-spacing: .04em; color: #666; text-transform: uppercase; margin-bottom: 6px; }
+  .alt-row { display: flex; gap: 10px; align-items: baseline; margin-bottom: 4px; }
+  .alt-row .tag { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 9999px; flex-shrink: 0; }
+  .alt-row.pick .tag { background: #d8f1ff; color: #115aff; }
+  .alt-row.other .tag { background: #e9e9ea; color: #666; }
+
+  .issue-box { border: 1px solid #f0dca0; background: #fff5d9; border-radius: 12px; padding: 14px 16px; margin: 16px auto; max-width: 620px; font-size: 13.5px; color: #1a1b1c; line-height: 1.6; }
+  .issue-box .issue-label { font-size: 11px; font-weight: 700; color: #a65e00; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+
+  .flow-ref { text-align: center; font-size: 13.5px; color: #666; margin: 16px auto; padding: 14px 18px; border: 1px dashed #a2a5a9; border-radius: 12px; max-width: 460px; line-height: 1.6; }
+  .flow-note { text-align: center; font-size: 12.5px; color: #666; margin: 10px auto 0; max-width: 460px; line-height: 1.6; }
+  code { background: #f3f3f4; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+</style>
+
+<h3 class="sec">1. 경기 선택 화면 (제출 문맥) — <code>PredictionMatchSelect</code> 재설계</h3>
+<p class="sec-note">
+  기존 코드(<code>PredictionMatchSelect.tsx</code>)는 카드가 <code>border border-neutral-weak bg-surface p-4</code>인
+  독자적 흰 박스였고 헤더가 가운데 정렬(<code>text-center</code>)이었습니다. <code>PredictionFlowClient</code>가
+  실제로 쓰는 패턴 — 바깥은 <code>Card</code>(<code>rounded-lg border-neutral-weak bg-surface shadow-g200</code>) 하나,
+  안쪽 좌측정렬 헤더(<code>text-heading-2 font-semibold</code> + <code>text-label-2 text-neutral-muted</code>),
+  안쪽 서브패널은 <code>SummarySection</code>처럼 <code>bg-page</code>(흰 카드 안 옅은 회색, 이중 테두리 아님) —
+  으로 바꿨습니다. 경기 카드 컨테이너에 <code>sm:flex-row sm:gap-4</code>를 추가해 데스크톱에서 가로 배열되고,
+  각 카드는 <code>sm:flex-1</code>로 균등폭입니다. 버튼은 <code>components/primitives/button.tsx</code>의
+  <code>buttonVariants</code> 클래스(기본/아웃라인)를 그대로 복사해 썼습니다. 아래 두 프레임은
+  <b>같은 HTML</b>입니다 — iframe 폭만 다르고, 실제 앱과 똑같이 Tailwind의 <code>sm:</code>(640px) 브레이크포인트가
+  각 iframe 안에서 독립적으로 적용됩니다.
+</p>
+
+<div class="frame-row">
+  <div class="frame-col">
+    <span class="frame-tag">데스크톱 (860px)</span>
+    <div class="device-shell" style="width:860px; max-width:100%">
+      <iframe id="f-select-submit-desktop" height="420"></iframe>
+    </div>
+  </div>
+</div>
+<div class="frame-row">
+  <div class="frame-col">
+    <span class="frame-tag">모바일 (375px)</span>
+    <div class="device-shell" style="width:375px">
+      <iframe id="f-select-submit-mobile" height="560"></iframe>
+    </div>
+  </div>
+</div>
+
+<div class="alt-box">
+  <p class="alt-label">카피 대안 — v1/v2에서 이미 병기, 아직 미확정</p>
+  <div class="alt-row pick"><span class="tag">시안</span> 제목 "어느 경기부터 예측할까요?" · 부제 "한 경기만 먼저 해도 되고, 둘 다 지금 해도 돼요"</div>
+  <div class="alt-row other"><span class="tag">대안</span> 제목 "이번 주는 경기가 두 개예요" · 부제 "지금 하고 싶은 경기를 골라주세요"</div>
+  <div class="alt-row pick"><span class="tag">시안</span> 버튼 "울브스전만 하기" / "아스널전만 하기" / "둘 다 예측하기"</div>
+  <div class="alt-row other"><span class="tag">대안</span> "경기 1만 하기" / "경기 2만 하기" / "두 경기 모두 하기"</div>
+</div>
+
+<h3 class="sec">2. 경기 선택 화면 (수정 문맥) — 동일 구조, "둘 다" 버튼 없음</h3>
+<p class="sec-note">
+  같은 컴포넌트를 <code>mode="edit"</code>로 렌더한 상태입니다. 각 카드 안에 기존 코드가 이미 갖고 있던
+  "현재 예측 X – Y" 줄(<code>existing</code> 표시, <code>PredictionMatchSelect.tsx:93-97</code>)을 그대로 유지했습니다 —
+  뭘 고치는지 헷갈리지 않게 하는 정보라 재설계 대상이 아닙니다. "둘 다 수정하기" 버튼은 없습니다
+  (design-brief §9 질문3=B — 수정은 항상 경기 하나 단위, 기존 결정 유지).
+</p>
+
+<div class="frame-row">
+  <div class="frame-col">
+    <span class="frame-tag">데스크톱 (860px)</span>
+    <div class="device-shell" style="width:860px; max-width:100%">
+      <iframe id="f-select-edit-desktop" height="440"></iframe>
+    </div>
+  </div>
+</div>
+<div class="frame-row">
+  <div class="frame-col">
+    <span class="frame-tag">모바일 (375px)</span>
+    <div class="device-shell" style="width:375px">
+      <iframe id="f-select-edit-mobile" height="600"></iframe>
+    </div>
+  </div>
+</div>
+
+<h3 class="sec">3. 더블 매치위크 "둘 다 예측하기" — 순차(싱글 매치 ×2) 흐름</h3>
+<p class="sec-note">
+  <b>오케스트레이터 제안(사용자 확인 대기 중)</b>: 기존처럼 두 경기를 한 화면에 쌓지 않고, 싱글 매치
+  스코어→픽→확인 플로우를 경기 1 제출 완료 → 경기 2로 자동 전환 → 경기 2 제출 순서로 두 번 태웁니다.
+  이 안을 채택하면 <code>PredictionFlowClient.tsx</code>의 <code>isMulti</code> 분기 전체(경기별
+  <code>MatchLabel</code>, 픽 단계 경기별 <code>BudgetBar</code> 스택, "그대로 적용" <code>copyPicks</code>)가
+  자연히 필요 없어집니다 — 화면에 항상 경기 하나만 있기 때문입니다.
+</p>
+
+<div class="flow-ref">
+  경기 1(울브스전) 스코어→픽→확인 3단계는 기존 싱글 매치 확인 화면과 <b>완전히 동일</b>합니다
+  (<code>Card</code> 헤더 "제출 전 확인"+<code>ProgressPips</code> 3/3, <code>SummarySection</code> ×2 —
+  결과 예측·선수 예측, 하단 이전/제출하기). 반복이라 여기서는 다시 그리지 않고, "제출하기"를 눌러
+  성공한 직후 무슨 일이 일어나는지(아래 전환 프레임)에 집중했습니다.
+</div>
+
+<p class="sec-note" style="margin-top:4px">↓ "제출하기" 클릭 → 울브스전 제출 성공 → 경기 2(아스널전) 스코어 입력 화면으로 자동 전환</p>
+
+<div class="frame-row">
+  <div class="frame-col">
+    <span class="frame-tag">전환 직후 — 아스널전 스코어 입력 (375px)</span>
+    <div class="device-shell" style="width:375px">
+      <iframe id="f-sequential-transition" height="640"></iframe>
+    </div>
+  </div>
+</div>
+<p class="flow-note">
+  상단 초록 배너는 <b>신규 제안 UI</b>입니다(기존 코드에 없음) — "지금 뭐가 바뀌었는지" 안내 없이 화면만
+  바뀌면 사용자가 "왜 갑자기 아스널전이 나오지" 헷갈릴 수 있어 넣었습니다. 이 배너 자체를 넣을지 여부,
+  넣는다면 문구가 무엇인지 둘 다 미확정입니다.
+</p>
+
+<div class="alt-box">
+  <p class="alt-label">신규 카피/UI 제안 — 전환 배너 (이번에 처음 필요해진 것, 완전 미확정)</p>
+  <div class="alt-row pick"><span class="tag">시안</span> "울브스전 제출 완료 · 이어서 아스널전을 예측해주세요" (초록 배너, 5초 후 자동으로 사라지는 것도 고려 가능)</div>
+  <div class="alt-row other"><span class="tag">대안1</span> 배너 없이 화면 상단에 작은 토스트만 잠깐 띄우고 사라짐(현재 상태처럼 계속 보이지 않음)</div>
+  <div class="alt-row other"><span class="tag">대안2</span> 안내 자체를 생략 — 헤더의 "경기 예측" 제목과 팀 로고가 바뀌는 것만으로 충분하다고 보고 아무 배너도 없음</div>
+</div>
+
+<div class="issue-box">
+  <p class="issue-label">확인 필요 — 코디네이터가 전달한 미확정 항목 2가지 (이 와이어프레임엔 반영했지만 최종 결정 아님)</p>
+  1. <b>"그대로 적용"(픽 복사) 기능 삭제 여부</b> — 순차 흐름을 채택하면 화면에 경기가 항상 하나뿐이라 이 기능이
+  설 자리가 자연히 없어집니다. 하지만 "두 경기에 같은 선수를 픽하고 싶은 사용자"에게는 편의 기능이 사라지는
+  셈이라, 순차 흐름 자체를 채택할지와 별개로 확인이 필요합니다.<br>
+  2. <b>경기마다 따로 제출(순차) vs 기존처럼 한 번에 묶어 제출</b> — 지금 서버 액션
+  (<code>submitWeekPrediction(weekKey, matchIds, input)</code>, <code>lib/actions/predictions.ts</code>)은
+  이미 경기 단위로 좁혀 받을 수 있어 순차 제출이 기술적으로 자연스럽지만, "두 경기를 한 세트로 묶어 한 번에
+  제출"이라는 기존 감각을 유지하고 싶다면 다른 처리(예: 경기 2 확인 단계에서 실제로는 두 건을 순서대로
+  보내되 사용자에게는 "제출 중" 한 번으로 보이게)가 필요할 수 있습니다.
+</div>
+
+<script>
+const HEAD = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.tailwindcss.com"></` + `script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: { black: "rgb(var(--c-black) / <alpha-value>)" },
+        backgroundColor: {
+          page: "var(--sem-bg-page)", surface: "var(--sem-bg-surface)", overlay: "var(--sem-bg-overlay)",
+          disabled: "var(--sem-bg-disabled)", "neutral-weak": "var(--sem-bg-neutral-weak)",
+          "neutral-weak-pressed": "var(--sem-bg-neutral-weak-pressed)", "neutral-strong": "var(--sem-bg-neutral-strong)",
+          "brand-solid": "var(--sem-bg-brand-solid)", "brand-solid-pressed": "var(--sem-bg-brand-solid-pressed)",
+          "brand-weak": "var(--sem-bg-brand-weak)", "brand-weak-pressed": "var(--sem-bg-brand-weak-pressed)",
+          "critical-solid": "var(--sem-bg-critical-solid)", "critical-solid-pressed": "var(--sem-bg-critical-solid-pressed)",
+          "critical-weak": "var(--sem-bg-critical-weak)", "critical-weak-pressed": "var(--sem-bg-critical-weak-pressed)",
+          "positive-weak": "var(--sem-bg-positive-weak)", "positive-weak-pressed": "var(--sem-bg-positive-weak-pressed)",
+          "warning-weak": "var(--sem-bg-warning-weak)", "warning-weak-pressed": "var(--sem-bg-warning-weak-pressed)",
+          "informative-weak": "var(--sem-bg-informative-weak)", "informative-weak-pressed": "var(--sem-bg-informative-weak-pressed)",
+          "magic-weak": "var(--sem-bg-magic-weak)", "magic-weak-pressed": "var(--sem-bg-magic-weak-pressed)",
+          "on-solid-weak": "var(--sem-bg-on-solid-weak)", "on-solid-strong": "var(--sem-bg-on-solid-strong)",
+          "surface-translucent": "var(--sem-bg-surface-translucent)"
+        },
+        textColor: {
+          neutral: "var(--sem-fg-neutral)", "neutral-strong": "var(--sem-fg-neutral-strong)",
+          "neutral-muted": "var(--sem-fg-neutral-muted)", "neutral-subtle": "var(--sem-fg-neutral-subtle)",
+          placeholder: "var(--sem-fg-placeholder)", disabled: "var(--sem-fg-disabled)",
+          "on-solid": "var(--sem-fg-on-solid)", "on-solid-muted": "var(--sem-fg-on-solid-muted)",
+          "on-solid-brand": "var(--sem-fg-on-solid-brand)", brand: "var(--sem-fg-brand)",
+          critical: "var(--sem-fg-critical)", positive: "var(--sem-fg-positive)",
+          warning: "var(--sem-fg-warning)", informative: "var(--sem-fg-informative)", magic: "var(--sem-fg-magic)"
+        },
+        borderColor: {
+          "neutral-weak": "var(--sem-stroke-neutral-weak)", "neutral-subtle": "var(--sem-stroke-neutral-subtle)",
+          "neutral-strong": "var(--sem-stroke-neutral-strong)", "brand-solid": "var(--sem-stroke-brand-solid)",
+          "critical-weak": "var(--sem-stroke-critical-weak)", "focus-ring": "var(--sem-stroke-focus-ring)",
+          "on-solid-weak": "var(--sem-bg-on-solid-weak)"
+        },
+        ringColor: { "brand-solid": "var(--sem-stroke-brand-solid)", "focus-ring": "var(--sem-stroke-focus-ring)" },
+        borderRadius: { xs: "var(--r-xs)", sm: "var(--r-sm)", md: "var(--r-md)", lg: "var(--r-lg)", pill: "var(--r-pill)" },
+        maxWidth: { shell: "var(--shell-w)", content: "var(--content-w)", detail: "var(--detail-w)" },
+        boxShadow: { w100: "var(--sh-w100)", w200: "var(--sh-w200)", w300: "var(--sh-w300)", g100: "var(--sh-g100)", g200: "var(--sh-g200)", g300: "var(--sh-g300)" },
+        fontFamily: { sans: ["Pretendard Variable", "Pretendard", "-apple-system", "sans-serif"] },
+        fontSize: {
+          "display-1": ["56px", { lineHeight: "72px", letterSpacing: "-0.0319em" }],
+          "display-2": ["40px", { lineHeight: "52px", letterSpacing: "-0.0282em" }],
+          "title-1": ["36px", { lineHeight: "48px", letterSpacing: "-0.027em" }],
+          "title-2": ["28px", { lineHeight: "38px", letterSpacing: "-0.0236em" }],
+          "title-3": ["24px", { lineHeight: "32px", letterSpacing: "-0.023em" }],
+          "heading-1": ["22px", { lineHeight: "30px", letterSpacing: "-0.0194em" }],
+          "heading-2": ["20px", { lineHeight: "28px", letterSpacing: "-0.012em" }],
+          "headline-1": ["18px", { lineHeight: "26px", letterSpacing: "-0.002em" }],
+          "headline-2": ["17px", { lineHeight: "24px", letterSpacing: "0em" }],
+          "body-1-normal": ["16px", { lineHeight: "24px", letterSpacing: "0.0057em" }],
+          "body-2-normal": ["15px", { lineHeight: "22px", letterSpacing: "0.0096em" }],
+          "label-1-normal": ["14px", { lineHeight: "20px", letterSpacing: "0.0145em" }],
+          "label-2": ["13px", { lineHeight: "18px", letterSpacing: "0.0194em" }],
+          "caption-1": ["12px", { lineHeight: "16px", letterSpacing: "0.0252em" }],
+          "caption-2": ["11px", { lineHeight: "14px", letterSpacing: "0.0311em" }]
+        },
+        transitionDuration: { micro: "150ms", enter: "300ms", exit: "200ms", slow: "700ms" }
+      }
+    }
+  }
+</` + `script>
+<style>
+  :root {
+    --c-black: 17 17 17;
+    --r-xs: 8px; --r-sm: 10px; --r-md: 12px; --r-lg: 16px; --r-pill: 9999px;
+    --shell-w: 480px; --content-w: 1140px; --detail-w: 680px;
+    --sh-w100: 0px 0px 2px rgba(0,0,0,.07), 0px 1px 2px rgba(0,0,0,.07);
+    --sh-w200: 0px 1px 6px rgba(0,0,0,.12);
+    --sh-w300: 0px 1px 20px rgba(0,0,0,.07);
+    --sh-g100: 0px 0px 1px rgba(0,0,0,.05), 0px 1px 1px rgba(0,0,0,.05);
+    --sh-g200: 0px 1px 4px rgba(0,0,0,.06);
+    --sh-g300: 0px 1px 15px rgba(0,0,0,.04);
+    --p-blue-400: #6ab4ff; --p-blue-700: #115aff; --p-blue-800: #0d42c0;
+    --p-red-700: #cf231a; --p-green-700: #008728; --p-orange-700: #a65e00;
+    --p-cyan-700: #007f9f; --p-violet-700: #9130e7;
+    --p-neutral-50: #fafafb; --p-neutral-100: #f3f3f4; --p-neutral-200: #e9e9ea; --p-neutral-300: #d8d9da;
+    --p-neutral-400: #bcbec0; --p-neutral-500: #a2a5a9; --p-neutral-900: #313335; --p-neutral-950: #1a1b1c;
+    --sem-bg-page: var(--p-neutral-50);
+    --sem-bg-surface: #ffffff;
+    --sem-bg-overlay: rgba(0,0,0,.45);
+    --sem-bg-disabled: var(--p-neutral-200);
+    --sem-bg-neutral-weak: var(--p-neutral-200);
+    --sem-bg-neutral-weak-pressed: var(--p-neutral-300);
+    --sem-bg-neutral-strong: var(--p-neutral-900);
+    --sem-bg-brand-solid: var(--p-blue-700);
+    --sem-bg-brand-solid-pressed: var(--p-blue-800);
+    --sem-bg-brand-weak: #d8f1ff;
+    --sem-bg-brand-weak-pressed: var(--sem-bg-brand-weak);
+    --sem-bg-critical-solid: var(--p-red-700);
+    --sem-bg-critical-solid-pressed: #981b14;
+    --sem-bg-critical-weak: #ffe8e0;
+    --sem-bg-critical-weak-pressed: var(--sem-bg-critical-weak);
+    --sem-bg-positive-weak: #f4fff5;
+    --sem-bg-positive-weak-pressed: var(--sem-bg-positive-weak);
+    --sem-bg-warning-weak: #fff5d9;
+    --sem-bg-warning-weak-pressed: var(--sem-bg-warning-weak);
+    --sem-bg-informative-weak: #f5ffff;
+    --sem-bg-informative-weak-pressed: var(--sem-bg-informative-weak);
+    --sem-bg-magic-weak: #f4e3ff;
+    --sem-bg-magic-weak-pressed: var(--sem-bg-magic-weak);
+    --sem-bg-on-solid-weak: rgba(255,255,255,.05);
+    --sem-bg-on-solid-strong: rgba(255,255,255,.1);
+    --sem-bg-surface-translucent: rgba(255,255,255,.95);
+    --sem-fg-neutral: var(--p-neutral-950);
+    --sem-fg-neutral-strong: var(--p-neutral-900);
+    --sem-fg-neutral-muted: #666666;
+    --sem-fg-neutral-subtle: var(--p-neutral-500);
+    --sem-fg-placeholder: var(--p-neutral-500);
+    --sem-fg-disabled: var(--p-neutral-400);
+    --sem-fg-on-solid: #ffffff;
+    --sem-fg-on-solid-muted: var(--p-neutral-400);
+    --sem-fg-on-solid-brand: var(--p-blue-400);
+    --sem-fg-brand: var(--p-blue-700);
+    --sem-fg-critical: var(--p-red-700);
+    --sem-fg-positive: var(--p-green-700);
+    --sem-fg-warning: var(--p-orange-700);
+    --sem-fg-informative: var(--p-cyan-700);
+    --sem-fg-magic: var(--p-violet-700);
+    --sem-stroke-neutral-weak: var(--p-neutral-200);
+    --sem-stroke-neutral-subtle: var(--p-neutral-100);
+    --sem-stroke-neutral-strong: var(--p-neutral-500);
+    --sem-stroke-brand-solid: var(--p-blue-700);
+    --sem-stroke-critical-weak: #ffd3c6;
+    --sem-stroke-focus-ring: var(--p-blue-700);
+  }
+  * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+  body { margin: 0; background: var(--sem-bg-page); color: var(--sem-fg-neutral); font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+</style>
+</head><body>`;
+
+const BTN_BASE = "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-body-2-normal font-semibold transition-[opacity,background-color] duration-micro hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-solid disabled:pointer-events-none disabled:bg-disabled disabled:text-disabled disabled:opacity-100";
+const BTN_DEFAULT = BTN_BASE + " bg-brand-solid text-on-solid shadow-w200 active:bg-brand-solid-pressed";
+const BTN_OUTLINE = BTN_BASE + " border border-neutral-weak bg-transparent text-neutral shadow-none active:opacity-50";
+const BTN_GHOST = BTN_BASE + " bg-transparent text-neutral-muted shadow-none active:opacity-50";
+const SIZE_DEFAULT = "h-11 px-4 py-3.5";
+const SIZE_LG = "h-12 px-6";
+
+function crest(initial) {
+  return '<span class="flex shrink-0 items-center justify-center rounded-pill bg-disabled text-label-1-normal font-medium text-neutral-muted" style="width:48px;height:48px">' + initial + '</span>';
+}
+
+function matchSelectCard({ usInitial, usName, oppInitial, oppName, date, time, buttonLabel, existing }) {
+  return '' +
+'<div class="flex flex-1 flex-col rounded-lg bg-page p-4">' +
+'  <div class="mb-3 flex items-center justify-center gap-4">' +
+'    <div class="flex w-[72px] flex-col items-center gap-1.5">' + crest(usInitial) + '<span class="truncate text-label-2 font-medium text-neutral-muted">' + usName + '</span></div>' +
+'    <div class="flex flex-col items-center gap-0.5"><span class="text-caption-2 text-neutral-muted">' + date + '</span><span class="text-label-1-normal font-medium text-neutral">' + time + '</span></div>' +
+'    <div class="flex w-[72px] flex-col items-center gap-1.5">' + crest(oppInitial) + '<span class="truncate text-label-2 font-medium text-neutral-muted">' + oppName + '</span></div>' +
+'  </div>' +
+(existing ? '  <p class="mb-3 text-center text-caption-1 text-neutral-muted">현재 예측 ' + existing + '</p>' : '') +
+'  <button type="button" class="' + BTN_DEFAULT + ' ' + SIZE_DEFAULT + ' w-full">' + buttonLabel + '</button>' +
+'</div>';
+}
+
+const BODY_SELECT_SUBMIT = '' +
+'<div class="mx-auto max-w-[860px] px-4 pb-16 pt-4 sm:px-6 sm:pt-8">' +
+'  <div class="flex flex-col rounded-lg border border-neutral-weak bg-surface text-neutral shadow-g200 p-5 sm:p-7">' +
+'    <div><h1 class="text-heading-2 font-semibold text-neutral">어느 경기부터 예측할까요?</h1><p class="mt-1 text-label-2 text-neutral-muted">한 경기만 먼저 해도 되고, 둘 다 지금 해도 돼요</p></div>' +
+'    <div class="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:gap-4">' +
+      matchSelectCard({ usInitial:'뉴', usName:'뉴캐슬', oppInitial:'W', oppName:'울브스', date:'8월 30일', time:'오후 8:00', buttonLabel:'울브스전만 하기' }) +
+      matchSelectCard({ usInitial:'뉴', usName:'뉴캐슬', oppInitial:'아', oppName:'아스널', date:'9월 2일', time:'오전 4:00', buttonLabel:'아스널전만 하기' }) +
+'    </div>' +
+'    <div class="mt-3 sm:mt-4"><button type="button" class="' + BTN_OUTLINE + ' ' + SIZE_LG + ' w-full">둘 다 예측하기</button></div>' +
+'  </div>' +
+'</div>';
+
+const BODY_SELECT_EDIT = '' +
+'<div class="mx-auto max-w-[860px] px-4 pb-16 pt-4 sm:px-6 sm:pt-8">' +
+'  <div class="flex flex-col rounded-lg border border-neutral-weak bg-surface text-neutral shadow-g200 p-5 sm:p-7">' +
+'    <div><h1 class="text-heading-2 font-semibold text-neutral">어느 경기를 수정할까요?</h1><p class="mt-1 text-label-2 text-neutral-muted">수정할 경기를 하나 골라주세요</p></div>' +
+'    <div class="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:gap-4">' +
+      matchSelectCard({ usInitial:'뉴', usName:'뉴캐슬', oppInitial:'W', oppName:'울브스', date:'8월 30일', time:'오후 8:00', buttonLabel:'울브스전 수정하기', existing:'2 – 1' }) +
+      matchSelectCard({ usInitial:'뉴', usName:'뉴캐슬', oppInitial:'아', oppName:'아스널', date:'9월 2일', time:'오전 4:00', buttonLabel:'아스널전 수정하기', existing:'1 – 1' }) +
+'    </div>' +
+'  </div>' +
+'</div>';
+
+function scoreStepper(value, atMax, atMin) {
+  return '' +
+'<div class="w-16 overflow-hidden rounded-md border border-neutral-weak bg-surface">' +
+'  <button type="button" aria-label="점수 증가" ' + (atMax ? 'disabled' : '') + ' class="flex h-[34px] w-full items-center justify-center bg-surface text-body-1-normal text-neutral-muted disabled:pointer-events-none disabled:text-disabled">+</button>' +
+'  <div class="flex h-[52px] items-center justify-center border-y border-neutral-weak text-title-3 font-semibold">' + value + '</div>' +
+'  <button type="button" aria-label="점수 감소" ' + (atMin ? 'disabled' : '') + ' class="flex h-[34px] w-full items-center justify-center bg-surface text-body-1-normal text-neutral-muted disabled:pointer-events-none disabled:text-disabled">−</button>' +
+'</div>';
+}
+
+const BODY_SEQUENTIAL_TRANSITION = '' +
+'<div class="mx-auto max-w-[860px] px-4 pb-28 pt-4">' +
+'  <div class="mb-4 flex flex-wrap items-center gap-x-2 gap-y-0.5 rounded-md bg-positive-weak px-4 py-3">' +
+'    <span class="text-label-2 font-medium text-positive">울브스전 제출 완료</span>' +
+'    <span class="text-label-2 text-neutral-muted">· 이어서 아스널전을 예측해주세요</span>' +
+'  </div>' +
+'  <div class="flex flex-col rounded-lg border border-neutral-weak bg-surface text-neutral shadow-g200 p-5">' +
+'    <div class="flex items-start justify-between gap-4">' +
+'      <div><h1 class="text-heading-2 font-semibold text-neutral">경기 예측</h1><p class="mt-1 text-label-2 text-neutral-muted">이번 경기의 스코어를 예측해보세요</p></div>' +
+'      <div class="flex shrink-0 items-center gap-1.5 pt-1"><span class="h-1.5 w-6 rounded-pill bg-brand-solid"></span><span class="h-1.5 w-6 rounded-pill bg-neutral-weak"></span><span class="h-1.5 w-6 rounded-pill bg-neutral-weak"></span></div>' +
+'    </div>' +
+'    <div class="flex flex-1 flex-col py-6">' +
+'      <div class="flex flex-col gap-8"><div>' +
+'        <div class="text-center"><p class="mb-1 text-label-2 font-medium text-neutral-muted">카라바오컵 · 5라운드</p><p class="text-label-2 text-neutral-muted">9월 2일 (원정) 오전 4:00</p></div>' +
+'        <div class="mt-6 flex items-center justify-center gap-4">' +
+'          <div class="flex w-[88px] flex-col items-center gap-2">' + crest('뉴') + '<span class="text-center text-label-1-normal font-medium">뉴캐슬</span></div>' +
+           scoreStepper(0, false, true) +
+           scoreStepper(0, false, true) +
+'          <div class="flex w-[88px] flex-col items-center gap-2">' + crest('아') + '<span class="text-center text-label-1-normal font-medium">아스널</span></div>' +
+'        </div>' +
+'      </div></div>' +
+'    </div>' +
+'  </div>' +
+'  <div class="fixed inset-x-0 bottom-0 border-t border-neutral-weak bg-surface-translucent px-4 py-3">' +
+'    <div class="mx-auto flex max-w-shell gap-2"><button type="button" class="' + BTN_DEFAULT + ' ' + SIZE_LG + ' w-full">다음</button></div>' +
+'  </div>' +
+'</div>';
+
+function mount(id, body) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.srcdoc = HEAD + body + '</body></html>';
+  el.onload = function () {
+    setTimeout(function () {
+      try {
+        const h = el.contentWindow.document.documentElement.scrollHeight;
+        if (h > 0) el.style.height = (h + 16) + 'px';
+      } catch (e) {}
+    }, 350);
+  };
+}
+
+mount('f-select-submit-desktop', BODY_SELECT_SUBMIT);
+mount('f-select-submit-mobile', BODY_SELECT_SUBMIT);
+mount('f-select-edit-desktop', BODY_SELECT_EDIT);
+mount('f-select-edit-mobile', BODY_SELECT_EDIT);
+mount('f-sequential-transition', BODY_SEQUENTIAL_TRANSITION);
+</script>

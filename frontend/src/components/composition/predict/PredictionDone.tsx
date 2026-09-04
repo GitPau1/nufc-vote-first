@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { trackEvent } from '@/lib/analytics/mixpanel'
-import { PlayerPhoto, ShareButton, TeamBadge } from './shared'
+import { PlayerPhoto, TeamBadge } from './shared'
 import { POSITIONS, POSITION_LABEL, playerPhotoUrl, type Candidate, type Position } from '@/lib/predictions/candidates'
 import { matchHit, type MatchHit } from '@/lib/predictions/result'
 import {
@@ -44,10 +45,11 @@ function resolvePicks(
 }
 
 /**
- * 주차 제출 완료 화면. 퍼블리싱 `renderComplete` / `completeCardHtml` 구조를 따른다:
- * 헤드라인 → 독립 카운트다운 블록 → 카드(경기 예측 · 내 선수 픽 · 공유하기).
+ * 주차 제출 완료 화면(= 허브). 퍼블리싱 `renderComplete` / `completeCardHtml` 구조를 따른다:
+ * 헤드라인 → 독립 카운트다운 블록 → 카드(제출됨 · 유예됨 · 마감됨) → 하단 수정하기 버튼.
  * 카운트다운 기준은 그 주 첫 경기 킥오프 — 마감 기준과 같다.
- * 제출 후 수정이 불가하므로(DB UNIQUE + UPDATE 정책 없음) 픽 카드는 클릭되지 않는다.
+ * 승부예측은 킥오프 전까지 자유롭게 재제출(수정)할 수 있다 — 카드 자체는 클릭되지 않고, 수정은
+ * 하단 "수정하기" 버튼 하나로만 진입한다(2026-09-04 결정, feature-spec.md §7-5).
  */
 export function PredictionDone({
   week,
@@ -59,9 +61,15 @@ export function PredictionDone({
   candidates: PickCandidates
 }) {
   const submittedMatches = week.matches.filter(match => prediction.scores[match.id])
+  // 아직 안 잠겼는데 제출 안 함 = 사용자가 "나중에"를 고른 상태(부분 제출 선택권, feature-spec §3.2).
+  const deferredMatches = week.matches.filter(match => !prediction.scores[match.id] && !match.locked)
   // 마감돼서 제출하지 못한 경기 — 결과가 아직 안 나왔어도 "참여하지 못했다"는 사실은 지금 알려줘야 한다.
-  const missedMatches = week.matches.filter(match => !prediction.scores[match.id])
+  const missedMatches = week.matches.filter(match => !prediction.scores[match.id] && match.locked)
   const isMulti = week.matches.length > 1
+  const editHref =
+    submittedMatches.length === 1
+      ? `/predictions/${week.weekKey}?edit=${submittedMatches[0].id}`
+      : `/predictions/${week.weekKey}?editSelect=1`
   // 카운트다운은 아직 킥오프 전인 경기가 여러 개일 때만 "늦은 경기 기준"임을 밝힌다.
   const pendingCount = week.matches.filter(match => !match.finished).length
   // 그 주 경기가 전부 킥오프을 지났으면 카운트다운이 0에 붙어 있을 뿐이라 그린다는 의미가 없다.
@@ -70,12 +78,16 @@ export function PredictionDone({
   // 퍼널 A의 종료 지점. 제출 성공 직후 router.refresh()로 이 화면이 마운트되므로 사실상
   // 제출 성공과 1:1이고, 앞 단계가 전부 클라이언트 이벤트라 퍼널이 한 계층에서 일관된다.
   // (지표용 prediction_submitted는 별도로 서버가 보낸다 — 측정 대상이 달라 중복이 아니다.)
+  // missed_match_count/is_partial은 "제출 안 한 경기가 있다"는 기존 의미 그대로 유지한다 —
+  // 화면은 이제 그 이유(마감돼서 vs 아직 안 함)를 나눠 보여주지만, 분석 이벤트 스키마 확장은
+  // 이번 스코프에서 스킵 확정이라(feature-spec.md §7-7) 필드 의미는 건드리지 않는다.
+  const notSubmittedCount = deferredMatches.length + missedMatches.length
   useEffect(() => {
     trackEvent('prediction_done_viewed', {
       week_key: week.weekKey,
       submitted_match_count: submittedMatches.length,
-      missed_match_count: missedMatches.length,
-      is_partial: missedMatches.length > 0,
+      missed_match_count: notSubmittedCount,
+      is_partial: notSubmittedCount > 0,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [week.weekKey])
@@ -98,6 +110,27 @@ export function PredictionDone({
 
         <div>
           {hasUpcomingMatch && <Countdown targetIso={week.deadlineAt} pendingCount={pendingCount} />}
+
+          {/* 아직 안 잠긴(킥오프 전) 미제출 경기 — 부분 제출 선택권으로 "나중에"를 고른 상태다.
+              지금 바로 예측하러 갈 수 있는 CTA를 준다(제출 문맥 단일 경기 진입). */}
+          {deferredMatches.map(match => (
+            <div key={match.id} className="mb-4">
+              {isMulti && (
+                <p className="mb-2 text-label-2 font-medium text-neutral-muted">
+                  {NUFC_LABEL} vs {match.opponent}
+                </p>
+              )}
+              <div className="rounded-lg border border-neutral-weak bg-surface px-4 py-5 text-center">
+                <p className="mb-3 text-body-2-normal font-semibold">아직 예측하지 않았어요</p>
+                <Link
+                  href={`/predictions/${week.weekKey}?match=${match.id}`}
+                  className="inline-flex h-10 items-center justify-center rounded-md bg-brand-solid px-5 text-label-1-normal font-medium text-on-solid"
+                >
+                  지금 예측하기
+                </Link>
+              </div>
+            </div>
+          ))}
 
           {/* 제출하지 못한 경기(킥오프이 지나 마감)도 같은 화면에 함께 보여준다 — 참여 마감은 경기
               단위라 더블 매치위크에서 한 경기만 놓치는 상황이 정상이다(2026-08-23 확정). */}
@@ -167,12 +200,20 @@ export function PredictionDone({
             )
           })}
 
-          <div className="mt-7 flex justify-center">
-            <ShareButton />
-          </div>
-
-          {/* 퍼블리싱엔 없는 문구 — DB UNIQUE + UPDATE 정책 없음을 반영 */}
-          <p className="mt-4 text-center text-caption-1 text-neutral-muted">제출한 예측은 수정할 수 없어요</p>
+          {/* 공유하기는 이번 스코프에서 완전히 제외됐다(재배치는 별도 논의) — 그 자리를 큰
+              "수정하기" 버튼 하나로 대체한다. 제출된 경기가 없으면 수정할 게 없어 버튼 자체를
+              숨긴다(2026-09-04 결정, feature-spec.md §7-5). */}
+          {submittedMatches.length > 0 && (
+            <div className="mt-7 flex flex-col items-center gap-2">
+              <Link
+                href={editHref}
+                className="flex h-12 w-full max-w-[280px] items-center justify-center rounded-lg bg-brand-solid text-label-1-normal font-medium text-on-solid"
+              >
+                수정하기
+              </Link>
+              <p className="text-center text-caption-1 text-neutral-muted">킥오프 전까지 다시 수정할 수 있어요</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

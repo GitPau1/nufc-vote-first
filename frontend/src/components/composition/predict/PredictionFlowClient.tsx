@@ -13,8 +13,15 @@ import { ConfirmContent } from '@/components/primitives/modal/contents/Confirm'
 import { LoginContent } from '@/components/primitives/modal/contents/Login'
 import { PlayerPickContent } from '@/components/primitives/modal/contents/PlayerPick'
 import { PredictionDone } from './PredictionDone'
-import { PlayerPhoto, TeamBadge, ToonCost, BudgetBar, Silhouette } from './shared'
+import { PlayerPhoto, TeamBadge, ToonCost, Silhouette } from './shared'
 import { STEP_META, ProgressPips, type StepKey } from './steps'
+import {
+  computeNextFromPick,
+  computePrevStep,
+  startEditFromConfirm,
+  isFirstFlowStep,
+  flowPipIndex,
+} from './flow-cursor'
 import {
   excludeDeparted,
   POSITIONS,
@@ -23,7 +30,11 @@ import {
   type Position,
 } from '@/lib/predictions/candidates'
 import { MAX_SCORE, BUDGET } from '@/lib/predictions/submit'
-import { submitWeekPrediction, type SubmitPredictionResult } from '@/lib/actions/predictions'
+import {
+  submitWeekPrediction,
+  updateMatchPrediction,
+  type SubmitPredictionResult,
+} from '@/lib/actions/predictions'
 import {
   NUFC_LABEL,
   NUFC_TEAM_ID,
@@ -44,7 +55,7 @@ type SubmitError = Extract<SubmitPredictionResult, { error: string }>['error']
 
 const ERROR_MESSAGE: Record<SubmitError, string> = {
   unauthenticated: '로그인이 필요해요',
-  already_submitted: '이미 제출한 주차예요. 제출한 예측은 수정할 수 없어요.',
+  already_submitted: '이미 제출한 경기예요. 완료 화면에서 수정해주세요.',
   closed: '예측이 마감된 주차예요',
   incomplete: '스코어와 선수 픽을 모두 채워주세요',
   invalid_score: '스코어는 0~20 사이로 입력해주세요',
@@ -56,36 +67,79 @@ const ERROR_MESSAGE: Record<SubmitError, string> = {
 }
 
 /**
- * 예측 세션 하나 = 주차 하나. 더블 매치위크면 아직 킥오프이 안 지난 경기의 스코어와 선수 픽을
- * 경기마다 각각 입력한 뒤 한 번에 제출한다(2026-08-23 확정 — 픽도 경기별).
- * 첫 경기가 끝난 뒤 들어오면 `pending`에 남은 경기만 담겨 온다 — 그 경기들만 예측한다.
- * 제출 후에는 수정할 수 없어서(DB UNIQUE + UPDATE 정책 없음) 완료 화면으로 고정된다.
+ * 예측 세션 하나 = 주차 하나(submit 모드) 또는 경기 하나(edit 모드). 더블 매치위크면 아직
+ * 킥오프이 안 지난 경기의 스코어와 선수 픽을 경기마다 각각 입력한 뒤 한 번에 제출한다(2026-08-23
+ * 확정 — 픽도 경기별). 첫 경기가 끝난 뒤 들어오면 `pending`에 남은 경기만 담겨 온다 — 그
+ * 경기들만 예측한다. 승부예측은 킥오프 전까지 자유롭게 재제출(수정)할 수 있다 — `mode === 'edit'`이면
+ * 이미 제출된 경기 하나만 `updateMatchPrediction`으로 고친다(완료 화면 하단 "수정하기"에서 진입).
  *
  * 레이아웃(2026-08-31 개편): 좌측 사이드바 스텝 트랙을 없애고 단일 컬럼 카드로 바꿨다.
  * 제목/설명은 카드 헤더(좌), 진행 표시는 ProgressPips(우). 데스크탑은 세 스텝을 같은 그리드
  * 칸에 겹쳐 쌓아 높이를 가장 큰 '확인' 단계에 맞춘다(스텝 전환 시 컨테이너 높이 고정). 버튼은
  * 데스크탑에서 카드 하단 푸터(우측 이전/다음·제출 + 좌측 상태), 모바일에서 StickyActionBar.
- * 더블 매치위크는 이번 개편 대상이 아니라 기존 방식(경기별 블록 세로 스택 + BudgetBar)을 유지한다.
+ * 더블 매치위크 입력 흐름(2026-09-04 재설계, feature-spec §9): score/pick 단계는 경기 수와
+ * 무관하게 항상 `pending[matchCursor]` 하나만 보여준다 — 경기 1 스코어→픽→경기 2 스코어→픽→
+ * confirm(두 경기 다 같이) 고정 순서로 `matchCursor`가 오간다. "그대로 적용"(픽 복사)은 폐기됐다.
+ * confirm 단계만 예전처럼 pending 전체를 한 화면에 모아 보여주고, 제출은 한 번만 호출한다.
  */
 export function PredictionFlowClient({
   week,
   pending,
   candidates,
   submitted,
+  mode = 'submit',
+  matchIds,
+  initialValues,
 }: {
   week: WeekSession
-  /** 이번에 제출할 경기 — 그 주에서 아직 안 잠기고 미제출인 것들 */
+  /** 이번 세션이 다루는 정확한 경기 집합 — submit 모드는 미제출 경기, edit 모드는 수정할 경기 1개 */
   pending: MatchView[]
   candidates: PickCandidates
   /** 남은 경기를 다 제출했으면 내 제출 내역(경기별 스코어 + 주 단위 픽) */
   submitted?: WeekPrediction
+  /** 'edit'이면 이미 제출된 경기 하나(pending은 항상 길이 1)의 스코어·픽을 고친다. 기본 'submit'. */
+  mode?: 'submit' | 'edit'
+  /** 서버로 보낼 정확한 경기 id 목록(=pending.map(id)) — 서버가 이 목록으로만 검증 대상을 좁힌다 */
+  matchIds: string[]
+  /** mode === 'edit'일 때 그 경기의 기존 제출값으로 스코어·픽을 초기화한다 */
+  initialValues?: {
+    score: [number, number]
+    picks: Record<Position, { playerId: number; multiplier: number }>
+  }
 }) {
   const router = useLoadingRouter()
   const [step, setStep] = useState<StepKey>('score')
   const [scores, setScores] = useState<Scores>(() =>
-    Object.fromEntries(pending.map(match => [match.id, [0, 0] as [number, number]])),
+    Object.fromEntries(
+      pending.map(match => [
+        match.id,
+        (mode === 'edit' && initialValues ? initialValues.score : [0, 0]) as [number, number],
+      ]),
+    ),
   )
-  const [picks, setPicks] = useState<Picks>({})
+  const [picks, setPicks] = useState<Picks>(() => {
+    if (mode !== 'edit' || !initialValues || !pending[0]) return {}
+    const resolved: Partial<Record<Position, Candidate>> = {}
+    for (const position of POSITIONS) {
+      const { playerId } = initialValues.picks[position]
+      const found = candidates[position].find(c => c.id === playerId)
+      if (found) resolved[position] = found
+    }
+    return { [pending[0].id]: resolved }
+  })
+  /**
+   * 지금 스코어·픽을 입력 중인 경기 인덱스(고정 순서 a-b-a-b-c, feature-spec §9). score/pick
+   * 단계는 이제 pending.length와 무관하게 이 커서가 가리키는 경기 하나만 보여준다. 단일 경기
+   * 세션(submit 1개, edit)에서는 항상 0이라 기존 동작과 같다.
+   */
+  const [matchCursor, setMatchCursor] = useState(0)
+  /**
+   * confirm 화면에서 경기 하나만 고치러 들어온 왕복 중인지(flow-cursor.ts 참고) — 켜져 있으면
+   * pick 단계 "다음"이 나머지 경기를 거치지 않고 곧장 confirm으로 돌아간다(코드리뷰 2026-09-05
+   * 버그 수정: 이 플래그가 없으면 마지막이 아닌 경기를 고칠 때 나머지 경기를 다시 다 눌러야
+   * confirm으로 돌아왔다).
+   */
+  const [returnToConfirm, setReturnToConfirm] = useState(false)
   /** 열려 있는 픽 모달이 어느 경기의 어느 포지션인지 */
   const [pickTarget, setPickTarget] = useState<{ matchId: string; position: Position } | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -96,14 +150,18 @@ export function PredictionFlowClient({
    * 이 모달이 다시 열린 상태로 돌아온다(onLoginSuccess). 자동 제출은 하지 않는다. */
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false)
   const [submitting, startTransition] = useTransition()
-  /** "그대로 적용"을 한 번이라도 썼는지 — 픽 단계 완료 이벤트에만 실어보낸다. */
-  const copyUsedRef = useRef(false)
   /** 뒤로가기 히스토리 가드(AI-004)에서 "그만두기"를 확정한 뒤 세우는 재진입 플래그 —
    * 이 순간부터는 popstate가 와도 이탈 확인 모달을 다시 띄우지 않는다(진짜 이탈이 진행 중이라서). */
   const leavingRef = useRef(false)
 
-  // 경기마다 3포지션이 다 채워져야 다음 단계로 넘어갈 수 있다.
+  // 경기마다 3포지션이 다 채워져야 다음 단계로 넘어갈 수 있다(제출 버튼의 최종 안전망).
   const allPicked = pending.every(match => POSITIONS.every(position => picks[match.id]?.[position]))
+  /** score/pick 단계가 지금 보여주는 경기 — matchCursor가 가리키는 하나뿐이다. */
+  const currentMatch = pending[matchCursor]
+  /** pick 단계 "다음" 버튼은 지금 보이는 경기만 다 채워지면 눌린다(전체가 아니라). */
+  const currentMatchPicked = currentMatch
+    ? POSITIONS.every(position => picks[currentMatch.id]?.[position])
+    : false
   /** 픽 모달 "선택 가능 목록"에만 쓴다 — 떠난 선수는 새로 고를 수 없다. 이미 고른 픽 조회(L502)는
    * candidates를 그대로 쓴다(클릭된 id는 항상 이 목록에서 나온 값이라 걸러도 무방하지만, 과거
    * 픽 이름 표시와 같은 원칙을 지키려 원본을 남겨둔다). */
@@ -189,17 +247,35 @@ export function PredictionFlowClient({
       step: from,
       match_count: pending.length,
       is_multi: isMulti,
+      // 스코어는 전부 0-0으로 초기화돼 있어 "미입력" 상태가 없다. 대신 0-0을 그대로 넘긴
+      // 경기 수를 본다 — 스테퍼를 아예 만지지 않고 통과하는 비율이 드러난다.
       ...(from === 'score'
-        // 스코어는 전부 0-0으로 초기화돼 있어 "미입력" 상태가 없다. 대신 0-0을 그대로 넘긴
-        // 경기 수를 본다 — 스테퍼를 아예 만지지 않고 통과하는 비율이 드러난다.
         ? {
             untouched_score_count: pending.filter(
               match => (scores[match.id]?.[0] ?? 0) === 0 && (scores[match.id]?.[1] ?? 0) === 0,
             ).length,
           }
-        : { used_copy_picks: copyUsedRef.current }),
+        : {}),
     })
     setStep(next)
+  }
+
+  /** flow-cursor.ts가 계산한 다음 상태를 세 React state(step/matchCursor/returnToConfirm)에 반영한다. */
+  function applyCursor(next: { step: StepKey; matchCursor: number; returnToConfirm: boolean }) {
+    setStep(next.step)
+    setMatchCursor(next.matchCursor)
+    setReturnToConfirm(next.returnToConfirm)
+  }
+
+  /**
+   * pick 단계 "다음" — 고정 순서 a-b-a-b-c(feature-spec §9.1)를 여기서 진행시킨다. 아직 볼
+   * 경기가 남았으면 다음 경기의 score로, 마지막 경기면 confirm으로 넘어간다. confirm에서 경기
+   * 하나만 고치러 온 왕복 중(returnToConfirm)이면 몇 번째 경기든 곧장 confirm으로 돌아간다.
+   */
+  function goNextFromPick() {
+    const next = computeNextFromPick({ step, matchCursor, returnToConfirm }, pending.length)
+    completeStep('pick', next.step)
+    applyCursor(next)
   }
 
   function changeScore(fixtureId: string, side: 0 | 1, delta: number) {
@@ -213,16 +289,10 @@ export function PredictionFlowClient({
     })
   }
 
-  /** "그대로 적용" — 첫 경기 픽을 다른 경기에 복사한다. 경기끼리 같은 선수를 골라도 제약에 걸리지 않는다. */
-  function copyPicks(fromMatchId: string, toMatchId: string) {
-    copyUsedRef.current = true
-    setPicks(prev => ({ ...prev, [toMatchId]: { ...prev[fromMatchId] } }))
-  }
-
   function handleSubmit() {
     setError(null)
     startTransition(async () => {
-      const result = await submitWeekPrediction(week.weekKey, {
+      const input = {
         scores,
         picks: Object.fromEntries(
           pending.map(match => [
@@ -234,14 +304,24 @@ export function PredictionFlowClient({
             },
           ]),
         ),
-      })
+      }
+      const result =
+        mode === 'edit'
+          ? await updateMatchPrediction(week.weekKey, matchIds[0], input)
+          : await submitWeekPrediction(week.weekKey, matchIds, input)
 
       if ('success' in result) {
         // 성공 이벤트(prediction_submitted)는 서버 액션이 보낸다 — 애드블록에 막히지 않게.
-        // 퍼널 종료 지점은 아래 refresh로 마운트되는 PredictionDone이 맡는다.
-        // 제출 내역은 서버가 다시 읽는다(revalidate) — 새로고침하면 완료 화면으로 들어온다.
+        // updateMatchPrediction은 이번 스코프에서 서버 이벤트를 안 보낸다(§5 스킵 확정).
         setSubmitConfirmOpen(false)
-        router.refresh()
+        if (mode === 'edit') {
+          // query(?edit=)를 지우고 완료 허브로 돌아간다 — refresh만 하면 URL이 그대로 남아
+          // 같은 edit 화면이 다시 뜬다(무한 루프는 아니지만 "수정 완료" 느낌을 주지 못한다).
+          router.push(`/predictions/${week.weekKey}`)
+        } else {
+          // 제출 내역은 서버가 다시 읽는다(revalidate) — 새로고침하면 완료 화면으로 들어온다.
+          router.refresh()
+        }
         return
       }
       if (result.error === 'unauthenticated') {
@@ -273,24 +353,36 @@ export function PredictionFlowClient({
 
   const stepMeta = STEP_META.find(s => s.key === step)!
   const stepDesc = isMulti && stepMeta.descMulti ? stepMeta.descMulti : stepMeta.desc
-  const stepOrder = STEP_META.map(s => s.key)
-  const goPrev = () => {
-    const idx = stepOrder.indexOf(step)
-    if (idx > 0) setStep(stepOrder[idx - 1])
+  /**
+   * ProgressPips 점 개수/위치 — 경기마다 (score, pick) 2단계 + 마지막 confirm 1단계(feature-spec
+   * §9.2). 단일 경기 세션(pending.length 1, edit 포함)에서는 3(=STEP_META.length)이라 기존과 같다.
+   */
+  const totalSteps = pending.length * 2 + 1
+  const currentStepIndex = flowPipIndex({ step, matchCursor, returnToConfirm }, pending.length)
+  /** score 단계의 진짜 첫 화면 — "이전"이 없어 뒤로가기 히스토리 가드(popstate)만 이탈을 처리한다. */
+  const isVeryFirstStep = isFirstFlowStep({ step, matchCursor, returnToConfirm })
+  /**
+   * "이전" — 고정 순서 a-b-a-b-c를 대칭으로 되돌린다(feature-spec §9.2). pick에서는 같은 경기의
+   * score로, score에서는(첫 경기가 아니면) 이전 경기의 pick으로. confirm에서 온 왕복 중이면 다른
+   * 경기로 새지 않고 곧장 confirm으로 취소한다. 단일 경기 세션(matchCursor 항상 0)에서는 기존과
+   * 동일하게 score↔pick↔confirm만 오간다.
+   */
+  function goPrev() {
+    applyCursor(computePrevStep({ step, matchCursor, returnToConfirm }))
   }
 
-  // 단일 경기 픽 단계의 남은 툰(더블 매치위크는 경기별 BudgetBar가 대신 보여준다).
-  const singleSpent =
-    !isMulti && pending[0]
-      ? POSITIONS.reduce((sum, position) => sum + (picks[pending[0].id]?.[position]?.cost ?? 0), 0)
-      : 0
+  // 지금 보이는 경기의 픽 단계 남은 툰 — score/pick 단계가 항상 경기 하나만 보여주므로
+  // (feature-spec §9.2, 경기별 BudgetBar 제거) 더블 매치위크에서도 이 하나로 충분하다.
+  const currentSpent = currentMatch
+    ? POSITIONS.reduce((sum, position) => sum + (picks[currentMatch.id]?.[position]?.cost ?? 0), 0)
+    : 0
 
-  // 푸터 좌측(데스크탑) / 카드 하단(모바일)에 붙는 상태. 픽=남은 툰, 확인=수정 불가 안내.
+  // 푸터 좌측(데스크탑) / 카드 하단(모바일)에 붙는 상태. 픽=남은 툰, 확인=킥오프 전까지 수정 가능 안내.
   const statusNode =
-    step === 'pick' && !isMulti ? (
-      <ToonCounter remaining={BUDGET - singleSpent} total={BUDGET} />
+    step === 'pick' ? (
+      <ToonCounter remaining={BUDGET - currentSpent} total={BUDGET} />
     ) : step === 'confirm' ? (
-      <span className="text-label-2 text-neutral-muted">제출한 예측은 수정할 수 없어요</span>
+      <span className="text-label-2 text-neutral-muted">킥오프 전까지 다시 수정할 수 있어요</span>
     ) : null
 
   /** 스텝별 다음/제출 버튼 — 데스크탑 푸터와 모바일 바 양쪽에서 같은 핸들러를 쓴다. */
@@ -304,7 +396,7 @@ export function PredictionFlowClient({
     }
     if (step === 'pick') {
       return (
-        <Button size="lg" className={className} disabled={!allPicked} onClick={() => completeStep('pick', 'confirm')}>
+        <Button size="lg" className={className} disabled={!currentMatchPicked} onClick={goNextFromPick}>
           다음
         </Button>
       )
@@ -313,87 +405,65 @@ export function PredictionFlowClient({
       <Button
         size="lg"
         className={className}
-        disabled={submitting || !!scoreRangeError}
+        // allPicked는 이제 각 경기 pick 단계의 "다음"이 이미 보장하는 조건이지만, 제출 버튼에도
+        // 최종 안전망으로 남겨둔다(고정 순서를 우회해 confirm에 직접 도달하는 경우를 방어).
+        disabled={submitting || !!scoreRangeError || !allPicked}
         onClick={() => setSubmitConfirmOpen(true)}
       >
-        {submitting ? '제출 중…' : '제출하기'}
+        {mode === 'edit' ? (submitting ? '수정 중…' : '수정하기') : submitting ? '제출 중…' : '제출하기'}
       </Button>
     )
   }
 
-  /** 스텝별 본문 — 데스크탑에서 세 스텝을 같은 그리드 칸에 겹쳐 쌓아 높이를 최대('확인')에 맞춘다. */
+  /**
+   * 스텝별 본문 — 데스크탑에서 세 스텝을 같은 그리드 칸에 겹쳐 쌓아 높이를 최대('확인')에 맞춘다.
+   * score/pick은 pending.length와 무관하게 항상 matchCursor가 가리키는 경기 하나만 보여준다
+   * (더블 매치위크의 경기별 스택·BudgetBar·"그대로 적용"은 feature-spec §9로 폐기됐다 — 대신
+   * 고정 순서로 경기를 하나씩 돈다). confirm만 예전처럼 pending 전체를 한 화면에 모아 보여준다.
+   */
   function stepBody(key: StepKey) {
     if (key === 'score') {
+      if (!currentMatch) return null
       return (
-        // 더블 매치위크는 경기별 입력 블록이 세로로 쌓인다 — 픽은 주 단위라 다음 스텝에서 한 번만.
-        <div className="flex flex-col gap-8">
-          {pending.map((match, i) => (
-            <div key={match.id}>
-              {isMulti && <MatchLabel index={i} opponent={match.opponent} />}
-              <MatchMeta weekNo={week.weekNo} match={match} />
-              <div className="mt-6 flex items-center justify-center gap-4 sm:gap-6">
-                <TeamColumn logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
-                <ScoreStepper
-                  value={scores[match.id]?.[0] ?? 0}
-                  onChange={delta => changeScore(match.id, 0, delta)}
-                />
-                <ScoreStepper
-                  value={scores[match.id]?.[1] ?? 0}
-                  onChange={delta => changeScore(match.id, 1, delta)}
-                />
-                <TeamColumn logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
-              </div>
-            </div>
-          ))}
+        <div>
+          <MatchMeta weekNo={week.weekNo} match={currentMatch} />
+          <div className="mt-6 flex items-center justify-center gap-4 sm:gap-6">
+            <TeamColumn logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
+            <ScoreStepper
+              value={scores[currentMatch.id]?.[0] ?? 0}
+              onChange={delta => changeScore(currentMatch.id, 0, delta)}
+            />
+            <ScoreStepper
+              value={scores[currentMatch.id]?.[1] ?? 0}
+              onChange={delta => changeScore(currentMatch.id, 1, delta)}
+            />
+            <TeamColumn logoUrl={teamLogoUrl(currentMatch.opponentId)} name={currentMatch.opponent} />
+          </div>
         </div>
       )
     }
     if (key === 'pick') {
+      if (!currentMatch) return null
       return (
-        <div className="flex flex-col gap-7">
-          {pending.map((match, i) => (
-            <div key={match.id}>
-              {isMulti && (
-                <div className="mb-3 flex items-center justify-between">
-                  <MatchLabel index={i} opponent={match.opponent} />
-                  {i > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => copyPicks(pending[0].id, match.id)}
-                      className="text-label-2 font-medium text-brand"
-                    >
-                      그대로 적용
-                    </button>
-                  )}
-                </div>
-              )}
-              {/* 더블 매치위크만 경기별 예산 게이지를 인라인으로 둔다 — 단일 경기는 푸터 남은 툰이 대신한다. */}
-              {isMulti && (
-                <div className="mb-3">
-                  <BudgetBar
-                    spent={POSITIONS.reduce(
-                      (sum, position) => sum + (picks[match.id]?.[position]?.cost ?? 0),
-                      0,
-                    )}
-                  />
-                </div>
-              )}
-              <PositionRow
-                picks={picks[match.id] ?? {}}
-                onOpen={position => setPickTarget({ matchId: match.id, position })}
-              />
-            </div>
-          ))}
-        </div>
+        <PositionRow
+          picks={picks[currentMatch.id] ?? {}}
+          onOpen={position => setPickTarget({ matchId: currentMatch.id, position })}
+        />
       )
     }
-    // confirm — 경기별로 결과/선수 요약 섹션. 선수 픽은 주 단위 1세트라 경기 카드 안에 그대로 붙는다.
+    // confirm — 경기별로 결과/선수 요약 섹션. 선수 픽은 경기별 1세트라 경기 카드 안에 그대로 붙는다.
     return (
       <div className="flex flex-col gap-4">
         {pending.map((match, i) => (
           <div key={match.id} className={cn('flex flex-col gap-4', i > 0 && 'mt-2')}>
             {isMulti && <MatchLabel index={i} opponent={match.opponent} />}
-            <SummarySection title="나의 결과 예측" onEdit={() => setStep('score')}>
+            {/* 수정 링크는 그 경기로 커서를 옮기고 returnToConfirm을 켠 채 되돌아간다 — 이걸
+                안 하면 "다음"이 나머지 경기를 다시 거치게 만드는 버그였다(코드리뷰 2026-09-05,
+                flow-cursor.test.mjs의 REGRESSION 테스트 참고). */}
+            <SummarySection
+              title="나의 결과 예측"
+              onEdit={() => applyCursor(startEditFromConfirm(i, 'score'))}
+            >
               <div className="flex items-center justify-center gap-4 sm:gap-8">
                 <ConfirmTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
                 <span className="text-title-2 font-semibold">
@@ -402,7 +472,10 @@ export function PredictionFlowClient({
                 <ConfirmTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
               </div>
             </SummarySection>
-            <SummarySection title="나의 선수 예측" onEdit={() => setStep('pick')}>
+            <SummarySection
+              title="나의 선수 예측"
+              onEdit={() => applyCursor(startEditFromConfirm(i, 'pick'))}
+            >
               <PositionRow
                 picks={picks[match.id] ?? {}}
                 onOpen={position => setPickTarget({ matchId: match.id, position })}
@@ -423,28 +496,41 @@ export function PredictionFlowClient({
             <h1 className="text-heading-2 font-semibold text-neutral">{stepMeta.name}</h1>
             <p className="mt-1 text-label-2 text-neutral-muted">{stepDesc}</p>
           </div>
-          <ProgressPips current={step} />
+          <ProgressPips current={step} total={totalSteps} activeIndex={currentStepIndex} />
         </div>
 
         {/* 모바일 선수 예측: 남은 툰을 목록 위에 둔다 — 하단 고정 바에 가려지지 않게 목록을 맨 아래로.
             (데스크탑은 아래 푸터 좌측에 있어 영향 없음.) */}
         {step === 'pick' && statusNode && <div className="pt-4 sm:hidden">{statusNode}</div>}
 
-        {/* 본문 — 데스크탑은 세 스텝을 같은 칸에 겹쳐 쌓고(높이 고정) 비활성은 자리만 차지. 모바일은 활성만. */}
-        <div className="flex flex-1 flex-col py-6 sm:grid sm:py-8">
-          {STEP_META.map(({ key }) => (
-            <div
-              key={key}
-              aria-hidden={key !== step}
-              className={cn(
-                'flex-col justify-center sm:col-start-1 sm:row-start-1',
-                key === step ? 'flex' : 'hidden sm:flex sm:invisible',
-              )}
-            >
-              <div className="w-full">{stepBody(key)}</div>
-            </div>
-          ))}
-        </div>
+        {/*
+          본문 — score↔pick 전환(같은 경기 안에서 왔다갔다 하는, 가장 잦은 전환)만 같은 그리드
+          칸에 겹쳐 쌓아 높이를 고정한다(비활성은 자리만 차지). confirm은 이 겹쳐-쌓기에서 뺐다
+          — 더블 매치위크에서는 confirm이 경기 2개를 다 보여줘 훨씬 커지는데, 그걸 score/pick과
+          같이 계속 그려두면 경기 하나만 보여줘야 할 score/pick 컨테이너까지 confirm 높이로
+          고정돼버린다(코드리뷰 2026-09-04). confirm은 그냥 조건부로 그 내용만 렌더해
+          자기 콘텐츠 크기대로 자연스럽게 커지게 둔다. 모바일은 원래도 활성 스텝만 그렸으니 영향 없음.
+        */}
+        {step === 'confirm' ? (
+          <div className="flex flex-1 flex-col py-6 sm:py-8">
+            <div className="w-full">{stepBody('confirm')}</div>
+          </div>
+        ) : (
+          <div className="flex flex-1 flex-col py-6 sm:grid sm:py-8">
+            {(['score', 'pick'] as const).map(key => (
+              <div
+                key={key}
+                aria-hidden={key !== step}
+                className={cn(
+                  'flex-col justify-center sm:col-start-1 sm:row-start-1',
+                  key === step ? 'flex' : 'hidden sm:flex sm:invisible',
+                )}
+              >
+                <div className="w-full">{stepBody(key)}</div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {visibleError && (
           <p role="alert" className="mb-2 text-center text-label-2 font-medium text-critical">
@@ -462,7 +548,7 @@ export function PredictionFlowClient({
           <div className="flex min-h-[56px] items-center justify-between gap-4">
             <div>{statusNode}</div>
             <div className="flex gap-2">
-              {step !== 'score' && (
+              {!isVeryFirstStep && (
                 <Button variant="ghost" size="lg" className="w-[100px]" onClick={goPrev}>
                   이전
                 </Button>
@@ -477,12 +563,12 @@ export function PredictionFlowClient({
           sm:hidden으로 모바일 전용이다(fixed→static 전환 로직은 StickyActionBar가 소유). */}
       <StickyActionBar className="border-neutral-weak sm:hidden">
         <div className="mx-auto flex max-w-shell gap-2">
-          {step !== 'score' && (
+          {!isVeryFirstStep && (
             <Button variant="ghost" size="lg" className="flex-1" onClick={goPrev}>
               이전
             </Button>
           )}
-          {primaryButton(step !== 'score' ? 'flex-[2]' : 'w-full')}
+          {primaryButton(!isVeryFirstStep ? 'flex-[2]' : 'w-full')}
         </div>
       </StickyActionBar>
 
@@ -541,9 +627,13 @@ export function PredictionFlowClient({
           LoginContent의 onLoginSuccess가 이 모달을 다시 연 상태로 돌려보낸다(자동 재제출 아님). */}
       <Modal open={submitConfirmOpen} onOpenChange={o => { if (!o) setSubmitConfirmOpen(false) }}>
         <ConfirmContent
-          title="이대로 제출할까요?"
+          title={mode === 'edit' ? '이대로 수정할까요?' : '이대로 제출할까요?'}
+          // 승부예측은 제출 후에도 킥오프 전까지 자유 수정 가능하다 — ConfirmContent 기본 문구
+          // ("제출 후에는 변경할 수 없습니다", 투표 도메인 기준)를 그대로 두면 모순이라 덮어쓴다.
+          description="킥오프 전까지 다시 수정할 수 있어요"
           selectedLabel={`${pending.length}경기 예측`}
           summaryCaption="내 예측"
+          confirmLabel={mode === 'edit' ? '수정하기' : undefined}
           onCancel={() => setSubmitConfirmOpen(false)}
           onConfirm={handleSubmit}
           isPending={submitting}

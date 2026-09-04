@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Coins, Wallet, CircleHelp } from 'lucide-react'
+import { Coins } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/primitives/avatar'
 import { Button } from '@/components/primitives/button'
 import { cn } from '@/lib/utils'
@@ -131,46 +131,5 @@ export function ToonCost({ cost, className }: { cost: number; className?: string
       <Coins size={12} aria-hidden />
       {cost}
     </span>
-  )
-}
-
-/**
- * 5툰 예산 게이지 — 좌측 예산(지갑) 아이콘 · 5칸 세그먼트(툰만큼 채움) · 우측 도움말(?).
- * 도움말은 호버(데스크탑)나 탭(모바일)으로 열린다. 숫자 텍스트는 두지 않는다 — 채워진 칸으로 읽는다.
- * 초과는 선택 단계에서 막으므로 여기서 over 상태는 없다.
- */
-export function BudgetBar({ spent, total = 5 }: { spent: number; total?: number }) {
-  const [helpOpen, setHelpOpen] = useState(false)
-  return (
-    <div className="flex items-center gap-2.5">
-      <Wallet size={16} aria-hidden className="shrink-0 text-neutral-muted" />
-      <div className="flex flex-1 gap-1.5" role="img" aria-label={`${total}툰 중 ${spent}툰 사용`}>
-        {Array.from({ length: total }, (_, i) => (
-          <span
-            key={i}
-            className={cn('h-2 flex-1 rounded-pill', i < spent ? 'bg-brand-solid' : 'bg-disabled')}
-          />
-        ))}
-      </div>
-      <div className="group relative shrink-0">
-        <button
-          type="button"
-          aria-label="예산 도움말"
-          onClick={() => setHelpOpen(open => !open)}
-          className="flex h-5 w-5 items-center justify-center text-neutral-subtle transition-colors duration-micro hover:text-brand"
-        >
-          <CircleHelp size={16} aria-hidden />
-        </button>
-        <span
-          role="tooltip"
-          className={cn(
-            'pointer-events-none absolute right-0 top-full z-10 mt-2 w-52 rounded-md bg-neutral-strong px-3 py-2 text-caption-2 font-medium text-on-solid shadow-w200 transition-opacity duration-micro group-hover:opacity-100',
-            helpOpen ? 'opacity-100' : 'opacity-0',
-          )}
-        >
-          선수마다 1~3툰의 가격이 있어요. 한 경기에서 5툰 예산 안으로 세 명을 골라요.
-        </span>
-      </div>
-    </div>
   )
 }

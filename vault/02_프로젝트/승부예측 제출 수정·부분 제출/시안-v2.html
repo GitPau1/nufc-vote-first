@@ -1,0 +1,686 @@
+<h2>승부예측 제출 수정·부분 제출 — 화면 시안 v2 (플로우 재구성)</h2>
+<p class="subtitle-lead">
+  <code>시안-v1.html</code>은 그대로 두고 비교용으로 남겼습니다. 이 v2는 코디네이터가 전달한 피드백 2건을 반영합니다.
+</p>
+<p class="subtitle-lead">
+  <b>확정 반영(대안 없음)</b> — ① 완료 허브의 "공유하기" 자리를 "수정하기" 버튼으로 대체(제출한 경기 수와 무관하게 항상 하나만 노출).
+  제출 1개면 바로 그 경기 수정 플로우로, 2개 이상이면 "어느 경기를 수정할지" 고르는 선택 화면이 먼저 뜬다.
+  경기 카드마다 있던 작은 "수정" 텍스트 링크는 삭제. "공유하기"는 이번 화면 구성에서 완전히 제외(다른 자리 이동은 별도 논의).
+  ② 화면을 종류별로 나열하지 않고 <b>사용자가 실제로 밟는 순서(플로우)</b> 기준으로 재구성 — 최소 2개 플로우, 모바일(375px) 기준.
+  데스크탑은 v1에 이미 있으므로 여기서는 다시 그리지 않습니다.
+</p>
+<p class="subtitle-lead">
+  v1에서 병기했던 카피 대안 박스는 아직 확정 답변이 안 와서 이번에도 그대로 들고 왔습니다 — 각 화면이 등장하는 지점 바로 아래에 배치했습니다.
+</p>
+
+<style>
+  .ds {
+    --bg-page: #fafafb; --bg-surface: #ffffff; --bg-overlay: rgba(0,0,0,.45);
+    --bg-disabled: #e9e9ea; --bg-neutral-weak: #e9e9ea; --bg-neutral-weak-pressed: #d8d9da;
+    --bg-neutral-strong: #313335;
+    --bg-brand-solid: #115aff; --bg-brand-solid-pressed: #0d42c0; --bg-brand-weak: #d8f1ff;
+    --bg-critical-weak: #ffe8e0; --bg-positive-weak: #f4fff5; --bg-warning-weak: #fff5d9;
+    --bg-on-solid-weak: rgba(255,255,255,.05); --bg-on-solid-strong: rgba(255,255,255,.1);
+    --fg-neutral: #1a1b1c; --fg-neutral-strong: #313335; --fg-neutral-muted: #666666;
+    --fg-neutral-subtle: #a2a5a9; --fg-disabled: #bcbec0; --fg-on-solid: #ffffff;
+    --fg-on-solid-muted: #bcbec0; --fg-on-solid-brand: #6ab4ff;
+    --fg-brand: #115aff; --fg-critical: #cf231a; --fg-positive: #008728; --fg-warning: #a65e00;
+    --stroke-weak: #e9e9ea; --stroke-subtle: #f3f3f4; --stroke-strong: #a2a5a9;
+    --r-xs: 8px; --r-sm: 10px; --r-md: 12px; --r-lg: 16px; --r-pill: 9999px;
+    --sh-w200: 0px 1px 6px rgba(0,0,0,.12);
+    --sh-w300: 0px 1px 20px rgba(0,0,0,.07);
+    --sh-g200: 0px 1px 4px rgba(0,0,0,.06);
+    font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif;
+    color: var(--fg-neutral);
+  }
+
+  .t-title-3    { font-size:24px; line-height:32px; letter-spacing:-0.023em; }
+  .t-heading-2  { font-size:20px; line-height:28px; letter-spacing:-0.012em; }
+  .t-headline-1 { font-size:18px; line-height:26px; letter-spacing:-0.002em; }
+  .t-body-2     { font-size:15px; line-height:22px; letter-spacing:0.0096em; }
+  .t-label-1    { font-size:14px; line-height:20px; letter-spacing:0.0145em; }
+  .t-label-2    { font-size:13px; line-height:18px; letter-spacing:0.0194em; }
+  .t-caption-1  { font-size:12px; line-height:16px; letter-spacing:0.0252em; }
+  .t-caption-2  { font-size:11px; line-height:14px; letter-spacing:0.0311em; }
+
+  .muted { color: var(--fg-neutral-muted); }
+  .onsolid-muted { color: var(--fg-on-solid-muted); }
+
+  .page { width:375px; max-width:100%; margin:0 auto; background:var(--bg-page); border:1px solid #d8d9da; border-radius:24px; padding:18px 14px 26px; display:flex; flex-direction:column; gap:14px; position:relative; }
+
+  .card { background:var(--bg-surface); border:1px solid var(--stroke-weak); border-radius:var(--r-lg); box-shadow:var(--sh-g200); }
+  .dark-card { border:none; border-radius:var(--r-lg); padding:18px 16px; color:var(--fg-on-solid);
+    background: radial-gradient(220px at 0% 0%, rgba(17,90,255,.15) 0%, transparent 70%),
+                radial-gradient(220px at 100% 0%, rgba(47,122,255,.15) 0%, transparent 70%),
+                var(--bg-neutral-strong); }
+
+  .crest-lg { width:44px; height:44px; border-radius:50%; background:var(--bg-disabled); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; color:var(--fg-neutral-muted); flex-shrink:0; }
+  .crest-sm { width:32px; height:32px; border-radius:50%; background:var(--bg-disabled); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; color:var(--fg-neutral-muted); flex-shrink:0; }
+
+  .match-card { background:var(--bg-page); border-radius:var(--r-lg); padding:12px 12px 18px; }
+  .match-label { font-size:13px; font-weight:500; color:var(--fg-neutral-muted); margin-bottom:8px; }
+
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; border-radius:var(--r-sm); font-size:15px; font-weight:600; height:46px; padding:0 18px; border:none; cursor:pointer; font-family:inherit; transition:opacity .15s ease; }
+  .btn:hover { opacity:.7; }
+  .btn-default { background:var(--bg-brand-solid); color:var(--fg-on-solid); box-shadow:var(--sh-w200); }
+  .btn-outline { background:transparent; border:1px solid var(--stroke-weak); color:var(--fg-neutral); }
+  .btn-ghost { background:transparent; color:var(--fg-neutral-muted); }
+  .btn-sm { height:38px; font-size:14px; padding:0 14px; }
+  .btn-disabled { background:var(--bg-disabled); color:var(--fg-disabled); box-shadow:none; }
+
+  .link-edit { background:none; border:none; color:var(--fg-brand); font-size:13px; font-weight:500; cursor:pointer; font-family:inherit; padding:0; }
+
+  .pips { display:flex; gap:6px; flex-shrink:0; padding-top:4px; }
+  .pip { height:6px; width:22px; border-radius:var(--r-pill); background:var(--bg-neutral-weak); }
+  .pip.active { background:var(--bg-brand-solid); }
+
+  .summary { background:var(--bg-page); border-radius:var(--r-lg); padding:14px; }
+
+  .stepper { width:56px; border:1px solid var(--stroke-weak); border-radius:var(--r-md); overflow:hidden; background:var(--bg-surface); flex-shrink:0; }
+  .stepper button { display:flex; height:30px; width:100%; align-items:center; justify-content:center; background:var(--bg-surface); color:var(--fg-neutral-muted); border:none; font-size:15px; font-family:inherit; cursor:pointer; }
+  .stepper .value { display:flex; height:46px; align-items:center; justify-content:center; border-top:1px solid var(--stroke-weak); border-bottom:1px solid var(--stroke-weak); font-size:22px; font-weight:600; }
+
+  .pick-photo-sm { width:44px; height:44px; border-radius:50%; background:var(--bg-disabled); flex-shrink:0; }
+  .pick-row { display:flex; align-items:center; gap:10px; padding:11px; }
+  .pick-row + .pick-row { border-top:1px solid var(--stroke-weak); }
+
+  .overlay { position:absolute; inset:0; background:var(--bg-overlay); border-radius:24px; z-index:5; }
+  .modal-sheet { position:absolute; left:14px; right:14px; bottom:14px; background:var(--bg-surface); border-radius:16px; padding:20px 18px 22px; box-shadow:var(--sh-w300); z-index:10; }
+  .sheet-handle { width:36px; height:4px; background:var(--bg-neutral-weak); border-radius:var(--r-pill); margin:0 auto 14px; }
+
+  .week-card { border-radius:var(--r-lg); padding:16px; background:linear-gradient(to bottom, rgba(17,90,255,.07) 0%, transparent 45%), var(--bg-surface); border:1px solid var(--stroke-weak); }
+  .badge { display:inline-flex; align-items:center; border-radius:var(--r-pill); padding:3px 9px; font-size:11px; font-weight:600; }
+  .badge-default { background:var(--bg-brand-weak); color:var(--fg-brand); }
+
+  .frame-tag { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.03em; color:var(--fg-brand); background:var(--bg-brand-weak); padding:3px 10px; border-radius:var(--r-pill); margin:0 auto 8px; }
+  .frame-wrap { display:flex; flex-direction:column; align-items:center; }
+
+  .flow-connector { display:flex; justify-content:center; margin:14px 0; }
+  .flow-connector span { display:inline-flex; align-items:center; gap:6px; background:var(--bg-brand-weak); color:var(--fg-brand); font-size:13px; font-weight:600; padding:8px 16px; border-radius:var(--r-pill); text-align:center; }
+
+  .flow-ref { text-align:center; font-size:13px; color:var(--fg-neutral-muted); margin:8px 0; padding:10px 14px; border:1px dashed var(--stroke-strong); border-radius:var(--r-md); width:375px; max-width:100%; margin-left:auto; margin-right:auto; }
+
+  .flow-note { text-align:center; font-size:12.5px; color:var(--fg-neutral-muted); margin:6px auto 0; width:375px; max-width:100%; }
+
+  .alt-box { border:1px dashed var(--stroke-strong); border-radius:var(--r-md); padding:12px 14px; background:#fff; margin:14px auto 24px; width:460px; max-width:100%; }
+  .alt-box .alt-label { font-size:11px; font-weight:700; letter-spacing:.04em; color:var(--fg-neutral-muted); text-transform:uppercase; margin-bottom:6px; }
+  .alt-row { display:flex; gap:10px; align-items:baseline; margin-bottom:4px; font-size:14px; }
+  .alt-row .tag { font-size:11px; font-weight:700; padding:1px 7px; border-radius:var(--r-pill); flex-shrink:0; }
+  .alt-row.pick .tag { background:var(--bg-brand-weak); color:var(--fg-brand); }
+  .alt-row.other .tag { background:var(--bg-disabled); color:var(--fg-neutral-muted); }
+
+  .issue-box { border:1px solid #f0dca0; background:var(--bg-warning-weak); border-radius:var(--r-md); padding:12px 14px; margin:14px auto 24px; width:460px; max-width:100%; font-size:13px; color:var(--fg-neutral); }
+  .issue-box .issue-label { font-size:11px; font-weight:700; color:var(--fg-warning); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
+
+  h3.flow-h { margin:40px 0 4px; text-align:center; }
+  p.flow-sub { max-width:460px; margin:0 auto 20px; font-size:13px; color:var(--fg-neutral-muted); text-align:center; }
+</style>
+
+<div class="ds">
+
+<h3 class="flow-h">플로우 A — 더블 매치위크, 부분 제출 후 완료까지</h3>
+<p class="flow-sub">목록 → 경기 선택 → 경기 하나 제출 → 완료 허브(부분) → 남은 경기 제출 → 완료 허브(전체). design-brief §3 시나리오 B·C에 대응.</p>
+
+<div class="frame-wrap">
+<span class="frame-tag">A-1 · 목록 화면</span>
+<div class="page">
+  <div class="week-card">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px">
+      <span class="t-headline-1" style="font-weight:600">5주차</span>
+      <span class="badge badge-default">진행중</span>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px">
+      <div class="match-card">
+        <p class="t-caption-1 muted" style="font-weight:500; margin-bottom:10px">프리미어리그</p>
+        <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px">
+          <div style="display:flex; align-items:center; justify-content:flex-end; gap:6px; min-width:0"><span class="t-caption-1" style="font-weight:500">뉴캐슬</span><div class="crest-sm">뉴</div></div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:2px"><span class="t-caption-2 muted">8월 30일</span><span class="t-label-2" style="font-weight:500">오후 8:00</span></div>
+          <div style="display:flex; align-items:center; gap:6px; min-width:0"><div class="crest-sm">W</div><span class="t-caption-1" style="font-weight:500">울브스</span></div>
+        </div>
+      </div>
+      <div class="match-card">
+        <p class="t-caption-1 muted" style="font-weight:500; margin-bottom:10px">카라바오컵</p>
+        <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px">
+          <div style="display:flex; align-items:center; justify-content:flex-end; gap:6px; min-width:0"><span class="t-caption-1" style="font-weight:500">아스널</span><div class="crest-sm">A</div></div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:2px"><span class="t-caption-2 muted">9월 2일</span><span class="t-label-2" style="font-weight:500">오전 4:00</span></div>
+          <div style="display:flex; align-items:center; gap:6px; min-width:0"><div class="crest-sm">뉴</div><span class="t-caption-1" style="font-weight:500">뉴캐슬</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; justify-content:flex-end; margin-top:14px">
+      <button class="btn btn-default btn-sm" style="width:130px">예측하기</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="flow-connector"><span>↓ "예측하기" 클릭 · 두 경기 모두 미제출이라 경기 선택 화면으로</span></div>
+
+<div class="frame-wrap">
+<span class="frame-tag">A-2 · 경기 선택 화면 (제출 문맥)</span>
+<div class="page">
+  <div class="card" style="padding:20px">
+    <div style="margin-bottom:20px">
+      <p class="t-heading-2" style="font-weight:600">어느 경기부터<br>예측할까요?</p>
+      <p class="t-label-2 muted" style="margin-top:6px">한 경기만 먼저 해도 되고, 둘 다 지금 해도 돼요</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px">
+      <div class="match-card">
+        <p class="t-caption-1 muted" style="font-weight:500; margin-bottom:10px">프리미어리그</p>
+        <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px">
+          <div style="display:flex; align-items:center; justify-content:flex-end; gap:6px; min-width:0"><span class="t-caption-1" style="font-weight:500">뉴캐슬</span><div class="crest-sm">뉴</div></div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:2px"><span class="t-caption-2 muted">8월 30일</span><span class="t-label-2" style="font-weight:500">오후 8:00</span></div>
+          <div style="display:flex; align-items:center; gap:6px; min-width:0"><div class="crest-sm">W</div><span class="t-caption-1" style="font-weight:500">울브스</span></div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="width:100%; margin-top:14px">울브스전만 하기</button>
+      </div>
+      <div class="match-card">
+        <p class="t-caption-1 muted" style="font-weight:500; margin-bottom:10px">카라바오컵</p>
+        <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px">
+          <div style="display:flex; align-items:center; justify-content:flex-end; gap:6px; min-width:0"><span class="t-caption-1" style="font-weight:500">아스널</span><div class="crest-sm">A</div></div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:2px"><span class="t-caption-2 muted">9월 2일</span><span class="t-label-2" style="font-weight:500">오전 4:00</span></div>
+          <div style="display:flex; align-items:center; gap:6px; min-width:0"><div class="crest-sm">뉴</div><span class="t-caption-1" style="font-weight:500">뉴캐슬</span></div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="width:100%; margin-top:14px">아스널전만 하기</button>
+      </div>
+    </div>
+    <div style="margin-top:18px; padding-top:16px; border-top:1px solid var(--stroke-weak)">
+      <button class="btn btn-default" style="width:100%">둘 다 예측하기</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="alt-box">
+  <p class="alt-label">카피 대안 — 경기 선택 화면 (feature-spec §7-1, v1과 동일 · 미확정)</p>
+  <div class="alt-row pick"><span class="tag">시안</span> 제목 "어느 경기부터 예측할까요?" · 부제 "한 경기만 먼저 해도 되고, 둘 다 지금 해도 돼요"</div>
+  <div class="alt-row other"><span class="tag">대안</span> 제목 "이번 주는 경기가 두 개예요" · 부제 "지금 하고 싶은 경기를 골라주세요"</div>
+  <div class="alt-row pick"><span class="tag">시안</span> 경기별 버튼 "울브스전만 하기" / "아스널전만 하기"</div>
+  <div class="alt-row other"><span class="tag">대안</span> "경기 1만 하기" / "경기 2만 하기"</div>
+  <div class="alt-row pick"><span class="tag">시안</span> 하단 CTA "둘 다 예측하기"</div>
+  <div class="alt-row other"><span class="tag">대안</span> "두 경기 모두 하기"</div>
+</div>
+
+<div class="flow-connector"><span>↓ "울브스전만 하기" 선택 · 그 경기 3단계(스코어→선수픽→확인) 진입</span></div>
+
+<div class="frame-wrap">
+<span class="frame-tag">A-3 · 스코어 입력 (울브스전 · 1/3단계)</span>
+<div class="page">
+  <div class="card" style="padding:20px">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start">
+      <div>
+        <p class="t-heading-2" style="font-weight:600">경기 예측</p>
+        <p class="t-label-2 muted" style="margin-top:4px">이번 경기의 스코어를<br>예측해보세요</p>
+      </div>
+      <div class="pips"><span class="pip active"></span><span class="pip"></span><span class="pip"></span></div>
+    </div>
+    <div style="margin-top:22px; text-align:center">
+      <p class="t-label-2 muted">프리미어리그 · 5라운드</p>
+      <p class="t-label-2 muted" style="margin-top:2px">8월 30일 (홈) 오후 8:00</p>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-top:20px">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:64px"><div class="crest-lg">뉴</div><span class="t-label-2" style="font-weight:500">뉴캐슬</span></div>
+      <div class="stepper"><button>+</button><div class="value">2</div><button>−</button></div>
+      <div class="stepper"><button>+</button><div class="value">1</div><button>−</button></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:64px"><div class="crest-lg">W</div><span class="t-label-2" style="font-weight:500">울브스</span></div>
+    </div>
+    <div style="margin-top:22px; padding-top:14px; border-top:1px solid var(--stroke-weak)">
+      <button class="btn btn-default" style="width:100%">다음</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<p class="flow-note">선수 픽 단계(포지션별 3명 고르기)는 기존 예측 플로우와 동일해 이 시안에서는 생략합니다.</p>
+
+<div class="flow-connector"><span>↓ "다음" ×2(스코어→픽) 완료 · 확인 단계 도착</span></div>
+
+<div class="frame-wrap">
+<span class="frame-tag">A-4 · 확인 단계 + 제출 모달 (울브스전)</span>
+<div class="page">
+  <div class="card" style="padding:20px">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start">
+      <div>
+        <p class="t-heading-2" style="font-weight:600">제출 전 확인</p>
+        <p class="t-label-2 muted" style="margin-top:4px">마지막으로 예측 내용을<br>확인해보세요</p>
+      </div>
+      <div class="pips"><span class="pip active"></span><span class="pip active"></span><span class="pip active"></span></div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px; margin-top:20px">
+      <div class="summary">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+          <span class="t-label-1 muted" style="font-weight:500">나의 결과 예측</span>
+          <button class="link-edit">수정</button>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:center; gap:16px">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; width:60px"><div class="crest-sm">뉴</div><span class="t-caption-1 muted">뉴캐슬</span></div>
+          <span class="t-title-3" style="font-weight:600">2 – 1</span>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; width:60px"><div class="crest-sm">W</div><span class="t-caption-1 muted">울브스</span></div>
+        </div>
+      </div>
+      <div class="summary">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+          <span class="t-label-1 muted" style="font-weight:500">나의 선수 예측</span>
+          <button class="link-edit">수정</button>
+        </div>
+        <div style="border:1px solid var(--stroke-weak); border-radius:var(--r-lg); overflow:hidden; background:var(--bg-surface)">
+          <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">수비수</p><p class="t-label-1" style="font-weight:600">트리피어</p></div></div>
+          <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">미드필더</p><p class="t-label-1" style="font-weight:600">루이스 마일리</p></div></div>
+          <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">공격수</p><p class="t-label-1" style="font-weight:600">이사크</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay"></div>
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <p class="t-headline-1" style="font-weight:600">이대로 제출할까요?</p>
+    <p class="t-label-2 muted" style="margin-top:6px">킥오프 전까지 다시 수정할 수 있어요</p>
+    <div style="background:var(--bg-page); border-radius:var(--r-sm); padding:14px; margin-top:16px">
+      <p class="t-caption-2 muted" style="margin-bottom:2px">내 예측</p>
+      <p class="t-label-1" style="font-weight:500">울브스전 · 2 – 1</p>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:16px">
+      <button class="btn btn-outline" style="flex:1">취소</button>
+      <button class="btn btn-default" style="flex:2">제출하기</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="issue-box">
+  <p class="issue-label">확인 필요 — 기존 코드와의 모순 발견</p>
+  이 제출 확인 모달은 공용 컴포넌트 <code>ConfirmContent</code>(투표·예측 공용)를 재사용하는데, 그 설명 문구가
+  <code>"제출 후에는 변경할 수 없습니다"</code>로 고정돼 있습니다(design-brief §6에서도 이미 짚은 지점). intent.md
+  결정 1(자유 수정 허용)과 정면으로 모순되는 문구라, 이 시안에서는 예측 도메인 호출부에서
+  <code>"킥오프 전까지 다시 수정할 수 있어요"</code>로 바꿔 넣었습니다 — 이건 톤 취향이 아니라 이미 확정된
+  결정과의 모순을 없애는 수정이라 대안 없이 반영했습니다. developer 에이전트가 실제 구현 시 이 문구를
+  prop으로 오버라이드하도록 처리해야 합니다.
+</div>
+
+<div class="flow-connector"><span>↓ "제출하기" 확정</span></div>
+
+<div class="frame-wrap">
+<span class="frame-tag">A-5 · 완료 허브 (부분 — 울브스전 제출 / 아스널전 유예)</span>
+<div class="page">
+  <div class="dark-card" style="text-align:center">
+    <p class="t-caption-1 onsolid-muted">결과 반영까지 (늦은 경기 종료 기준)</p>
+    <div style="display:flex; justify-content:center; align-items:flex-start; gap:8px; margin-top:10px">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:2px"><span class="t-headline-1" style="font-weight:600">3</span><span class="t-caption-2 onsolid-muted">일</span></div>
+      <span class="t-body-2 onsolid-muted">:</span>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:2px"><span class="t-headline-1" style="font-weight:600">08</span><span class="t-caption-2 onsolid-muted">시간</span></div>
+      <span class="t-body-2 onsolid-muted">:</span>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:2px"><span class="t-headline-1" style="font-weight:600">12</span><span class="t-caption-2 onsolid-muted">분</span></div>
+      <span class="t-body-2 onsolid-muted">:</span>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:2px"><span class="t-headline-1" style="font-weight:600">40</span><span class="t-caption-2 onsolid-muted">초</span></div>
+    </div>
+  </div>
+
+  <div style="text-align:center">
+    <p class="t-headline-1" style="font-weight:600">5주차 제출 완료</p>
+    <p class="t-label-2 muted" style="margin-top:4px">킥오프 전까지 언제든 결과를 확인하러 다시 와주세요</p>
+  </div>
+
+  <div>
+    <p class="match-label">아스널전 · 카라바오컵</p>
+    <div class="card" style="padding:18px">
+      <p class="t-body-2" style="font-weight:600; margin-bottom:12px">경기 예측</p>
+      <p class="t-label-2 muted" style="text-align:center">9월 2일 오전 4:00 킥오프</p>
+      <p class="t-label-1" style="text-align:center; margin-top:14px; font-weight:500">아직 예측하지 않았어요</p>
+      <button class="btn btn-default" style="width:100%; margin-top:14px">지금 예측하기</button>
+    </div>
+  </div>
+
+  <div>
+    <p class="match-label">울브스전 · 프리미어리그</p>
+    <div class="card" style="padding:18px">
+      <p class="t-body-2" style="font-weight:600; margin-bottom:12px">경기 예측</p>
+      <div style="display:flex; align-items:center; justify-content:center; gap:10px">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px; width:64px"><div class="crest-sm">뉴</div><span class="t-caption-1 muted">뉴캐슬</span></div>
+        <span class="t-title-3" style="font-weight:600">2 – 1</span>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px; width:64px"><div class="crest-sm">W</div><span class="t-caption-1 muted">울브스</span></div>
+      </div>
+      <p class="t-body-2" style="font-weight:600; margin-top:22px; margin-bottom:10px">내 선수 픽</p>
+      <div style="border:1px solid var(--stroke-weak); border-radius:var(--r-lg); overflow:hidden">
+        <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">수비수</p><p class="t-label-1" style="font-weight:500">트리피어</p></div></div>
+        <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">미드필더</p><p class="t-label-1" style="font-weight:500">루이스 마일리</p></div></div>
+        <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">공격수</p><p class="t-label-1" style="font-weight:500">이사크</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:2px">
+    <button class="btn btn-default" style="width:100%">수정하기</button>
+    <p class="t-caption-1 muted" style="text-align:center; margin-top:8px">킥오프 전까지 다시 수정할 수 있어요</p>
+  </div>
+</div>
+</div>
+
+<p class="flow-note">이 시점엔 제출한 경기가 울브스전 1개뿐이라, "수정하기"를 누르면 선택 화면 없이 바로 울브스전 수정 플로우로 들어갑니다(경기 1개일 때의 규칙).</p>
+
+<div class="alt-box">
+  <p class="alt-label">카피 대안 — 유예 섹션 (feature-spec §7-2, v1과 동일 · 미확정)</p>
+  <div class="alt-row pick"><span class="tag">시안</span> 헤딩 "아직 예측하지 않았어요"</div>
+  <div class="alt-row other"><span class="tag">대안1</span> "나중에 하기로 한 경기예요"</div>
+  <div class="alt-row other"><span class="tag">대안2</span> "이 경기는 아직이에요"</div>
+  <div class="alt-row pick"><span class="tag">시안</span> CTA "지금 예측하기"</div>
+  <div class="alt-row other"><span class="tag">대안</span> "예측하러 가기"</div>
+</div>
+
+<div class="flow-connector"><span>↓ "지금 예측하기" 클릭 · 아스널전 하나만의 플로우로 바로 진입(선택 화면 없음)</span></div>
+
+<p class="flow-note">스코어 입력 화면은 A-3과 구조가 동일해 생략합니다(아스널전 스코어를 1–1로 입력했다고 가정).</p>
+
+<div class="frame-wrap">
+<span class="frame-tag">A-6 · 확인 단계 + 제출 모달 (아스널전)</span>
+<div class="page">
+  <div class="card" style="padding:20px">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start">
+      <div>
+        <p class="t-heading-2" style="font-weight:600">제출 전 확인</p>
+        <p class="t-label-2 muted" style="margin-top:4px">마지막으로 예측 내용을<br>확인해보세요</p>
+      </div>
+      <div class="pips"><span class="pip active"></span><span class="pip active"></span><span class="pip active"></span></div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px; margin-top:20px">
+      <div class="summary">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+          <span class="t-label-1 muted" style="font-weight:500">나의 결과 예측</span>
+          <button class="link-edit">수정</button>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:center; gap:16px">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; width:60px"><div class="crest-sm">A</div><span class="t-caption-1 muted">아스널</span></div>
+          <span class="t-title-3" style="font-weight:600">1 – 1</span>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; width:60px"><div class="crest-sm">뉴</div><span class="t-caption-1 muted">뉴캐슬</span></div>
+        </div>
+      </div>
+      <div class="summary">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+          <span class="t-label-1 muted" style="font-weight:500">나의 선수 예측</span>
+          <button class="link-edit">수정</button>
+        </div>
+        <div style="border:1px solid var(--stroke-weak); border-radius:var(--r-lg); overflow:hidden; background:var(--bg-surface)">
+          <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">수비수</p><p class="t-label-1" style="font-weight:600">크라프트</p></div></div>
+          <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">미드필더</p><p class="t-label-1" style="font-weight:600">윌록</p></div></div>
+          <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">공격수</p><p class="t-label-1" style="font-weight:600">오스굿</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay"></div>
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <p class="t-headline-1" style="font-weight:600">이대로 제출할까요?</p>
+    <p class="t-label-2 muted" style="margin-top:6px">킥오프 전까지 다시 수정할 수 있어요</p>
+    <div style="background:var(--bg-page); border-radius:var(--r-sm); padding:14px; margin-top:16px">
+      <p class="t-caption-2 muted" style="margin-bottom:2px">내 예측</p>
+      <p class="t-label-1" style="font-weight:500">아스널전 · 1 – 1</p>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:16px">
+      <button class="btn btn-outline" style="flex:1">취소</button>
+      <button class="btn btn-default" style="flex:2">제출하기</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="flow-connector"><span>↓ "제출하기" 확정 · 이제 두 경기 다 제출됨</span></div>
+
+<div class="frame-wrap">
+<span class="frame-tag">A-7 · 완료 허브 (전체 — 둘 다 제출됨)</span>
+<div class="page">
+  <div style="text-align:center">
+    <p class="t-headline-1" style="font-weight:600">5주차 제출 완료</p>
+    <p class="t-label-2 muted" style="margin-top:4px">킥오프 전까지 언제든 결과를 확인하러 다시 와주세요</p>
+  </div>
+
+  <div>
+    <p class="match-label">울브스전 · 프리미어리그</p>
+    <div class="card" style="padding:18px">
+      <p class="t-body-2" style="font-weight:600; margin-bottom:12px">경기 예측</p>
+      <div style="display:flex; align-items:center; justify-content:center; gap:10px">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px; width:64px"><div class="crest-sm">뉴</div><span class="t-caption-1 muted">뉴캐슬</span></div>
+        <span class="t-title-3" style="font-weight:600">2 – 1</span>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px; width:64px"><div class="crest-sm">W</div><span class="t-caption-1 muted">울브스</span></div>
+      </div>
+      <p class="t-body-2" style="font-weight:600; margin-top:22px; margin-bottom:10px">내 선수 픽</p>
+      <div style="border:1px solid var(--stroke-weak); border-radius:var(--r-lg); overflow:hidden">
+        <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">수비수</p><p class="t-label-1" style="font-weight:500">트리피어</p></div></div>
+        <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">미드필더</p><p class="t-label-1" style="font-weight:500">루이스 마일리</p></div></div>
+        <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">공격수</p><p class="t-label-1" style="font-weight:500">이사크</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="match-label">아스널전 · 카라바오컵</p>
+    <div class="card" style="padding:18px">
+      <p class="t-body-2" style="font-weight:600; margin-bottom:12px">경기 예측</p>
+      <div style="display:flex; align-items:center; justify-content:center; gap:10px">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px; width:64px"><div class="crest-sm">A</div><span class="t-caption-1 muted">아스널</span></div>
+        <span class="t-title-3" style="font-weight:600">1 – 1</span>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px; width:64px"><div class="crest-sm">뉴</div><span class="t-caption-1 muted">뉴캐슬</span></div>
+      </div>
+      <p class="t-body-2" style="font-weight:600; margin-top:22px; margin-bottom:10px">내 선수 픽</p>
+      <div style="border:1px solid var(--stroke-weak); border-radius:var(--r-lg); overflow:hidden">
+        <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">수비수</p><p class="t-label-1" style="font-weight:500">크라프트</p></div></div>
+        <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">미드필더</p><p class="t-label-1" style="font-weight:500">윌록</p></div></div>
+        <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">공격수</p><p class="t-label-1" style="font-weight:500">오스굿</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:2px">
+    <button class="btn btn-default" style="width:100%">수정하기</button>
+    <p class="t-caption-1 muted" style="text-align:center; margin-top:8px">킥오프 전까지 다시 수정할 수 있어요</p>
+  </div>
+</div>
+</div>
+
+<p class="flow-note">제출한 경기가 2개라 "수정하기"를 누르면 어느 경기를 수정할지 고르는 선택 화면이 먼저 뜹니다 — 이어지는 플로우 B 참고.</p>
+
+<h3 class="flow-h">플로우 B — 수정</h3>
+<p class="flow-sub">완료 허브(둘 다 제출) → "수정하기" → 경기 선택(수정 문맥) → 프리필된 수정 플로우 → "이대로 수정할까요?" → 완료 허브로 복귀. design-brief §3 시나리오 D·E에 대응.</p>
+
+<div class="flow-ref">↑ 플로우 A의 마지막 화면(A-7 · 완료 허브, 둘 다 제출됨)에서 이어집니다 — 같은 화면이라 다시 그리지 않습니다.</div>
+
+<div class="flow-connector"><span>↓ "수정하기" 클릭 · 제출한 경기가 2개라 선택 화면이 먼저 뜸</span></div>
+
+<div class="frame-wrap">
+<span class="frame-tag">B-1 · 경기 선택 화면 (수정 문맥)</span>
+<div class="page">
+  <div class="card" style="padding:20px">
+    <div style="margin-bottom:20px">
+      <p class="t-heading-2" style="font-weight:600">어느 경기를<br>수정할까요?</p>
+      <p class="t-label-2 muted" style="margin-top:6px">수정할 경기를 하나 골라주세요</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px">
+      <div class="match-card">
+        <p class="t-caption-1 muted" style="font-weight:500; margin-bottom:10px">프리미어리그</p>
+        <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px">
+          <div style="display:flex; align-items:center; justify-content:flex-end; gap:6px; min-width:0"><span class="t-caption-1" style="font-weight:500">뉴캐슬</span><div class="crest-sm">뉴</div></div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:2px"><span class="t-caption-2 muted">내 예측</span><span class="t-label-2" style="font-weight:500">2 – 1</span></div>
+          <div style="display:flex; align-items:center; gap:6px; min-width:0"><div class="crest-sm">W</div><span class="t-caption-1" style="font-weight:500">울브스</span></div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="width:100%; margin-top:14px">울브스전 수정하기</button>
+      </div>
+      <div class="match-card">
+        <p class="t-caption-1 muted" style="font-weight:500; margin-bottom:10px">카라바오컵</p>
+        <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px">
+          <div style="display:flex; align-items:center; justify-content:flex-end; gap:6px; min-width:0"><span class="t-caption-1" style="font-weight:500">아스널</span><div class="crest-sm">A</div></div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:2px"><span class="t-caption-2 muted">내 예측</span><span class="t-label-2" style="font-weight:500">1 – 1</span></div>
+          <div style="display:flex; align-items:center; gap:6px; min-width:0"><div class="crest-sm">뉴</div><span class="t-caption-1" style="font-weight:500">뉴캐슬</span></div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="width:100%; margin-top:14px">아스널전 수정하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<p class="flow-note">제출 선택 화면(A-2)과 달리 "둘 다" 옵션이 없습니다 — 수정은 경기 하나만 가능하도록 이미 확정됐습니다(design-brief §9 질문3=B, feature-spec §3.3). 각 카드에 이미 낸 예측값을 같이 보여줘 "뭘 고치는지" 헷갈리지 않게 했습니다.</p>
+
+<div class="alt-box">
+  <p class="alt-label">카피 대안 — 경기 선택 화면(수정 문맥) · 이번에 새로 필요해진 카피, 미확정</p>
+  <div class="alt-row pick"><span class="tag">시안</span> 제목 "어느 경기를 수정할까요?" · 부제 "수정할 경기를 하나 골라주세요"</div>
+  <div class="alt-row other"><span class="tag">대안</span> 제목 "수정할 경기를 골라주세요" (제출 화면과 어휘를 덜 겹치게)</div>
+  <div class="alt-row pick"><span class="tag">시안</span> 버튼 "울브스전 수정하기" / "아스널전 수정하기"</div>
+  <div class="alt-row other"><span class="tag">대안</span> "이 경기 수정하기" (양쪽 다 동일 라벨, 상대팀 이름 없이)</div>
+</div>
+
+<div class="flow-connector"><span>↓ "울브스전 수정하기" 선택</span></div>
+
+<div class="frame-wrap">
+<span class="frame-tag">B-2 · 스코어 입력 (프리필 · 수정모드 · 1/3단계)</span>
+<div class="page">
+  <div class="card" style="padding:20px">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start">
+      <div>
+        <p class="t-heading-2" style="font-weight:600">경기 예측</p>
+        <p class="t-label-2 muted" style="margin-top:4px">이번 경기의 스코어를<br>예측해보세요</p>
+      </div>
+      <div class="pips"><span class="pip active"></span><span class="pip"></span><span class="pip"></span></div>
+    </div>
+    <div style="margin-top:22px; text-align:center">
+      <p class="t-label-2 muted">프리미어리그 · 5라운드</p>
+      <p class="t-label-2 muted" style="margin-top:2px">8월 30일 (홈) 오후 8:00</p>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-top:20px">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:64px"><div class="crest-lg">뉴</div><span class="t-label-2" style="font-weight:500">뉴캐슬</span></div>
+      <div class="stepper"><button>+</button><div class="value">2</div><button>−</button></div>
+      <div class="stepper"><button>+</button><div class="value">1</div><button>−</button></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:64px"><div class="crest-lg">W</div><span class="t-label-2" style="font-weight:500">울브스</span></div>
+    </div>
+    <p class="t-caption-1 muted" style="text-align:center; margin-top:14px">기존에 낸 값(2 – 1)이 그대로 채워져 있어요 — 여기서부터 바꾸면 됩니다</p>
+    <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--stroke-weak)">
+      <button class="btn btn-default" style="width:100%">다음</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<p class="flow-note">이번엔 스코어만 3–1로 바꾸고, 선수 픽 단계는 기존 값 그대로 넘어간다고 가정해 생략합니다.</p>
+
+<div class="flow-connector"><span>↓ 2 → 3으로 스코어 변경 후 "다음" ×2 · 확인 단계 도착</span></div>
+
+<div class="frame-wrap">
+<span class="frame-tag">B-3 · 확인 단계 + 수정 확인 모달</span>
+<div class="page">
+  <div class="card" style="padding:20px">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start">
+      <div>
+        <p class="t-heading-2" style="font-weight:600">제출 전 확인</p>
+        <p class="t-label-2 muted" style="margin-top:4px">마지막으로 예측 내용을<br>확인해보세요</p>
+      </div>
+      <div class="pips"><span class="pip active"></span><span class="pip active"></span><span class="pip active"></span></div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px; margin-top:20px">
+      <div class="summary">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+          <span class="t-label-1 muted" style="font-weight:500">나의 결과 예측</span>
+          <button class="link-edit">수정</button>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:center; gap:16px">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; width:60px"><div class="crest-sm">뉴</div><span class="t-caption-1 muted">뉴캐슬</span></div>
+          <span class="t-title-3" style="font-weight:600">3 – 1</span>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; width:60px"><div class="crest-sm">W</div><span class="t-caption-1 muted">울브스</span></div>
+        </div>
+      </div>
+      <div class="summary">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+          <span class="t-label-1 muted" style="font-weight:500">나의 선수 예측</span>
+          <button class="link-edit">수정</button>
+        </div>
+        <div style="border:1px solid var(--stroke-weak); border-radius:var(--r-lg); overflow:hidden; background:var(--bg-surface)">
+          <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">수비수</p><p class="t-label-1" style="font-weight:600">트리피어</p></div></div>
+          <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">미드필더</p><p class="t-label-1" style="font-weight:600">루이스 마일리</p></div></div>
+          <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">공격수</p><p class="t-label-1" style="font-weight:600">이사크</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay"></div>
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <p class="t-headline-1" style="font-weight:600">이대로 수정할까요?</p>
+    <p class="t-label-2 muted" style="margin-top:6px">킥오프 전까지 다시 수정할 수 있어요</p>
+    <div style="background:var(--bg-page); border-radius:var(--r-sm); padding:14px; margin-top:16px">
+      <p class="t-caption-2 muted" style="margin-bottom:2px">내 예측</p>
+      <p class="t-label-1" style="font-weight:500">울브스전 · 3 – 1</p>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:16px">
+      <button class="btn btn-outline" style="flex:1">취소</button>
+      <button class="btn btn-default" style="flex:2">수정하기</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="alt-box">
+  <p class="alt-label">카피 대안 — 수정 확인 모달 (feature-spec §7-3, v1과 동일 · 미확정)</p>
+  <div class="alt-row pick"><span class="tag">시안</span> 제목 "이대로 수정할까요?"</div>
+  <div class="alt-row other"><span class="tag">대안1</span> "예측을 수정할까요?"</div>
+  <div class="alt-row other"><span class="tag">대안2</span> "정말 수정할까요?"</div>
+  <div class="alt-row pick"><span class="tag">시안</span> 확인 버튼 "수정하기"</div>
+  <div class="alt-row other"><span class="tag">대안</span> "제출하기" 그대로 유지</div>
+</div>
+
+<div class="flow-connector"><span>↓ "수정하기" 확정</span></div>
+
+<div class="frame-wrap">
+<span class="frame-tag">B-4 · 완료 허브 (수정 반영됨)</span>
+<div class="page">
+  <div style="text-align:center">
+    <p class="t-headline-1" style="font-weight:600">5주차 제출 완료</p>
+    <p class="t-label-2 muted" style="margin-top:4px">킥오프 전까지 언제든 결과를 확인하러 다시 와주세요</p>
+  </div>
+
+  <div>
+    <p class="match-label">울브스전 · 프리미어리그</p>
+    <div class="card" style="padding:18px; border-color:var(--fg-brand)">
+      <p class="t-body-2" style="font-weight:600; margin-bottom:12px">경기 예측</p>
+      <div style="display:flex; align-items:center; justify-content:center; gap:10px">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px; width:64px"><div class="crest-sm">뉴</div><span class="t-caption-1 muted">뉴캐슬</span></div>
+        <span class="t-title-3" style="font-weight:600; color:var(--fg-brand)">3 – 1</span>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px; width:64px"><div class="crest-sm">W</div><span class="t-caption-1 muted">울브스</span></div>
+      </div>
+      <p class="t-body-2" style="font-weight:600; margin-top:22px; margin-bottom:10px">내 선수 픽</p>
+      <div style="border:1px solid var(--stroke-weak); border-radius:var(--r-lg); overflow:hidden">
+        <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">수비수</p><p class="t-label-1" style="font-weight:500">트리피어</p></div></div>
+        <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">미드필더</p><p class="t-label-1" style="font-weight:500">루이스 마일리</p></div></div>
+        <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">공격수</p><p class="t-label-1" style="font-weight:500">이사크</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="match-label">아스널전 · 카라바오컵</p>
+    <div class="card" style="padding:18px">
+      <p class="t-body-2" style="font-weight:600; margin-bottom:12px">경기 예측</p>
+      <div style="display:flex; align-items:center; justify-content:center; gap:10px">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px; width:64px"><div class="crest-sm">A</div><span class="t-caption-1 muted">아스널</span></div>
+        <span class="t-title-3" style="font-weight:600">1 – 1</span>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px; width:64px"><div class="crest-sm">뉴</div><span class="t-caption-1 muted">뉴캐슬</span></div>
+      </div>
+      <p class="t-body-2" style="font-weight:600; margin-top:22px; margin-bottom:10px">내 선수 픽</p>
+      <div style="border:1px solid var(--stroke-weak); border-radius:var(--r-lg); overflow:hidden">
+        <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">수비수</p><p class="t-label-1" style="font-weight:500">크라프트</p></div></div>
+        <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">미드필더</p><p class="t-label-1" style="font-weight:500">윌록</p></div></div>
+        <div class="pick-row"><div class="pick-photo-sm"></div><div><p class="t-caption-1 muted" style="margin-bottom:2px">공격수</p><p class="t-label-1" style="font-weight:500">오스굿</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:2px">
+    <button class="btn btn-default" style="width:100%">수정하기</button>
+    <p class="t-caption-1 muted" style="text-align:center; margin-top:8px">킥오프 전까지 다시 수정할 수 있어요</p>
+  </div>
+</div>
+</div>
+
+<p class="flow-note">울브스전 스코어가 2–1 → 3–1로 바뀐 걸 보여주려고 브랜드 컬러로 강조했습니다(실제 화면에 이 강조색을 넣자는 제안은 아니고, 이 시안에서 "방금 뭐가 바뀌었는지" 표시하기 위한 장치입니다). 수정은 킥오프 전까지 몇 번이든 반복할 수 있습니다.</p>
+
+</div>
