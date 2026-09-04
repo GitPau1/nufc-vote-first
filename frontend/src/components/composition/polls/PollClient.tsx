@@ -119,7 +119,7 @@ export function PollClient({ poll, isAuthenticated, canEdit }: PollClientProps) 
             </div>
           ) : (
             /* 구 TypeB — 커버 단독 블록 + 글 컨테이너 */
-            <>
+            <div className="flex flex-col gap-3">
               <div className="overflow-hidden rounded-lg bg-disabled">
                 <img src={coverUrl} alt={poll.title} className="h-[252px] w-full object-cover" />
               </div>
@@ -139,17 +139,17 @@ export function PollClient({ poll, isAuthenticated, canEdit }: PollClientProps) 
                   </>
                 )}
               </section>
-            </>
-          )}
-
-          {showSubjectPlayer && poll.description && (
-            <p className="text-label-1-reading text-neutral-muted">{poll.description}</p>
+            </div>
           )}
 
           {canEdit && (
             <div className="hidden justify-end sm:flex">
               <PollEditLink pollId={poll.id} />
             </div>
+          )}
+
+          {showSubjectPlayer && poll.description && (
+            <p className="text-label-1-reading text-neutral-muted">{poll.description}</p>
           )}
 
           <div className="flex flex-col gap-3">
