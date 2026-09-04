@@ -19,7 +19,7 @@ import { ConfirmContent } from '@/components/primitives/modal/contents/Confirm'
 import { LoginContent } from '@/components/primitives/modal/contents/Login'
 import { PollPageHeader } from './PollPageHeader'
 import { getStatusLabel, getStatusTone } from './PollCard'
-import { formatPollDate, getOptionThumb } from './ResultView'
+import { formatPollDate, getOptionThumb } from '@/lib/polls/format'
 
 interface PollClientProps {
   poll: PollDetail

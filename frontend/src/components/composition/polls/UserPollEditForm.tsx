@@ -10,7 +10,7 @@ import type { PollDetail } from '@/lib/queries/polls'
 import type { EditablePollField } from '@/lib/polls/poll-edit-eligibility'
 import type { PlayerRow } from '@/types/database'
 import { getPlayerMeta } from '@/components/primitives/modal/contents/PollPicker'
-import { formatPollDate, getOptionThumb } from './ResultView'
+import { formatPollDate, getOptionThumb } from '@/lib/polls/format'
 
 const POLL_TYPE_LABELS: Partial<Record<PollDetail['type'], string>> = {
   poll: '일반 투표',

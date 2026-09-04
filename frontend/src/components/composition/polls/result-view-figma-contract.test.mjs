@@ -7,6 +7,8 @@ const commentsSection = readFileSync(new URL('./CommentsSection.tsx', import.met
 // 결과 막대(퍼센트 바 + 썸네일)는 ResultView.tsx에서 primitives/result-progress.tsx(ResultProgress)로
 // 추출됐다 — 관련 리터럴은 이제 그쪽 파일에 있다. 아래 두 테스트가 이 파일을 같이 읽는다.
 const resultProgress = readFileSync(new URL('../../primitives/result-progress.tsx', import.meta.url), 'utf8')
+// getOptionThumb 정의는 lib/polls/format.ts로 이동했다(TEA-28 6-C) — 그 함수 본문 리터럴은 이제 그쪽 파일에 있다.
+const pollsFormat = readFileSync(new URL('../../../lib/polls/format.ts', import.meta.url), 'utf8')
 
 test('result page keeps the Figma-sized cover image', () => {
   assert.match(resultView, /h-\[252px\]/)
@@ -64,7 +66,7 @@ test('result progress bar drops its border now that it always sits on a gray pan
 
 test('result page adds Figma-style option thumbnails only for image or player options', () => {
   assert.match(resultView, /getOptionThumb/)
-  assert.match(resultView, /option\.image_url/)
+  assert.match(pollsFormat, /option\.image_url/)
   assert.match(resultView, /poll\.option_players/)
   // 썸네일 렌더(size-[40px], thumb 삼항)는 ResultProgress로 옮겨갔다.
   assert.match(resultProgress, /size-\[40px\]/)

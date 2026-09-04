@@ -67,7 +67,7 @@ test('알려진 포맷터가 실제로 존재한다 (검사가 빈 통과로 썩
   const known = [
     ['lib/utils.ts', 'export function formatDate'],
     ['components/composition/predict/MatchdayHero.tsx', 'function formatKickoff'],
-    ['components/composition/polls/ResultView.tsx', 'export function formatPollDate'],
+    ['lib/polls/format.ts', 'export function formatPollDate'],
   ]
   for (const [file, needle] of known) {
     assert.match(readFileSync(join(SRC, file), 'utf8'), new RegExp(needle), `${file}에 ${needle} 없음`)
