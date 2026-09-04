@@ -16,7 +16,7 @@ const PLACEHOLDER_PLAYER_PHOTO = 'https://placehold.co/88x88/2a2f36/8a929c?text=
 // 한글화한다 — 여기선 프로토타입 확인용으로 한글 라벨을 직접 넣었다.
 
 function withWeekKey(kickoffAt: string) {
-  return weekKey(toKst(kickoffAt))
+  return weekKey(toKst(kickoffAt)) ?? '' // 개발 프리뷰 전용, Date.now() 기준이라 실제 null 없음
 }
 
 // 히어로는 킥오프 24시간 전부터 뜨므로(lib/queries/fixtures.ts PRE_MATCH_WINDOW_MS),

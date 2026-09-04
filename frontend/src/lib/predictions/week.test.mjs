@@ -33,31 +33,35 @@ const {
   findWeekSession,
   findWeekPrediction,
   submittableMatches,
+  isoWeek,
   weekKey,
+  weekLabel,
   currentWeekKey,
+  toKst,
   NUFC_TEAM_ID,
 } = loadWeekModule()
 
 test('currentWeekKey: KST 자정 직후는 UTC 기준 전날이어도 새 주차로 잡힌다', () => {
-  // 2026-08-24(월) 00:30 KST = 2026-08-23(일) 15:30 UTC.
-  // KST 달력으로는 34주차가 끝나고 35주차가 시작된 시점이다.
-  const mondayEarlyKst = new Date('2026-08-23T15:30:00Z')
+  // 2026-08-23(일) 00:30 KST = 2026-08-22(토) 15:30 UTC.
+  // 정규 시즌 앵커(2026-08-23)가 시작되는 바로 그 순간이다.
+  const sundayEarlyKst = new Date('2026-08-22T15:30:00Z')
 
-  assert.equal(currentWeekKey(mondayEarlyKst), '2026-35')
-  // +9h 시프트를 빠뜨리면 UTC 달력(일요일)로 계산되어 지난 주차가 나온다 — 이게 막으려는 버그다.
-  assert.equal(weekKey(mondayEarlyKst), '2026-34')
+  assert.equal(currentWeekKey(sundayEarlyKst), '2627-1')
+  // +9h 시프트를 빠뜨리면 UTC 달력(토요일, 프리시즌 마지막 주)으로 계산되어 지난 주차가 나온다
+  // — 이게 막으려는 버그다.
+  assert.equal(weekKey(sundayEarlyKst), '2627-0-4')
 })
 
 test('currentWeekKey: 주 중간은 UTC/KST 어느 쪽으로 계산해도 같은 주차다', () => {
-  // 2026-08-20(목) 12:00 KST = 같은 날 03:00 UTC — 34주차(8/17 월 ~ 8/23 일).
+  // 2026-08-20(목) 12:00 KST = 같은 날 03:00 UTC — 08/16주(프리시즌 4번째 주, 2627-0-4).
   const thursdayNoonKst = new Date('2026-08-20T03:00:00Z')
 
-  assert.equal(currentWeekKey(thursdayNoonKst), '2026-34')
+  assert.equal(currentWeekKey(thursdayNoonKst), '2627-0-4')
 })
 
-test('currentWeekKey: 연말 경계에서 ISO 연도가 주차를 따라간다', () => {
-  // 2026-12-28(월) 09:00 KST = 2026-12-28 00:00 UTC — ISO 53주차.
-  assert.equal(currentWeekKey(new Date('2026-12-28T00:00:00Z')), '2026-53')
+test('currentWeekKey: 연말 경계에서 시즌 앵커 순번이 계속 이어진다', () => {
+  // 2026-12-28(월) 09:00 KST = 2026-12-28 00:00 UTC — sundayAnchorStart 2026-12-27, 19주차.
+  assert.equal(currentWeekKey(new Date('2026-12-28T00:00:00Z')), '2627-19')
 })
 
 function fixture(overrides) {
@@ -81,10 +85,12 @@ function fixture(overrides) {
 const KICKOFF = new Date('2026-08-23T15:30:00Z').getTime()
 
 test('같은 주 경기 2개는 한 예측 세션(주차)으로 묶인다 (더블 매치위크)', () => {
+  // 일요일 경계에서는 08-23(리버풀)·08-29(토트넘) 조합은 서로 다른 주로 갈라진다
+  // (feature-spec §2-3 실측) — 같은 주에 남는 실제 조합(리버풀 + 웨스트브롬 EFL컵)으로 교체.
   const weeks = groupFixturesByWeek(
     [
       fixture({ fixture_id: 1, kickoff_at: '2026-08-23T15:30:00+00:00' }),
-      fixture({ fixture_id: 2, kickoff_at: '2026-08-29T18:45:00+00:00', competition_name: 'EFL Cup' }),
+      fixture({ fixture_id: 2, kickoff_at: '2026-08-26T18:45:00+00:00', competition_name: 'EFL Cup' }),
     ],
     KICKOFF - 86_400_000,
   )
@@ -92,10 +98,10 @@ test('같은 주 경기 2개는 한 예측 세션(주차)으로 묶인다 (더�
   assert.equal(weeks.length, 1)
   assert.deepEqual(weeks[0].matches.map(m => m.id), ['1', '2'])
   assert.equal(weeks[0].monthKey, '2026-08')
-  assert.equal(weeks[0].weekKey, '2026-35')
+  assert.equal(weeks[0].weekKey, '2627-1')
   // 상태는 주차 단위 하나. 마감은 그 주 마지막 경기 킥오프다.
   assert.equal(weeks[0].status, 'open')
-  assert.equal(weeks[0].deadlineAt, '2026-08-29T18:45:00+00:00')
+  assert.equal(weeks[0].deadlineAt, '2026-08-26T18:45:00+00:00')
 })
 
 test('경기 없는 중간 주차는 빈 그룹으로 채워진다', () => {
@@ -137,11 +143,12 @@ test('주차는 첫 경기 킥오프 7일 전에 열리고 마지막 경기 킥�
 })
 
 test('submittableMatches: 이미 시작된 경기는 빠지고 남은 경기만 제출 대상이다', () => {
+  // 일요일 경계에서 같은 주로 남는 조합(08-23·08-26)으로 교체 — 위 더블 매치위크 테스트와 동일 근거.
   const [week] = groupFixturesByWeek(
     [
       // 첫 경기는 이미 끝났고, 두 번째 경기는 아직 남아 있다
-      fixture({ fixture_id: 1, kickoff_at: '2026-08-24T15:30:00+00:00', started: true, finished: true, home_score: 2, away_score: 0 }),
-      fixture({ fixture_id: 2, kickoff_at: '2026-08-29T18:45:00+00:00' }),
+      fixture({ fixture_id: 1, kickoff_at: '2026-08-23T15:30:00+00:00', started: true, finished: true, home_score: 2, away_score: 0 }),
+      fixture({ fixture_id: 2, kickoff_at: '2026-08-26T18:45:00+00:00' }),
     ],
     new Date('2026-08-26T00:00:00Z').getTime(),
   )
@@ -186,12 +193,12 @@ test('findWeekSession: weekKey로 주차 세션을 찾는다', () => {
     KICKOFF - 86_400_000,
   )
 
-  // 1·2는 같은 주(2026-35), 3은 다음 주 → 세션이 갈린다
-  assert.deepEqual(findWeekSession(weeks, '2026-35').matches.map(m => m.id), ['1', '2'])
-  const session = findWeekSession(weeks, '2026-36')
+  // 1·2는 같은 주(2627-1), 3은 다음 주(2627-2) → 세션이 갈린다
+  assert.deepEqual(findWeekSession(weeks, '2627-1').matches.map(m => m.id), ['1', '2'])
+  const session = findWeekSession(weeks, '2627-2')
   assert.deepEqual(session.matches.map(m => m.id), ['3'])
-  assert.equal(session.weekNo, 36)
-  assert.equal(findWeekSession(weeks, '1999-01'), null)
+  assert.equal(session.weekNo, 2)
+  assert.equal(findWeekSession(weeks, '9999-1'), null)
 })
 
 test('toPredictWeeks: 원정 경기 스코어는 [홈, 원정] 순서로 되돌아간다', () => {
@@ -277,16 +284,17 @@ test('toPredictWeeks: 제출 여부는 주차 단위, 예측 스코어는 경기
   const [week] = toPredictWeeks(weeks, submitted)
   assert.equal(week.submitted, true)
   assert.equal(week.hasPending, false)
-  assert.equal(week.weekKey, '2026-35')
+  assert.equal(week.weekKey, '2627-1')
   assert.deepEqual(week.matches[0].myResult, { predicted: [2, 1] })
   assert.deepEqual(week.matches[1].myResult, { predicted: [0, 0] })
 })
 
 test('toPredictWeeks: 첫 경기만 제출된 상태면 남은 경기가 pending으로 남는다', () => {
+  // 일요일 경계에서 같은 주로 남는 조합(08-23·08-26)으로 교체 — 위 submittableMatches 테스트와 동일 근거.
   const weeks = groupFixturesByWeek(
     [
-      fixture({ fixture_id: 1, kickoff_at: '2026-08-24T15:30:00+00:00', started: true, finished: true, home_score: 2, away_score: 0 }),
-      fixture({ fixture_id: 2, kickoff_at: '2026-08-29T18:45:00+00:00' }),
+      fixture({ fixture_id: 1, kickoff_at: '2026-08-23T15:30:00+00:00', started: true, finished: true, home_score: 2, away_score: 0 }),
+      fixture({ fixture_id: 2, kickoff_at: '2026-08-26T18:45:00+00:00' }),
     ],
     new Date('2026-08-26T00:00:00Z').getTime(),
   )
@@ -301,4 +309,114 @@ test('toPredictWeeks: 첫 경기만 제출된 상태면 남은 경기가 pending
   const [done] = toPredictWeeks(weeks, { 2: { score: [1, 1], picks: SUBMITTED_PICKS } })
   assert.equal(done.submitted, true)
   assert.equal(done.hasPending, false)
+})
+
+// --- 프리시즌(친선경기) 그룹핑 — feature-spec §7 "신규 추가 케이스" ---
+
+test('groupFixturesByWeek: 친선경기 1건은 프리시즌 전용 weekKey로 묶인다', () => {
+  const [week] = groupFixturesByWeek(
+    [fixture({ fixture_id: 10, kickoff_at: '2026-07-25T11:30:00+00:00', competition_name: 'Club Friendlies' })],
+    KICKOFF,
+  )
+
+  assert.equal(week.weekKey, '2627-0-1')
+})
+
+test('groupFixturesByWeek: 08/09주 친선경기 3개(트리플 매치위크)는 한 그룹으로 묶인다', () => {
+  const [week] = groupFixturesByWeek(
+    [
+      fixture({ fixture_id: 20, kickoff_at: '2026-08-08T19:00:00+00:00', competition_name: 'Club Friendlies' }),
+      fixture({ fixture_id: 21, kickoff_at: '2026-08-12T16:15:00+00:00', competition_name: 'Club Friendlies' }),
+      fixture({ fixture_id: 22, kickoff_at: '2026-08-15T14:00:00+00:00', competition_name: 'Club Friendlies' }),
+    ],
+    KICKOFF,
+  )
+
+  assert.equal(week.weekKey, '2627-0-3')
+  assert.equal(week.matches.length, 3)
+})
+
+test('groupFixturesByWeek: 친선경기 없는 빈 주(08/02주)는 크래시 없이 건너뛴다', () => {
+  // 07/26주(2627-0-2)와 08/09주(2627-0-3) 사이의 08/02주는 친선경기 자체가 없다(feature-spec §6-3) —
+  // 이 회귀 테스트가 없었을 때 weekKey()가 이 빈 주에서 throw해 목록 페이지가 배포 직후 크래시했다.
+  const weeks = groupFixturesByWeek(
+    [
+      fixture({ fixture_id: 30, kickoff_at: '2026-07-29T18:30:00+00:00', competition_name: 'Club Friendlies' }),
+      fixture({ fixture_id: 31, kickoff_at: '2026-08-08T19:00:00+00:00', competition_name: 'Club Friendlies' }),
+    ],
+    KICKOFF,
+  )
+
+  assert.deepEqual(
+    weeks.map(w => w.weekKey),
+    ['2627-0-2', '2627-0-3'],
+  )
+})
+
+// --- 낙오 경기("2526-1") — feature-spec §9 ---
+
+test('isoWeek/weekKey: 2025-26시즌 낙오 경기(fixture_id=4813748)는 "2526-1"로 명시 처리된다', () => {
+  const kst = toKst('2026-05-24T15:00:00+00:00')
+  assert.equal(isoWeek(kst), 1)
+  assert.equal(weekKey(kst), '2526-1')
+})
+
+test('groupFixturesByWeek: 낙오 경기와 정규 시즌 1주차는 weekNo가 같아도 서로 다른 그룹이다', () => {
+  const weeks = groupFixturesByWeek(
+    [
+      fixture({ fixture_id: 4813748, kickoff_at: '2026-05-24T15:00:00+00:00', competition_name: 'Premier League' }),
+      fixture({ fixture_id: 1, kickoff_at: '2026-08-23T15:30:00+00:00' }),
+    ],
+    KICKOFF,
+  )
+
+  const strayWeek = weeks.find(w => w.weekKey === '2526-1')
+  const regularWeek1 = weeks.find(w => w.weekKey === '2627-1')
+
+  assert.ok(strayWeek, '2526-1 그룹이 있어야 한다')
+  assert.equal(strayWeek.weekNo, 1)
+  assert.deepEqual(strayWeek.matches.map(m => m.id), ['4813748'])
+
+  assert.ok(regularWeek1, '2627-1 그룹이 있어야 한다')
+  assert.notEqual(strayWeek, regularWeek1)
+  assert.deepEqual(regularWeek1.matches.map(m => m.id), ['1'])
+})
+
+// --- 화이트리스트 밖 과거 날짜 — feature-spec §10 ---
+
+test('isoWeek/weekKey: 세 화이트리스트 어디에도 없는 과거 날짜는 throw 대신 null을 반환한다', () => {
+  const kst = toKst('2026-04-01T00:00:00+00:00')
+  assert.equal(isoWeek(kst), null)
+  assert.equal(weekKey(kst), null)
+})
+
+test('groupFixturesByWeek: 알 수 없는 날짜의 경기는 에러 없이 조용히 빠지고 나머지는 정상 그룹핑된다', () => {
+  const weeks = groupFixturesByWeek(
+    [
+      // 세 화이트리스트(정규 시즌 앵커·프리시즌 앵커·낙오 경기 앵커) 어디에도 없는 날짜 — 앵커
+      // 상수 갱신이 빠졌을 때를 흉내낸다(§9의 fixture_id=4813748이 방어 로직 추가 전 코드를
+      // 만났다면 탔을 경로의 일반화된 회귀 테스트).
+      fixture({ fixture_id: 66, kickoff_at: '2026-04-01T00:00:00+00:00', competition_name: 'Premier League' }),
+      fixture({ fixture_id: 4813748, kickoff_at: '2026-05-24T15:00:00+00:00', competition_name: 'Premier League' }),
+      fixture({ fixture_id: 1, kickoff_at: '2026-08-23T15:30:00+00:00' }),
+    ],
+    KICKOFF,
+  )
+
+  const allIds = weeks.flatMap(w => w.matches.map(m => m.id))
+  assert.ok(!allIds.includes('66'), '알 수 없는 날짜의 경기는 어떤 그룹에도 나타나지 않아야 한다')
+  assert.ok(allIds.includes('4813748'))
+  assert.ok(allIds.includes('1'))
+})
+
+// --- weekLabel: 화면 표시 문구(프리시즌은 "프리시즌 N", 정규 시즌은 그대로) ---
+
+test('weekLabel: 정규 시즌(양수 weekNo)은 기존과 같은 "N주차"/"N라운드"를 반환한다', () => {
+  assert.equal(weekLabel(1, '주차'), '1주차')
+  assert.equal(weekLabel(33, '라운드'), '33라운드')
+})
+
+test('weekLabel: 프리시즌(음수 weekNo)은 unit 없이 "프리시즌 N"을 반환한다', () => {
+  assert.equal(weekLabel(-1, '주차'), '프리시즌 1')
+  assert.equal(weekLabel(-4, '라운드'), '프리시즌 4')
 })

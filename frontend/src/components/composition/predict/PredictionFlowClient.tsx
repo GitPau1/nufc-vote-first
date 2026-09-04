@@ -39,6 +39,7 @@ import {
   NUFC_LABEL,
   NUFC_TEAM_ID,
   teamLogoUrl,
+  weekLabel,
   type MatchView,
   type WeekPrediction,
   type WeekSession,
@@ -664,7 +665,7 @@ function MatchMeta({ weekNo, match }: { weekNo: number; match: MatchView }) {
   return (
     <div className="text-center">
       <p className="mb-1 text-label-2 font-medium text-neutral-muted">
-        {match.competition} · {weekNo}라운드
+        {match.competition} · {weekLabel(weekNo, '라운드')}
       </p>
       <p className="text-label-2 text-neutral-muted">
         {match.kickoff} ({match.isHome ? '홈' : '원정'}) {match.kickoffTime}

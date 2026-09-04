@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Badge } from '@/components/primitives/badge'
 import { Button } from '@/components/primitives/button'
 import { TeamBadge } from './shared'
+import { weekLabel } from '@/lib/predictions/week'
 import { cn } from '@/lib/utils'
 
 /**
@@ -230,7 +231,7 @@ function WeekSessionCard({
       )}
     >
       <div className="mb-3 flex items-center gap-2">
-        <p className="text-headline-1 font-semibold text-neutral">{week.weekNo}주차</p>
+        <p className="text-headline-1 font-semibold text-neutral">{weekLabel(week.weekNo, '주차')}</p>
         {/* Badge 4종 variant는 전부 "옅은 틴트 배경 + 700단계 텍스트"라(badge.tsx:11-17)
             대비가 배지 안에서 닫혀 있다 — 글로우 컨테이너 위에서도 그대로 읽힌다. */}
         {!isEmpty && <Badge variant={badge.variant}>{badge.label}</Badge>}
@@ -271,7 +272,7 @@ function WeekSessionCard({
               // 접근 가능한 이름이 이 버튼 하나에만 남았다. 문구는 주차마다 같으므로
               // ("예측하기"/"결과보기") 주차 번호를 이름에 넣지 않으면 스크린리더 폼컨트롤
               // 목록·탭 순회에서 여러 주차의 CTA가 전부 동일한 이름으로 보인다.
-              aria-label={`${week.weekNo}주차 ${action.label}`}
+              aria-label={`${weekLabel(week.weekNo, '주차')} ${action.label}`}
             >
               {action.label}
             </Button>
