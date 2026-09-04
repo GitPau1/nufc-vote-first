@@ -15,8 +15,7 @@ const CALLSITES = [
   ['../common/LoginButton.tsx', 'login'],
   ['../../../app/menu/MenuActions.tsx', 'login'],
   ['../auth/RequireAuthModal.tsx', 'login'],
-  ['./TypeAPollClient.tsx', 'vote'],
-  ['./TypeBPollClient.tsx', 'vote'],
+  ['./PollClient.tsx', 'vote'],
   ['./OverallRatingPollClient.tsx', 'vote'],
   ['../predict/PredictionFlowClient.tsx', 'predict'],
 ]

@@ -74,7 +74,7 @@ test('loading skeletons mirror the mobile layout foundation', () => {
 
 test('poll form and poll detail surfaces use card radius foundation', () => {
   const form = source('components/composition/polls/UserPollCreateForm.tsx')
-  const detail = source('components/composition/polls/TypeBPollClient.tsx')
+  const detail = source('components/composition/polls/PollClient.tsx')
 
   assert.match(form, /rounded-lg border border-neutral-weak bg-surface p-4 shadow-g200/)
   assert.doesNotMatch(form, /<section className="[^"]*rounded-md border border-neutral-weak bg-surface p-4 shadow-g200/)
@@ -98,10 +98,11 @@ test('image banners use a readable dark overlay for white text', () => {
   const files = [
     // PollHeroCard는 원래 PollListClient.tsx 안에 있던 걸 /(홈)과 /polls가 같이 쓰도록 뽑아낸 것.
     'components/composition/polls/PollHeroCard.tsx',
-    'components/composition/polls/TypeAPollClient.tsx',
-    // TypeBPollClient는 이 목록에서 빠졌다 — 투표 상세(선택형)는 제목을 이미지 위에 얹지 않고
-    // 이미지 아래 글 컨테이너로 내렸다. 이미지 위에 흰 텍스트가 없으니 오버레이도 필요 없다.
-    // 아래에서 오버레이가 되살아나지 않는지를 대신 검사한다.
+    // PollClient.tsx는 병합 후 showSubjectPlayer(구 TypeA) 분기 안에서만 오버레이를 쓴다 —
+    // 아래에서 그 분기 안에만 있는지를 순서 검사로 대신 확인한다(파일 목록에는 넣지 않는다).
+    // 투표 상세(선택형=구 TypeB) 분기는 제목을 이미지 위에 얹지 않고 이미지 아래 글 컨테이너로
+    // 내렸다. 이미지 위에 흰 텍스트가 없으니 오버레이도 필요 없다. 아래에서 오버레이가
+    // 그 분기로 되살아나지 않는지를 대신 검사한다.
     // OverallRatingPollClient도 같은 이유로 이 목록에서 빠졌다 — 결과 화면(OverallRatingResultView)과
     // 커버 스타일이 갈리지 않도록 제목/배지를 커버 아래 본문으로 내리고, 커버는 이미지 오버레이
     // 없는 독립 블록이 됐다. 아래에서 오버레이가 되살아나지 않는지를 검사한다.
@@ -121,10 +122,16 @@ test('image banners use a readable dark overlay for white text', () => {
     assert.doesNotMatch(content, /linear-gradient\(to bottom, rgba/, `${file} should not hide banner overlay in inline styles`)
   }
 
-  // 투표 상세(선택형)는 커버를 단독으로 두고 글은 그 아래 컨테이너가 받는다.
-  // 텍스트 오버레이가 다시 들어오면 이미지 위 흰 글씨가 부활한 것이므로 실패시킨다.
-  const typeB = source('components/composition/polls/TypeBPollClient.tsx')
-  assert.doesNotMatch(typeB, /banner-text-overlay/)
+  // PollClient.tsx는 showSubjectPlayer(구 TypeA) 분기와 구 TypeB 분기를 한 파일에 담는다 —
+  // 오버레이가 TypeA 분기 안에서만 등장하고 TypeB 분기로 되살아나지 않는지를 순서로 검사한다.
+  const merged = source('components/composition/polls/PollClient.tsx')
+  const typeABranchStart = merged.indexOf('showSubjectPlayer ? (')
+  const overlayIndex = merged.indexOf('banner-text-overlay')
+  // '구 TypeB'만으로 찾으면 파일 위쪽 getOptionSubLabel의 JSDoc 주석("구 TypeBPollClient")이
+  // 먼저 걸려 분기 시작보다 앞선 인덱스가 나온다 — 실제 else 분기 주석까지 포함해 검색한다.
+  const typeBBranchStart = merged.indexOf('구 TypeB — 커버')
+  assert.ok(typeABranchStart !== -1 && overlayIndex !== -1 && typeBBranchStart !== -1, 'PollClient.tsx should contain the showSubjectPlayer branch and the TypeB branch marker')
+  assert.ok(overlayIndex > typeABranchStart && overlayIndex < typeBBranchStart, 'banner-text-overlay should only render inside the showSubjectPlayer(TypeA) branch, not the TypeB branch')
 
   // 전체 평가 입력·결과 화면도 같은 이유로 커버가 단독 블록이다 — 같은 투표를 평가→결과로
   // 넘어갈 때 커버 스타일이 갈리면 안 된다.
@@ -301,8 +308,7 @@ test('application source does not use arbitrary typography or hardcoded visual c
     'components/composition/common/HomeClient.tsx',
     'components/composition/polls/PollListClient.tsx',
     'components/composition/polls/ResultView.tsx',
-    'components/composition/polls/TypeAPollClient.tsx',
-    'components/composition/polls/TypeBPollClient.tsx',
+    'components/composition/polls/PollClient.tsx',
     ...PREDICT_FILES,
   ]
 
