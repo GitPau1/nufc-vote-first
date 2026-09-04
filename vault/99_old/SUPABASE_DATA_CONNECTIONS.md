@@ -451,7 +451,7 @@ RLS:
 
 - `polls`, `poll_options`, `players`
 - `votes` count aggregate
-- 평점 투표(`overall_rating`)의 참여자 수는 **view `rating_poll_participants`**(`20260825120000_rating_poll_participants.sql`) — `lib/queries/polls.ts`의 `getRatingParticipantCounts`. 참여자 1명이 선수 수만큼 `rating_votes` 행을 남기므로 행 수가 아니라 `count(distinct user_id)`여야 하고, 예전처럼 행을 전량 받아 JS로 세면 PostgREST `db-max-rows=1000`에 잘려 화면 숫자가 조용히 틀립니다(선수 14명 기준 참여자 14명부터). `security_invoker = true`라 `rating_votes: public read` 정책을 그대로 탑니다.
+- 평점 투표(`overall_rating`)의 참여자 수는 **view `rating_poll_participants`**(`20260825120000_rating_poll_participants.sql`) — `lib/queries/ratings.ts`의 `getRatingParticipantCounts`(TEA-28로 `lib/queries/polls.ts`에서 이동). 참여자 1명이 선수 수만큼 `rating_votes` 행을 남기므로 행 수가 아니라 `count(distinct user_id)`여야 하고, 예전처럼 행을 전량 받아 JS로 세면 PostgREST `db-max-rows=1000`에 잘려 화면 숫자가 조용히 틀립니다(선수 14명 기준 참여자 14명부터). `security_invoker = true`라 `rating_votes: public read` 정책을 그대로 탑니다. 같은 파일에 `getMyRatingVoteCount`/`getRatingResults`/`getCurrentSeasonStatsForOptions`(+타입 `PollPlayerSeasonStats`/`RatingCommentItem`/`RatingResultItem`)도 있다.
 - 최신 공개 `farewells`
 - `farewell_comments` count aggregate
 
@@ -641,6 +641,7 @@ Supabase 스키마를 바꿀 때는 아래를 함께 처리하세요.
    - 공개 읽기
    - 로그인 사용자 INSERT/UPDATE/DELETE
    - 관리자 전용 service-role 쓰기
+   - 새 service-role 클라이언트가 필요하면 직접 생성하지 말고 `frontend/src/lib/supabase/service-client.ts`의 `getServiceRoleClient()`를 쓴다(권한 검사 없는 단일 생성 지점). 관리자 권한 검사까지 필요하면 이를 감싼 `frontend/src/lib/supabase/admin.ts`의 `requireAdminClient()`를 쓴다.
 7. Storage가 관련되면 버킷 존재 여부와 공개/비공개 정책을 확인합니다.
 8. 최소 검증:
    - `cd app`
