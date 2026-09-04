@@ -107,6 +107,16 @@ feature-spec.md 끝의 목록 번호 기준. 여기 적힌 것이 plan.md의 입
 | 8 | `setup_required` 방어 코드 (spec §5-3) | **지운다** — `lib/actions/ratings.ts`의 `isMissingRatingSchemaError`·`setup_required` 반환, `OverallRatingPollClient.tsx`의 해당 문구 분기 삭제 |
 | 9 | `polls.scheduled_at` 컬럼 (spec TEA-25) | **DROP COLUMN** — 마이그레이션 1건 |
 
+### plan 검토 후 추가 확정 (2026-09-04)
+
+| # | 항목 | 확정 |
+|---|---|---|
+| 10 | plan이 새로 지은 이름 — `POLL_FORMATS`(기존 `POLL_TYPES` 대체), `PollFormat`, `getOptionSubLabel`, 마이그레이션 파일명 `20260904140000_drop_polls_scheduled_at.sql` / `20260904150000_consolidate_poll_type_to_poll.sql` | **전부 그대로 사용**. 단 `hasSubjectPlayer`는 기존 `showSubjectPlayer`(`UserPollEditForm.tsx`)로 통일 |
+| 11 | PR 전략 | **TEA-25(예정 투표 제거)만 먼저 별도 PR, 나머지(TEA-26/27/29)는 PR 1개** |
+| 12 | mock 데이터의 "공개 예정" 데모 투표(`poll-3`) | **삭제** (active로 바꿔 유지하지 않음) |
+| 13 | 합쳐진 `PollClient` 화면 | **목업의 표지(160/252, 뱃지 없음) + 나머지 마크업은 기존 TypeA/TypeB 그대로**, `poll.player_id` 유무로 분기. 별도 디자인 시안 없음 |
+| 14 | plan 검토에서 잡힌 수정 | `design-foundation.test.mjs`의 오버레이 부재 검사는 삭제가 아니라 `PollClient.tsx` 조건 분기 기준으로 재작성 / Step 4를 "데이터 모델·분기·픽스처"와 "PollClient 병합" 두 단계로 분리 / Step 4 완료 기준에 "런타임 `type === 'poll'` 양성 검사 없음(배포→마이그레이션 사이 옛 값 공존)" 추가 |
+
 **되돌리기 어려운 변경 목록(plan.md 승인 시 문장 그대로 재확인)**:
 - `alter table polls drop column scheduled_at;`
 - `update polls set type = 'poll' where type in ('subject_options','question_targets','free_choice','selection','evaluation');` — 실행 전 `select type, count(*) from polls group by type`로 13건 확인, 실행 후 `poll` 13 / `overall_rating` 2 확인.
