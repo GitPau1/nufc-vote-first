@@ -17,6 +17,7 @@ export async function loadMorePolls(page: number) {
 
 export async function createUserPoll(formData: FormData): Promise<{ pollId?: string; error?: string }> {
   const type = (formData.get('type') as PollType) || 'poll'
+  if (type !== 'poll' && type !== 'overall_rating') return { error: '올바르지 않은 투표 유형입니다.' }
 
   if (IS_MOCK) {
     return { pollId: 'poll-1' }
@@ -53,6 +54,11 @@ export async function createUserPoll(formData: FormData): Promise<{ pollId?: str
     .filter(option => option.label)
 
   if (options.length < 2) return { error: '선택지를 최소 2개 입력해주세요.' }
+
+  const optionPlayerIds = options.map(option => option.player_id).filter((id): id is string => Boolean(id))
+  if (new Set(optionPlayerIds).size !== optionPlayerIds.length) {
+    return { error: '같은 선수를 여러 선택지에 연결할 수 없습니다.' }
+  }
 
   const { createClient: createServiceClient } = await import('@supabase/supabase-js')
   const serviceSupabase = createServiceClient(

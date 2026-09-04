@@ -41,6 +41,18 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
     .map(id => players.find(player => player.id === id))
     .filter((player): player is PollFormPlayer => Boolean(player))
 
+  // 선택지 선수 픽커를 열 때만 적용 — 다른 선택지가 이미 연결한 선수는 목록에서 빼서
+  // 옵션 간 중복 연결을 막는다(대상 선수는 다른 슬롯이라 제외 대상이 아니다).
+  const otherOptionPlayerIds = editingOptionIndex !== null
+    ? options
+        .filter((_, index) => index !== editingOptionIndex)
+        .map(option => option.playerId)
+        .filter((id): id is string => Boolean(id))
+    : []
+  const pickerPlayers = otherOptionPlayerIds.length > 0
+    ? players.filter(player => !otherOptionPlayerIds.includes(player.id))
+    : players
+
   function updateOption(index: number, patch: Partial<UnifiedOption>) {
     setOptions(prev => prev.map((option, itemIndex) => itemIndex === index ? { ...option, ...patch } : option))
   }
@@ -391,7 +403,7 @@ export function UserPollCreateForm({ players }: { players: PollFormPlayer[] }) {
       >
         <PollPickerContent
           mode={pickerMode}
-          players={players}
+          players={pickerPlayers}
           selectedIds={
             editingOptionIndex !== null
               ? (options[editingOptionIndex]?.playerId ? [options[editingOptionIndex].playerId as string] : [])
