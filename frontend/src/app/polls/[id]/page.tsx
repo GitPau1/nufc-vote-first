@@ -89,9 +89,7 @@ export default async function PollPage({ params }: PollPageProps) {
   }
 
   // 아직 투표 전
-  if (poll.type === 'selection' || poll.type === 'question_targets' || poll.type === 'free_choice') {
-    return <TypeBPollClient poll={poll} isAuthenticated={!!user} canEdit={canEdit} />
-  }
-
-  return <TypeAPollClient poll={poll} isAuthenticated={!!user} canEdit={canEdit} />
+  return poll.player_id
+    ? <TypeAPollClient poll={poll} isAuthenticated={!!user} canEdit={canEdit} />
+    : <TypeBPollClient poll={poll} isAuthenticated={!!user} canEdit={canEdit} />
 }

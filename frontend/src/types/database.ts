@@ -1,6 +1,7 @@
 // DB schema types for the poll-only application.
 
-export type PollType = 'evaluation' | 'selection' | 'subject_options' | 'question_targets' | 'free_choice' | 'overall_rating'
+// 과도기(TEA-26 Step 4~5): 'poll'로 통합 중. 옛 5개 값은 Step 5(폼·액션 재구성) 완료 시 제거한다.
+export type PollType = 'poll' | 'overall_rating' | 'subject_options' | 'question_targets' | 'free_choice' | 'selection' | 'evaluation'
 export type PollStatus = 'active' | 'closed'
 /** season_squads.position — GK는 승부예측 픽 후보가 아니다(DEF/MID/FWD만 픽 대상). */
 export type SquadPosition = 'GK' | 'DEF' | 'MID' | 'FWD'

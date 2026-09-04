@@ -49,7 +49,7 @@ const meta = {
   decorators: [(Story: () => React.JSX.Element) => <div style={{ maxWidth: 812 }}><Story /></div>],
   args: {
     pollId: 'poll-1',
-    pollType: 'selection',
+    pollType: 'poll',
     pollStatus: 'active',
     creatorType: 'admin',
     initialComments: COMMENTS,

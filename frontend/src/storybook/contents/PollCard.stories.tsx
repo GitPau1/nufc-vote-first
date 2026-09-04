@@ -6,7 +6,7 @@ import type { PollListItem } from '@/lib/queries/polls'
 function mockPoll(overrides: Partial<PollListItem>): PollListItem {
   return {
     id: 'poll-1',
-    type: 'selection',
+    type: 'poll',
     title: '이번 시즌 최고의 활약을 펼친 선수는?',
     description: null,
     status: 'active',

@@ -12,13 +12,8 @@ import type { PlayerRow } from '@/types/database'
 import { getPlayerMeta } from '@/components/primitives/modal/contents/PollPicker'
 import { formatPollDate, getOptionThumb } from './ResultView'
 
-// UserPollCreateForm.tsx의 POLL_TYPES와 같은 라벨. 레거시 타입(evaluation/selection, mock
-// 데이터에만 남아 있다)은 실제 화면에 노출된 전례가 없어 임의로 라벨을 새로 짓지 않고
-// poll.type 원문을 그대로 보여준다.
 const POLL_TYPE_LABELS: Partial<Record<PollDetail['type'], string>> = {
-  subject_options: '대상+선택지',
-  question_targets: '질문+선수',
-  free_choice: '자유 선택',
+  poll: '일반 투표',
   overall_rating: '전체 평점',
 }
 
@@ -39,9 +34,8 @@ export function UserPollEditForm({ poll, editableFields }: UserPollEditFormProps
   // status)를 쓰는 edit page(page.tsx)의 서브카피와 배너 문구가 어긋나지 않게 한다.
   const isClosed = !canEditTitle
 
-  // subject_options/evaluation: 단일 대상 선수 + 텍스트 선택지. 그 외(question_targets/
-  // selection/free_choice/overall_rating): poll_options를 선수/이미지 박스로 나열.
-  const showSubjectPlayer = poll.type === 'subject_options' || poll.type === 'evaluation'
+  // poll.player_id 유무로 판정.
+  const showSubjectPlayer = !!poll.player_id
 
   function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()

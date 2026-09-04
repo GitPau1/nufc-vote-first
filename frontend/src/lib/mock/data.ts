@@ -65,7 +65,7 @@ function overallRatingOptionPlayers(): Record<string, PlayerRow> {
 export const MOCK_POLL_LIST: PollListItem[] = [
   {
     id: 'poll-1',
-    type: 'evaluation',
+    type: 'poll',
     title: '이삭 맨시티전 활약 평가',
     status: 'active',
     closes_at: new Date(Date.now() + 5 * 86400_000).toISOString(),
@@ -77,7 +77,7 @@ export const MOCK_POLL_LIST: PollListItem[] = [
   },
   {
     id: 'poll-5',
-    type: 'selection',
+    type: 'poll',
     title: '이번 시즌 뉴캐슬 최고 공격수',
     status: 'active',
     closes_at: new Date(Date.now() + 7 * 86400_000).toISOString(),
@@ -93,7 +93,7 @@ export const MOCK_POLL_LIST: PollListItem[] = [
   },
   {
     id: 'poll-2',
-    type: 'evaluation',
+    type: 'poll',
     title: '브루노 이번 시즌 미드필드 기여도',
     status: 'active',
     closes_at: new Date(Date.now() + 2 * 86400_000).toISOString(),
@@ -105,7 +105,7 @@ export const MOCK_POLL_LIST: PollListItem[] = [
   },
   {
     id: 'poll-4',
-    type: 'evaluation',
+    type: 'poll',
     title: '트리피어 이번 시즌 종합 평가',
     status: 'closed',
     closes_at: new Date(Date.now() - 3 * 86400_000).toISOString(),
@@ -117,7 +117,7 @@ export const MOCK_POLL_LIST: PollListItem[] = [
   },
   {
     id: 'poll-6',
-    type: 'selection',
+    type: 'poll',
     title: '24-25 시즌 최고의 수문장',
     status: 'closed',
     closes_at: new Date(Date.now() - 5 * 86400_000).toISOString(),
@@ -159,7 +159,7 @@ export const MOCK_POLL_LIST: PollListItem[] = [
 // ── 더미 투표 상세 ───────────────────────────────────────────
 export const MOCK_POLL_DETAIL: Record<string, PollDetail> = {
   'poll-1': {
-    id: 'poll-1', type: 'evaluation', status: 'active',
+    id: 'poll-1', type: 'poll', status: 'active',
     title: '이삭 맨시티전 활약 평가',
     description: '지난 맨체스터 시티 원정에서 보여준 알렉산더 이삭의 활약을 평가해주세요. 선제골과 2회의 핵심 기회 창출을 포함한 전반적인 기여도를 고려해 선택해주세요.',
     closes_at: new Date(Date.now() + 5 * 86400_000).toISOString(),
@@ -168,7 +168,7 @@ export const MOCK_POLL_DETAIL: Record<string, PollDetail> = {
     created_by: 'mock-user',
   },
   'poll-5': {
-    id: 'poll-5', type: 'selection', status: 'active',
+    id: 'poll-5', type: 'poll', status: 'active',
     title: '이번 시즌 뉴캐슬 최고 공격수',
     description: '2024-25 시즌 뉴캐슬의 공격을 이끈 최고의 선수를 선택해주세요. 득점, 어시스트, 경기 장악력을 종합적으로 고려해주세요.',
     closes_at: new Date(Date.now() + 7 * 86400_000).toISOString(),
@@ -181,7 +181,7 @@ export const MOCK_POLL_DETAIL: Record<string, PollDetail> = {
     option_players: { [isak.id]: isak, [gordon.id]: gordon, [wilson.id]: wilson },
   },
   'poll-2': {
-    id: 'poll-2', type: 'evaluation', status: 'active',
+    id: 'poll-2', type: 'poll', status: 'active',
     title: '브루노 이번 시즌 미드필드 기여도',
     description: '브루노 기마랑이스의 이번 시즌 전반적인 미드필드 장악력, 빌드업 기여, 수비 가담을 종합적으로 평가해주세요.',
     closes_at: new Date(Date.now() + 2 * 86400_000).toISOString(),
@@ -189,7 +189,7 @@ export const MOCK_POLL_DETAIL: Record<string, PollDetail> = {
     poll_options: evalOptions('poll-2'),
   },
   'poll-4': {
-    id: 'poll-4', type: 'evaluation', status: 'closed',
+    id: 'poll-4', type: 'poll', status: 'closed',
     title: '트리피어 이번 시즌 종합 평가',
     description: '키어런 트리피어의 이번 시즌 오른쪽 측면 수비 및 공격 가담을 종합 평가해주세요. 세트피스 기여도도 고려해 선택해주세요.',
     closes_at: new Date(Date.now() - 3 * 86400_000).toISOString(),
@@ -198,7 +198,7 @@ export const MOCK_POLL_DETAIL: Record<string, PollDetail> = {
     created_by: 'mock-user',
   },
   'poll-6': {
-    id: 'poll-6', type: 'selection', status: 'closed',
+    id: 'poll-6', type: 'poll', status: 'closed',
     title: '24-25 시즌 최고의 수문장',
     description: '이번 시즌 뉴캐슬 골문을 지킨 최고의 골키퍼를 선택해주세요.',
     closes_at: new Date(Date.now() - 5 * 86400_000).toISOString(),
