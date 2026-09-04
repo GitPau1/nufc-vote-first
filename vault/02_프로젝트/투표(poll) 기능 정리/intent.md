@@ -43,7 +43,9 @@ from poll_options po join polls p on p.id = po.poll_id where p.type = 'selection
 | `question_targets`("질문+선수") | 선택지마다 선수(`poll_options.player_id`), poll 전체 선수는 없음 |
 | `free_choice`("자유 선택") | 선수 연결 없음 |
 
-즉 "poll 전체 선수 연결(선택)"과 "선택지별 선수 연결(선택)"은 원래 독립된 두 슬롯인데, 지금은 이걸 3개의 분리된 타입으로 억지로 나눠놓은 상태다. 화면 렌더링(`app/polls/[id]/page.tsx`)도 이미 `type` 값이 아니라 사실상 "poll에 선수가 달려있나"로 갈리고 있어(TypeA=선수 있음, TypeB=선수 없거나 선택지에 있음), 통합해도 렌더링 구조를 크게 새로 만들 필요가 없다.
+즉 "poll 전체 선수 연결(선택)"과 "선택지별 선수 연결(선택)"은 원래 독립된 두 슬롯인데, 지금은 이걸 3개의 분리된 타입으로 억지로 나눠놓은 상태다.
+
+> **정정(2026-09-04, feature-spec 실측)**: 화면 렌더링(`app/polls/[id]/page.tsx:92-96`)은 `type` 문자열 화이트리스트(`selection|question_targets|free_choice`→TypeB, 그 외→TypeA)로 갈린다 — "poll에 선수가 달려있나"를 검사하는 게 아니다. 결과가 같은 건 우연이다. 통합 후 분기 기준은 feature-spec §2-3에서 `poll.player_id` 유무로 바꾸는 안을 제안한다. 또 `polls.type`/`status`는 DB에 CHECK/enum 제약이 없는 `text` 컬럼이라(feature-spec §0) 타입 통합에 스키마 마이그레이션은 필요 없다.
 
 **결정**: 생성 시 타입 선택 자체를 없애고 단일 흐름으로 통합한다 — (a) "이 투표가 특정 선수 하나에 대한 것인가" 여부(선택), (b) "선택지마다 선수를 연결할 것인가" 여부(선택), 둘 다 옵션으로 제공. `overall_rating`(여러 선수에게 각각 등급을 매기는 구조적으로 다른 기능)은 그대로 분리 유지.
 
@@ -88,6 +90,27 @@ from poll_options po join polls p on p.id = po.poll_id where p.type = 'selection
 - fallback이 막아주는 컬럼: `players.squad_status`, `polls.thumbnail_url` 외에 `poll_options.image_url`, `poll_options.description`도 대상이었음(기존 `AGENT_MAINTENANCE_GUIDE.md`엔 미기재 — 이번에 발견) → 실제 컬럼 존재 여부는 developer 에이전트가 feature-spec 단계에서 migration 이력 대조
 - 선택지 이미지(`poll_options.image_url`)는 썸네일과 달리 스토리지 정리 로직이 없음(코드 주석이 스스로 명시) — 정리 필요 여부는 feature-spec에서 판단
 - `OverallRatingPollClient.tsx`의 "전체 평가 DB 마이그레이션이 필요합니다"(`setup_required`) 방어 문구가 실제로 지금도 발생 가능한 상황인지 `lib/actions/ratings.ts` 확인 필요 (이번 조사 범위 밖)
+
+## feature-spec 검토 후 확정 (2026-09-04) — spec의 "사람 확인 필요" 9건에 대한 답
+
+feature-spec.md 끝의 목록 번호 기준. 여기 적힌 것이 plan.md의 입력이다.
+
+| # | 항목 | 확정 |
+|---|---|---|
+| 1 | `polls.type` 저장 값 (spec §2-1) | **안 B** — 일반 투표는 전부 `'poll'` 한 값으로 저장. 기존 13개 poll(`subject_options` 3, `question_targets` 3, `free_choice` 6, `selection` 1)도 `'poll'`로 마이그레이션. `selection`→`free_choice` 문장은 이 마이그레이션에 흡수된다. `overall_rating`은 그대로. 화면 분기는 `poll.player_id` 유무(spec §2-3) |
+| 2 | 선수 연결 옵션 + 이미지 공존 (spec §2-4) | **1안** — 옵션별로 선수 연결/직접 입력을 섞어 쓸 수 있고, 선수를 연결한 옵션은 이미지 업로드 UI를 숨기고 무조건 선수 사진을 쓴다 |
+| 3 | TypeA/TypeB 컴포넌트 통합 (spec §2-3) | **합친다** — 하나의 PollClient로. 표지 오버레이·선수 정보 카드는 `poll.player_id` 유무로 조건 렌더. `design-foundation.test.mjs`·`login-modal.test.mjs`의 파일 경로 단정문은 새 파일 기준으로 재작성(테스트를 지우지 않는다). 사용자가 스코프 확대를 승인한 항목 |
+| 4 | `getPollFormPlayers()` 후보 필터 (spec §2-6) | **`is_active = true`만 노출** |
+| 5 | 표지 높이 상수 위치·`PollHeroCard` 포함 (spec §3-1) | `PollHeroCard`는 **범위 밖(252 유지)**. 상수 추출은 선택되지 않음 → 5개 컴포넌트에 `h-[160px] sm:h-[252px]`를 각각 직접 쓴다(새 상수/파일 만들지 않음) |
+| 6 | TEA-28 새 이름 5개 (spec §4) | **TEA-28 plan 단계에서 따로 결정** — 이번 plan.md 범위에서 TEA-28 제외 |
+| 7 | 선택지 이미지 고아 파일 정리 (spec §5-2) | **안 만든다** |
+| 8 | `setup_required` 방어 코드 (spec §5-3) | **지운다** — `lib/actions/ratings.ts`의 `isMissingRatingSchemaError`·`setup_required` 반환, `OverallRatingPollClient.tsx`의 해당 문구 분기 삭제 |
+| 9 | `polls.scheduled_at` 컬럼 (spec TEA-25) | **DROP COLUMN** — 마이그레이션 1건 |
+
+**되돌리기 어려운 변경 목록(plan.md 승인 시 문장 그대로 재확인)**:
+- `alter table polls drop column scheduled_at;`
+- `update polls set type = 'poll' where type in ('subject_options','question_targets','free_choice','selection','evaluation');` — 실행 전 `select type, count(*) from polls group by type`로 13건 확인, 실행 후 `poll` 13 / `overall_rating` 2 확인.
+- fallback 제거 전 프로덕션 `information_schema.columns` 1회 조회(spec §5-1).
 
 ## 불변 제약 (건드리면 안 됨)
 
