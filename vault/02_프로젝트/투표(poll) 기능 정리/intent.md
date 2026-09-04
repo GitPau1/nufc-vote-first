@@ -137,3 +137,9 @@ feature-spec.md 끝의 목록 번호 기준. 여기 적힌 것이 plan.md의 입
 
 1. developer 에이전트가 위 결정 사항을 `feature-spec.md` → `plan.md`로 구체화 (파일:줄 단위 변경 계획, 특히 §2 마이그레이션 SQL은 plan.md에서 재확인)
 2. `plan.md`는 사람 승인 전까지 구현 착수 안 함
+
+## 완료 기록 (2026-09-04)
+
+- PR #22(TEA-25) squash 머지 → PR #24(TEA-26/27/29) squash 머지(`7635592`).
+- plan Step D: `supabase db push --linked`로 `20260904150000_consolidate_poll_type_to_poll.sql`, `20260904160000_drop_polls_scheduled_at.sql` 적용(사용자 승인 후 오케스트레이터가 poll-cleanup worktree에서 실행). 같이 대기 중이던 TEA-30 `20260904140000`도 적용. 원격 이력 = 로컬 파일 확인.
+- 남은 것: TEA-28(코드 구조 리팩터링 — 이름 5개 결정 포함), intent #18 후속 후보 3건.

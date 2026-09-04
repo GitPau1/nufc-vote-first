@@ -185,8 +185,8 @@ RLS:
 코드에서 쓰는 주요 컬럼:
 
 - `id`, `type`, `title`, `description`, `player_id`, `status`, `thumbnail_url`, `closes_at`, `created_at`
-- `type`은 `'poll' | 'overall_rating'` 두 값만 씁니다(TEA-26, 2026-09 통합). 옛 5개 값(`subject_options`/`question_targets`/`free_choice`/`selection`/`evaluation`)은 코드가 더는 만들지 않고, 기존 13개 poll도 `'poll'`로 일괄 변환하는 `supabase/migrations/20260904150000_consolidate_poll_type_to_poll.sql`이 PR #2 머지 후 실행 대기입니다.
-- `scheduled_at` 컬럼은 DB에 남아 있지만 코드가 더는 읽지 않습니다(예정 투표 기능 자체가 TEA-25로 완전 제거됨). `supabase/migrations/20260904160000_drop_polls_scheduled_at.sql`이 PR #2 머지 후 실행 대기입니다.
+- `type`은 `'poll' | 'overall_rating'` 두 값만 씁니다(TEA-26, 2026-09 통합). 옛 5개 값(`subject_options`/`question_targets`/`free_choice`/`selection`/`evaluation`)은 코드가 더는 만들지 않고, 기존 13개 poll도 `supabase/migrations/20260904150000_consolidate_poll_type_to_poll.sql`로 2026-09-04 `'poll'`로 일괄 변환 완료.
+- `scheduled_at` 컬럼은 `supabase/migrations/20260904160000_drop_polls_scheduled_at.sql`로 2026-09-04 DROP 완료(예정 투표 기능 자체가 TEA-25로 완전 제거됨).
 
 사용 위치:
 
@@ -656,6 +656,6 @@ Supabase 스키마를 바꿀 때는 아래를 함께 처리하세요.
 - `club_status`, `player_season_stats`의 DB write policy가 넓게 열려 있습니다. 앱에서는 service role로 관리자 쓰기를 하지만 DB 정책 자체는 재검토가 필요합니다.
 - 관리자 권한은 DB role이 아니라 `ADMIN_EMAILS` 환경변수 기반 앱 코드로 판단합니다.
 - `votes`는 `20260529_public_profiles_storage_vote_guards.sql`에서 option-poll 복합 FK를 추가합니다. 기존 운영 DB에 이미 잘못된 vote row가 있으면 FK validation은 별도 점검이 필요합니다.
-- 예정 투표(scheduled poll) 기능 자체가 TEA-25(2026-09)로 완전 제거됐습니다(`PollStatus`는 `'active' | 'closed'`). `polls.scheduled_at` 컬럼은 아직 DB에 남아 있으나 코드가 안 읽고, `20260904160000_drop_polls_scheduled_at.sql`이 PR #2 머지 후 사람이 실행할 예정입니다. `submitVote()`는 `status`/`closes_at`로 잘못된 INSERT를 방어합니다.
+- 예정 투표(scheduled poll) 기능 자체가 TEA-25(2026-09)로 완전 제거됐습니다(`PollStatus`는 `'active' | 'closed'`). `polls.scheduled_at` 컬럼은 `20260904160000_drop_polls_scheduled_at.sql`로 2026-09-04 DROP 완료. `submitVote()`는 `status`/`closes_at`로 잘못된 INSERT를 방어합니다.
 - 경기·평점 데이터는 **FotMob 비공식 API**에 의존합니다. 스펙이 예고 없이 바뀌면 수집이 조용히 멈출 수 있으므로, 함수들은 빈 응답을 성공으로 넘기지 않고(`EMPTY_FIXTURES`) 사유를 응답에 남깁니다. 이상 신호는 대시보드 Cron의 Runs 이력에서 확인합니다.
 - 일부 기존 소스 파일의 한글 주석/문자열이 깨져 있습니다. DB 동작과 직접 관련은 없지만 유지보수 중 오해를 만들 수 있습니다.
