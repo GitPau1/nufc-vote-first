@@ -116,6 +116,7 @@ feature-spec.md 끝의 목록 번호 기준. 여기 적힌 것이 plan.md의 입
 | 12 | mock 데이터의 "공개 예정" 데모 투표(`poll-3`) | **삭제** (active로 바꿔 유지하지 않음) |
 | 13 | 합쳐진 `PollClient` 화면 | **목업의 표지(160/252, 뱃지 없음) + 나머지 마크업은 기존 TypeA/TypeB 그대로**, `poll.player_id` 유무로 분기. 별도 디자인 시안 없음 |
 | 15 | Step 4 실행 중 발견된 plan 모순(2026-09-04) — `PollType`을 Step 4에서 좁히면 Step 4b/5로 미룬 3개 파일(`UserPollCreateForm.tsx`, `actions/polls.ts`, `PollCarouselCard.stories.tsx`)이 빌드를 깨뜨림 | **Step 4는 `PollType`에 `'poll'`을 추가만 하고 옛 5개 값을 과도기로 유지, Step 5 마지막에 `'poll' \| 'overall_rating'`으로 좁힌다.** 모든 단계 커밋이 빌드 통과 상태를 유지하는 게 목적. 다른 결정 변경 없음 |
+| 16 | Step 4b 리뷰에서 발견(2026-09-04) — 병합된 `PollClient`가 선수 대상(옛 TypeA) 화면의 표지도 선택형과 같은 껍데기(좌우 여백 `px-4` + `rounded-lg`)로 바꿈. 옛 TypeA는 화면 끝까지 꽉 찬 직각 배너였음 | **통일 유지(여백+둥근 모서리, 목업과 동일)** — 사용자 확정. #13의 "나머지 마크업 그대로"에 대한 명시적 예외. 같은 리뷰에서 잡힌 `gap-3` 누락(표지-본문 12→24px)과 `canEdit`/설명 순서 뒤집힘은 실수라 원복 |
 | 14 | plan 검토에서 잡힌 수정 | `design-foundation.test.mjs`의 오버레이 부재 검사는 삭제가 아니라 `PollClient.tsx` 조건 분기 기준으로 재작성 / Step 4를 "데이터 모델·분기·픽스처"와 "PollClient 병합" 두 단계로 분리 / Step 4 완료 기준에 "런타임 `type === 'poll'` 양성 검사 없음(배포→마이그레이션 사이 옛 값 공존)" 추가 |
 
 **되돌리기 어려운 변경 목록(plan.md 승인 시 문장 그대로 재확인)**:
