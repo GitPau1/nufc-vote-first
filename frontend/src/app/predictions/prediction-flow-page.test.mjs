@@ -31,10 +31,18 @@ test('the match select screen only appears on a fresh double-matchweek entry wit
   assert.match(file, /<PredictionMatchSelect week=\{week\} matches=\{pending\} mode="submit" \/>/)
 })
 
-// 수정 대상 선택 화면은 제출된 경기가 2개 이상일 때만 뜬다 — 1개면 바로 그 경기 수정으로 직행한다
-// (PredictionDone.tsx의 editHref 분기와 대칭).
-test('the edit-target select screen requires at least two submitted matches', () => {
-  assert.match(file, /searchParams\.editSelect && submittedMatches\.length >= 2/)
+// 킥오프된 경기는 서버가 이미 막지만, 수정 대상 선택 화면에도 잠긴 경기가 나오면 안 된다
+// (더블 매치위크에서 한 경기만 킥오프됐을 때의 UI 전용 버그, 2026-09-05, TEA-33).
+test('editableMatches excludes locked matches from submittedMatches', () => {
+  assert.match(file, /const editableMatches = submittedMatches\.filter\(match => !match\.locked\)/)
+})
+
+// 수정 대상 선택 화면은 수정 가능(잠기지 않은)한 제출 경기가 2개 이상일 때만 뜬다 — 1개면 바로
+// 그 경기 수정으로 직행한다(PredictionDone.tsx의 editHref 분기와 대칭). 화면에 넘기는 목록도
+// editableMatches여야 잠긴 경기가 카드로 노출되지 않는다.
+test('the edit-target select screen requires at least two editable matches, and only shows those', () => {
+  assert.match(file, /searchParams\.editSelect && editableMatches\.length >= 2/)
+  assert.match(file, /<PredictionMatchSelect week=\{week\} matches=\{editableMatches\} mode="edit" prediction=\{prediction\} \/>/)
 })
 
 // 버그: 같은 라우트(/predictions/[weekKey])에서 검색 파라미터만 바뀌는 클라이언트 내비게이션(예:

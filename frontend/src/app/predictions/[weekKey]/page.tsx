@@ -67,6 +67,8 @@ export default async function PredictionFlowPage({
   const pending = submittableMatches(week).filter(match => !myPredictions[match.id])
   const prediction = findWeekPrediction(week, myPredictions)
   const submittedMatches = prediction ? week.matches.filter(match => prediction.scores[match.id]) : []
+  // 제출된 경기 중 이미 킥오프돼 잠긴 경기는 수정 대상 선택 화면에서 뺀다(PredictionDone.tsx와 동일 규칙).
+  const editableMatches = submittedMatches.filter(match => !match.locked)
 
   // 1) 경기 단위 수정 — 완료 허브의 "수정하기"(제출 1개) 또는 선택 화면에서 들어온다.
   const editTarget = searchParams.edit
@@ -99,9 +101,9 @@ export default async function PredictionFlowPage({
         initialValues={{ score: editExistingScore, picks: prediction!.picks[editTarget.id] }}
       />
     )
-  } else if (searchParams.editSelect && submittedMatches.length >= 2) {
-    // 완료 허브의 "수정하기"(제출 2개 이상)에서 들어오는 수정 대상 선택 화면.
-    body = <PredictionMatchSelect week={week} matches={submittedMatches} mode="edit" prediction={prediction} />
+  } else if (searchParams.editSelect && editableMatches.length >= 2) {
+    // 완료 허브의 "수정하기"(수정 가능한 제출 경기 2개 이상)에서 들어오는 수정 대상 선택 화면.
+    body = <PredictionMatchSelect week={week} matches={editableMatches} mode="edit" prediction={prediction} />
   } else if (matchTargets.length > 0) {
     body = (
       <PredictionFlowClient
