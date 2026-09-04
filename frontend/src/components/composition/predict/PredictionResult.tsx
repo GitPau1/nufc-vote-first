@@ -19,7 +19,7 @@ import {
   type RatingTier,
   type Top3Entry,
 } from '@/lib/predictions/result'
-import { NUFC_LABEL, NUFC_TEAM_ID, teamLogoUrl, type MatchView, type WeekSession } from '@/lib/predictions/week'
+import { NUFC_LABEL, NUFC_TEAM_ID, teamLogoUrl, weekLabel, type MatchView, type WeekSession } from '@/lib/predictions/week'
 import type { MyPredictionMap, MyResult, MyResultMap, RankingRow } from '@/lib/queries/predictions'
 import type { FixturePositionTop3 } from '@/lib/queries/fixtures'
 import type { PickCandidates } from '@/lib/queries/squads'
@@ -198,7 +198,7 @@ function VerdictHeadline({ week, results }: { week: WeekSession; results: MyResu
 
   return (
     <div className="spotlight-glow-brand-strong rounded-lg px-4 pb-5 pt-4 text-center">
-      <p className="text-caption-1 text-on-solid-muted">{week.weekNo}주차 결과</p>
+      <p className="text-caption-1 text-on-solid-muted">{weekLabel(week.weekNo, '주차')} 결과</p>
       <p className="mt-1.5 text-title-2 font-semibold text-on-solid">{headline}</p>
       {subline && <p className="mt-1 text-label-2 text-on-solid-muted">{subline}</p>}
     </div>

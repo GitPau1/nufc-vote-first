@@ -351,7 +351,7 @@ export interface Database {
       // 랭킹 단위가 주차라 경기 단위 fixture_leaderboard는 같은 migration에서 삭제했다.
       week_leaderboard: {
         Row: {
-          /** lib/predictions/week.ts의 weekKey()와 같은 ISO 주차 문자열('2026-35') */
+          /** lib/predictions/week.ts의 weekKey()와 같은 시즌 앵커 기준 문자열('2627-35' 또는 프리시즌 '2627-0-2') */
           week_key: string
           user_id: string
           display_name: string | null

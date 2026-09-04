@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/check-security-review.sh",
+            "if": "Bash(gh pr create*)",
+            "timeout": 15,
+            "statusMessage": "보안 민감 경로 변경 여부 확인 중..."
+          }
+        ]
+      }
+    ]
+  }
+}

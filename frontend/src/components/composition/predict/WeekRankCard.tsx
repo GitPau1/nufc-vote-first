@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { User } from 'lucide-react'
 import type { RankingRow } from '@/lib/queries/predictions'
+import { weekLabel } from '@/lib/predictions/week'
 import { cn } from '@/lib/utils'
 
 /** 모바일/데스크탑 공통 캡 — 여기까지만 그리고 "더보기"로 펼친다(퍼블리싱 `WEEK_RANK_CAP`). */
@@ -42,7 +43,7 @@ export function WeekRankCard({
 
   return (
     <div className={cn('text-left', className)}>
-      <p className="mb-3 text-headline-1 font-semibold text-on-solid">{weekNo}주차 랭킹</p>
+      <p className="mb-3 text-headline-1 font-semibold text-on-solid">{weekLabel(weekNo, '주차')} 랭킹</p>
 
       {entries.length === 0 ? (
         <p className="text-caption-1 text-on-solid-muted">아직 이 주차에 채점된 예측이 없어요</p>

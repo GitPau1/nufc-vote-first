@@ -61,7 +61,7 @@ export type MatchView = {
 
 export type WeekGroup = {
   weekNo: number
-  /** '2026-34' — 목록 그룹 키이자 예측 세션 URL 파라미터. 연도가 넘어가도 안 겹친다. */
+  /** '2627-1'(정규 시즌) 또는 '2627-0-2'(프리시즌) — 목록 그룹 키이자 예측 세션 URL 파라미터. */
   weekKey: string
   /** '2026-08' — 목록 화면 월 필터용 */
   monthKey: string
@@ -90,30 +90,92 @@ export function toKst(iso: string): Date {
   return new Date(new Date(iso).getTime() + KST_OFFSET_MS)
 }
 
-/** ISO 8601 주차 번호 (월요일 시작). */
-export function isoWeek(kst: Date): number {
-  const d = new Date(Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate()))
-  // 목요일이 속한 해가 그 주의 ISO 연도 — 목요일로 옮긴 뒤 연초부터 몇 주째인지 센다.
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7))
-  const yearStart = Date.UTC(d.getUTCFullYear(), 0, 1)
-  return Math.ceil(((d.getTime() - yearStart) / 86_400_000 + 1) / 7)
-}
+const SEASON_CODE = '2627' // 2026-27시즌, 시즌 내내 고정 — 다음 시즌 시작 전 갱신 필요(feature-spec §8)
 
-/** 그룹 키 — 연도가 넘어가도 주차가 겹치지 않게 ISO 연도까지 포함. */
-export function weekKey(kst: Date): string {
-  const thursday = new Date(kst.getTime())
-  thursday.setUTCDate(thursday.getUTCDate() + 4 - (thursday.getUTCDay() || 7))
-  return `${thursday.getUTCFullYear()}-${String(isoWeek(kst)).padStart(2, '0')}`
+const SEASON_WEEK1_ANCHOR = Date.UTC(2026, 7, 23) // 2026-08-23(일) 00:00, KST 기준 날짜로 취급
+
+// 이번 시즌(2026-27) 프리시즌 전용 — 실제 친선경기가 있는 주만 시간순으로 나열(2026-09-04
+// supabase db query --linked 실측). 다음 시즌 프리시즌 일정이 나오면 갱신 필요(feature-spec §8).
+// 닫힌 나눗셈 공식을 못 쓰는 이유는 feature-spec §2-2-보충 참고(친선경기 없는 08/02주가
+// 끼어 있어 날짜 산술만으로는 "몇 번째 프리시즌 주"인지 못 구함).
+const PRESEASON_WEEK_ANCHORS = [
+  Date.UTC(2026, 6, 19), // 07/19주
+  Date.UTC(2026, 6, 26), // 07/26주
+  Date.UTC(2026, 7, 9),  // 08/09주 (3경기 그룹)
+  Date.UTC(2026, 7, 16), // 08/16주
+]
+
+// 2025-26시즌 최종전(fixture_id=4813748, PL, kickoff 2026-05-24 15:00 UTC = KST 2026-05-25)
+// 하나만을 위한 예외 앵커(2026-09-04 신규 발견, feature-spec §9). PRESEASON_WEEK_ANCHORS(07/19주
+// 시작)보다 훨씬 이전 날짜라 정규 화이트리스트로 커버되지 않는다 — 이 시즌(2526) 데이터가 이
+// 경기 1건뿐이라(DB 실측) 별도 시즌 코드 + 고정 순번(1)으로 명시 처리한다. 다음 시즌 전환 때
+// 갱신할 대상이 아니다(과거 시즌 낙오 경기 전용 상수 — SEASON_WEEK1_ANCHOR/PRESEASON_WEEK_ANCHORS와
+// 달리 "시즌마다 갱신" 성격이 없음).
+const PREVIOUS_SEASON_CODE = '2526'
+const PREVIOUS_SEASON_STRAY_ANCHOR = Date.UTC(2026, 4, 24) // 2026-05-24(일)
+const PREVIOUS_SEASON_STRAY_WEEK_NO = 1
+
+function sundayAnchorStart(kst: Date): Date {
+  const d = new Date(Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate()))
+  d.setUTCDate(d.getUTCDate() - d.getUTCDay()) // getUTCDay(): 0=일요일
+  return d
 }
 
 /**
- * 지금 시각이 속한 ISO 주차 키. 트래킹·집계에서 "이번 주"를 판정할 때 쓴다.
+ * ISO 8601 규칙이 아니라 시즌 앵커 기준 순번이다(2026-09-04부터). 정규 시즌(2026-08-23
+ * 이후)은 1부터 양수, 프리시즌은 -1(1번째 프리시즌 주)부터 음수 — 두 구간이 절대 같은
+ * 숫자로 겹치지 않는다. 2025-26시즌 낙오 경기(PREVIOUS_SEASON_STRAY_ANCHOR)는 1을 반환하지만
+ * weekKey()가 별도 시즌 코드("2526")를 붙이므로 정규 시즌 1주차("2627-1")와 문자열 값은
+ * 겹치지 않는다. 세 화이트리스트(정규 시즌 앵커·PRESEASON_WEEK_ANCHORS·낙오 경기 앵커) 어디에도
+ * 없는 날짜(친선경기 없는 빈 주 포함)는 null.
+ */
+export function isoWeek(kst: Date): number | null {
+  const start = sundayAnchorStart(kst).getTime()
+  if (start === PREVIOUS_SEASON_STRAY_ANCHOR) return PREVIOUS_SEASON_STRAY_WEEK_NO
+  if (start >= SEASON_WEEK1_ANCHOR) {
+    return Math.floor((start - SEASON_WEEK1_ANCHOR) / (7 * 86_400_000)) + 1
+  }
+  const idx = PRESEASON_WEEK_ANCHORS.indexOf(start)
+  return idx === -1 ? null : -(idx + 1)
+}
+
+/**
+ * 그룹 키. 정규 시즌 "2627-N", 프리시즌 "2627-0-M"(M = -isoWeek()), 2025-26시즌 낙오 경기는
+ * "2526-1"(isoWeek()의 부호 기반 매핑과 별개로 여기서 직접 분기 — isoWeek()가 반환하는 1이
+ * 정규 시즌 1주차의 1과 숫자로는 같기 때문에, weekKey()가 앵커 자체를 다시 확인해 시즌 코드를
+ * 결정해야 "2526-1"과 "2627-1"이 안 섞인다). 화이트리스트 밖 날짜는 null — 예전엔 여기서
+ * throw했지만(2026-09-04) "그 경기 하나만 목록에서 빠지고 페이지 전체는 안 깨지는" 안전망으로
+ * 바꿨다(feature-spec §10). 호출부는 null을 반드시 처리해야 한다.
+ */
+export function weekKey(kst: Date): string | null {
+  if (sundayAnchorStart(kst).getTime() === PREVIOUS_SEASON_STRAY_ANCHOR) {
+    return `${PREVIOUS_SEASON_CODE}-${PREVIOUS_SEASON_STRAY_WEEK_NO}`
+  }
+  const n = isoWeek(kst)
+  if (n === null) return null
+  return n > 0 ? `${SEASON_CODE}-${n}` : `${SEASON_CODE}-0-${-n}`
+}
+
+/**
+ * 화면 표시용 주차 문구. 정규 시즌(`weekNo`가 양수)은 지금처럼 `"${weekNo}${unit}"`("1주차"/
+ * "1라운드")을 그대로 쓰고, 프리시즌 주(`weekNo`가 음수 — isoWeek()/weekKey() 주석 참고)는
+ * `unit` 없이 `"프리시즌 ${M}"`(M = -weekNo, weekKey의 "2627-0-M"과 같은 순번)만 보여준다.
+ * 프리시즌 음수 문구("-1주차" 등)를 없애기로 한 확정 요구사항(2026-09-04, plan.md
+ * "스코프 밖(후속 이슈)" §A를 스코프에 편입) 반영 — 화면 6곳(승부예측 5곳 + 관리자 평점 입력)이
+ * 이 함수 하나를 공유한다.
+ */
+export function weekLabel(weekNo: number, unit: string): string {
+  return weekNo < 0 ? `프리시즌 ${-weekNo}` : `${weekNo}${unit}`
+}
+
+/**
+ * 지금 시각이 속한 시즌 앵커 주차 키. 트래킹·집계에서 "이번 주"를 판정할 때 쓴다.
  *
  * weekKey()는 이름 그대로 **+9h 시프트된 Date**를 기대한다(toKst 참고). 호출부에서 그 변환을
  * 빠뜨리고 weekKey(new Date())를 부르면 UTC 달력 기준으로 계산되어 KST 00:00~09:00이 전날로
  * 밀리고, 월요일 오전엔 지난 주차로 잡힌다 — 주간 지표가 조용히 어긋나는 실수를 막는 래퍼다.
  */
-export function currentWeekKey(now: Date = new Date()): string {
+export function currentWeekKey(now: Date = new Date()): string | null {
   return weekKey(new Date(now.getTime() + KST_OFFSET_MS))
 }
 
@@ -181,8 +243,9 @@ function formatKickoffTime(kst: Date): string {
 }
 
 /**
- * 킥오프 기준 ISO 주차로 묶는다. 그룹 하나가 예측 세션 하나다.
- * 경기가 없는 중간 주차도 빈 그룹으로 채워 "이번 주는 예정된 경기가 없어요"가 그대로 나오게 한다.
+ * 킥오프 기준 시즌 앵커 주차로 묶는다. 그룹 하나가 예측 세션 하나다.
+ * 경기가 없는 중간 주차도 빈 그룹으로 채워 "이번 주는 예정된 경기가 없어요"가 그대로 나오게 한다
+ * (단, 화이트리스트 밖이라 weekKey를 못 구하는 프리시즌의 빈 주는 채우지 않고 건너뛴다 — fillGapWeeks 참고).
  */
 export function groupFixturesByWeek(fixtures: FixtureRow[], now: number): WeekGroup[] {
   const dated = fixtures
@@ -195,12 +258,20 @@ export function groupFixturesByWeek(fixtures: FixtureRow[], now: number): WeekGr
 
   for (const fixture of dated) {
     const kst = toKst(fixture.kickoff_at!)
+    const weekNo = isoWeek(kst)
     const key = weekKey(kst)
+    if (weekNo === null || key === null) {
+      // 세 화이트리스트(정규 시즌 앵커·PRESEASON_WEEK_ANCHORS·낙오 경기 앵커) 어디에도 없는
+      // 과거 날짜다(2026-09-04 확정, feature-spec §10) — 앵커 상수 갱신이 빠졌다는 뜻이지만,
+      // 경기 하나 때문에 목록 페이지 전체가 죽으면 안 되므로 이 경기만 조용히 빼고 넘어간다.
+      console.error(`groupFixturesByWeek: 주차를 알 수 없는 경기(fixture_id=${fixture.fixture_id}) — 건너뜀`)
+      continue
+    }
     let group = byKey.get(key)
 
     if (!group) {
       fillGapWeeks(groups, byKey, kst)
-      group = emptyWeek(kst, key)
+      group = emptyWeek(kst, key, weekNo)
       byKey.set(key, group)
       rowsByKey.set(key, [])
       groups.push(group)
@@ -220,9 +291,9 @@ export function groupFixturesByWeek(fixtures: FixtureRow[], now: number): WeekGr
   return groups
 }
 
-function emptyWeek(kst: Date, key: string): WeekGroup {
+function emptyWeek(kst: Date, key: string, weekNo: number): WeekGroup {
   return {
-    weekNo: isoWeek(kst),
+    weekNo,
     weekKey: key,
     monthKey: `${kst.getUTCFullYear()}-${String(kst.getUTCMonth() + 1).padStart(2, '0')}`,
     deadlineAt: null,
@@ -236,16 +307,19 @@ function fillGapWeeks(groups: WeekGroup[], byKey: Map<string, WeekGroup>, kst: D
   const previous = groups[groups.length - 1]
   if (!previous) return
 
-  // 직전 그룹의 월요일에서 한 주씩 전진하며 이번 주차 직전까지 채운다.
   const cursor = new Date(kst.getTime())
-  cursor.setUTCDate(cursor.getUTCDate() - ((cursor.getUTCDay() || 7) - 1))
+  cursor.setUTCDate(cursor.getUTCDate() - cursor.getUTCDay()) // 이번 주 일요일로 정렬
   const gaps: WeekGroup[] = []
 
   for (let i = 0; i < 12; i++) {
     cursor.setUTCDate(cursor.getUTCDate() - 7)
-    const key = weekKey(cursor)
+    const weekNo = isoWeek(cursor)
+    if (weekNo === null) continue // 프리시즌의 빈 주(친선경기 없음) — placeholder를 만들지 않고 계속 더 앞으로
+    // weekNo가 non-null이면 weekKey()도 같은 앵커 조회로 non-null이 나온다(둘 다 sundayAnchorStart
+    // 기준 같은 화이트리스트를 본다) — 타입만 좁혀준다(로직 변경 아님, feature-spec §2-5와 같은 패턴).
+    const key = weekKey(cursor)!
     if (byKey.has(key)) break
-    const gap = emptyWeek(cursor, key)
+    const gap = emptyWeek(cursor, key, weekNo)
     byKey.set(key, gap)
     gaps.unshift(gap)
   }
@@ -261,7 +335,7 @@ export function submittableMatches(week: WeekGroup): MatchView[] {
   return week.matches.filter(match => !match.locked)
 }
 
-/** weekKey('2026-35')로 예측 세션(주차)을 찾는다. 없으면 null. */
+/** weekKey('2627-1')로 예측 세션(주차)을 찾는다. 없으면 null. */
 export function findWeekSession(weeks: WeekGroup[], key: string): WeekSession | null {
   return weeks.find(week => week.weekKey === key) ?? null
 }

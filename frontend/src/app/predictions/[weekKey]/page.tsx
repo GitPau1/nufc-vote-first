@@ -1,13 +1,21 @@
 import { notFound } from 'next/navigation'
 import { AppHeader } from '@/components/composition/common/AppHeader'
 import { PredictionFlowClient } from '@/components/composition/predict/PredictionFlowClient'
+import { PredictionMatchSelect } from '@/components/composition/predict/PredictionMatchSelect'
 import { PredictionResult } from '@/components/composition/predict/PredictionResult'
 import { getFixturePositionTop3, getFixtureWeeks, type FixturePositionTop3 } from '@/lib/queries/fixtures'
 import { findWeekPrediction, findWeekSession, submittableMatches } from '@/lib/predictions/week'
 import { getPickCandidates } from '@/lib/queries/squads'
 import { getMyPredictions, getMyResults, getWeekRanking } from '@/lib/queries/predictions'
 
-export default async function PredictionFlowPage({ params }: { params: { weekKey: string } }) {
+export default async function PredictionFlowPage({
+  params,
+  searchParams,
+}: {
+  params: { weekKey: string }
+  /** edit=경기id(경기 단위 수정), editSelect=1(수정할 경기 선택 화면), match=경기id|'both'(제출 문맥 선택) */
+  searchParams: { edit?: string; editSelect?: string; match?: string }
+}) {
   const weeks = await getFixtureWeeks()
   const week = findWeekSession(weeks, decodeURIComponent(params.weekKey))
 
@@ -54,20 +62,90 @@ export default async function PredictionFlowPage({ params }: { params: { weekKey
     )
   }
 
-  // 남은(아직 안 잠긴) 경기 중 미제출이 있으면 그것만 입력받고, 없으면 완료 화면.
+  // 남은(아직 안 잠긴) 경기 중 미제출이 있으면 그것만 입력받고, 없으면 완료 허브.
+  // findWeekPrediction은 부분 제출도 반영한다 — 이 주에 뭐라도 제출됐으면 truthy.
   const pending = submittableMatches(week).filter(match => !myPredictions[match.id])
+  const prediction = findWeekPrediction(week, myPredictions)
+  const submittedMatches = prediction ? week.matches.filter(match => prediction.scores[match.id]) : []
+
+  // 1) 경기 단위 수정 — 완료 허브의 "수정하기"(제출 1개) 또는 선택 화면에서 들어온다.
+  const editTarget = searchParams.edit
+    ? week.matches.find(match => match.id === searchParams.edit && !match.locked)
+    : undefined
+  const editExistingScore = editTarget && prediction?.scores[editTarget.id]
+
+  // 2) 제출 문맥에서 경기를 이미 골랐음 — 매치 선택 화면 또는 완료 허브의 "지금 예측하기"에서 온다.
+  const matchTargets = searchParams.match
+    ? searchParams.match === 'both'
+      ? pending
+      : pending.filter(match => match.id === searchParams.match)
+    : []
+
+  let body: React.ReactNode
+  if (editTarget && editExistingScore) {
+    body = (
+      <PredictionFlowClient
+        // matchIds+mode로 키를 준다 — 같은 라우트에서 검색 파라미터만 바뀌는 클라이언트 내비게이션
+        // (허브 ↔ 다른 경기 수정 ↔ 새 제출)마다 React가 리마운트하게 강제한다. key가 없으면
+        // useState(scores/picks) 초기값이 최초 마운트 시점에 고정돼, 다른 경기로 다시 들어와도
+        // initialValues가 무시되고 이전 세션 상태가 그대로 남는다("수정하기=초기화됨",
+        // "제출 시 매번 incomplete"의 근본 원인, 2026-09-04 실사용 중 발견).
+        key={`edit:${editTarget.id}`}
+        week={week}
+        pending={[editTarget]}
+        candidates={candidates}
+        matchIds={[editTarget.id]}
+        mode="edit"
+        initialValues={{ score: editExistingScore, picks: prediction!.picks[editTarget.id] }}
+      />
+    )
+  } else if (searchParams.editSelect && submittedMatches.length >= 2) {
+    // 완료 허브의 "수정하기"(제출 2개 이상)에서 들어오는 수정 대상 선택 화면.
+    body = <PredictionMatchSelect week={week} matches={submittedMatches} mode="edit" prediction={prediction} />
+  } else if (matchTargets.length > 0) {
+    body = (
+      <PredictionFlowClient
+        key={`submit:${matchTargets.map(match => match.id).join(',')}`}
+        week={week}
+        pending={matchTargets}
+        candidates={candidates}
+        matchIds={matchTargets.map(match => match.id)}
+        mode="submit"
+      />
+    )
+  } else if (prediction) {
+    // 이 주에 뭐라도 이미 제출됐으면 완료 허브(제출됨/유예됨/마감됨 3분류, PredictionDone).
+    body = (
+      <PredictionFlowClient
+        key="done"
+        week={week}
+        pending={[]}
+        candidates={candidates}
+        matchIds={[]}
+        submitted={prediction}
+      />
+    )
+  } else if (pending.length > 1) {
+    // 더블 매치위크에서 아무것도 제출 안 한 첫 진입 — 어느 경기부터 할지 고르는 화면.
+    body = <PredictionMatchSelect week={week} matches={pending} mode="submit" />
+  } else {
+    // 싱글 매치위크(또는 더블 중 하나만 남음)는 선택 화면 없이 바로 그 경기 플로우로.
+    body = (
+      <PredictionFlowClient
+        key={`submit:${pending.map(match => match.id).join(',')}`}
+        week={week}
+        pending={pending}
+        candidates={candidates}
+        matchIds={pending.map(match => match.id)}
+        mode="submit"
+      />
+    )
+  }
 
   return (
     <>
       <AppHeader mobileBack />
-      <main className="min-h-[calc(100vh-62px)] bg-page">
-        <PredictionFlowClient
-          week={week}
-          pending={pending}
-          candidates={candidates}
-          submitted={pending.length === 0 ? findWeekPrediction(week, myPredictions) : undefined}
-        />
-      </main>
+      <main className="min-h-[calc(100vh-62px)] bg-page">{body}</main>
     </>
   )
 }

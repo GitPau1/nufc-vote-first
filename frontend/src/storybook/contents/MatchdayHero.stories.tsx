@@ -22,7 +22,7 @@ function mockFixture(overrides: Partial<MatchdayFixture>): MatchdayFixture {
     awayScore: null,
     started: false,
     finished: false,
-    weekKey: weekKey(toKst(kickoffAt)),
+    weekKey: weekKey(toKst(kickoffAt)) ?? '', // Storybook mock, Date.now() 기준이라 실제 null 없음
     topDefender: null,
     topMidfielder: null,
     topForward: null,

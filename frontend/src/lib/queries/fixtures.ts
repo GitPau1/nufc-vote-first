@@ -53,7 +53,7 @@ export type MatchdayFixture = {
   awayScore: number | null
   started: boolean
   finished: boolean
-  /** "2026-35" — 승부예측 세션 URL 파라미터(/predictions/{weekKey}). lib/predictions/week.ts 참고. */
+  /** "2627-35" 형태(정규 시즌) / "2627-0-2" 형태(프리시즌) — 승부예측 세션 URL 파라미터(/predictions/{weekKey}). lib/predictions/week.ts 참고. */
   weekKey: string
   /** 최고 평점 수비수. finished일 때만 값이 있을 수 있다 — 평점이 아직 안 들어왔으면 null. */
   topDefender: MatchdayPositionLeader | null
@@ -111,7 +111,9 @@ function toMatchdayFixture(row: FixtureRow, ratings: MatchRatings): MatchdayFixt
     awayScore: row.away_score,
     started: row.started,
     finished: row.finished,
-    weekKey: weekKey(toKst(kickoffAt)),
+    // getHomeMatchdayFixtureUncached()가 "다음 경기"/"가장 최근 종료 경기"만 조회해 넘기므로
+    // (아래 참고) 화이트리스트가 최신인 한 null이 나올 일은 없다 — 타입만 좁혀준다.
+    weekKey: weekKey(toKst(kickoffAt)) ?? '',
     topDefender: ratings.topDefender,
     topMidfielder: ratings.topMidfielder,
     topForward: ratings.topForward,
