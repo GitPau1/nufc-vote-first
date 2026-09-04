@@ -308,6 +308,7 @@ test('null/undefined/빈 문자열 → green (확정 B안)', () => {
 **전제**: ④ 완료 (④가 이 클래스의 유일한 실사용을 없앤다). 실행 직전 `grep -rn "spotlight-glow-brand[^-]" frontend/src`로 실사용 0건을 다시 확인한다 — `-strong`은 PredictionResult.tsx에서 살아있으므로 **절대 건드리지 않는다**.
 
 **대상 파일**: `frontend/src/app/globals.css`(`.spotlight-glow-brand` 정의, `globals.css:202-208`), `frontend/src/storybook/foundations/Gradient.mdx`, `frontend/src/storybook/contents/MatchWeekList.mdx`, `frontend/src/storybook/contents/MatchWeekList.stories.tsx`.
+**실행 중 추가(2026-09-05 실측)**: `frontend/src/storybook/foundations/DesignToken.mdx` L52·54도 삭제된 `.spotlight-glow-brand`를 "팔레트 직접 참조 예외"의 예시로 인용하고 있어 같은 취지(삭제된 유틸리티를 설명하는 Storybook 문서 갱신 — 사람 승인 항목 6번)로 함께 갱신한다: 예시를 `.spotlight-glow-brand-strong`으로 바꾸고 `.competition-*` 9종을 예외 목록에 추가. 또 `globals.css`의 wash 주석("spotlight-glow-brand와 같은 지오메트리")도 참조 대상이 사라져 문구만 손본다. 이 단계는 세션 한도(429)로 에이전트가 중단돼 두 번에 나눠 실행됐다(1차: globals.css·Gradient.mdx / 2차: 나머지).
 
 **작업**: `globals.css`에서 `.spotlight-glow-brand` 블록(`-strong` 아닌 쪽만) 삭제. 위 3개 Storybook 파일에서 이 유틸리티를 설명/렌더링하는 부분을 제거한다 — `Gradient.mdx`는 남은 `.spotlight-glow-brand-strong`·`.award-gold`와 **새 `.competition-*` 9종**을 같은 형식으로 문서화하는 쪽으로 갱신(기존 항목 설명 문체 그대로 따름, 새 문구 발명 금지 — 설명은 design-brief.md 2-3번 문장을 그대로 옮긴다). `MatchWeekList.mdx`/`.stories.tsx`는 "open 주차 글로우" 서술/스토리를 제거하고, 대신 대회색 wash가 보이는 스토리(PL/컵/친선 각 1경기)가 없으면 추가한다.
 
@@ -333,7 +334,7 @@ npm run build
 
 - **mock 모드**: `npm run dev`(포트는 3000 대신 별도 지정, 예: `-- -p 4300`)로 홈(MatchdayHero)·`/predictions`(MatchWeekList)·`/predictions/[weekKey]`(FlowClient → 제출 → Done) 화면에서 violet(Premier League)·green(EFL Cup)·**yellow(Club Friendlies, ②에서 추가한 9008)** 세 색이 design-brief 3-4 표대로 나오는지 확인. 종료 경기의 MatchdayHero가 무채색(`bg-neutral-strong`)인지, 잠긴 경기의 MatchInfoCard가 `bg-page`인지도 함께 확인. 스크린샷을 사람에게 보여 검수받는다(검수 지적은 라운드가 끝날 때까지 모아 1왕복으로 반영 — orchestrator-rules 10.5).
 - **실연동 확인**: CLAUDE.md 원칙("mock 모드에서만 확인하고 끝내지 말 것") — 프리뷰 배포 또는 스테이징 Supabase 연동 환경에서 실제 `fixtures.competition_name` 값으로도 3색이 나오는지 별도 확인. 이 리포에 스테이징 환경 접근 방법이 이 plan 범위에 없으면 "실연동 미확인"으로 최종 보고에 명시하고 사람에게 확인 경로를 묻는다.
-- dev 서버는 자기 PID만 kill(`pkill -f` 금지, developer-agent-rules 5-9 규칙).
+- dev 서버는 자기 PID만 kill(`pkill -f` 금지, developer-agent-rules 5-9 규칙). **실행 메모(2026-09-05)**: 일반 Bash 호출 안에서 `&`로 띄운 dev 서버는 호출 종료 시 함께 죽는다 — 하네스 백그라운드 작업(`run_in_background`)으로 띄워야 유지된다. Chrome 확장이 연결되지 않아 오케스트레이터 스크린샷은 불가 → 사람이 `http://localhost:4300/`·`/predictions`를 직접 열어 검수(⑧).
 
 ---
 
