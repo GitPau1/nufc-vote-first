@@ -124,4 +124,4 @@ localhost:4300 검수에서 사용자가 이미지(37주차 컨테이너 왼쪽 
 4. ~~①② → ③④⑤ → ⑥~~ (완료. ⑥은 세션 한도로 2회에 나눠 실행, DesignToken.mdx 추가 갱신) → ~~⑦ 검증~~ (완료 2026-09-05: test 226/0 · lint 0 · build 0 · build-storybook 0, 새 경고 0건) → ⑧ 화면 검수: Chrome 확장 미연결로 사람이 `localhost:4300` 직접 확인 (진행 중)
 5. ~~코드 리뷰(`medium` 1회)~~ (완료: CRITICAL/HIGH/MEDIUM 없음, 머지 가능. 관찰: 대회명 원문 정확 일치 — 공백/대소문자 변형은 green fallback, 사람 확정으로 유지)
 6. ~~origin/main 머지~~ (완료 1fea98e: main에 #18 TEA-23·#19·#20/#21 TEA-31이 먼저 들어와 머지. 충돌은 PredictionFlowClient 2곳만, 배지 유지 + `weekLabel` 채택. 273 tests pass, build·build-storybook 통과. `PredictionMatchSelect`는 대회명 미표시 → 추가 적용 지점 없음)
-7. ~~⑧ 화면 검수~~ (완료: MatchWeekList 규칙 변경 1건 반영 — f52bd62, 279 tests pass, build·build-storybook 통과, 사람 "PR 가자" 확정 2026-09-05) → push → PR (`Fixes TEA-30`) → 사람 머지
+7. ~~⑧ 화면 검수~~ (완료: MatchWeekList 규칙 변경 1건 반영 — f52bd62, 279 tests pass, build·build-storybook 통과, 사람 "PR 가자" 확정 2026-09-05) → ~~push → PR~~ (완료 2026-09-05: **PR #23** https://github.com/GitPau1/nufc-vote-first/pull/23, `Fixes TEA-30`. PR 전 보안 리뷰에서 linear-ops `save_project` 추가가 orchestrator-rules 9.2와 충돌해 철회) → 사람 머지. **남은 것**: 프리뷰 배포에서 실연동 `competition_name` 3색 확인, Linear 프로젝트 설명은 UI에서 직접 갱신
