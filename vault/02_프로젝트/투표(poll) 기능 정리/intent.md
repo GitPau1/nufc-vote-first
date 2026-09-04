@@ -120,7 +120,7 @@ feature-spec.md 끝의 목록 번호 기준. 여기 적힌 것이 plan.md의 입
 **되돌리기 어려운 변경 목록(plan.md 승인 시 문장 그대로 재확인)**:
 - `alter table polls drop column scheduled_at;`
 - `update polls set type = 'poll' where type in ('subject_options','question_targets','free_choice','selection','evaluation');` — 실행 전 `select type, count(*) from polls group by type`로 13건 확인, 실행 후 `poll` 13 / `overall_rating` 2 확인.
-- fallback 제거 전 프로덕션 `information_schema.columns` 1회 조회(spec §5-1).
+- fallback 제거 전 프로덕션 `information_schema.columns` 1회 조회(spec §5-1). → **2026-09-04 사람이 실행, 4행 확인(`players.squad_status`, `polls.thumbnail_url`, `poll_options.image_url`, `poll_options.description` 전부 존재). Step 3 진행 가능.**
 
 ## 불변 제약 (건드리면 안 됨)
 
