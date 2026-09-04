@@ -12,6 +12,7 @@ import { SheetHeader, SheetTitle, SheetDescription } from '@/components/primitiv
 import { ConfirmContent } from '@/components/primitives/modal/contents/Confirm'
 import { LoginContent } from '@/components/primitives/modal/contents/Login'
 import { PlayerPickContent } from '@/components/primitives/modal/contents/PlayerPick'
+import { badgeVariants } from '@/components/primitives/badge'
 import { PredictionDone } from './PredictionDone'
 import { PlayerPhoto, TeamBadge, ToonCost, Silhouette } from './shared'
 import { STEP_META, ProgressPips, type StepKey } from './steps'
@@ -30,6 +31,7 @@ import {
   type Position,
 } from '@/lib/predictions/candidates'
 import { MAX_SCORE, BUDGET } from '@/lib/predictions/submit'
+import { competitionColorBucket, COMPETITION_BADGE } from '@/lib/predictions/competitionColor'
 import {
   submitWeekPrediction,
   updateMatchPrediction,
@@ -661,11 +663,21 @@ function MatchLabel({ index, opponent }: { index: number; opponent: string }) {
   )
 }
 
+// 대회명 배지(TEA-30): 100단계 배경 + 800단계 텍스트, 3색 공통. 라운드 숫자는 평문.
 function MatchMeta({ weekNo, match }: { weekNo: number; match: MatchView }) {
+  const bucket = competitionColorBucket(match.competition)
   return (
     <div className="text-center">
       <p className="mb-1 text-label-2 font-medium text-neutral-muted">
-        {match.competition} · {weekLabel(weekNo, '라운드')}
+        {match.competition && (
+          <>
+            <span className={cn(badgeVariants({ variant: 'bare' }), COMPETITION_BADGE[bucket])}>
+              {match.competition}
+            </span>{' '}
+            ·{' '}
+          </>
+        )}
+        {weekLabel(weekNo, '라운드')}
       </p>
       <p className="text-label-2 text-neutral-muted">
         {match.kickoff} ({match.isHome ? '홈' : '원정'}) {match.kickoffTime}

@@ -6,6 +6,7 @@ import { Button } from '@/components/primitives/button'
 import { TeamBadge } from './shared'
 import { weekLabel } from '@/lib/predictions/week'
 import { cn } from '@/lib/utils'
+import { weekGlowClass } from '@/lib/predictions/competitionColor'
 
 /**
  * 클릭/예측의 단위는 "주차(week)"다 — 더블 매치위크(경기 2개)도 한 예측 세션으로 함께 열리고
@@ -17,7 +18,7 @@ export type WeekSessionStatus = 'open' | 'result' | 'upcoming'
 
 export interface PredictWeekMatch {
   id: string
-  /** 미지정 시 "프리미어리그"로 표시(더블 매치위크의 컵 경기 등은 명시) */
+  /** 미지정 시 텍스트 미표시, 색 판정은 green fallback */
   competition?: string
   opponent: string
   /** true면 우리 팀이 홈(좌측) — false면 원정이라 상대가 좌측, 우리 팀이 우측에 온다 */
@@ -196,9 +197,9 @@ export function MatchWeekList({
  * 안에 경기 카드가 세로로 쌓이고, 진입은 하단 버튼 하나로만 한다.
  * 경기가 1개든 2개든 같은 카드를 쓴다(더블 매치위크를 따로 취급하지 않는다).
  *
- * 예측 접수 중인(`open`) 주차만 라이트 브랜드 글로우(.spotlight-glow-brand)로 강조한다 —
- * 배지가 `진행중`이든 `참여 완료`든 둘 다 포함한다. 나머지 단계(예정·결과 반영중·종료)는
- * 흰 컨테이너다. 위치(정렬)로 끌어올리는 대신 색으로 강조하는 방식이다(2026-08-25 사용자 결정).
+ * 대회 구분은 컨테이너 배경이 담당한다: 예측 접수 중인 주차(open)만 대각 글로우를 쓰고,
+ * 그 주 경기의 대회색이 하나면 그 색, 둘 이상(또는 경기 없음)이면 브랜드 파랑이다
+ * (weekGlowClass). open이 아닌 주차는 흰 면(bg-surface). 경기 카드는 항상 bg-page.
  */
 function WeekSessionCard({
   week,
@@ -216,18 +217,18 @@ function WeekSessionCard({
   const badge = weekBadge(week)
   const action = weekAction(week)
   const isEmpty = week.matches.length === 0
-  // 예측 접수 중인 주차 = 색으로 강조하는 컨테이너. 배경만 가른다 —
-  // 테두리·텍스트 톤·경기 카드 표면은 다른 주차와 같다.
-  const highlighted = weekPhase(week) === 'open'
+  // open 주차만 대각 글로우 — 그 주 경기의 대회색이 하나면 그 색, 둘 이상(또는 경기 없음)이면 브랜드 파랑.
+  const containerBg = weekPhase(week) === 'open'
+    ? weekGlowClass(week.matches.map(match => match.competition))
+    : 'bg-surface'
 
   return (
     <section
       style={{ animationDelay: `${delayMs}ms` }}
       className={cn(
         'animate-enter rounded-lg border border-neutral-weak p-4',
-        // .spotlight-glow-brand는 배경을 통째로 정하는 유틸리티라 bg-surface를 함께 주지 않는다.
-        // 테두리는 별개다 — 글로우만으로는 페이지와의 경계가 안 생긴다(2026-08-25 실사용 확인).
-        highlighted ? 'spotlight-glow-brand' : 'bg-surface'
+        // 글로우 유틸리티는 배경을 통째로 정하므로 bg-surface를 함께 주지 않는다.
+        containerBg
       )}
     >
       <div className="mb-3 flex items-center gap-2">
@@ -288,7 +289,7 @@ function WeekSessionCard({
  * "N라운드"는 실제 라운드가 아니라 ISO 주차 번호였고(lib/predictions/week.ts:88-94),
  * `fixtures`에 라운드 컬럼이 없어서 삭제했다.
  *
- * 표면은 주차 상태·컨테이너 종류와 무관하게 항상 `bg-page` 한 색이다. 테두리는 없다 —
+ * 표면은 항상 `bg-page` — 대회색은 주차 컨테이너 글로우가 담당한다. 테두리는 없다 —
  * 컨테이너가 흰 면(`bg-surface` 또는 글로우 베이스)이라 한 단계 낮은 `bg-page`만으로 갈린다.
  */
 function MatchInfoCard({
@@ -321,9 +322,11 @@ function MatchInfoCard({
         카드 배경 위에서 AA(4.5:1) 미달이다(bg-page 2.37:1). 가라앉는 효과는 아래
         일자·시각·팀명 톤과 로고 흑백이 나르고 있다.
       */}
-      <p className={cn('mb-3 text-caption-1 font-medium', mutedText)}>
-        {match.competition ?? '프리미어리그'}
-      </p>
+      {match.competition && (
+        <p className={cn('mb-3 text-caption-1 font-medium', mutedText)}>
+          {match.competition}
+        </p>
+      )}
 
       {/*
         팀명 길이가 달라도 가운데(일자·시각)가 정중앙에 오도록 좌우를 동일 폭 fr로 고정한다.
