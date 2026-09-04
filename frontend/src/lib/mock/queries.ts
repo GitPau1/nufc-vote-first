@@ -134,7 +134,7 @@ export async function mockGetHomeMatchdayFixture(): Promise<MatchdayFixture> {
     awayName: '리버풀',
     homeScore: null,
     awayScore: null,
-    weekKey: weekKey(toKst(kickoffAt)),
+    weekKey: weekKey(toKst(kickoffAt)) ?? '',
     topDefender: null,
     topMidfielder: null,
     topForward: null,
