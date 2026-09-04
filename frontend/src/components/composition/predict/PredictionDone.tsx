@@ -17,6 +17,7 @@ import {
 import type { PickCandidates } from '@/lib/queries/squads'
 import { cn } from '@/lib/utils'
 import { badgeVariants } from '@/components/primitives/badge'
+import { competitionColorBucket, COMPETITION_BADGE } from '@/lib/predictions/competitionColor'
 
 /** 완료 화면이 그리는 픽 하나 — 후보 목록에서 못 찾은 선수(스쿼드 이탈)도 배당은 스냅샷으로 남는다. */
 type PickedPlayer = {
@@ -143,7 +144,20 @@ export function PredictionDone({
                 </p>
               )}
               <div className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
-                <p className="mb-3 text-body-2-normal font-semibold">경기 예측</p>
+                {/* 대회명 배지(TEA-30): PredictionFlowClient와 같은 배지(100 배경+800 텍스트), 제출·마감 카드 공통. */}
+                <div className="mb-3 flex items-center gap-2">
+                  <p className="text-body-2-normal font-semibold">경기 예측</p>
+                  {match.competition && (
+                    <span
+                      className={cn(
+                        badgeVariants({ variant: 'bare' }),
+                        COMPETITION_BADGE[competitionColorBucket(match.competition)],
+                      )}
+                    >
+                      {match.competition}
+                    </span>
+                  )}
+                </div>
                 <p className="px-4 pb-4 pt-5 text-center text-label-1-normal text-neutral-muted">
                   이 경기는 예측 마감 시간이 지나 참여하지 못했어요
                 </p>
@@ -163,7 +177,19 @@ export function PredictionDone({
                   </p>
                 )}
                 <div className="rounded-lg border border-neutral-weak bg-surface px-4 py-5">
-                  <p className="mb-3 text-body-2-normal font-semibold">경기 예측</p>
+                  <div className="mb-3 flex items-center gap-2">
+                    <p className="text-body-2-normal font-semibold">경기 예측</p>
+                    {match.competition && (
+                      <span
+                        className={cn(
+                          badgeVariants({ variant: 'bare' }),
+                          COMPETITION_BADGE[competitionColorBucket(match.competition)],
+                        )}
+                      >
+                        {match.competition}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center justify-center gap-2 sm:gap-6">
                     <MatchupTeam logoUrl={teamLogoUrl(NUFC_TEAM_ID)} name={NUFC_LABEL} />
                     <span className="text-title-2 font-semibold">

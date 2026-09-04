@@ -1,0 +1,776 @@
+<title>대회 색상 시안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap">
+
+<style>
+  /* ===== 아티팩트 크롬(페이지 여백·제목·캡션) 전용 토큰 — 뷰어 테마에 반응 ===== */
+  :root {
+    --page-bg: #f6f5f2;
+    --paper: #ffffff;
+    --ink: #1a1b1c;
+    --ink-muted: #6b6d72;
+    --hair: #e4e2dd;
+    --chip-bg: #1a1b1c;
+    --chip-fg: #f6f5f2;
+    --key-violet: #9130e7;
+    --key-green: #008728;
+    --key-orange: #a65e00;
+    --code-bg: #efece5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --page-bg: #17181a;
+      --paper: #1f2023;
+      --ink: #f1f0ec;
+      --ink-muted: #9b9da3;
+      --hair: #303236;
+      --chip-bg: #f1f0ec;
+      --chip-fg: #17181a;
+      --key-violet: #b47bff;
+      --key-green: #3fc06a;
+      --key-orange: #e0a23c;
+      --code-bg: #26282c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --page-bg: #17181a;
+    --paper: #1f2023;
+    --ink: #f1f0ec;
+    --ink-muted: #9b9da3;
+    --hair: #303236;
+    --chip-bg: #f1f0ec;
+    --chip-fg: #17181a;
+    --key-violet: #b47bff;
+    --key-green: #3fc06a;
+    --key-orange: #e0a23c;
+    --code-bg: #26282c;
+  }
+
+  body { background: var(--page-bg); }
+
+  .doc {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 56px 28px 96px;
+    color: var(--ink);
+    font-family: 'Manrope', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  }
+
+  .doc code, .doc .mono {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    background: var(--code-bg);
+    color: var(--ink);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.85em;
+  }
+
+  /* ── 머리말 ── */
+  .masthead { border-bottom: 1px solid var(--hair); padding-bottom: 28px; margin-bottom: 8px; }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-muted); margin: 0 0 10px;
+  }
+  h1 {
+    font-size: 30px; line-height: 1.25; letter-spacing: -0.01em; font-weight: 800;
+    margin: 0 0 14px; text-wrap: balance;
+  }
+  .lede {
+    max-width: 62ch; color: var(--ink-muted); font-size: 15px; line-height: 1.65; margin: 0 0 22px;
+  }
+  .notice {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: var(--code-bg); border-radius: 10px; padding: 12px 14px;
+    font-size: 13px; line-height: 1.6; color: var(--ink-muted); max-width: 62ch;
+  }
+  .notice b { color: var(--ink); }
+
+  /* ── 색상 범례 ── */
+  .legend {
+    display: flex; gap: 22px; flex-wrap: wrap;
+    margin: 28px 0 44px; padding: 18px 20px;
+    background: var(--paper); border: 1px solid var(--hair); border-radius: 12px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 10px; }
+  .swatch { width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0; }
+  .legend-text { display: flex; flex-direction: column; gap: 1px; }
+  .legend-label { font-size: 13px; font-weight: 700; }
+  .legend-sub { font-size: 12px; color: var(--ink-muted); }
+
+  /* ── 섹션 ── */
+  .section { margin: 52px 0; }
+  .section-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; flex-wrap: wrap; }
+  .chip {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--chip-bg); color: var(--chip-fg);
+    border-radius: 999px; width: 26px; height: 26px; flex-shrink: 0;
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600;
+  }
+  .section-title { font-size: 19px; font-weight: 700; letter-spacing: -0.005em; }
+  .section-caption { color: var(--ink-muted); font-size: 13.5px; line-height: 1.6; margin: 6px 0 24px; max-width: 68ch; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+  .cell { display: flex; flex-direction: column; gap: 10px; }
+  .cell-label { font-size: 12.5px; font-weight: 600; color: var(--ink-muted); max-width: 320px; line-height: 1.5; }
+  .cell-label b { color: var(--ink); font-weight: 700; }
+
+  hr.rule { border: none; border-top: 1px solid var(--hair); margin: 0; }
+</style>
+
+<div class="doc">
+
+  <div class="masthead">
+    <p class="eyebrow">design-brief.md 시각 확인용 · 인터랙션 없음</p>
+    <h1>대회별로 색상 다르게 — 컴포넌트 시안</h1>
+    <p class="lede">
+      승부예측 화면 3곳(<code>MatchdayHero</code>·<code>MatchWeekList</code>·<code>PredictionFlowClient</code>)과
+      제출 완료 화면(<code>PredictionDone</code>)에 대회별 그라디언트/배지를 적용했을 때 실제로 어떻게 보이는지
+      확인하는 정적 시안입니다. 색상 값은 <code>frontend/src/app/globals.css</code>의 실제 팔레트 변수를 그대로 사용했습니다.
+    </p>
+    <div class="notice">
+      <span>⚠️</span>
+      <span><b>구현 전 시각 확인용 정적 문서입니다.</b> 클릭·카운트다운·아코디언 등 실제 인터랙션은 없습니다. 각 그룹의 라벨을 보고 어떤 컴포넌트·상태를 확인 중인지 참고하세요.</span>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="swatch" style="background:var(--key-violet)"></span><span class="legend-text"><span class="legend-label">프리미어리그</span><span class="legend-sub mono">Premier League</span></span></div>
+    <div class="legend-item"><span class="swatch" style="background:var(--key-green)"></span><span class="legend-text"><span class="legend-label">기타 컵 대회</span><span class="legend-sub mono">EFL Cup · FA Cup · UCL/UEL/UECL</span></span></div>
+    <div class="legend-item"><span class="swatch" style="background:var(--key-orange)"></span><span class="legend-text"><span class="legend-label">친선경기 (노랑 대체)</span><span class="legend-sub mono">Club Friendlies</span></span></div>
+  </div>
+
+  <!-- ===================== 1. MatchdayHero ===================== -->
+  <div class="section">
+    <div class="section-head"><span class="chip">1</span><span class="section-title">MatchdayHero — 다크 히어로 카드</span></div>
+    <p class="section-caption">색 적용 위치: 카드 배경 전체(기존 상시 파랑 글로우 완전 대체) · 활성 조건: <code>!fixture.finished</code>(진행 중+예정) → 대회색 · <code>finished</code> → 무채색 평면</p>
+
+    <div class="row">
+
+      <div class="cell">
+        <p class="cell-label"><b>예정 경기</b> · Premier League → 보라 글로우</p>
+        <div class="mh mh-glow-violet">
+          <p class="t-caption-2 onsolid-muted mh-comp">Premier League</p>
+          <div class="mh-teams">
+            <div class="mh-team left"><div class="mh-crest">뉴</div><p class="t-caption-1 onsolid" style="font-weight:500">뉴캐슬</p></div>
+            <div class="mh-center"><p class="t-headline-1 onsolid-muted" style="font-weight:600">VS</p></div>
+            <div class="mh-team right"><div class="mh-crest">W</div><p class="t-caption-1 onsolid" style="font-weight:500">Wolves</p></div>
+          </div>
+          <p class="t-caption-1 onsolid-muted mh-kickoff">9월 20일 (일) 오후 8:00</p>
+          <div class="mh-countdown">
+            <div class="mh-cbox"><span class="t-headline-1 onsolid" style="font-weight:600">03</span><span class="t-caption-2 onsolid-muted">일</span></div>
+            <div class="mh-cbox"><span class="t-headline-1 onsolid" style="font-weight:600">14</span><span class="t-caption-2 onsolid-muted">시간</span></div>
+            <div class="mh-cbox"><span class="t-headline-1 onsolid" style="font-weight:600">22</span><span class="t-caption-2 onsolid-muted">분</span></div>
+            <div class="mh-cbox"><span class="t-headline-1 onsolid" style="font-weight:600">05</span><span class="t-caption-2 onsolid-muted">초</span></div>
+          </div>
+          <div class="mh-btn-wrap"><span class="mh-btn t-label-1">승부예측 하러 가기</span></div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <p class="cell-label"><b>진행 중 경기</b> · EFL Cup → 초록 글로우 (예측 마감 후에도 색 유지)</p>
+        <div class="mh mh-glow-green">
+          <p class="t-caption-2 onsolid-muted mh-comp">EFL Cup</p>
+          <div class="mh-teams">
+            <div class="mh-team left"><div class="mh-crest">뉴</div><p class="t-caption-1 onsolid" style="font-weight:500">뉴캐슬</p></div>
+            <div class="mh-center"><p class="t-title-3 onsolid" style="font-weight:600">1–0</p></div>
+            <div class="mh-team right"><div class="mh-crest">B</div><p class="t-caption-1 onsolid" style="font-weight:500">Bromwich</p></div>
+          </div>
+          <p class="t-caption-1 onsolid-muted mh-kickoff">9월 20일 (일) 오후 8:00</p>
+          <div class="mh-badge-live"><span class="badge-destructive t-caption-1">진행 중</span></div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <p class="cell-label"><b>종료 경기</b> · Club Friendlies → 무채색 (종료는 대회 무관 항상 무채색)</p>
+        <div class="mh mh-neutral">
+          <p class="t-caption-2 onsolid-muted mh-comp">Club Friendlies</p>
+          <div class="mh-teams">
+            <div class="mh-team left"><div class="mh-crest">뉴</div><p class="t-caption-1 onsolid" style="font-weight:500">뉴캐슬</p></div>
+            <div class="mh-center"><p class="t-title-3 onsolid" style="font-weight:600">2–1</p></div>
+            <div class="mh-team right"><div class="mh-crest">C</div><p class="t-caption-1 onsolid" style="font-weight:500">Celtic</p></div>
+          </div>
+          <p class="t-caption-1 onsolid-muted mh-kickoff">9월 13일 (일) 오후 8:00</p>
+          <div class="mh-ratings">
+            <div class="mh-rating-card award">
+              <div class="mh-rating-photo"></div>
+              <div style="flex:1"><p class="t-caption-2" style="color:var(--sem-fg-neutral-strong)">미드필더</p><p class="t-label-1" style="font-weight:500; color:var(--sem-fg-neutral)">루이스 마일리</p></div>
+              <p class="t-headline-1" style="font-weight:600; color:var(--sem-fg-neutral)">8.8</p>
+            </div>
+            <div class="mh-rating-card default">
+              <div class="mh-rating-photo"></div>
+              <div style="flex:1"><p class="t-caption-2 onsolid-muted">공격수</p><p class="t-label-1 onsolid" style="font-weight:500">이사크</p></div>
+              <p class="t-headline-1 onsolid" style="font-weight:600">7.2</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <p class="cell-label"><b>예정 경기</b> · Club Friendlies → 오렌지(노랑 대체) 다크 보정값 확인용</p>
+        <div class="mh mh-glow-orange">
+          <p class="t-caption-2 onsolid-muted mh-comp">Club Friendlies</p>
+          <div class="mh-teams">
+            <div class="mh-team left"><div class="mh-crest">뉴</div><p class="t-caption-1 onsolid" style="font-weight:500">뉴캐슬</p></div>
+            <div class="mh-center"><p class="t-headline-1 onsolid-muted" style="font-weight:600">VS</p></div>
+            <div class="mh-team right"><div class="mh-crest">A</div><p class="t-caption-1 onsolid" style="font-weight:500">AC Milan</p></div>
+          </div>
+          <p class="t-caption-1 onsolid-muted mh-kickoff">10월 3일 (토) 오전 4:00</p>
+          <div class="mh-countdown">
+            <div class="mh-cbox"><span class="t-headline-1 onsolid" style="font-weight:600">12</span><span class="t-caption-2 onsolid-muted">일</span></div>
+            <div class="mh-cbox"><span class="t-headline-1 onsolid" style="font-weight:600">08</span><span class="t-caption-2 onsolid-muted">시간</span></div>
+            <div class="mh-cbox"><span class="t-headline-1 onsolid" style="font-weight:600">40</span><span class="t-caption-2 onsolid-muted">분</span></div>
+            <div class="mh-cbox"><span class="t-headline-1 onsolid" style="font-weight:600">11</span><span class="t-caption-2 onsolid-muted">초</span></div>
+          </div>
+          <div class="mh-btn-wrap"><span class="mh-btn t-label-1">승부예측 하러 가기</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <!-- ===================== 2. MatchWeekList ===================== -->
+  <div class="section">
+    <div class="section-head"><span class="chip">2</span><span class="section-title">MatchWeekList — MatchInfoCard (라이트 경기 카드)</span></div>
+    <p class="section-caption">색 적용 위치: 경기 카드(<code>MatchInfoCard</code>) 배경만, 주차 컨테이너는 손대지 않음 · 활성 조건: <code>!isDimmed(week, match)</code></p>
+
+    <div class="row">
+
+      <div class="cell">
+        <p class="cell-label"><b>활성</b> · Premier League → 보라</p>
+        <div class="mw-frame">
+          <div class="mic mic-active-violet">
+            <p class="t-caption-1 muted mic-comp">Premier League</p>
+            <div class="mic-teams">
+              <div class="mic-team left"><span class="t-caption-1" style="font-weight:500">뉴캐슬</span><div class="mic-logo"></div></div>
+              <div class="mic-center"><span class="t-caption-2 muted">9/20</span><span class="t-label-1" style="font-weight:500">오후 8:00</span></div>
+              <div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1" style="font-weight:500">Wolves</span></div>
+            </div>
+            <p class="t-caption-1 muted mic-result">예측 1-1 <span style="font-weight:500; color:#115aff">+4점</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <p class="cell-label"><b>활성</b> · EFL Cup → 초록</p>
+        <div class="mw-frame">
+          <div class="mic mic-active-green">
+            <p class="t-caption-1 muted mic-comp">EFL Cup</p>
+            <div class="mic-teams">
+              <div class="mic-team left"><span class="t-caption-1" style="font-weight:500">뉴캐슬</span><div class="mic-logo"></div></div>
+              <div class="mic-center"><span class="t-caption-2 muted">9/24</span><span class="t-label-1" style="font-weight:500">오후 7:45</span></div>
+              <div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1" style="font-weight:500">Bromwich</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <p class="cell-label"><b>활성</b> · Club Friendlies → 오렌지(노랑 대체)</p>
+        <div class="mw-frame">
+          <div class="mic mic-active-orange">
+            <p class="t-caption-1 muted mic-comp">Club Friendlies</p>
+            <div class="mic-teams">
+              <div class="mic-team left"><span class="t-caption-1" style="font-weight:500">뉴캐슬</span><div class="mic-logo"></div></div>
+              <div class="mic-center"><span class="t-caption-2 muted">10/3</span><span class="t-label-1" style="font-weight:500">오전 4:00</span></div>
+              <div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1" style="font-weight:500">AC Milan</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <p class="cell-label"><b>비활성</b> (<code>isDimmed</code>) → 색 없음, 기존 <code>bg-page</code> + 흐린 텍스트 그대로</p>
+        <div class="mw-frame">
+          <div class="mic mic-dimmed">
+            <p class="t-caption-1 muted mic-comp">Premier League</p>
+            <div class="mic-teams">
+              <div class="mic-team left"><span class="t-caption-1 muted" style="font-weight:500">뉴캐슬</span><div class="mic-logo"></div></div>
+              <div class="mic-center"><span class="t-caption-2 muted">8/30</span><span class="t-heading-1 muted" style="font-weight:600">1 : 1</span></div>
+              <div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1 muted" style="font-weight:500">Everton</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <!-- ===================== 3. PredictionFlowClient ===================== -->
+  <div class="section">
+    <div class="section-head"><span class="chip">3</span><span class="section-title">PredictionFlowClient — MatchMeta 대회명 배지</span></div>
+    <p class="section-caption"><code>"{대회명} · {N}라운드"</code> 중 대회명만 배지로 감쌈 · 활성 조건 없음(진입 시 이미 예측 가능한 경기만 옴)</p>
+
+    <div class="row">
+
+      <div class="cell">
+        <p class="cell-label">Premier League → 보라 배지</p>
+        <div class="pf-card">
+          <p class="t-label-2 muted" style="font-weight:500; margin-bottom:4px"><span class="comp-badge comp-badge-violet t-caption-2">Premier League</span> · 5라운드</p>
+          <p class="t-label-2 muted">9월 20일 (홈) 오후 8:00</p>
+        </div>
+      </div>
+
+      <div class="cell">
+        <p class="cell-label">EFL Cup → 초록 배지</p>
+        <div class="pf-card">
+          <p class="t-label-2 muted" style="font-weight:500; margin-bottom:4px"><span class="comp-badge comp-badge-green t-caption-2">EFL Cup</span> · 3라운드</p>
+          <p class="t-label-2 muted">9월 24일 (원정) 오후 7:45</p>
+        </div>
+      </div>
+
+      <div class="cell">
+        <p class="cell-label">Club Friendlies → 오렌지(노랑 대체) 배지</p>
+        <div class="pf-card">
+          <p class="t-label-2 muted" style="font-weight:500; margin-bottom:4px"><span class="comp-badge comp-badge-orange t-caption-2">Club Friendlies</span> · 6라운드</p>
+          <p class="t-label-2 muted">10월 3일 (원정) 오전 4:00</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <!-- ===================== 4. PredictionDone ===================== -->
+  <div class="section">
+    <div class="section-head"><span class="chip">4</span><span class="section-title">PredictionDone — 제출 완료 화면 카드 헤더 배지</span></div>
+    <p class="section-caption">design-brief 5번: PredictionFlowClient와 같은 배지 방식을 경기별 카드 헤더에도 적용 (제출 직전 화면과의 연속성 유지)</p>
+
+    <div class="row">
+      <div class="cell">
+        <p class="cell-label">EFL Cup → 초록 배지 (제출 완료 카드 헤더)</p>
+        <div class="pd-card">
+          <div class="pd-header">
+            <p class="t-body-2" style="font-weight:600">경기 예측</p>
+            <span class="comp-badge comp-badge-green t-caption-2">EFL Cup</span>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:center; gap:12px">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:4px"><div class="mic-logo"></div><span class="t-caption-1 muted">뉴캐슬</span></div>
+            <span class="t-heading-1" style="font-weight:600">1 – 0</span>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:4px"><div class="mic-logo"></div><span class="t-caption-1 muted">Bromwich</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <!-- ===================== 6. 예측 목록 대각선 글로우 후보 ===================== -->
+  <div class="section">
+    <div class="section-head"><span class="chip">6</span><span class="section-title">예측 목록(MatchWeekList) — 대각선 글로우 후보 (2026-09-05 검수 요청)</span></div>
+    <p class="section-caption">요청: "왼쪽 상단 → 오른쪽 하단으로 옅은 글로우가 깔리게". 어디에(컨테이너 / 경기 카드) 어떤 색으로(브랜드 파랑 / 대회색) 깔지가 갈려서 4가지를 나란히 뒀습니다. 글로우 공식은 전부 <code>linear-gradient(135deg, color-mix(in srgb, {색}-700 8%, transparent) 0%, transparent 55%)</code>. 컨테이너·카드 구조와 mock 데이터(37주차: EFL Cup / Club Friendlies / Premier League)는 실제 화면과 같게 맞췼습니다.</p>
+
+    <div class="row">
+
+      <div class="cell">
+        <p class="cell-label"><b>A.</b> 컨테이너에 <b>브랜드 파랑</b> 대각 글로우 복귀 + 카드는 현재 세로 wash(대회색) 유지</p>
+        <div class="wk wk-diag-brand">
+          <div class="wk-head"><span class="t-headline-1" style="font-weight:800">37주차</span><span class="wk-badge t-caption-1">진행중</span></div>
+          <div class="wk-cards">
+            <div class="mic mic-active-green"><p class="t-caption-1 muted mic-comp">EFL Cup</p><div class="mic-teams"><div class="mic-team left"><span class="t-caption-1" style="font-weight:500">Brentford</span><div class="mic-logo"></div></div><div class="mic-center"><span class="t-caption-2 muted">9월 7일</span><span class="t-label-1" style="font-weight:500">오후 8:00</span></div><div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1" style="font-weight:500">뉴캐슬</span></div></div><p class="t-caption-1 muted mic-result">예측 0-0</p></div>
+            <div class="mic mic-active-yellow"><p class="t-caption-1 muted mic-comp">Club Friendlies</p><div class="mic-teams"><div class="mic-team left"><span class="t-caption-1" style="font-weight:500">AC Milan</span><div class="mic-logo"></div></div><div class="mic-center"><span class="t-caption-2 muted">9월 9일</span><span class="t-label-1" style="font-weight:500">오후 8:00</span></div><div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1" style="font-weight:500">뉴캐슬</span></div></div></div>
+            <div class="mic mic-active-violet"><p class="t-caption-1 muted mic-comp">Premier League</p><div class="mic-teams"><div class="mic-team left"><span class="t-caption-1" style="font-weight:500">뉴캐슬</span><div class="mic-logo"></div></div><div class="mic-center"><span class="t-caption-2 muted">9월 13일</span><span class="t-label-1" style="font-weight:500">오후 8:00</span></div><div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1" style="font-weight:500">Chelsea</span></div></div></div>
+          </div>
+          <div class="wk-cta"><span class="mh-btn t-label-1" style="padding:10px 20px">예측하기</span></div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <p class="cell-label"><b>B.</b> 컨테이너 브랜드 파랑 대각 글로우 + 카드는 <b>색 없음</b>(bg-page) — 보내주신 이미지 그대로. 대회색은 사라짐</p>
+        <div class="wk wk-diag-brand">
+          <div class="wk-head"><span class="t-headline-1" style="font-weight:800">37주차</span><span class="wk-badge t-caption-1">진행중</span></div>
+          <div class="wk-cards">
+            <div class="mic mic-dimmed"><p class="t-caption-1 muted mic-comp">EFL Cup</p><div class="mic-teams"><div class="mic-team left"><span class="t-caption-1" style="font-weight:500">Brentford</span><div class="mic-logo"></div></div><div class="mic-center"><span class="t-caption-2 muted">9월 7일</span><span class="t-label-1" style="font-weight:500">오후 8:00</span></div><div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1" style="font-weight:500">뉴캐슬</span></div></div><p class="t-caption-1 muted mic-result">예측 0-0</p></div>
+            <div class="mic mic-dimmed"><p class="t-caption-1 muted mic-comp">Club Friendlies</p><div class="mic-teams"><div class="mic-team left"><span class="t-caption-1" style="font-weight:500">AC Milan</span><div class="mic-logo"></div></div><div class="mic-center"><span class="t-caption-2 muted">9월 9일</span><span class="t-label-1" style="font-weight:500">오후 8:00</span></div><div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1" style="font-weight:500">뉴캐슬</span></div></div></div>
+            <div class="mic mic-dimmed"><p class="t-caption-1 muted mic-comp">Premier League</p><div class="mic-teams"><div class="mic-team left"><span class="t-caption-1" style="font-weight:500">뉴캐슬</span><div class="mic-logo"></div></div><div class="mic-center"><span class="t-caption-2 muted">9월 13일</span><span class="t-label-1" style="font-weight:500">오후 8:00</span></div><div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1" style="font-weight:500">Chelsea</span></div></div></div>
+          </div>
+          <div class="wk-cta"><span class="mh-btn t-label-1" style="padding:10px 20px">예측하기</span></div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <p class="cell-label"><b>C.</b> 컨테이너 흰색 유지 + <b>카드 wash를 대각(↘)으로</b>, 대회색 — 지금 구현에서 방향만 바꾼 것</p>
+        <div class="wk">
+          <div class="wk-head"><span class="t-headline-1" style="font-weight:800">37주차</span><span class="wk-badge t-caption-1">진행중</span></div>
+          <div class="wk-cards">
+            <div class="mic mic-diag-green"><p class="t-caption-1 muted mic-comp">EFL Cup</p><div class="mic-teams"><div class="mic-team left"><span class="t-caption-1" style="font-weight:500">Brentford</span><div class="mic-logo"></div></div><div class="mic-center"><span class="t-caption-2 muted">9월 7일</span><span class="t-label-1" style="font-weight:500">오후 8:00</span></div><div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1" style="font-weight:500">뉴캐슬</span></div></div><p class="t-caption-1 muted mic-result">예측 0-0</p></div>
+            <div class="mic mic-diag-yellow"><p class="t-caption-1 muted mic-comp">Club Friendlies</p><div class="mic-teams"><div class="mic-team left"><span class="t-caption-1" style="font-weight:500">AC Milan</span><div class="mic-logo"></div></div><div class="mic-center"><span class="t-caption-2 muted">9월 9일</span><span class="t-label-1" style="font-weight:500">오후 8:00</span></div><div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1" style="font-weight:500">뉴캐슬</span></div></div></div>
+            <div class="mic mic-diag-violet"><p class="t-caption-1 muted mic-comp">Premier League</p><div class="mic-teams"><div class="mic-team left"><span class="t-caption-1" style="font-weight:500">뉴캐슬</span><div class="mic-logo"></div></div><div class="mic-center"><span class="t-caption-2 muted">9월 13일</span><span class="t-label-1" style="font-weight:500">오후 8:00</span></div><div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1" style="font-weight:500">Chelsea</span></div></div></div>
+          </div>
+          <div class="wk-cta"><span class="mh-btn t-label-1" style="padding:10px 20px">예측하기</span></div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <p class="cell-label"><b>D.</b> A + C — 컨테이너 브랜드 파랑 대각 + 카드 대회색 대각</p>
+        <div class="wk wk-diag-brand">
+          <div class="wk-head"><span class="t-headline-1" style="font-weight:800">37주차</span><span class="wk-badge t-caption-1">진행중</span></div>
+          <div class="wk-cards">
+            <div class="mic mic-diag-green"><p class="t-caption-1 muted mic-comp">EFL Cup</p><div class="mic-teams"><div class="mic-team left"><span class="t-caption-1" style="font-weight:500">Brentford</span><div class="mic-logo"></div></div><div class="mic-center"><span class="t-caption-2 muted">9월 7일</span><span class="t-label-1" style="font-weight:500">오후 8:00</span></div><div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1" style="font-weight:500">뉴캐슬</span></div></div><p class="t-caption-1 muted mic-result">예측 0-0</p></div>
+            <div class="mic mic-diag-yellow"><p class="t-caption-1 muted mic-comp">Club Friendlies</p><div class="mic-teams"><div class="mic-team left"><span class="t-caption-1" style="font-weight:500">AC Milan</span><div class="mic-logo"></div></div><div class="mic-center"><span class="t-caption-2 muted">9월 9일</span><span class="t-label-1" style="font-weight:500">오후 8:00</span></div><div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1" style="font-weight:500">뉴캐슬</span></div></div></div>
+            <div class="mic mic-diag-violet"><p class="t-caption-1 muted mic-comp">Premier League</p><div class="mic-teams"><div class="mic-team left"><span class="t-caption-1" style="font-weight:500">뉴캐슬</span><div class="mic-logo"></div></div><div class="mic-center"><span class="t-caption-2 muted">9월 13일</span><span class="t-label-1" style="font-weight:500">오후 8:00</span></div><div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1" style="font-weight:500">Chelsea</span></div></div></div>
+          </div>
+          <div class="wk-cta"><span class="mh-btn t-label-1" style="padding:10px 20px">예측하기</span></div>
+        </div>
+      </div>
+
+    </div>
+    <p class="caption-note">비교 포인트: A/B/D는 "예측 접수 중" 신호로 파랑 글로우를 컨테이너에 다시 쓰는 안(앞서 삭제 확정을 번복하는 것). C는 확정 그대로 컨테이너는 흰색, 카드 wash 방향만 세로→대각. 글로우 진하기(8%)·소멸 지점(55%)은 고르신 뒤 조정 가능.</p>
+  </div>
+
+  <hr class="rule">
+
+  <!-- ===================== 5. 노란 팔레트 후보 비교 ===================== -->
+  <div class="section">
+    <div class="section-head"><span class="chip">5</span><span class="section-title">노란 팔레트 후보 비교 (신규, 승인 대기)</span></div>
+    <p class="section-caption">`노란-팔레트-제안.md`의 11단계 계산 결과를 실제 컴포넌트에 대입해본 비교입니다. <code>yellow-700</code>(#7d7400)이 AA 대비는 통과하지만 올리브/카키에 가깝게 보이는 문제를 눈으로 확인하고, 단계를 고를 수 있게 여러 후보를 나란히 뒀습니다.</p>
+
+    <p class="cell-label" style="margin-bottom:8px"><b>11단계 전체 스와치</b> — 700단계부터 올리브 방향으로 꺾이는 지점이 보입니다</p>
+    <div class="swatch-strip">
+      <div class="sw-item"><div class="sw-chip" style="background:#fffbcc"></div><span class="sw-label mono">50</span></div>
+      <div class="sw-item"><div class="sw-chip" style="background:#fff58e"></div><span class="sw-label mono">100</span></div>
+      <div class="sw-item"><div class="sw-chip" style="background:#fcea00"></div><span class="sw-label mono">200</span></div>
+      <div class="sw-item"><div class="sw-chip" style="background:#e8d700"></div><span class="sw-label mono">300</span></div>
+      <div class="sw-item"><div class="sw-chip" style="background:#cabb00"></div><span class="sw-label mono">400</span></div>
+      <div class="sw-item"><div class="sw-chip" style="background:#b0a300"></div><span class="sw-label mono">500</span></div>
+      <div class="sw-item"><div class="sw-chip" style="background:#998d00"></div><span class="sw-label mono">600</span></div>
+      <div class="sw-item"><div class="sw-chip" style="background:#7d7400; outline:2px solid var(--key-orange); outline-offset:2px"></div><span class="sw-label mono">700 ★</span></div>
+      <div class="sw-item"><div class="sw-chip" style="background:#5c5500"></div><span class="sw-label mono">800</span></div>
+      <div class="sw-item"><div class="sw-chip" style="background:#393400"></div><span class="sw-label mono">900</span></div>
+      <div class="sw-item"><div class="sw-chip" style="background:#1f1c00"></div><span class="sw-label mono">950</span></div>
+    </div>
+    <p class="caption-note">★ = 흰 배경 대비 AA(4.5:1) 통과 최소 단계. 600(3.41:1)부터는 대비 미달.</p>
+
+    <p class="cell-label" style="margin:28px 0 12px"><b>다크 카드(MatchdayHero) 글로우 — 두 처리 비교</b></p>
+    <div class="row">
+      <div class="cell">
+        <p class="cell-label">A. <b>700/600 @ 15%</b> — 보라·초록과 같은 기본 공식 그대로</p>
+        <div class="mh mh-yellow-a">
+          <p class="t-caption-2 onsolid-muted mh-comp">Club Friendlies</p>
+          <div class="mh-teams">
+            <div class="mh-team left"><div class="mh-crest">뉴</div><p class="t-caption-1 onsolid" style="font-weight:500">뉴캐슬</p></div>
+            <div class="mh-center"><p class="t-headline-1 onsolid-muted" style="font-weight:600">VS</p></div>
+            <div class="mh-team right"><div class="mh-crest">A</div><p class="t-caption-1 onsolid" style="font-weight:500">AC Milan</p></div>
+          </div>
+          <p class="t-caption-1 onsolid-muted mh-kickoff">10월 3일 (토) 오전 4:00</p>
+          <div class="mh-btn-wrap"><span class="mh-btn t-label-1">승부예측 하러 가기</span></div>
+        </div>
+      </div>
+      <div class="cell">
+        <p class="cell-label">B. <b>400/300 @ 25%</b> — 오렌지 다크 보정과 같은 방식</p>
+        <div class="mh mh-yellow-b">
+          <p class="t-caption-2 onsolid-muted mh-comp">Club Friendlies</p>
+          <div class="mh-teams">
+            <div class="mh-team left"><div class="mh-crest">뉴</div><p class="t-caption-1 onsolid" style="font-weight:500">뉴캐슬</p></div>
+            <div class="mh-center"><p class="t-headline-1 onsolid-muted" style="font-weight:600">VS</p></div>
+            <div class="mh-team right"><div class="mh-crest">A</div><p class="t-caption-1 onsolid" style="font-weight:500">AC Milan</p></div>
+          </div>
+          <p class="t-caption-1 onsolid-muted mh-kickoff">10월 3일 (토) 오전 4:00</p>
+          <div class="mh-btn-wrap"><span class="mh-btn t-label-1">승부예측 하러 가기</span></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="cell-label" style="margin:28px 0 12px"><b>라이트 배지(PredictionFlowClient/PredictionDone) — 단계별 비교</b></p>
+    <div class="row">
+      <div class="cell">
+        <p class="cell-label"><b>700</b> · 대비 4.805 (AA 통과)</p>
+        <div class="pf-card">
+          <p class="t-label-2 muted" style="font-weight:500; margin-bottom:4px"><span class="badge-y700 t-caption-2">Club Friendlies</span> · 6라운드</p>
+          <p class="t-label-2 muted">10월 3일 (원정) 오전 4:00</p>
+        </div>
+      </div>
+      <div class="cell">
+        <p class="cell-label"><b>800</b> · 대비 7.624 (AA 여유 통과, 더 어두움)</p>
+        <div class="pf-card">
+          <p class="t-label-2 muted" style="font-weight:500; margin-bottom:4px"><span class="badge-y800 t-caption-2">Club Friendlies</span> · 6라운드</p>
+          <p class="t-label-2 muted">10월 3일 (원정) 오전 4:00</p>
+        </div>
+      </div>
+      <div class="cell">
+        <p class="cell-label"><b>500</b> · 대비 2.597 <span style="color:var(--key-orange)">— AA 미달, 참고용</span></p>
+        <div class="pf-card">
+          <p class="t-label-2 muted" style="font-weight:500; margin-bottom:4px"><span class="badge-y500 t-caption-2">Club Friendlies</span> · 6라운드</p>
+          <p class="t-label-2 muted">10월 3일 (원정) 오전 4:00</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="cell-label" style="margin:28px 0 12px"><b>배지 공식 재검토</b> — 12% 섞은 배경+700 텍스트(현재) vs 200 배경 그대로+800 텍스트(대안). <b>3색 전부에 영향</b>(노랑만의 문제 아님) — 700 텍스트는 200 배경 위에서 3색 다 AA 미달(보라 4.30·초록 3.95·노랑 3.87), 800으로 올리면 3색 다 여유 통과(6.1~6.7)</p>
+    <div class="row">
+      <div class="cell">
+        <p class="cell-label"><b>현재</b> — 12% 섞은 배경 + 700 텍스트</p>
+        <div class="pf-card">
+          <p class="t-label-2 muted" style="font-weight:500; margin-bottom:6px"><span class="comp-badge comp-badge-violet t-caption-2">Premier League</span></p>
+          <p class="t-label-2 muted" style="font-weight:500; margin-bottom:6px"><span class="comp-badge comp-badge-green t-caption-2">EFL Cup</span></p>
+          <p class="t-label-2 muted" style="font-weight:500"><span class="badge-y700 t-caption-2">Club Friendlies</span></p>
+        </div>
+      </div>
+      <div class="cell">
+        <p class="cell-label"><b>대안 A</b> — 200 배경 그대로 + 800 텍스트</p>
+        <div class="pf-card">
+          <p class="t-label-2 muted" style="font-weight:500; margin-bottom:6px"><span class="badge-chip-violet t-caption-2">Premier League</span></p>
+          <p class="t-label-2 muted" style="font-weight:500; margin-bottom:6px"><span class="badge-chip-green t-caption-2">EFL Cup</span></p>
+          <p class="t-label-2 muted" style="font-weight:500"><span class="badge-chip-yellow t-caption-2">Club Friendlies</span></p>
+        </div>
+      </div>
+      <div class="cell">
+        <p class="cell-label"><b>대안 B</b> — 50 배경 그대로 + 800 텍스트 <span class="mono" style="font-size:11px">(초록 700은 4.49로 AA 미달이라 800으로 통일)</span></p>
+        <div class="pf-card">
+          <p class="t-label-2 muted" style="font-weight:500; margin-bottom:6px"><span class="badge-chip50-violet t-caption-2">Premier League</span></p>
+          <p class="t-label-2 muted" style="font-weight:500; margin-bottom:6px"><span class="badge-chip50-green t-caption-2">EFL Cup</span></p>
+          <p class="t-label-2 muted" style="font-weight:500"><span class="badge-chip50-yellow t-caption-2">Club Friendlies</span></p>
+        </div>
+      </div>
+      <div class="cell">
+        <p class="cell-label"><b>대안 C</b> — 100 배경 그대로 + 800 텍스트 <span class="mono" style="font-size:11px">(700은 노랑 4.28·초록 4.29 미달, 800으로 통일)</span></p>
+        <div class="pf-card">
+          <p class="t-label-2 muted" style="font-weight:500; margin-bottom:6px"><span class="badge-chip100-violet t-caption-2">Premier League</span></p>
+          <p class="t-label-2 muted" style="font-weight:500; margin-bottom:6px"><span class="badge-chip100-green t-caption-2">EFL Cup</span></p>
+          <p class="t-label-2 muted" style="font-weight:500"><span class="badge-chip100-yellow t-caption-2">Club Friendlies</span></p>
+        </div>
+      </div>
+    </div>
+
+    <p class="cell-label" style="margin:28px 0 12px"><b>MatchWeekList 라이트 카드 배경</b> — 700 @ 8% (다른 두 색과 같은 공식)</p>
+    <div class="row">
+      <div class="cell">
+        <div class="mw-frame">
+          <div class="mic mic-active-yellow">
+            <p class="t-caption-1 muted mic-comp">Club Friendlies</p>
+            <div class="mic-teams">
+              <div class="mic-team left"><span class="t-caption-1" style="font-weight:500">뉴캐슬</span><div class="mic-logo"></div></div>
+              <div class="mic-center"><span class="t-caption-2 muted">10/3</span><span class="t-label-1" style="font-weight:500">오전 4:00</span></div>
+              <div class="mic-team right"><div class="mic-logo"></div><span class="t-caption-1" style="font-weight:500">AC Milan</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+  /* ===== 5. 노란 팔레트 후보 비교 전용 (승인 대기, 코드 미반영) ===== */
+  .swatch-strip { display: flex; gap: 6px; flex-wrap: wrap; }
+  .sw-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .sw-chip { width: 52px; height: 52px; border-radius: 8px; border: 1px solid var(--hair); }
+  .sw-label { font-size: 11px; color: var(--ink-muted); }
+  .caption-note { font-size: 12px; color: var(--ink-muted); margin-top: 10px; }
+
+  .mh-yellow-a {
+    background:
+      radial-gradient(250px at 0% 0%,   color-mix(in srgb, #7d7400 15%, transparent) 0%, transparent 70%),
+      radial-gradient(250px at 100% 0%, color-mix(in srgb, #998d00 15%, transparent) 0%, transparent 70%),
+      var(--sem-bg-neutral-strong);
+  }
+  .mh-yellow-b {
+    background:
+      radial-gradient(250px at 0% 0%,   color-mix(in srgb, #cabb00 25%, transparent) 0%, transparent 70%),
+      radial-gradient(250px at 100% 0%, color-mix(in srgb, #e8d700 25%, transparent) 0%, transparent 70%),
+      var(--sem-bg-neutral-strong);
+  }
+  .badge-y700 { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 4px 8px; font-weight: 500; background: color-mix(in srgb, #7d7400 12%, white); color: #7d7400; }
+  .badge-y800 { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 4px 8px; font-weight: 500; background: color-mix(in srgb, #5c5500 12%, white); color: #5c5500; }
+  .badge-y500 { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 4px 8px; font-weight: 500; background: color-mix(in srgb, #b0a300 12%, white); color: #b0a300; }
+  .mic-active-yellow {
+    background:
+      linear-gradient(to bottom, color-mix(in srgb, #7d7400 8%, transparent) 0%, transparent 25%),
+      var(--sem-bg-page);
+  }
+
+  /* 배지 공식 대안 — 200단계 배경 그대로 + 800단계 텍스트 (3색 공통) */
+  .badge-chip-violet { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 4px 8px; font-weight: 500; background: #f8d8ff; color: #6924a9; }
+  .badge-chip-green  { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 4px 8px; font-weight: 500; background: #caf7d1; color: #0a642a; }
+  .badge-chip-yellow { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 4px 8px; font-weight: 500; background: #fcea00; color: #5c5500; }
+
+  /* ===== 6. 예측 목록 대각선 글로우 후보 ===== */
+  .wk { width: 360px; background: var(--sem-bg-surface); border: 1px solid var(--sem-stroke-neutral-weak); border-radius: var(--r-lg); padding: 16px; }
+  .wk-diag-brand {
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--p-blue-700) 8%, transparent) 0%, transparent 55%),
+      var(--sem-bg-surface);
+  }
+  .wk-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--sem-fg-neutral); }
+  .wk-badge { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 4px 8px; font-weight: 500; background: #e6efff; color: #115aff; }
+  .wk-cards { display: flex; flex-direction: column; gap: 8px; }
+  .wk-cta { display: flex; justify-content: flex-end; margin-top: 12px; }
+  .mic-diag-violet {
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--p-violet-700) 8%, transparent) 0%, transparent 55%),
+      var(--sem-bg-page);
+  }
+  .mic-diag-green {
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--p-green-700) 8%, transparent) 0%, transparent 55%),
+      var(--sem-bg-page);
+  }
+  .mic-diag-yellow {
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--p-yellow-700) 8%, transparent) 0%, transparent 55%),
+      var(--sem-bg-page);
+  }
+
+  /* 배지 공식 대안 B — 50단계 배경 그대로 + 800단계 텍스트 (3색 공통) */
+  .badge-chip50-violet { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 4px 8px; font-weight: 500; background: #fef5ff; color: #6924a9; }
+  .badge-chip50-green  { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 4px 8px; font-weight: 500; background: #f1fef2; color: #0a642a; }
+  .badge-chip50-yellow { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 4px 8px; font-weight: 500; background: #fffbcc; color: #5c5500; }
+
+  /* 배지 공식 대안 C — 100단계 배경 그대로 + 800단계 텍스트 (3색 공통) */
+  .badge-chip100-violet { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 4px 8px; font-weight: 500; background: #fceaff; color: #6924a9; }
+  .badge-chip100-green  { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 4px 8px; font-weight: 500; background: #e2fce5; color: #0a642a; }
+  .badge-chip100-yellow { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 4px 8px; font-weight: 500; background: #fff58e; color: #5c5500; }
+</style>
+
+<style>
+  /* ===== 아래는 실제 앱 컴포넌트 재현 — frontend/src/app/globals.css 원본 값 그대로.
+     뷰어 다크/라이트 테마와 무관하게 고정 (실제 프로덕션 화면 그대로를 보여주기 위함). ===== */
+  .ds, .mh, .mw-frame, .pf-card, .pd-card, .wk {
+    /* ===== Palette (frontend/src/app/globals.css 원본 그대로) ===== */
+    --p-orange-300: #ffcf85; --p-orange-400: #f4af41; --p-orange-500: #de9300; --p-orange-700: #a65e00;
+    --p-green-600: #37a555; --p-green-700: #008728;
+    --p-violet-600: #ac53ff; --p-violet-700: #9130e7;
+    --p-blue-600: #2f7aff; --p-blue-700: #115aff;
+    --p-yellow-600: #998d00; --p-yellow-700: #7d7400;
+    --p-neutral-50: #fafafb; --p-neutral-200: #e9e9ea; --p-neutral-400: #bcbec0;
+    --p-neutral-900: #313335; --p-neutral-950: #1a1b1c;
+    --p-red-700: #cf231a;
+
+    /* ===== Semantic (globals.css 원본 그대로) ===== */
+    --sem-bg-page: var(--p-neutral-50);
+    --sem-bg-surface: #ffffff;
+    --sem-bg-disabled: var(--p-neutral-200);
+    --sem-bg-neutral-strong: var(--p-neutral-900);
+    --sem-bg-critical-weak: #ffe8e0;
+    --sem-bg-warning-weak: #fff5d9;
+    --sem-bg-on-solid-weak: rgba(255, 255, 255, .05);
+    --sem-bg-on-solid-strong: rgba(255, 255, 255, .1);
+    --sem-fg-neutral: var(--p-neutral-950);
+    --sem-fg-neutral-strong: var(--p-neutral-900);
+    --sem-fg-neutral-muted: #666666;
+    --sem-fg-on-solid: #ffffff;
+    --sem-fg-on-solid-muted: var(--p-neutral-400);
+    --sem-fg-critical: var(--p-red-700);
+    --sem-stroke-neutral-weak: var(--p-neutral-200);
+
+    --r-sm: 10px; --r-md: 12px; --r-lg: 16px; --r-pill: 9999px;
+
+    font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif;
+    color: var(--sem-fg-neutral);
+  }
+
+  /* ===== Typography (frontend/tailwind.config.ts 원본 그대로) ===== */
+  .t-title-3    { font-size: 24px; line-height: 32px; letter-spacing: -0.023em; }
+  .t-heading-1  { font-size: 22px; line-height: 30px; letter-spacing: -0.0194em; }
+  .t-headline-1 { font-size: 18px; line-height: 26px; letter-spacing: -0.002em; }
+  .t-body-2     { font-size: 15px; line-height: 22px; letter-spacing: 0.0096em; }
+  .t-label-1    { font-size: 14px; line-height: 20px; letter-spacing: 0.0145em; }
+  .t-label-2    { font-size: 13px; line-height: 18px; letter-spacing: 0.0194em; }
+  .t-caption-1  { font-size: 12px; line-height: 16px; letter-spacing: 0.0252em; }
+  .t-caption-2  { font-size: 11px; line-height: 14px; letter-spacing: 0.0311em; }
+
+  .muted { color: var(--sem-fg-neutral-muted); }
+  .onsolid { color: var(--sem-fg-on-solid); }
+  .onsolid-muted { color: var(--sem-fg-on-solid-muted); }
+
+  /* ===== 1. MatchdayHero (다크 카드) ===== */
+  .mh { width: 320px; border: none; border-radius: var(--r-lg); padding: 20px 16px 16px; position: relative; overflow: hidden; }
+  .mh-glow-violet {
+    background:
+      radial-gradient(250px at 0% 0%,   color-mix(in srgb, var(--p-violet-700) 15%, transparent) 0%, transparent 70%),
+      radial-gradient(250px at 100% 0%, color-mix(in srgb, var(--p-violet-600) 15%, transparent) 0%, transparent 70%),
+      var(--sem-bg-neutral-strong);
+  }
+  .mh-glow-green {
+    background:
+      radial-gradient(250px at 0% 0%,   color-mix(in srgb, var(--p-green-700) 15%, transparent) 0%, transparent 70%),
+      radial-gradient(250px at 100% 0%, color-mix(in srgb, var(--p-green-600) 15%, transparent) 0%, transparent 70%),
+      var(--sem-bg-neutral-strong);
+  }
+  /* 친선(오렌지) 다크 카드 보정값 — design-brief 4번: 700/600 15% 대신 400/300 25%(24~26% 중간값) */
+  .mh-glow-orange {
+    background:
+      radial-gradient(250px at 0% 0%,   color-mix(in srgb, var(--p-orange-400) 25%, transparent) 0%, transparent 70%),
+      radial-gradient(250px at 100% 0%, color-mix(in srgb, var(--p-orange-300) 25%, transparent) 0%, transparent 70%),
+      var(--sem-bg-neutral-strong);
+  }
+  /* 종료 상태 — 그라디언트 레이어 없이 평면색만 (design-brief 3-1) */
+  .mh-neutral { background: var(--sem-bg-neutral-strong); }
+
+  .mh-comp { text-align: center; }
+  .mh-teams { margin-top: 12px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+  .mh-team { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 88px; }
+  .mh-crest { width: 44px; height: 44px; border-radius: 50%; background: var(--sem-bg-on-solid-strong); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--sem-fg-on-solid); }
+  .mh-team.right { justify-self: start; }
+  .mh-team.left { justify-self: end; }
+  .mh-center { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .mh-kickoff { text-align: center; margin-top: 12px; }
+
+  .mh-countdown { margin-top: 12px; display: flex; justify-content: center; gap: 8px; }
+  .mh-cbox { width: 56px; display: flex; flex-direction: column; align-items: center; gap: 2px; border-radius: var(--r-sm); background: var(--sem-bg-on-solid-strong); padding: 6px 0; }
+
+  .mh-badge-live { display: flex; justify-content: center; margin-top: 12px; }
+  .badge-destructive { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 4px 8px; font-weight: 500; background: var(--sem-bg-critical-weak); color: var(--sem-fg-critical); border: 1px solid transparent; }
+
+  .mh-btn-wrap { margin-top: 16px; display: flex; justify-content: center; }
+  .mh-btn { display: inline-block; background: #115aff; color: #fff; border: none; border-radius: var(--r-pill); padding: 13px 30px; font-weight: 600; font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif; }
+
+  .mh-ratings { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .mh-rating-card { display: flex; align-items: center; gap: 12px; border-radius: var(--r-lg); padding: 12px; }
+  .mh-rating-card.default { background: var(--sem-bg-on-solid-weak); }
+  .mh-rating-card.award { background: linear-gradient(135deg, var(--p-orange-300) 0%, var(--p-orange-400) 50%, var(--p-orange-500) 100%); }
+  .mh-rating-photo { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; }
+  .mh-rating-card.default .mh-rating-photo { background: var(--sem-bg-on-solid-strong); }
+  .mh-rating-card.award .mh-rating-photo { background: var(--sem-bg-warning-weak); }
+
+  /* ===== 2. MatchWeekList (라이트 경기 카드) ===== */
+  .mw-frame { background: var(--sem-bg-surface); border: 1px solid var(--sem-stroke-neutral-weak); border-radius: var(--r-lg); padding: 16px; width: 320px; }
+  .mic { border-radius: var(--r-lg); padding: 12px 12px 20px; }
+  .mic-active-violet {
+    background:
+      linear-gradient(to bottom, color-mix(in srgb, var(--p-violet-700) 8%, transparent) 0%, transparent 25%),
+      var(--sem-bg-page);
+  }
+  .mic-active-green {
+    background:
+      linear-gradient(to bottom, color-mix(in srgb, var(--p-green-700) 8%, transparent) 0%, transparent 25%),
+      var(--sem-bg-page);
+  }
+  .mic-active-orange {
+    background:
+      linear-gradient(to bottom, color-mix(in srgb, var(--p-orange-700) 8%, transparent) 0%, transparent 25%),
+      var(--sem-bg-page);
+  }
+  .mic-dimmed { background: var(--sem-bg-page); }
+
+  .mic-comp { margin-bottom: 10px; font-weight: 500; }
+  .mic-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 20px; }
+  .mic-team { display: flex; align-items: center; gap: 6px; }
+  .mic-team.left { justify-content: flex-end; }
+  .mic-team.right { justify-content: flex-start; }
+  .mic-logo { width: 32px; height: 32px; border-radius: 50%; background: var(--sem-bg-disabled); flex-shrink: 0; }
+  .mic-center { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .mic-result { margin-top: 12px; border-top: 1px solid var(--sem-stroke-neutral-weak); padding-top: 8px; text-align: center; }
+
+  /* ===== 3. PredictionFlowClient — MatchMeta 배지 ===== */
+  .pf-card { background: var(--sem-bg-surface); border: 1px solid var(--sem-stroke-neutral-weak); border-radius: var(--r-lg); padding: 20px; width: 320px; text-align: center; }
+  .comp-badge { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 4px 8px; font-weight: 500; }
+  .comp-badge-violet { background: color-mix(in srgb, var(--p-violet-700) 12%, white); color: var(--p-violet-700); }
+  .comp-badge-green  { background: color-mix(in srgb, var(--p-green-700) 12%, white); color: var(--p-green-700); }
+  .comp-badge-orange { background: color-mix(in srgb, var(--p-orange-700) 12%, white); color: var(--p-orange-700); }
+
+  /* ===== 4. PredictionDone — 카드 헤더 배지 ===== */
+  .pd-card { background: var(--sem-bg-surface); border: 1px solid var(--sem-stroke-neutral-weak); border-radius: var(--r-lg); padding: 20px 16px; width: 360px; }
+  .pd-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+
+  @media (max-width: 720px) {
+    .doc { padding: 40px 18px 72px; }
+    h1 { font-size: 24px; }
+  }
+</style>

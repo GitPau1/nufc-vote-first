@@ -456,6 +456,8 @@ export const MOCK_FIXTURES: FixtureRow[] = [
   mockFixture(9006, { id: 9937, name: 'Brentford' },  { days: 3,   isHome: false, competition: 'EFL Cup' }),
   mockFixture(9005, { id: 8455, name: 'Chelsea' },    { days: 9,   isHome: true,  competition: 'Premier League' }),
   mockFixture(9007, { id: 8668, name: 'Everton' },    { days: 30,  isHome: true,  competition: 'Premier League' }),
+  // 대회색(TEA-30) 확인용 — 유일한 'Club Friendlies'(yellow). 색이 켜지려면 open 주차(첫 킥오프 7일 이내, 미잠금)에 들어가야 한다.
+  mockFixture(9008, { id: 8564, name: 'AC Milan' },   { days: 5,   isHome: false, competition: 'Club Friendlies' }),
 ]
 
 // ── 승부예측 선수 픽 후보 (season_squads 행과 같은 모양) ─────────────────────
