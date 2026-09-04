@@ -40,3 +40,9 @@ vault/.trash/
 
 *storybook.log
 storybook-static
+
+# Claude Code 훅: PR 전 보안 리뷰 여부를 표시하는 로컬 마커 (커밋 금지)
+.claude/.security-review-passed
+
+# humanize-korean 스킬의 런타임 작업 폴더 (중간 산출물, 커밋 대상 아님)
+_workspace/
