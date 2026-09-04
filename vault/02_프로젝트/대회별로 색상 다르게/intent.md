@@ -113,4 +113,6 @@ developer 에이전트가 쓴 `feature-spec.md`·`plan.md`의 "사람 확정 필
 2. ~~linear-ops → 이슈 생성~~ (완료: **TEA-30**, 브랜치 `geonhaa/tea-30-승부예측-화면-대회별-색상-적용-노란-팔레트-신설`). 프로젝트 설명 갱신은 linear-ops 도구에 `save_project`가 없어 미처리 — 처리 방식 사람 확인
 3. ~~worktree 생성 + 문서 커밋~~ (완료: `.claude/worktrees/tea-30`, 첫 커밋 cc54754)
 4. ~~①② → ③④⑤ → ⑥~~ (완료. ⑥은 세션 한도로 2회에 나눠 실행, DesignToken.mdx 추가 갱신) → ~~⑦ 검증~~ (완료 2026-09-05: test 226/0 · lint 0 · build 0 · build-storybook 0, 새 경고 0건) → ⑧ 화면 검수: Chrome 확장 미연결로 사람이 `localhost:4300` 직접 확인 (진행 중)
-5. ~~코드 리뷰(`medium` 1회)~~ (완료: CRITICAL/HIGH/MEDIUM 없음, 머지 가능. 관찰: 대회명 원문 정확 일치 — 공백/대소문자 변형은 green fallback) → PR (`Fixes TEA-30`) → 사람 머지
+5. ~~코드 리뷰(`medium` 1회)~~ (완료: CRITICAL/HIGH/MEDIUM 없음, 머지 가능. 관찰: 대회명 원문 정확 일치 — 공백/대소문자 변형은 green fallback, 사람 확정으로 유지)
+6. ~~origin/main 머지~~ (완료 1fea98e: main에 #18 TEA-23·#19·#20/#21 TEA-31이 먼저 들어와 머지. 충돌은 PredictionFlowClient 2곳만, 배지 유지 + `weekLabel` 채택. 273 tests pass, build·build-storybook 통과. `PredictionMatchSelect`는 대회명 미표시 → 추가 적용 지점 없음)
+7. ⑧ 화면 검수(사람, localhost:4300) → 지적 반영 → push → PR (`Fixes TEA-30`) → 사람 머지
