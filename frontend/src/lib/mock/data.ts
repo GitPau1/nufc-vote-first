@@ -1,5 +1,6 @@
 import type { PlayerRow, PollOptionRow, SeasonSquadRow } from '@/types/database'
-import type { PollDetail, PollListItem, VoteCountMap, RatingResultItem, RatingCommentItem } from '@/lib/queries/polls'
+import type { PollDetail, PollListItem, VoteCountMap } from '@/lib/queries/polls'
+import type { RatingResultItem, RatingCommentItem } from '@/lib/queries/ratings'
 import type { FixtureRow } from '@/lib/predictions/week'
 import { getRatingGrade } from '@/lib/polls/rating'
 
