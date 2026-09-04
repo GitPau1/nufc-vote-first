@@ -149,3 +149,10 @@ feature-spec.md 끝의 목록 번호 기준. 여기 적힌 것이 plan.md의 입
 - PR #26(TEA-28) squash 머지(`d4055df`). 커밋 3단계: 6-C `lib/polls/format.ts`(0f888e6) → 6-A `lib/supabase/service-client.ts`(cc35f87) → 6-B `lib/queries/ratings.ts`(2468170). 검증 npm test 276/276·lint 에러 0·build 성공, 코드/보안 리뷰 통과.
 - `AGENT_MAINTENANCE_GUIDE.md`·`SUPABASE_DATA_CONNECTIONS.md`에 새 파일 3개 반영(같은 PR).
 - 이 프로젝트의 Linear 이슈(TEA-25/26/27/28/29)는 전부 머지 완료. 남은 것: intent #18 후속 후보 3건 — 이슈화 여부만 미판단.
+
+## intent #18 후속 3건 결론 (2026-09-05, 코드 실측 후 사용자 확정)
+
+- (1) 선택지 `key={index}` 이미지 이월 — **실제 버그 확인**(`UserPollCreateForm.tsx:294`, `CroppedImageInput.tsx:33-34` 비제어 state) → **TEA-32 생성**(간소 사이클).
+- (2) 없는 `player_id`의 Postgres 원문 에러 노출 — 정상 UI로는 재현 불가(선수는 목록 선택만), 요청 조작 시에만 발생 → **이슈 안 만듦, 종결**.
+- (3) 선수 연결 선택지의 설명/이미지 노출 — 실 DB 확인 SQL(`select … from poll_options where player_id is not null and (description is not null or image_url is not null)`) 결과 **0건** → **종결**. 새 투표는 UI가 업로드 칸을 숨겨 발생하지 않음.
+- 이 프로젝트의 미결 항목 없음.
