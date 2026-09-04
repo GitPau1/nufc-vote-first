@@ -49,7 +49,8 @@
 
     /* ===== Palette (원시 색, OKLCH 생성) — 직접 쓰지 않는다. semantic 토큰을 통해서만 쓴다 =====
        생성 근거: vault/10_gun/디자인시스템-스토리북-실행계획.md §3.5, §3.6
-       원본: frontend/src/storybook/_internal/palette-proposal.ts (Storybook Foundations/Palette 참고) */
+       원본: frontend/src/storybook/_internal/palette-proposal.ts (Storybook Foundations/Palette 참고)
+       8번째 계열 yellow(2026-09-05, TEA-30): 계산 근거 vault/02_프로젝트/대회별로 색상 다르게/노란-팔레트-제안.md */
     --p-blue-50: #edfbff; --p-blue-100: #dcf4ff; --p-blue-200: #c1e9ff; --p-blue-300: #9bd6ff; --p-blue-400: #6ab4ff; --p-blue-500: #4795ff; --p-blue-600: #2f7aff; --p-blue-700: #115aff; --p-blue-800: #0d42c0; --p-blue-900: #022680; --p-blue-950: #00114e;
     --p-red-50: #fff3ef; --p-red-100: #ffe7df; --p-red-200: #ffd3c6; --p-red-300: #ffb4a3; --p-red-400: #ff8875; --p-red-500: #ff6453; --p-red-600: #ef483a; --p-red-700: #cf231a; --p-red-800: #981b14; --p-red-900: #630705; --p-red-950: #3b0000;
     --p-green-50: #f1fef2; --p-green-100: #e2fce5; --p-green-200: #caf7d1; --p-green-300: #a8edb4; --p-green-400: #79d68c; --p-green-500: #53be6d; --p-green-600: #37a555; --p-green-700: #008728; --p-green-800: #0a642a; --p-green-900: #003f16; --p-green-950: #002307;
@@ -57,6 +58,7 @@
     --p-cyan-50: #effdff; --p-cyan-100: #dff8ff; --p-cyan-200: #c6f2ff; --p-cyan-300: #a1e5fd; --p-cyan-400: #6eccec; --p-cyan-500: #43b4d6; --p-cyan-600: #209bbc; --p-cyan-700: #007f9f; --p-cyan-800: #005c74; --p-cyan-900: #003a4b; --p-cyan-950: #001f2b;
     --p-violet-50: #fef5ff; --p-violet-100: #fceaff; --p-violet-200: #f8d8ff; --p-violet-300: #efbcff; --p-violet-400: #db92ff; --p-violet-500: #c56fff; --p-violet-600: #ac53ff; --p-violet-700: #9130e7; --p-violet-800: #6924a9; --p-violet-900: #430f70; --p-violet-950: #260244;
     --p-neutral-50: #fafafb; --p-neutral-100: #f3f3f4; --p-neutral-200: #e9e9ea; --p-neutral-300: #d8d9da; --p-neutral-400: #bcbec0; --p-neutral-500: #a2a5a9; --p-neutral-600: #898c92; --p-neutral-700: #6e7277; --p-neutral-800: #4f5357; --p-neutral-900: #313335; --p-neutral-950: #1a1b1c;
+    --p-yellow-50: #fffbcc; --p-yellow-100: #fff58e; --p-yellow-200: #fcea00; --p-yellow-300: #e8d700; --p-yellow-400: #cabb00; --p-yellow-500: #b0a300; --p-yellow-600: #998d00; --p-yellow-700: #7d7400; --p-yellow-800: #5c5500; --p-yellow-900: #393400; --p-yellow-950: #1f1c00;
 
     /* ===== Semantic (역할 색) — 컴포넌트는 이 계층만 참조한다 =====
        bg-disabled/fg-disabled/fg-positive는 아직 Tailwind 클래스로 안 노출했다.
@@ -228,6 +230,52 @@
   .award-gold {
     background: linear-gradient(135deg, var(--p-orange-300) 0%, var(--p-orange-400) 50%, var(--p-orange-500) 100%);
   }
+
+  /* 대회색 다크 글로우 3종 — MatchdayHero 전용 (TEA-30). spotlight-glow-brand-strong과 같은
+     지오메트리(코너 250px radial 2겹, 700/600단계 각 15%)를 색만 바꿔 재사용한다.
+     노랑도 예외 없이 같은 공식(design-brief.md 4번). */
+  .competition-glow-violet {
+    background:
+      radial-gradient(250px at 0% 0%,   color-mix(in srgb, var(--p-violet-700) 15%, transparent) 0%, transparent 70%),
+      radial-gradient(250px at 100% 0%, color-mix(in srgb, var(--p-violet-600) 15%, transparent) 0%, transparent 70%),
+      var(--sem-bg-neutral-strong);
+  }
+  .competition-glow-green {
+    background:
+      radial-gradient(250px at 0% 0%,   color-mix(in srgb, var(--p-green-700) 15%, transparent) 0%, transparent 70%),
+      radial-gradient(250px at 100% 0%, color-mix(in srgb, var(--p-green-600) 15%, transparent) 0%, transparent 70%),
+      var(--sem-bg-neutral-strong);
+  }
+  .competition-glow-yellow {
+    background:
+      radial-gradient(250px at 0% 0%,   color-mix(in srgb, var(--p-yellow-700) 15%, transparent) 0%, transparent 70%),
+      radial-gradient(250px at 100% 0%, color-mix(in srgb, var(--p-yellow-600) 15%, transparent) 0%, transparent 70%),
+      var(--sem-bg-neutral-strong);
+  }
+
+  /* 대회색 라이트 wash 3종 — MatchWeekList의 MatchInfoCard 전용 (TEA-30). spotlight-glow-brand와
+     같은 지오메트리(세로 linear, 25%에서 소멸)이되 베이스는 bg-page(카드 기존 베이스). */
+  .competition-wash-violet {
+    background:
+      linear-gradient(to bottom, color-mix(in srgb, var(--p-violet-700) 8%, transparent) 0%, transparent 25%),
+      var(--sem-bg-page);
+  }
+  .competition-wash-green {
+    background:
+      linear-gradient(to bottom, color-mix(in srgb, var(--p-green-700) 8%, transparent) 0%, transparent 25%),
+      var(--sem-bg-page);
+  }
+  .competition-wash-yellow {
+    background:
+      linear-gradient(to bottom, color-mix(in srgb, var(--p-yellow-700) 8%, transparent) 0%, transparent 25%),
+      var(--sem-bg-page);
+  }
+
+  /* 대회색 배지 3종 — PredictionFlowClient·PredictionDone 공용 (TEA-30). 100단계 배경 + 800단계
+     텍스트(design-brief.md 2-3번, 3색 대비 실측 7.565/6.723/6.790, 전부 AA 여유 통과). */
+  .competition-badge-violet { background: var(--p-violet-100); color: var(--p-violet-800); }
+  .competition-badge-green  { background: var(--p-green-100);  color: var(--p-green-800); }
+  .competition-badge-yellow { background: var(--p-yellow-100); color: var(--p-yellow-800); }
 
   .input-field {
     @apply w-full rounded-sm border border-neutral-weak bg-surface px-3 py-2 text-label-1-normal text-neutral outline-none;
