@@ -288,12 +288,13 @@ function FinaleStat({ label, value, emphasize = false }: { label: string; value:
 }
 
 /** 경기 하나 — ② 경기별 비교(근거) + ③ 내 선수 픽(디테일), 카드 두 장. */
-function MatchResultBlock({
+export function MatchResultBlock({
   match,
   state,
   predictions,
   candidates,
   topRatings,
+  pickPointsReady = true,
 }: {
   match: MatchView
   state: MatchResultState
@@ -301,6 +302,8 @@ function MatchResultBlock({
   candidates: PickCandidates
   /** 이 경기의 포지션별 평점 TOP3. 평점이 아직 없으면(동기화 전) 세 포지션 모두 빈 배열. */
   topRatings: FixturePositionTop3
+  /** false면 평점 집계가 아직 안 끝난 것 — "내 선수 픽" 카드가 집계 중 상태만 보여준다. 기본 true. */
+  pickPointsReady?: boolean
 }) {
   if (state.kind === 'pending') {
     return (
@@ -353,28 +356,36 @@ function MatchResultBlock({
       <Card className="p-5 text-left">
         <div className="mb-3.5 flex items-center justify-between">
           <span className="text-body-2-normal font-semibold">내 선수 픽</span>
-          <PickPointsBadge pickPoints={scored?.pickPoints ?? null} />
+          {pickPointsReady && <PickPointsBadge pickPoints={scored?.pickPoints ?? null} />}
         </div>
-        <div className="overflow-hidden rounded-lg sm:hidden">
-          {POSITIONS.map(position => (
-            <PickResultRow
-              key={position}
-              position={position}
-              pick={resolvePick(position, match, scored, predictions, candidates)}
-              top3={buildTop3Entries(topRatings[position], scored?.picks[position].playerId ?? null)}
-            />
-          ))}
-        </div>
-        <div className="hidden sm:flex sm:gap-3">
-          {POSITIONS.map(position => (
-            <PickResultCard
-              key={position}
-              position={position}
-              pick={resolvePick(position, match, scored, predictions, candidates)}
-              top3={buildTop3Entries(topRatings[position], scored?.picks[position].playerId ?? null)}
-            />
-          ))}
-        </div>
+        {pickPointsReady ? (
+          <>
+            <div className="overflow-hidden rounded-lg sm:hidden">
+              {POSITIONS.map(position => (
+                <PickResultRow
+                  key={position}
+                  position={position}
+                  pick={resolvePick(position, match, scored, predictions, candidates)}
+                  top3={buildTop3Entries(topRatings[position], scored?.picks[position].playerId ?? null)}
+                />
+              ))}
+            </div>
+            <div className="hidden sm:flex sm:gap-3">
+              {POSITIONS.map(position => (
+                <PickResultCard
+                  key={position}
+                  position={position}
+                  pick={resolvePick(position, match, scored, predictions, candidates)}
+                  top3={buildTop3Entries(topRatings[position], scored?.picks[position].playerId ?? null)}
+                />
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="rounded-md bg-page px-4 py-6 text-center">
+            <p className="text-label-1-normal text-neutral-muted">평점 집계 중이에요</p>
+          </div>
+        )}
       </Card>
     </>
   )
