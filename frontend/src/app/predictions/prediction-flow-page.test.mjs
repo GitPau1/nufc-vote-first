@@ -51,6 +51,15 @@ test('the edit-target select screen requires at least two editable matches, and 
 // 최초 마운트 시점 값에 계속 고정돼, 이후 방문의 initialValues/matchIds가 무시된다("수정하기 들어가면
 // 값이 초기화돼 있음", "제출할 때마다 incomplete"의 근본 원인). 매 렌더가 다루는 경기 조합이 바뀌면
 // 반드시 리마운트되도록 matchIds(+ mode)를 key로 줘야 한다.
+// 끝난 경기 미리보기(TEA-34): 완료 허브는 정산 게이트 없는 경기 단위 채점 결과를 따로 조회해
+// PredictionFlowClient(→ PredictionDone)에 넘긴다 — week.status가 'result'가 아니어도(주차가
+// 아직 안 끝나도) 종료된 경기 결과는 미리 보여야 한다.
+test('the done hub fetches gate-free fixture results and passes them through to PredictionFlowClient', () => {
+  assert.match(file, /const \[fixtureResults, top3PerMatch\] = await Promise\.all\(\[\s*getMyFixtureResults\(\),/)
+  assert.match(file, /fixtureResults=\{fixtureResults\}/)
+  assert.match(file, /topRatings=\{doneTopRatings\}/)
+})
+
 test('every PredictionFlowClient render is keyed by its match/mode identity, so a new session always remounts', () => {
   const opens = [...file.matchAll(/<PredictionFlowClient\b[^]*?(?:\/>|<\/PredictionFlowClient>)/g)]
   assert.equal(opens.length, 4, '페이지에 PredictionFlowClient 렌더가 4곳 있어야 한다(edit/match/submitted/single-fallback)')

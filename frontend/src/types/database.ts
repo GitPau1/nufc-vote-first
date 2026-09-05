@@ -347,6 +347,41 @@ export interface Database {
         // 스키마 전체가 supabase-js 추론에서 빠진다 — 조회 결과는 PredictionResultRow 등으로 직접 단언해 쓴다.
         Relationships: []
       }
+      // 정산 게이트 없는 경기 단위 예측 결과 (20260905120000_prediction_fixture_results.sql).
+      // prediction_results와 컬럼 셋 동일 + rated_players_count.
+      prediction_fixture_results: {
+        Row: {
+          id: string
+          user_id: string
+          fixture_id: number
+          kickoff_at: string | null
+          competition_name: string | null
+          pred_home: number
+          pred_away: number
+          // 경기가 끝났어도 스코어가 아직 안 들어왔으면 null
+          actual_home: number | null
+          actual_away: number | null
+          def_player_id: number
+          mid_player_id: number
+          fwd_player_id: number
+          // fixture_player_ratings에 행이 없으면 null (= 미출전/미집계)
+          def_rating: number | null
+          mid_rating: number | null
+          fwd_rating: number | null
+          // 점수는 coalesce가 걸려 있어 null이 아니다 — 평점이 없으면 0
+          match_points: number
+          def_points: number
+          mid_points: number
+          fwd_points: number
+          pick_points: number
+          total_points: number
+          // 그 fixture의 fixture_player_ratings 행 수 — 평점 집계 완료 판정용 (PredictionFixtureResultRow 사용처 참고)
+          rated_players_count: number
+        }
+        // 읽기 전용 view (GenericNonUpdatableView 형태). 다만 Tables 쪽에 Relationships가 없어
+        // 스키마 전체가 supabase-js 추론에서 빠진다 — 조회 결과는 PredictionFixtureResultRow 등으로 직접 단언해 쓴다.
+        Relationships: []
+      }
       // 주차별 랭킹 — 결과 화면 "전체 결과" 탭 (20260823140000_week_leaderboard.sql).
       // 랭킹 단위가 주차라 경기 단위 fixture_leaderboard는 같은 migration에서 삭제했다.
       week_leaderboard: {
@@ -427,6 +462,7 @@ export type UserFeedbackRow = Database['public']['Tables']['user_feedback']['Row
 export type PredictionRow = Database['public']['Tables']['predictions']['Row']
 export type PredictionInsert = Database['public']['Tables']['predictions']['Insert']
 export type PredictionResultRow = Database['public']['Views']['prediction_results']['Row']
+export type PredictionFixtureResultRow = Database['public']['Views']['prediction_fixture_results']['Row']
 export type WeekLeaderboardRow = Database['public']['Views']['week_leaderboard']['Row']
 export type SeasonLeaderboardRow = Database['public']['Views']['season_leaderboard']['Row']
 export type RatingPollParticipantsRow = Database['public']['Views']['rating_poll_participants']['Row']

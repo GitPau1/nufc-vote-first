@@ -67,7 +67,7 @@ export function aggregateWeekResult(
   results: MyResultMap,
   ranking: RankingRow[],
 ): WeekResultSummary | null {
-  const mine = week.matches.map(match => results[match.id]).filter((r): r is MyResult => !!r)
+  const mine = week.matches.map(match => results[match.id]).filter((r): r is MyResultMap[string] => !!r)
   if (mine.length === 0) return null
 
   return {

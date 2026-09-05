@@ -6,7 +6,7 @@ import { PredictionResult } from '@/components/composition/predict/PredictionRes
 import { getFixturePositionTop3, getFixtureWeeks, type FixturePositionTop3 } from '@/lib/queries/fixtures'
 import { findWeekPrediction, findWeekSession, submittableMatches } from '@/lib/predictions/week'
 import { getPickCandidates } from '@/lib/queries/squads'
-import { getMyPredictions, getMyResults, getWeekRanking } from '@/lib/queries/predictions'
+import { getMyFixtureResults, getMyPredictions, getMyResults, getWeekRanking } from '@/lib/queries/predictions'
 
 export default async function PredictionFlowPage({
   params,
@@ -117,6 +117,17 @@ export default async function PredictionFlowPage({
     )
   } else if (prediction) {
     // 이 주에 뭐라도 이미 제출됐으면 완료 허브(제출됨/유예됨/마감됨 3분류, PredictionDone).
+    // 종료된 경기만 정산 게이트 없는 채점 결과·평점 TOP3를 조회한다(결과 화면 L38-46과 같은 패턴).
+    const finishedMatches = submittedMatches.filter(match => match.finished)
+    const [fixtureResults, top3PerMatch] = await Promise.all([
+      getMyFixtureResults(),
+      Promise.all(finishedMatches.map(match => getFixturePositionTop3(Number(match.id)))),
+    ])
+    const doneTopRatings: Record<string, FixturePositionTop3> = {}
+    finishedMatches.forEach((match, i) => {
+      doneTopRatings[match.id] = top3PerMatch[i]
+    })
+
     body = (
       <PredictionFlowClient
         key="done"
@@ -125,6 +136,8 @@ export default async function PredictionFlowPage({
         candidates={candidates}
         matchIds={[]}
         submitted={prediction}
+        fixtureResults={fixtureResults}
+        topRatings={doneTopRatings}
       />
     )
   } else if (pending.length > 1) {

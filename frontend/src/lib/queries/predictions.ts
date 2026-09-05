@@ -2,7 +2,7 @@ import { unstable_cache } from 'next/cache'
 import { createClient, createPublicClient, getCurrentUser } from '@/lib/supabase/server'
 import { IS_MOCK } from '@/lib/config'
 import type { Position } from '@/lib/predictions/candidates'
-import { MOCK_RANKING, MOCK_RESULTS } from '@/lib/mock/data'
+import { MOCK_RANKING, MOCK_RATINGS_PENDING_FIXTURE_IDS, MOCK_RESULTS } from '@/lib/mock/data'
 import { getProfileIconThresholdsSafe, resolveProfileIconUrl } from '@/lib/images/profile-icons'
 
 /**
@@ -272,12 +272,27 @@ export type MyResult = {
   picks: Record<Position, { playerId: number; rating: number | null; points: number }>
 }
 
-/** fixture_id → 채점 결과. 로그인 안 했으면 빈 맵. */
-export type MyResultMap = Record<string, MyResult>
+/**
+ * 평점 집계 "완료" 판정 임계값. supabase/functions/sync-fixture-ratings/index.ts의
+ * MIN_RATED_PLAYERS, supabase/migrations/20260905120000_prediction_fixture_results.sql와
+ * 20260905130000_prediction_results_rated_players_count.sql의 rated_players_count 컬럼
+ * comment와 반드시 같은 값이어야 한다 — 네 곳이 서로를 가리키는 주석으로 매직넘버 중복을
+ * 감수한다(SQL/TS 경계 때문에 상수 자체는 공유할 수 없음).
+ */
+const RATED_PLAYERS_SETTLED_THRESHOLD = 11
+
+/**
+ * fixture_id → 채점 결과 + 평점 집계 완료 여부. 로그인 안 했으면 빈 맵.
+ * `ratingsSettled`는 이 view(`prediction_results`, 20260905130000부터 rated_players_count 보유)가
+ * 주차 정산 게이트만 볼 뿐 평점 부분 적재는 못 보는 갭을 메운다 — 정산 화면(`MatchResultBlock`의
+ * `pickPointsReady`)이 이 값으로 "집계 중" 분기를 판단한다.
+ */
+export type MyResultMap = Record<string, MyResult & { ratingsSettled: boolean }>
 
 const RESULT_COLUMNS =
   'fixture_id, pred_home, pred_away, match_points, pick_points, total_points, ' +
-  'def_player_id, mid_player_id, fwd_player_id, def_rating, mid_rating, fwd_rating, def_points, mid_points, fwd_points'
+  'def_player_id, mid_player_id, fwd_player_id, def_rating, mid_rating, fwd_rating, def_points, mid_points, fwd_points, ' +
+  'rated_players_count'
 
 type ResultQueryRow = {
   fixture_id: number
@@ -295,6 +310,7 @@ type ResultQueryRow = {
   def_points: number
   mid_points: number
   fwd_points: number
+  rated_players_count: number
 }
 
 /**
@@ -303,7 +319,7 @@ type ResultQueryRow = {
  * 사용자별 데이터라 캐시하지 않는다.
  */
 export async function getMyResults(): Promise<MyResultMap> {
-  if (IS_MOCK) return MOCK_RESULTS
+  if (IS_MOCK) return MOCK_FIXTURE_RESULTS
 
   const user = await getCurrentUser()
   if (!user) return {}
@@ -322,17 +338,7 @@ export async function getMyResults(): Promise<MyResultMap> {
 
   const map: MyResultMap = {}
   for (const row of (data ?? []) as unknown as ResultQueryRow[]) {
-    map[String(row.fixture_id)] = {
-      predicted: [row.pred_home, row.pred_away],
-      matchPoints: row.match_points,
-      pickPoints: row.pick_points,
-      totalPoints: row.total_points,
-      picks: {
-        DEF: { playerId: row.def_player_id, rating: num(row.def_rating), points: row.def_points },
-        MID: { playerId: row.mid_player_id, rating: num(row.mid_rating), points: row.mid_points },
-        FWD: { playerId: row.fwd_player_id, rating: num(row.fwd_rating), points: row.fwd_points },
-      },
-    }
+    map[String(row.fixture_id)] = mapResultRow(row)
   }
   return map
 }
@@ -341,6 +347,74 @@ export async function getMyResults(): Promise<MyResultMap> {
 function num(value: number | string | null): number | null {
   return value === null ? null : Number(value)
 }
+
+/**
+ * `ResultQueryRow` → `MyResult & { ratingsSettled }`. `prediction_results`·
+ * `prediction_fixture_results` 두 view가 같은 컬럼 구성(`RESULT_COLUMNS`)이라
+ * `getMyResults()`/`getMyFixtureResults()`가 이 매핑을 그대로 공유한다.
+ */
+function mapResultRow(row: ResultQueryRow): MyResult & { ratingsSettled: boolean } {
+  return {
+    predicted: [row.pred_home, row.pred_away],
+    matchPoints: row.match_points,
+    pickPoints: row.pick_points,
+    totalPoints: row.total_points,
+    picks: {
+      DEF: { playerId: row.def_player_id, rating: num(row.def_rating), points: row.def_points },
+      MID: { playerId: row.mid_player_id, rating: num(row.mid_rating), points: row.mid_points },
+      FWD: { playerId: row.fwd_player_id, rating: num(row.fwd_rating), points: row.fwd_points },
+    },
+    ratingsSettled: row.rated_players_count >= RATED_PLAYERS_SETTLED_THRESHOLD,
+  }
+}
+
+/**
+ * `MyResultMap`과 같은 모양(4.5단계에서 `prediction_results`에도 rated_players_count가 붙어
+ * 두 맵의 값 타입이 같아졌다) — `getMyFixtureResults()` 전용 이름만 별도로 남긴다.
+ */
+export type MyFixtureResultMap = MyResultMap
+
+/**
+ * 정산 게이트 없는 경기 단위 예측 결과 — `prediction_fixture_results` view
+ * (`20260905120000_prediction_fixture_results.sql`). `getMyResults()`와 달리 주차 진행 상태와
+ * 무관하게 종료된 경기면 나온다. 사용자별 데이터라 캐시하지 않는다.
+ */
+export async function getMyFixtureResults(): Promise<MyFixtureResultMap> {
+  if (IS_MOCK) return MOCK_FIXTURE_RESULTS
+
+  const user = await getCurrentUser()
+  if (!user) return {}
+
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('prediction_fixture_results')
+    .select(RESULT_COLUMNS)
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('getMyFixtureResults error:', error)
+    return {}
+  }
+
+  const map: MyFixtureResultMap = {}
+  for (const row of (data ?? []) as unknown as ResultQueryRow[]) {
+    map[String(row.fixture_id)] = mapResultRow(row)
+  }
+  return map
+}
+
+/**
+ * mock 모드 stub. `getMyResults()`·`getMyFixtureResults()` 둘 다 이 데이터를 쓴다 — mock 모드는
+ * 주차 게이트를 재현하지 않아 두 쿼리가 같은 값을 봐도 무방하다. `ratingsSettled`는
+ * `MOCK_RATINGS_PENDING_FIXTURE_IDS`에 있는 fixture만 false — 나머지는 평점이 다 걷힌 것으로 본다.
+ */
+const MOCK_FIXTURE_RESULTS: MyFixtureResultMap = Object.fromEntries(
+  Object.entries(MOCK_RESULTS).map(([fixtureId, result]) => [
+    fixtureId,
+    { ...result, ratingsSettled: !MOCK_RATINGS_PENDING_FIXTURE_IDS.includes(fixtureId) },
+  ])
+)
 
 /**
  * 한 경기의 선수 평점 — 관리자 입력 화면이 기존 값을 채워 보여줄 때 쓴다.

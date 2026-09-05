@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>승부예측 끝난 경기 결과 미리 보기 — 시안 (개정판)</title>
+<style>
+  :root{
+    --p-neutral-50:#fafafb; --p-neutral-100:#f3f3f4; --p-neutral-200:#e9e9ea; --p-neutral-300:#d8d9da;
+    --p-neutral-400:#bcbec0; --p-neutral-500:#a2a5a9; --p-neutral-900:#313335; --p-neutral-950:#1a1b1c;
+    --p-red-700:#cf231a; --p-red-200:#ffd3c6;
+    --p-green-700:#008728; --p-green-100:#e2fce5; --p-green-800:#0a642a;
+    --p-blue-700:#115aff; --p-blue-100:#e5edff; --p-violet-100:#eee5ff; --p-violet-800:#4a1f9e;
+
+    --bg-page:var(--p-neutral-50); --bg-surface:#ffffff; --bg-disabled:var(--p-neutral-200);
+    --bg-critical-weak:#ffe8e0; --bg-positive-weak:#f4fff5; --bg-brand-weak:var(--p-blue-100);
+    --fg-neutral:var(--p-neutral-950); --fg-neutral-muted:#666666; --fg-neutral-subtle:var(--p-neutral-500);
+    --fg-disabled:var(--p-neutral-400); --fg-critical:var(--p-red-700); --fg-positive:var(--p-green-700);
+    --border-weak:var(--p-neutral-200);
+    --brand-solid:var(--p-blue-700); --brand:var(--p-blue-700);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:#eef0f3; color:var(--fg-neutral);
+    font-family:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif;
+    padding:28px 20px 80px;
+  }
+  h1{font-size:20px; margin:0 0 6px;}
+  .lede{font-size:14px; color:var(--fg-neutral-muted); max-width:820px; line-height:1.6; margin:0 0 10px;}
+  .lede code{background:var(--bg-disabled); padding:1px 5px; border-radius:4px; font-size:12.5px;}
+  .lede ul{margin:6px 0 0; padding-left:18px;}
+  .lede li{margin:2px 0;}
+
+  section.block{margin-bottom:56px;}
+  h2.block-title{font-size:17px; margin:0 0 4px;}
+  p.block-desc{font-size:13px; color:var(--fg-neutral-muted); margin:0 0 18px; max-width:820px; line-height:1.6;}
+  p.block-desc code{background:var(--bg-disabled); padding:1px 5px; border-radius:4px; font-size:12px;}
+
+  .row{display:flex; gap:22px; overflow-x:auto; padding-bottom:12px; align-items:flex-start;}
+  .col{flex:0 0 auto; width:335px;}
+  .col-title{font-size:13px; font-weight:600; margin:0 0 2px;}
+
+  /* 폰 프레임 */
+  .phone{
+    width:335px; background:var(--bg-page); border-radius:20px; padding:16px 14px 20px;
+    box-shadow:0 1px 3px rgba(0,0,0,.08), 0 12px 28px rgba(0,0,0,.10);
+  }
+  .intro{text-align:center; margin-bottom:14px;}
+  .intro .h{font-size:16px; font-weight:600; margin:0;}
+  .intro .s{font-size:12px; color:var(--fg-neutral-muted); margin:4px 0 0;}
+  .match-label{font-size:12px; font-weight:500; color:var(--fg-neutral-muted); margin:0 0 8px;}
+
+  /* ①②⑤가 쓰는 기존 카드 프레임 — 그림자 없음, 가로 패딩 16px */
+  .card-old{
+    border-radius:10px; border:1px solid var(--border-weak); background:var(--bg-surface);
+    padding:20px 16px; margin-bottom:14px;
+  }
+  /* ③④가 쓰는 MatchResultBlock의 Card 프리미티브 — 그림자 있음(shadow-g200), 패딩 20px 전방향 */
+  .card-new{
+    border-radius:10px; border:1px solid var(--border-weak); background:var(--bg-surface);
+    padding:20px; margin-bottom:10px;
+    box-shadow:0 1px 2px rgba(0,0,0,.06), 0 4px 10px rgba(0,0,0,.06);
+  }
+
+  .card-head{display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
+  .card-head .title{font-size:14px; font-weight:600;}
+  .card-head-split{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+
+  .badge{display:inline-flex; align-items:center; border-radius:999px; padding:3px 8px; font-size:11px; font-weight:500; white-space:nowrap;}
+  .badge-comp-violet{background:var(--p-violet-100); color:var(--p-violet-800);}
+  .badge-comp-green{background:var(--p-green-100); color:var(--p-green-800);}
+  .badge-hit-good{background:var(--bg-positive-weak); color:var(--fg-positive);}
+  .badge-hit-bad{background:var(--bg-critical-weak); color:var(--fg-critical);}
+  .badge-settling{background:var(--bg-disabled); color:var(--fg-neutral-muted);}
+  .badge-pts-pos{background:var(--bg-positive-weak); color:var(--fg-positive); font-weight:600;}
+  .badge-pts-neg{background:var(--bg-critical-weak); color:var(--fg-critical); font-weight:600;}
+
+  .matchup{display:flex; align-items:center; justify-content:center; gap:10px; margin:4px 0;}
+  .team{width:60px; display:flex; flex-direction:column; align-items:center; gap:5px;}
+  .crest{width:34px; height:34px; border-radius:999px; display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; color:#fff;}
+  .crest.nufc{background:#1a1b1c;}
+  .crest.wolves{background:#fdb913; color:#231f20;}
+  .crest.villa{background:#670e36;}
+  .team .name{font-size:11px; color:var(--fg-neutral-muted); font-weight:500;}
+  .crest.gray{filter:grayscale(1); opacity:.75;}
+  .score{font-size:20px; font-weight:600;}
+  .score.muted{color:var(--fg-neutral-muted);}
+
+  .cmp-row{display:flex; align-items:center; justify-content:space-between; margin-top:8px; padding:8px 10px; border-radius:8px; font-size:13px;}
+  .cmp-row .lbl{color:var(--fg-neutral-muted); font-size:12px;}
+  .cmp-row .val{font-weight:500;}
+  .cmp-row.result{background:var(--bg-page);}
+
+  .settling-caption{margin-top:10px; text-align:center; font-size:12px; color:var(--fg-neutral-muted);}
+
+  /* ③ 픽 카드 — 집계 중 placeholder (MatchResultBlock의 pending 박스 재사용) */
+  .agg-box{margin-top:2px; border-radius:8px; background:var(--bg-page); padding:22px 14px; text-align:center;}
+  .agg-box p{font-size:13px; color:var(--fg-neutral-muted); margin:0; line-height:1.5;}
+
+  /* 내 선수 픽 행 (④) */
+  .pick-row{display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border-weak); padding:10px 4px;}
+  .pick-row:last-child{border-bottom:none;}
+  .pick-avatar{width:36px; height:36px; border-radius:999px; background:var(--p-neutral-300); flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:#fff;}
+  .pick-info{min-width:0; flex:1;}
+  .pick-info .pos{font-size:11px; color:var(--fg-neutral-muted); margin:0;}
+  .pick-info .name{font-size:13px; font-weight:500; margin:1px 0 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .rating-pill{font-size:11px; font-weight:600; border-radius:999px; padding:2px 7px; background:var(--p-green-100); color:var(--p-green-800); flex:0 0 auto;}
+  .pick-pts{font-size:13px; font-weight:600; color:var(--brand); flex:0 0 auto;}
+
+  .top3{margin:6px 0 0; padding:8px 4px 2px; border-top:1px dashed var(--border-weak);}
+  .top3-row{display:flex; align-items:center; gap:8px; border-radius:6px; padding:5px 8px; font-size:12px; margin-bottom:3px;}
+  .top3-row.mine{background:var(--bg-brand-weak); font-weight:600;}
+  .top3-row .mini-avatar{width:20px; height:20px; border-radius:999px; background:var(--p-neutral-300); flex:0 0 auto;}
+  .top3-badge{font-size:10.5px; font-weight:700; border-radius:999px; padding:1px 6px; background:var(--p-green-100); color:var(--p-green-800);}
+
+  .link-row{margin-top:12px; text-align:right;}
+  .link-row a{font-size:12.5px; color:var(--brand-solid); font-weight:500; text-decoration:none;}
+
+  .dimmed-card .team .name{color:var(--fg-neutral-subtle) !important;}
+  .dimmed-card .score{color:var(--fg-neutral-subtle) !important;}
+
+  .bottom-btn{
+    height:44px; border-radius:10px; background:var(--brand-solid); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:13.5px; font-weight:500;
+    margin-top:8px;
+  }
+  .bottom-btn.disabled{background:var(--bg-disabled); color:var(--fg-disabled);}
+  .bottom-caption{text-align:center; font-size:11px; color:var(--fg-neutral-muted); margin-top:8px;}
+
+  .note{font-size:11.5px; color:var(--fg-neutral-subtle); text-align:center; margin:8px 2px 0; line-height:1.5;}
+
+  .tradeoff{font-size:12.5px; color:var(--fg-neutral-muted); line-height:1.6; margin:10px 2px 0; max-width:335px;}
+  .tradeoff b{color:var(--fg-neutral);}
+
+  .resolved{background:#fff; border:1px dashed var(--border-weak); border-radius:8px; padding:12px 16px; font-size:12.5px; color:var(--fg-neutral-muted); max-width:820px; line-height:1.7;}
+  .resolved b{color:var(--fg-neutral);}
+</style>
+</head>
+<body>
+
+<h1>승부예측 끝난 경기 결과 미리 보기 — 시안 (개정판)</h1>
+<div class="lede">
+  방향이 바뀌었다: 끝난 경기는 이제 <b>점수까지</b> 보여준다(경기 예측 "+N점" · 내 선수 픽 "+N점").
+  화면은 여전히 <code>PredictionDone.tsx</code>(제출 완료 허브)고, 재사용 컴포넌트는
+  <code>PredictionResult.tsx</code>의 <code>MatchResultBlock</code>이다(발명 금지, <code>design-brief.md</code> §0).
+  아래 세 묶음만 시안으로 그렸다 — 나머지(⑤ 미제출·마감 카드 등)는 기존 코드 그대로라 다시 옮기지 않았다.
+  <ul>
+    <li>(a) 완료 화면 전체 예시 — 경기 A(④ 종료·전체 결과) + 경기 B(① 제출됨·수정 가능)</li>
+    <li>(b) ③ 종료·평점 집계 중 — 스코어·경기 점수는 보이고 선수 픽 카드는 막힘</li>
+    <li>(c) ② 킥오프됨·진행 중 카드 후보 2개</li>
+  </ul>
+</div>
+
+<section class="block">
+  <h2 class="block-title">(a) 완료 화면 전체 예시 — 경기 A(④) + 경기 B(①)</h2>
+  <p class="block-desc">
+    더블 매치위크: Wolves전은 끝나고 선수 평점까지 다 집계돼 ④ 상태(<code>MatchResultBlock</code> 그대로,
+    카드 두 장). Villa전은 아직 제출만 한 ① 상태(기존 카드, 수정 가능). 하단 "수정하기"는
+    <b>Villa전만</b> 대상으로 한다(TEA-33 <code>editableMatches</code> — 잠긴 Wolves전은 대상에서 빠짐,
+    design-brief.md 2.3).
+  </p>
+  <div class="row">
+    <div class="col" style="width:355px;">
+      <div class="phone" style="width:355px;">
+        <div class="intro">
+          <p class="h">3월 2주차 제출 완료</p>
+          <p class="s">킥오프 전까지 언제든 결과를 확인하러 다시 와주세요</p>
+        </div>
+
+        <p class="match-label">경기 1 · Newcastle vs Wolves — ④ 종료·전체 결과</p>
+
+        <!-- MatchResultBlock 카드 1: 경기 예측 -->
+        <div class="card-new">
+          <div class="card-head-split">
+            <span style="font-size:14px; font-weight:600;">경기 예측</span>
+            <span class="badge badge-pts-pos">+8점</span>
+          </div>
+          <div class="matchup">
+            <div class="team"><div class="crest nufc">N</div><span class="name">Newcastle</span></div>
+            <span class="score">1 – 1</span>
+            <div class="team"><div class="crest wolves">W</div><span class="name">Wolves</span></div>
+          </div>
+          <div class="cmp-row"><span class="lbl">내 예측</span><span class="val">1 – 1</span></div>
+          <div class="cmp-row result"><span class="lbl">실제 결과</span><span class="val">1 – 1</span></div>
+        </div>
+
+        <!-- MatchResultBlock 카드 2: 내 선수 픽 -->
+        <div class="card-new">
+          <div class="card-head-split">
+            <span style="font-size:14px; font-weight:600;">내 선수 픽</span>
+            <span class="badge badge-pts-pos">+11점</span>
+          </div>
+          <div class="pick-row">
+            <div class="pick-avatar">DF</div>
+            <div class="pick-info"><p class="pos">수비수</p><p class="name">Burn</p></div>
+            <span class="rating-pill">7.4</span>
+            <span class="pick-pts">4점</span>
+          </div>
+          <div class="pick-row">
+            <div class="pick-avatar">MF</div>
+            <div class="pick-info"><p class="pos">미드필더</p><p class="name">Tonali</p></div>
+            <span class="rating-pill">8.1</span>
+            <span class="pick-pts">4점</span>
+          </div>
+          <div class="pick-row">
+            <div class="pick-avatar">FW</div>
+            <div class="pick-info"><p class="pos">공격수</p><p class="name">Isak</p></div>
+            <span class="rating-pill">7.9</span>
+            <span class="pick-pts">3점</span>
+          </div>
+          <div class="top3">
+            <div class="top3-row mine"><div class="mini-avatar"></div><span style="flex:1;">Tonali (내 픽)</span><span class="top3-badge">8.1</span></div>
+            <div class="top3-row"><div class="mini-avatar"></div><span style="flex:1;">Guimarães</span><span class="top3-badge">7.6</span></div>
+            <div class="top3-row"><div class="mini-avatar"></div><span style="flex:1;">Bruno</span><span class="top3-badge">7.2</span></div>
+          </div>
+        </div>
+        <p class="note">※ 대회 배지가 안 보인다 — <code>MatchResultBlock</code> 그대로 재사용한 결과(2.5). 카드
+          그림자·패딩도 아래 경기 2 카드와 미묘하게 다르다(2.6). 둘 다 8-3 확인 필요.</p>
+
+        <p class="match-label" style="margin-top:18px;">경기 2 · Newcastle vs Villa — ① 제출됨·수정 가능</p>
+
+        <!-- 기존 카드 프레임 -->
+        <div class="card-old">
+          <div class="card-head">
+            <span class="title">경기 예측</span>
+            <span class="badge badge-comp-violet">Premier League</span>
+          </div>
+          <div class="matchup">
+            <div class="team"><div class="crest nufc">N</div><span class="name">Newcastle</span></div>
+            <span class="score">2 – 0</span>
+            <div class="team"><div class="crest villa">V</div><span class="name">Villa</span></div>
+          </div>
+        </div>
+
+        <div class="bottom-btn">수정하기</div>
+        <p class="bottom-caption">킥오프 전까지 다시 수정할 수 있어요</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <h2 class="block-title">(b) ③ 종료·평점 집계 중 — 경기 점수는 먼저, 선수 픽은 막힘</h2>
+  <p class="block-desc">
+    Wolves전이 방금 끝났다. 실제 스코어와 "경기 예측" 점수는 바로 보이지만, 크론이 아직 선수 평점을 다
+    못 채웠다(<code>feasibility.md</code> §3). "내 선수 픽" 카드는 배지도 안 달고(3-2 — <code>null</code>=
+    "미참여"와 혼동 방지) 집계 중 안내 박스로 막는다.
+  </p>
+  <div class="row">
+    <div class="col">
+      <div class="phone">
+        <p class="match-label">경기 1 · Newcastle vs Wolves</p>
+
+        <div class="card-new">
+          <div class="card-head-split">
+            <span style="font-size:14px; font-weight:600;">경기 예측</span>
+            <span class="badge badge-pts-pos">+8점</span>
+          </div>
+          <div class="matchup">
+            <div class="team"><div class="crest nufc">N</div><span class="name">Newcastle</span></div>
+            <span class="score">1 – 1</span>
+            <div class="team"><div class="crest wolves">W</div><span class="name">Wolves</span></div>
+          </div>
+          <div class="cmp-row"><span class="lbl">내 예측</span><span class="val">1 – 1</span></div>
+          <div class="cmp-row result"><span class="lbl">실제 결과</span><span class="val">1 – 1</span></div>
+        </div>
+
+        <div class="card-new">
+          <div style="margin-bottom:4px;">
+            <span style="font-size:14px; font-weight:600;">내 선수 픽</span>
+          </div>
+          <div class="agg-box">
+            <p>평점 집계 중이에요</p>
+          </div>
+        </div>
+      </div>
+      <p class="tradeoff">
+        <b>카피 후보(8-4)</b> — "평점 집계 중이에요"(추천, "등수 집계 중"/"스코어 집계 중"과 같은 패턴).
+        "내 선수 픽" 카드 헤더에는 배지를 아예 안 단다 — <code>PickPointsBadge(null)</code>은 이미
+        "미참여"라는 다른 의미라 재사용하지 않는다(design-brief.md 3-2/7).
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <h2 class="block-title">(c) ② 킥오프됨·진행 중 카드 후보 2개</h2>
+  <p class="block-desc">
+    두 후보 다 "Villa전은 킥오프는 지났지만 아직 안 끝남(②)"을 나타낸다. 후보 표현만 다르고, 예측
+    스코어는 두 후보 모두 그대로 보여준다(design-brief.md 7절 — "내가 뭘 냈는지"의 재확인이지 판정이
+    아니라서 "경기 종료 후 공개" 규칙과 충돌하지 않는다는 기존 판단 유지). 이전 판에 있던 세 번째 후보
+    ("눌러 앉히기")는 톤 우려로 이번 비교에서 뺐다(design-brief.md 8-1).
+  </p>
+  <div class="row">
+
+    <!-- 후보 1 -->
+    <div class="col">
+      <p class="col-title">후보 1 · 최소 변경</p>
+      <div class="phone">
+        <div class="card-old">
+          <div class="card-head">
+            <span class="title">경기 예측</span>
+            <span class="badge badge-comp-violet">Premier League</span>
+          </div>
+          <div class="matchup">
+            <div class="team"><div class="crest nufc">N</div><span class="name">Newcastle</span></div>
+            <span class="score">2 – 0</span>
+            <div class="team"><div class="crest villa">V</div><span class="name">Villa</span></div>
+          </div>
+          <p class="settling-caption">결과 반영중</p>
+        </div>
+      </div>
+      <p class="tradeoff">
+        <b>트레이드오프</b> — 코드 변경이 가장 적다(캡션 한 줄 추가). 다만 ①(제출됨·수정 가능) 카드와
+        스캔 시 거의 구분이 안 돼, 이 경기도 아직 고칠 수 있다고 착각할 위험이 있다.
+      </p>
+    </div>
+
+    <!-- 후보 2 -->
+    <div class="col">
+      <p class="col-title">후보 2 · 배지 자리 통일 (추천)</p>
+      <div class="phone">
+        <div class="card-old">
+          <div class="card-head">
+            <span class="title">경기 예측</span>
+            <span class="badge badge-comp-violet">Premier League</span>
+            <span class="badge badge-settling">결과 반영중</span>
+          </div>
+          <div class="matchup">
+            <div class="team"><div class="crest nufc">N</div><span class="name">Newcastle</span></div>
+            <span class="score">2 – 0</span>
+            <div class="team"><div class="crest villa">V</div><span class="name">Villa</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="tradeoff">
+        <b>트레이드오프</b> — 대회 배지 옆자리가 "지금 이 경기 상태"를 알리는 고정 슬롯이 돼서 ③·④의
+        판정/점수 배지와 같은 자리를 쓰게 된다(한눈에 읽힘). 다만 카드 헤더 한 줄에 배지가 최대 2개
+        붙어 좁은 화면에서 줄바꿈될 수 있다.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<div class="resolved">
+  <b>이번 개정으로 확정돼 시안에서 뺀 것</b> — 이전 판 8-2("판정 카드에 결과 화면 링크를 둘지")는
+  후보 A(링크 없음)로 확정했다. ③·④가 이미 <code>MatchResultBlock</code>을 그대로 써서 결과 화면과
+  같은 상세도를 인라인으로 보여주므로, "더 자세히 보기"가 가리킬 화면이 목적지 부재를 떠나 내용상
+  중복이기 때문이다(design-brief.md 7절).
+</div>
+
+</body>
+</html>

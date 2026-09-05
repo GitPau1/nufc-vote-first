@@ -83,6 +83,7 @@ DB나 Supabase 연동을 건드릴 때:
 승부예측:
 
 - 조회: `frontend/src/lib/queries/fixtures.ts`(경기), `frontend/src/lib/queries/predictions.ts`(내 제출), `frontend/src/lib/queries/squads.ts`(픽 후보/배당)
+- `prediction_fixture_results` view(`20260905120000_prediction_fixture_results.sql`) — `prediction_results`와 컬럼은 같지만 주차 정산 게이트가 없다. 종료된 경기면 그 주가 아직 진행 중이어도(더블 매치위크에서 한 경기만 끝났어도) 나온다. 조회는 `getMyFixtureResults()`, 완료 허브(`PredictionDone.tsx`)가 이걸 쓴다.
 - 주차 그룹핑/주 세션 상태 파생/`toPredictWeeks` 어댑터: `frontend/src/lib/predictions/week.ts` (+ `week.test.mjs`)
 - 제출 검증/insert 행 생성: `frontend/src/lib/predictions/submit.ts` (+ `submit.test.mjs`), action은 `frontend/src/lib/actions/predictions.ts`
 - 포지션 정의/표시 헬퍼: `frontend/src/lib/predictions/candidates.ts`
@@ -97,7 +98,7 @@ DB나 Supabase 연동을 건드릴 때:
 - 랭킹 조회는 `lib/queries/predictions.ts`의 `getWeekRanking(weekKey)`(주차, `week_leaderboard` view) / `getSeasonRanking(limit)`(시즌 누적, `season_leaderboard` view). `week_leaderboard.week_key`는 `week.ts`의 `weekKey()`와 같은 ISO 주차 문자열이라 둘을 같이 고쳐야 한다.
 - 평점 자동 적재는 Edge Function `sync-fixture-ratings`(크론 KST 08:05). 종료됐고 평점 행이 11개 미만인 경기를 최신순 최대 5경기씩 처리하고, `remaining`이 남으면 다음 실행이 이어받는다. "행이 하나라도 있으면 완료"로 판정하지 않는 이유는 FotMob 평점이 종료 직후 일부만 내려올 수 있어서다(그 상태로 굳으면 남은 선수가 영구히 0점).
 - 즉시 실행은 `/admin`의 동기화 버튼(`components/admin/AdminSyncButton.tsx` + `lib/actions/sync-fixtures.ts`) — `sync-fixture` → `sync-fixture-ratings` 순서로 POST하고 `revalidateTag('fixture-weeks')`로 목록 캐시를 비운다. 순서는 스코어가 먼저 들어와야 평점 대상이 잡히기 때문이다.
-- 결과 화면 진입 전(경기는 끝났고 주차는 진행 중)에는 완료 화면이 적중 배지만 보여준다 — `lib/predictions/result.ts`의 `matchHit()`, DB `prediction_match_points`와 같은 기준이라 한쪽만 고치면 안 된다. 점수는 정산 게이트를 지나야 나온다.
+- 결과 화면(주차 정산 후) 진입 전이라도, 종료된 경기는 완료 허브(`PredictionDone.tsx`)가 결과 화면과 같은 판정 블록(`MatchResultBlock`, `PredictionResult.tsx`에서 export)을 그대로 보여준다 — `getMyFixtureResults()`(`prediction_fixture_results` view)가 정산 게이트 없이 경기 단위 채점 결과를 내려주기 때문(2026-09-05, TEA-34). 다만 평점이 아직 다 안 걷혔으면(`fixture_player_ratings` 행 수 < 11) "내 선수 픽" 카드만 "평점 집계 중이에요"로 대체된다 — `ratingsSettled`(임계값 11 = `sync-fixture-ratings`의 `MIN_RATED_PLAYERS`와 동일값, 양쪽 다 이 문서를 가리키는 주석 있음) 판정, `MatchResultBlock`의 `pickPointsReady` prop이 이걸 받는다. 아직 안 끝난 경기(그 주 다른 경기)는 킥오프 전이면 "지금 예측하기" 카드, 킥오프는 지났지만 안 끝났으면(`locked && !finished`) "결과를 기다리는 중이에요" 캡션 한 줄만 보여준다. 참고: `lib/predictions/result.ts`의 `matchHit()`(적중 등급, DB `prediction_match_points`와 같은 기준)는 이 위에서 별도로 쓰인다.
 - `[weekKey]` 페이지의 404 조건은 `status === 'upcoming'` **그리고 잠긴 경기가 하나도 없을 때**다. 킥오프이 지났지만 종료 적재 전인 주차도 `'upcoming'`이라, 그것까지 막으면 경기 끝난 뒤 크론이 돌기 전까지 페이지가 사라진다.
 - 경기별 선수 평점 손보정은 `/admin/ratings`(`app/admin/ratings/page.tsx` + `components/admin/AdminRatingsForm.tsx`), 쓰기는 `lib/actions/fixture-ratings.ts`의 `saveFixtureRatings`. `fixture_player_ratings`에 insert 정책이 없어 service-role(`requireAdminClient`)로만 쓴다. 평점 행이 없는 선수는 픽 점수가 0으로 계산되므로, 경기가 끝나면 여기서 평점을 넣어야 결과·랭킹이 의미를 갖는다. 이름이 `actions/ratings.ts`가 아닌 이유: 그 파일은 선수 평점 **투표**(rating_votes)가 이미 쓰고 있다.
 - 아직 없는 것: 순위 변동(▲/▼) 표시용 지난 주차 순위 보관, FR-009 시즌 하이라이트, 선수 픽 적중 표기(평점 = 곧 점수라 정산 화면 몫)

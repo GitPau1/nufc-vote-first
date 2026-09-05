@@ -53,3 +53,22 @@ test('there is no per-card edit link; ShareButton is removed in favor of a singl
 test('the edit button is hidden when nothing is left editable (none submitted, or all submitted are locked)', () => {
   assert.match(file, /editableMatches\.length > 0 && \(/)
 })
+
+// 끝난 경기 미리보기(TEA-34): 완료 허브에서 종료된 경기는 결과 화면과 같은 판정 블록을 그대로 쓴다.
+// 정산 게이트(주차 결과)를 기다리지 않고 경기 단위 채점 결과를 보여준다.
+test('a finished match in the done hub renders MatchResultBlock wired to fixtureResults', () => {
+  assert.match(file, /if \(match\.finished\) \{/)
+  assert.match(file, /<MatchResultBlock\b/)
+  assert.match(file, /state=\{matchResultState\(match, fixtureResults\)\}/)
+  assert.match(
+    file,
+    /pickPointsReady=\{fixtureResults\[match\.id\]\?\.ratingsSettled \?\? false\}/,
+  )
+})
+
+// 아직 끝나지 않았지만 이미 킥오프돼 잠긴 경기는 결과를 기다리는 중임을 캡션 한 줄로 알린다
+// (design-brief.md §8-1 후보 1, 5단계 확정).
+test('a locked-but-unfinished match shows a "waiting for result" caption', () => {
+  assert.match(file, /\{match\.locked && \(/)
+  assert.match(file, /결과를 기다리는 중이에요/)
+})
