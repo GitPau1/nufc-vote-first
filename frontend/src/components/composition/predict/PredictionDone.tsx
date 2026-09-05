@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { trackEvent } from '@/lib/analytics/mixpanel'
 import { PlayerPhoto, TeamBadge } from './shared'
+import { MatchResultBlock } from './PredictionResult'
 import { POSITIONS, POSITION_LABEL, playerPhotoUrl, type Candidate, type Position } from '@/lib/predictions/candidates'
-import { matchHit, type MatchHit } from '@/lib/predictions/result'
+import { matchResultState } from '@/lib/predictions/result'
 import {
   NUFC_LABEL,
   NUFC_TEAM_ID,
@@ -14,6 +15,8 @@ import {
   type WeekPrediction,
   type WeekSession,
 } from '@/lib/predictions/week'
+import type { FixturePositionTop3 } from '@/lib/queries/fixtures'
+import type { MyPredictionMap, MyFixtureResultMap } from '@/lib/queries/predictions'
 import type { PickCandidates } from '@/lib/queries/squads'
 import { cn } from '@/lib/utils'
 import { badgeVariants } from '@/components/primitives/badge'
@@ -57,10 +60,16 @@ export function PredictionDone({
   week,
   prediction,
   candidates,
+  fixtureResults,
+  topRatings,
 }: {
   week: WeekSession
   prediction: WeekPrediction
   candidates: PickCandidates
+  /** fixture_id → 정산 게이트 없는 채점 결과. 종료된 경기 카드에만 쓰인다. */
+  fixtureResults: MyFixtureResultMap
+  /** fixture_id → 포지션별 평점 TOP3. 종료된 경기 카드에만 쓰인다. */
+  topRatings: Record<string, FixturePositionTop3>
 }) {
   const submittedMatches = week.matches.filter(match => prediction.scores[match.id])
   // 제출된 경기 중 이미 킥오프돼 잠긴 경기는 수정 대상에서 뺀다 — "제출됨" 표시는 submittedMatches를
@@ -171,6 +180,32 @@ export function PredictionDone({
           {/* 픽이 경기별이라 카드도 경기별로 나눈다 — 스코어와 그 경기 픽이 한 카드 안에 있다. */}
           {submittedMatches.map((match, i) => {
             const [ourScore, theirScore] = prediction.scores[match.id]!
+
+            if (match.finished) {
+              // 종료된 경기는 결과 화면과 같은 판정 블록(경기 비교 + 내 선수 픽)을 그대로 쓴다 —
+              // 대회 배지·카드 그림자/패딩 차이는 감수한다(design-brief.md §8-3, 4단계 확정).
+              const singlePrediction: MyPredictionMap = {
+                [match.id]: { score: prediction.scores[match.id]!, picks: prediction.picks[match.id] },
+              }
+              return (
+                <div key={match.id} className={cn(i > 0 && 'mt-4')}>
+                  {isMulti && (
+                    <p className="mb-2 text-label-2 font-medium text-neutral-muted">
+                      경기 {i + 1} · {NUFC_LABEL} vs {match.opponent}
+                    </p>
+                  )}
+                  <MatchResultBlock
+                    match={match}
+                    state={matchResultState(match, fixtureResults)}
+                    predictions={singlePrediction}
+                    candidates={candidates}
+                    topRatings={topRatings[match.id]}
+                    pickPointsReady={fixtureResults[match.id]?.ratingsSettled ?? false}
+                  />
+                </div>
+              )
+            }
+
             const picks = resolvePicks(prediction, match.id, candidates)
             return (
               <div key={match.id} className={cn(i > 0 && 'mt-4')}>
@@ -201,18 +236,12 @@ export function PredictionDone({
                     <MatchupTeam logoUrl={teamLogoUrl(match.opponentId)} name={match.opponent} />
                   </div>
 
-                  {/* 끝난 경기는 실제 스코어와 적중 여부만 보여준다 — 점수·랭킹은 그 주차가 다
-                      끝난 뒤에 공개된다(prediction_results의 정산 게이트). */}
-                  {match.finished && (
-                    <div className="mt-4 rounded-md bg-page px-4 py-3 text-center">
-                      <p className="text-caption-1 text-neutral-muted">실제 결과</p>
-                      <p className="text-label-1-normal font-medium">
-                        {match.actual ? match.actual.join(' – ') : '스코어 집계 중'}
-                      </p>
-                      {match.actual && (
-                        <HitBadge hit={matchHit([ourScore, theirScore], match.actual)} />
-                      )}
-                    </div>
+                  {/* 킥오프됐지만(잠김) 아직 안 끝난 경기 — 결과가 아직 없다는 것만 알린다.
+                      배지 없이 캡션 한 줄(design-brief.md §8-1 후보 1, 5단계 확정). */}
+                  {match.locked && (
+                    <p className="mt-4 text-center text-caption-1 text-neutral-muted">
+                      결과를 기다리는 중이에요
+                    </p>
                   )}
 
                   <p className="mb-3 mt-7 text-body-2-normal font-semibold">내 선수 픽</p>
@@ -355,30 +384,6 @@ function PickCard({ pick }: { pick: PickedPlayer }) {
         )}
       </div>
     </div>
-  )
-}
-
-/**
- * 적중 배지. 결과 화면의 `PointsBadge`와 같은 색 체계를 쓰지만 점수 대신 등급만 말한다 —
- * 주차 정산 전에는 점수를 공개하지 않기 때문이다.
- */
-const HIT_LABEL: Record<MatchHit, string> = {
-  exact: '정확히 적중',
-  outcome: '승패 적중',
-  miss: '미적중',
-}
-
-function HitBadge({ hit }: { hit: MatchHit }) {
-  return (
-    <span
-      className={cn(
-        badgeVariants({ variant: 'bare' }),
-        'mt-2',
-        hit === 'miss' ? 'bg-critical-weak text-critical' : 'bg-positive-weak text-positive',
-      )}
-    >
-      {HIT_LABEL[hit]}
-    </span>
   )
 }
 
