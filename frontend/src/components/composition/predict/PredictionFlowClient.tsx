@@ -46,6 +46,8 @@ import {
   type WeekPrediction,
   type WeekSession,
 } from '@/lib/predictions/week'
+import type { FixturePositionTop3 } from '@/lib/queries/fixtures'
+import type { MyFixtureResultMap } from '@/lib/queries/predictions'
 import type { PickCandidates } from '@/lib/queries/squads'
 import { cn } from '@/lib/utils'
 
@@ -93,6 +95,8 @@ export function PredictionFlowClient({
   mode = 'submit',
   matchIds,
   initialValues,
+  fixtureResults,
+  topRatings,
 }: {
   week: WeekSession
   /** 이번 세션이 다루는 정확한 경기 집합 — submit 모드는 미제출 경기, edit 모드는 수정할 경기 1개 */
@@ -109,6 +113,10 @@ export function PredictionFlowClient({
     score: [number, number]
     picks: Record<Position, { playerId: number; multiplier: number }>
   }
+  /** submitted일 때 PredictionDone에 그대로 넘긴다 — fixture_id → 정산 게이트 없는 채점 결과 */
+  fixtureResults?: MyFixtureResultMap
+  /** submitted일 때 PredictionDone에 그대로 넘긴다 — fixture_id → 포지션별 평점 TOP3 */
+  topRatings?: Record<string, FixturePositionTop3>
 }) {
   const router = useLoadingRouter()
   const [step, setStep] = useState<StepKey>('score')
@@ -351,7 +359,15 @@ export function PredictionFlowClient({
   }
 
   if (submitted) {
-    return <PredictionDone week={week} prediction={submitted} candidates={candidates} />
+    return (
+      <PredictionDone
+        week={week}
+        prediction={submitted}
+        candidates={candidates}
+        fixtureResults={fixtureResults ?? {}}
+        topRatings={topRatings ?? {}}
+      />
+    )
   }
 
   const stepMeta = STEP_META.find(s => s.key === step)!
