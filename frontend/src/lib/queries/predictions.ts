@@ -272,6 +272,14 @@ export type MyResult = {
   picks: Record<Position, { playerId: number; rating: number | null; points: number }>
 }
 
+/**
+ * 평점 집계 "완료" 판정 임계값. supabase/functions/sync-fixture-ratings/index.ts의
+ * MIN_RATED_PLAYERS, supabase/migrations/20260905120000_prediction_fixture_results.sql의
+ * rated_players_count 컬럼 comment와 반드시 같은 값이어야 한다 — 세 곳이 서로를 가리키는
+ * 주석으로 매직넘버 중복을 감수한다(SQL/TS 경계 때문에 상수 자체는 공유할 수 없음).
+ */
+const RATED_PLAYERS_SETTLED_THRESHOLD = 11
+
 /** fixture_id → 채점 결과. 로그인 안 했으면 빈 맵. */
 export type MyResultMap = Record<string, MyResult>
 
@@ -341,6 +349,62 @@ export async function getMyResults(): Promise<MyResultMap> {
 function num(value: number | string | null): number | null {
   return value === null ? null : Number(value)
 }
+
+/** fixture_id → 채점 결과 + 평점 집계 완료 여부. `getMyFixtureResults()` 전용. */
+export type MyFixtureResultMap = Record<string, MyResult & { ratingsSettled: boolean }>
+
+const FIXTURE_RESULT_COLUMNS = `${RESULT_COLUMNS}, rated_players_count`
+
+type FixtureResultQueryRow = ResultQueryRow & { rated_players_count: number }
+
+/**
+ * 정산 게이트 없는 경기 단위 예측 결과 — `prediction_fixture_results` view
+ * (`20260905120000_prediction_fixture_results.sql`). `getMyResults()`와 달리 주차 진행 상태와
+ * 무관하게 종료된 경기면 나온다. 사용자별 데이터라 캐시하지 않는다.
+ */
+export async function getMyFixtureResults(): Promise<MyFixtureResultMap> {
+  if (IS_MOCK) return MOCK_FIXTURE_RESULTS
+
+  const user = await getCurrentUser()
+  if (!user) return {}
+
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('prediction_fixture_results')
+    .select(FIXTURE_RESULT_COLUMNS)
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('getMyFixtureResults error:', error)
+    return {}
+  }
+
+  const map: MyFixtureResultMap = {}
+  for (const row of (data ?? []) as unknown as FixtureResultQueryRow[]) {
+    map[String(row.fixture_id)] = {
+      predicted: [row.pred_home, row.pred_away],
+      matchPoints: row.match_points,
+      pickPoints: row.pick_points,
+      totalPoints: row.total_points,
+      picks: {
+        DEF: { playerId: row.def_player_id, rating: num(row.def_rating), points: row.def_points },
+        MID: { playerId: row.mid_player_id, rating: num(row.mid_rating), points: row.mid_points },
+        FWD: { playerId: row.fwd_player_id, rating: num(row.fwd_rating), points: row.fwd_points },
+      },
+      ratingsSettled: row.rated_players_count >= RATED_PLAYERS_SETTLED_THRESHOLD,
+    }
+  }
+  return map
+}
+
+/** mock 모드 stub — 전체 mock 시나리오(§7단계)는 이후 확장한다. */
+const MOCK_FIXTURE_RESULTS: MyFixtureResultMap = Object.fromEntries(
+  Object.entries(MOCK_RESULTS).map(([fixtureId, result]) => [
+    fixtureId,
+    { ...result, ratingsSettled: true },
+  ])
+)
 
 /**
  * 한 경기의 선수 평점 — 관리자 입력 화면이 기존 값을 채워 보여줄 때 쓴다.
