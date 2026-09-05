@@ -338,18 +338,7 @@ export async function getMyResults(): Promise<MyResultMap> {
 
   const map: MyResultMap = {}
   for (const row of (data ?? []) as unknown as ResultQueryRow[]) {
-    map[String(row.fixture_id)] = {
-      predicted: [row.pred_home, row.pred_away],
-      matchPoints: row.match_points,
-      pickPoints: row.pick_points,
-      totalPoints: row.total_points,
-      picks: {
-        DEF: { playerId: row.def_player_id, rating: num(row.def_rating), points: row.def_points },
-        MID: { playerId: row.mid_player_id, rating: num(row.mid_rating), points: row.mid_points },
-        FWD: { playerId: row.fwd_player_id, rating: num(row.fwd_rating), points: row.fwd_points },
-      },
-      ratingsSettled: row.rated_players_count >= RATED_PLAYERS_SETTLED_THRESHOLD,
-    }
+    map[String(row.fixture_id)] = mapResultRow(row)
   }
   return map
 }
@@ -357,6 +346,26 @@ export async function getMyResults(): Promise<MyResultMap> {
 /** numeric 컬럼은 supabase-js가 문자열로 줄 수 있다. */
 function num(value: number | string | null): number | null {
   return value === null ? null : Number(value)
+}
+
+/**
+ * `ResultQueryRow` → `MyResult & { ratingsSettled }`. `prediction_results`·
+ * `prediction_fixture_results` 두 view가 같은 컬럼 구성(`RESULT_COLUMNS`)이라
+ * `getMyResults()`/`getMyFixtureResults()`가 이 매핑을 그대로 공유한다.
+ */
+function mapResultRow(row: ResultQueryRow): MyResult & { ratingsSettled: boolean } {
+  return {
+    predicted: [row.pred_home, row.pred_away],
+    matchPoints: row.match_points,
+    pickPoints: row.pick_points,
+    totalPoints: row.total_points,
+    picks: {
+      DEF: { playerId: row.def_player_id, rating: num(row.def_rating), points: row.def_points },
+      MID: { playerId: row.mid_player_id, rating: num(row.mid_rating), points: row.mid_points },
+      FWD: { playerId: row.fwd_player_id, rating: num(row.fwd_rating), points: row.fwd_points },
+    },
+    ratingsSettled: row.rated_players_count >= RATED_PLAYERS_SETTLED_THRESHOLD,
+  }
 }
 
 /**
@@ -390,18 +399,7 @@ export async function getMyFixtureResults(): Promise<MyFixtureResultMap> {
 
   const map: MyFixtureResultMap = {}
   for (const row of (data ?? []) as unknown as ResultQueryRow[]) {
-    map[String(row.fixture_id)] = {
-      predicted: [row.pred_home, row.pred_away],
-      matchPoints: row.match_points,
-      pickPoints: row.pick_points,
-      totalPoints: row.total_points,
-      picks: {
-        DEF: { playerId: row.def_player_id, rating: num(row.def_rating), points: row.def_points },
-        MID: { playerId: row.mid_player_id, rating: num(row.mid_rating), points: row.mid_points },
-        FWD: { playerId: row.fwd_player_id, rating: num(row.fwd_rating), points: row.fwd_points },
-      },
-      ratingsSettled: row.rated_players_count >= RATED_PLAYERS_SETTLED_THRESHOLD,
-    }
+    map[String(row.fixture_id)] = mapResultRow(row)
   }
   return map
 }
