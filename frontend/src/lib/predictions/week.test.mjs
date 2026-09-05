@@ -104,6 +104,17 @@ test('같은 주 경기 2개는 한 예측 세션(주차)으로 묶인다 (더�
   assert.equal(weeks[0].deadlineAt, '2026-08-26T18:45:00+00:00')
 })
 
+// resultAt = 그 주 시작 일요일 0시 KST + 7일 + 8시간(다음 일요일 08:00 KST) — 매일 KST 08:00
+// 크론 기준(TEA-35). 킥오프이 지나도 이 값은 그대로라 완료 화면 카운트다운이 사라지지 않는다.
+test('resultAt: 2026-09-05 토요일 경기는 다음 일요일(09-06) 08:00 KST에 결과가 반영된다', () => {
+  const weeks = groupFixturesByWeek(
+    [fixture({ fixture_id: 1, kickoff_at: '2026-09-04T15:30:00+00:00' })], // KST 09-05(토) 00:30
+    KICKOFF,
+  )
+
+  assert.equal(weeks[0].resultAt, '2026-09-05T23:00:00.000Z')
+})
+
 test('경기 없는 중간 주차는 빈 그룹으로 채워진다', () => {
   const weeks = groupFixturesByWeek(
     [
