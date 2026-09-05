@@ -2,7 +2,7 @@ import { unstable_cache } from 'next/cache'
 import { createClient, createPublicClient, getCurrentUser } from '@/lib/supabase/server'
 import { IS_MOCK } from '@/lib/config'
 import type { Position } from '@/lib/predictions/candidates'
-import { MOCK_RANKING, MOCK_RESULTS } from '@/lib/mock/data'
+import { MOCK_RANKING, MOCK_RATINGS_PENDING_FIXTURE_IDS, MOCK_RESULTS } from '@/lib/mock/data'
 import { getProfileIconThresholdsSafe, resolveProfileIconUrl } from '@/lib/images/profile-icons'
 
 /**
@@ -407,14 +407,14 @@ export async function getMyFixtureResults(): Promise<MyFixtureResultMap> {
 }
 
 /**
- * mock 모드 stub — 전체 mock 시나리오(§7단계)는 이후 확장한다. `getMyResults()`·
- * `getMyFixtureResults()` 둘 다 이 데이터를 쓴다 — mock 모드는 아직 주차 게이트/평점 부분 적재
- * 차이를 재현하지 않아(§7단계 전) 두 쿼리가 같은 값을 봐도 무방하다.
+ * mock 모드 stub. `getMyResults()`·`getMyFixtureResults()` 둘 다 이 데이터를 쓴다 — mock 모드는
+ * 주차 게이트를 재현하지 않아 두 쿼리가 같은 값을 봐도 무방하다. `ratingsSettled`는
+ * `MOCK_RATINGS_PENDING_FIXTURE_IDS`에 있는 fixture만 false — 나머지는 평점이 다 걷힌 것으로 본다.
  */
 const MOCK_FIXTURE_RESULTS: MyFixtureResultMap = Object.fromEntries(
   Object.entries(MOCK_RESULTS).map(([fixtureId, result]) => [
     fixtureId,
-    { ...result, ratingsSettled: true },
+    { ...result, ratingsSettled: !MOCK_RATINGS_PENDING_FIXTURE_IDS.includes(fixtureId) },
   ])
 )
 

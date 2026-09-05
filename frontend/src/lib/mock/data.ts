@@ -459,6 +459,11 @@ export const MOCK_FIXTURES: FixtureRow[] = [
   mockFixture(9007, { id: 8668, name: 'Everton' },    { days: 30,  isHome: true,  competition: 'Premier League' }),
   // 대회색(TEA-30) 확인용 — 유일한 'Club Friendlies'(yellow). 색이 켜지려면 open 주차(첫 킥오프 7일 이내, 미잠금)에 들어가야 한다.
   mockFixture(9008, { id: 8564, name: 'AC Milan' },   { days: 5,   isHome: false, competition: 'Club Friendlies' }),
+  // 9010과 같은 주(둘 다 과거) — 끝난 경기 + 아직 안 끝난 경기가 섞인 더블 매치위크 확인용.
+  // 완료 허브(PredictionDone)에서 9009는 MatchResultBlock으로, 9010은 "결과를 기다리는 중이에요"로 갈린다.
+  mockFixture(9009, { id: 9748, name: 'Fulham' },     { days: -22, isHome: true,  competition: 'Premier League', score: [2, 1] }),
+  // finished:false인데 킥오프는 지남(days가 과거) → locked:true && finished:false 조합 확인용.
+  mockFixture(9010, { id: 10252, name: 'Brighton' },  { days: -21, isHome: false, competition: 'Premier League' }),
 ]
 
 // ── 승부예측 선수 픽 후보 (season_squads 행과 같은 모양) ─────────────────────
@@ -525,7 +530,7 @@ export const MOCK_RANKING = [
 ]
 
 // ── 승부예측 채점 결과 (prediction_results view 행과 같은 모양) ─────────────
-// 목 모드에서 결과 화면의 "참여" 경로를 눌러볼 수 있게 종료된 경기 두 건에만 결과를 심는다.
+// 목 모드에서 결과 화면의 "참여" 경로를 눌러볼 수 있게 종료된 경기에 결과를 심는다.
 // 9002(맨시티 원정)는 일부러 비워서 "마감돼서 참여하지 못한 경기" 경로도 같이 확인된다.
 // 배당(×2.1 등)은 제출 스냅샷에서 오므로 여기 없다 — 목 모드에선 제출 쿠키가 없으면 배당 줄이 빠진다.
 export const MOCK_RESULTS = {
@@ -551,7 +556,23 @@ export const MOCK_RESULTS = {
       FWD: { playerId: 725364, rating: 8.1, points: 4 },
     },
   },
+  // 더블 매치위크(9009/9010) 중 끝난 경기 — 완료 허브의 MatchResultBlock 렌더 확인용.
+  '9009': {
+    predicted: [2, 1] as [number, number],
+    matchPoints: 3,
+    pickPoints: 10,
+    totalPoints: 13,
+    picks: {
+      DEF: { playerId: 180254, rating: 7.1, points: 3 },
+      MID: { playerId: 586826, rating: 6.8, points: 2 },
+      FWD: { playerId: 487126, rating: 8.2, points: 5 },
+    },
+  },
 }
+
+// 평점이 다 안 걷힌(집계 중) 채점 결과 — "평점 집계 중이에요" 분기(4.5단계) 확인용.
+// 여기 있는 fixture는 MOCK_RESULTS에 결과는 있지만 ratingsSettled는 false로 내려간다.
+export const MOCK_RATINGS_PENDING_FIXTURE_IDS: string[] = ['9003']
 
 // ── 포지션별 평점 TOP3 원본 (fixture_player_ratings 테이블과 같은 모양: player_id, rating) ──
 // MOCK_SQUAD에 있는 선수 id만 재사용한다 — 새 id를 지어내지 않는다. MOCK_RESULTS의 내 픽과
@@ -582,5 +603,17 @@ export const MOCK_FIXTURE_RATINGS: Record<string, { playerId: number; rating: nu
     { playerId: 725364, rating: 8.1 }, // FWD · 이사크 · 내 픽
     { playerId: 1146398, rating: 7.0 }, // FWD · 고든
     { playerId: 487126, rating: 6.4 }, // FWD · 반스
+  ],
+  '9009': [
+    { playerId: 180254, rating: 7.1 }, // DEF · 트리피어 · 내 픽
+    { playerId: 577175, rating: 6.9 }, // DEF · 보트만
+    { playerId: 184644, rating: 6.5 }, // DEF · 스카르
+    { playerId: 1140067, rating: 6.0 }, // DEF · 리브라멘투
+    { playerId: 586826, rating: 6.8 }, // MID · 윌록 · 내 픽
+    { playerId: 869678, rating: 6.6 }, // MID · 기마랑이스
+    { playerId: 1088651, rating: 5.7 }, // MID · 토날리
+    { playerId: 487126, rating: 8.2 }, // FWD · 반스 · 내 픽
+    { playerId: 1146398, rating: 7.3 }, // FWD · 고든
+    { playerId: 725364, rating: 6.1 }, // FWD · 이사크
   ],
 }
