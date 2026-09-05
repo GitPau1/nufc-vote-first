@@ -63,14 +63,17 @@ export function PredictionDone({
   candidates: PickCandidates
 }) {
   const submittedMatches = week.matches.filter(match => prediction.scores[match.id])
+  // 제출된 경기 중 이미 킥오프돼 잠긴 경기는 수정 대상에서 뺀다 — "제출됨" 표시는 submittedMatches를
+  // 그대로 쓰고, 수정 진입 경로만 이 목록을 기준으로 계산한다.
+  const editableMatches = submittedMatches.filter(match => !match.locked)
   // 아직 안 잠겼는데 제출 안 함 = 사용자가 "나중에"를 고른 상태(부분 제출 선택권, feature-spec §3.2).
   const deferredMatches = week.matches.filter(match => !prediction.scores[match.id] && !match.locked)
   // 마감돼서 제출하지 못한 경기 — 결과가 아직 안 나왔어도 "참여하지 못했다"는 사실은 지금 알려줘야 한다.
   const missedMatches = week.matches.filter(match => !prediction.scores[match.id] && match.locked)
   const isMulti = week.matches.length > 1
   const editHref =
-    submittedMatches.length === 1
-      ? `/predictions/${week.weekKey}?edit=${submittedMatches[0].id}`
+    editableMatches.length === 1
+      ? `/predictions/${week.weekKey}?edit=${editableMatches[0].id}`
       : `/predictions/${week.weekKey}?editSelect=1`
   // 카운트다운은 아직 킥오프 전인 경기가 여러 개일 때만 "늦은 경기 기준"임을 밝힌다.
   const pendingCount = week.matches.filter(match => !match.finished).length
@@ -230,7 +233,7 @@ export function PredictionDone({
           {/* 공유하기는 이번 스코프에서 완전히 제외됐다(재배치는 별도 논의) — 그 자리를 큰
               "수정하기" 버튼 하나로 대체한다. 제출된 경기가 없으면 수정할 게 없어 버튼 자체를
               숨긴다(2026-09-04 결정, feature-spec.md §7-5). */}
-          {submittedMatches.length > 0 && (
+          {editableMatches.length > 0 && (
             <div className="mt-7 flex flex-col items-center gap-2">
               <Link
                 href={editHref}

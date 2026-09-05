@@ -25,6 +25,12 @@ test('PredictionDone classifies matches into submitted / deferred / missed', () 
   )
 })
 
+// 킥오프된 경기는 서버(action·RLS)가 이미 막지만, UI에서도 수정 대상 목록에서 빼야 한다 —
+// 잠긴 제출 경기는 "수정 가능" 목록에 남으면 안 된다(2026-09-05 결정, TEA-33).
+test('editableMatches excludes locked matches from submittedMatches', () => {
+  assert.match(file, /const editableMatches = submittedMatches\.filter\(match => !match\.locked\)/)
+})
+
 // 유예 카드는 "지금 예측하기" CTA로 제출 문맥 단일 경기 진입(?match=)을 연다.
 test('deferred match cards link to the submit-context single-match flow', () => {
   assert.match(file, /아직 예측하지 않았어요/)
@@ -39,11 +45,11 @@ test('there is no per-card edit link; ShareButton is removed in favor of a singl
   assert.match(file, /수정하기/)
   assert.match(
     file,
-    /submittedMatches\.length === 1\s*\? `\/predictions\/\$\{week\.weekKey\}\?edit=\$\{submittedMatches\[0\]\.id\}`\s*: `\/predictions\/\$\{week\.weekKey\}\?editSelect=1`/,
+    /editableMatches\.length === 1\s*\? `\/predictions\/\$\{week\.weekKey\}\?edit=\$\{editableMatches\[0\]\.id\}`\s*: `\/predictions\/\$\{week\.weekKey\}\?editSelect=1`/,
   )
 })
 
-// 제출된 경기가 없으면 수정할 게 없으니 버튼 자체를 숨긴다.
-test('the edit button is hidden entirely when nothing has been submitted', () => {
-  assert.match(file, /submittedMatches\.length > 0 && \(/)
+// 제출된 경기가 없거나, 있어도 전부 킥오프돼 잠겼으면 수정할 게 없으니 버튼 자체를 숨긴다.
+test('the edit button is hidden when nothing is left editable (none submitted, or all submitted are locked)', () => {
+  assert.match(file, /editableMatches\.length > 0 && \(/)
 })
