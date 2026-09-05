@@ -67,6 +67,8 @@ export type WeekGroup = {
   monthKey: string
   /** 그 주 마지막 경기 킥오프(ISO) = 세션 마감 시각. 경기 없는 주는 null. */
   deadlineAt: string | null
+  /** 결과 반영 시각(ISO) = 그 주 시작 일요일 0시 KST + 7일 + 8시간(다음 일요일 08:00 KST) — 매일 KST 08:00 크론 기준. */
+  resultAt: string
   status: WeekStatus
   matches: MatchView[]
 }
@@ -297,6 +299,9 @@ function emptyWeek(kst: Date, key: string, weekNo: number): WeekGroup {
     weekKey: key,
     monthKey: `${kst.getUTCFullYear()}-${String(kst.getUTCMonth() + 1).padStart(2, '0')}`,
     deadlineAt: null,
+    resultAt: new Date(
+      sundayAnchorStart(kst).getTime() + 7 * 86_400_000 + 8 * 3_600_000 - KST_OFFSET_MS,
+    ).toISOString(),
     status: 'upcoming',
     matches: [],
   }

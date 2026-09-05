@@ -49,7 +49,7 @@ function resolvePicks(
 /**
  * 주차 제출 완료 화면(= 허브). 퍼블리싱 `renderComplete` / `completeCardHtml` 구조를 따른다:
  * 헤드라인 → 독립 카운트다운 블록 → 카드(제출됨 · 유예됨 · 마감됨) → 하단 수정하기 버튼.
- * 카운트다운 기준은 그 주 첫 경기 킥오프 — 마감 기준과 같다.
+ * 카운트다운 기준은 결과 반영 시각(다음 일요일 08:00 KST, TEA-35) — 킥오프 후에도 결과가 나올 때까지 유지된다.
  * 승부예측은 킥오프 전까지 자유롭게 재제출(수정)할 수 있다 — 카드 자체는 클릭되지 않고, 수정은
  * 하단 "수정하기" 버튼 하나로만 진입한다(2026-09-04 결정, feature-spec.md §7-5).
  */
@@ -72,11 +72,6 @@ export function PredictionDone({
     submittedMatches.length === 1
       ? `/predictions/${week.weekKey}?edit=${submittedMatches[0].id}`
       : `/predictions/${week.weekKey}?editSelect=1`
-  // 카운트다운은 아직 킥오프 전인 경기가 여러 개일 때만 "늦은 경기 기준"임을 밝힌다.
-  const pendingCount = week.matches.filter(match => !match.finished).length
-  // 그 주 경기가 전부 킥오프을 지났으면 카운트다운이 0에 붙어 있을 뿐이라 그린다는 의미가 없다.
-  const hasUpcomingMatch = week.matches.some(match => !match.locked)
-
   // 퍼널 A의 종료 지점. 제출 성공 직후 router.refresh()로 이 화면이 마운트되므로 사실상
   // 제출 성공과 1:1이고, 앞 단계가 전부 클라이언트 이벤트라 퍼널이 한 계층에서 일관된다.
   // (지표용 prediction_submitted는 별도로 서버가 보낸다 — 측정 대상이 달라 중복이 아니다.)
@@ -111,7 +106,7 @@ export function PredictionDone({
         </div>
 
         <div>
-          {hasUpcomingMatch && <Countdown targetIso={week.deadlineAt} pendingCount={pendingCount} />}
+          <Countdown targetIso={week.resultAt} />
 
           {/* 아직 안 잠긴(킥오프 전) 미제출 경기 — 부분 제출 선택권으로 "나중에"를 고른 상태다.
               지금 바로 예측하러 갈 수 있는 CTA를 준다(제출 문맥 단일 경기 진입). */}
@@ -248,10 +243,12 @@ export function PredictionDone({
 }
 
 /**
- * 킥오프까지 남은 시간. 1초마다 텍스트만 갱신한다(퍼블리싱 `updateCountdownDisplay`와 같은 방식).
- * 첫 렌더는 서버와 같은 자리표시자(`-`/`--`)를 그려 하이드레이션 불일치를 피한다.
+ * 결과 반영(매일 KST 08:00 크론)까지 남은 시간. 1초마다 텍스트만 갱신한다(퍼블리싱
+ * `updateCountdownDisplay`와 같은 방식). 첫 렌더는 서버와 같은 자리표시자(`-`/`--`)를 그려
+ * 하이드레이션 불일치를 피한다. 남은 시간이 0 이하면(크론이 아직 안 돌았거나 막 돈 시점)
+ * 숫자 대신 "결과를 반영하고 있어요" 안내로 바꾼다.
  */
-function Countdown({ targetIso, pendingCount }: { targetIso: string | null; pendingCount: number }) {
+function Countdown({ targetIso }: { targetIso: string | null }) {
   const target = targetIso ? new Date(targetIso).getTime() : null
   const [remaining, setRemaining] = useState<number | null>(null)
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -268,6 +265,7 @@ function Countdown({ targetIso, pendingCount }: { targetIso: string | null; pend
 
   if (target === null) return null
 
+  const isDone = remaining !== null && remaining <= 0
   const segments =
     remaining === null
       ? [
@@ -285,20 +283,22 @@ function Countdown({ targetIso, pendingCount }: { targetIso: string | null; pend
 
   return (
     <div className="mb-4 rounded-lg bg-neutral-strong px-4 pb-5 pt-5 text-center">
-      <p className="mb-2 text-caption-1 font-medium text-on-solid-muted">
-        결과 반영까지{pendingCount > 1 && ' (늦은 경기 종료 기준)'}
-      </p>
-      <div className="flex items-start justify-center gap-2.5">
-        {segments.map((segment, i) => (
-          <div key={segment.unit} className="flex items-start gap-2.5">
-            {i > 0 && <span className="mt-px text-heading-2 font-semibold text-on-solid-muted">:</span>}
-            <div className="flex min-w-[34px] flex-col items-center gap-1">
-              <span className="text-title-3 font-semibold tabular-nums text-on-solid">{segment.value}</span>
-              <span className="text-caption-2 text-on-solid-muted">{segment.unit}</span>
+      <p className="mb-2 text-caption-1 font-medium text-on-solid-muted">결과 반영까지</p>
+      {isDone ? (
+        <p className="py-1 text-title-3 font-semibold text-on-solid">결과를 반영하고 있어요</p>
+      ) : (
+        <div className="flex items-start justify-center gap-2.5">
+          {segments.map((segment, i) => (
+            <div key={segment.unit} className="flex items-start gap-2.5">
+              {i > 0 && <span className="mt-px text-heading-2 font-semibold text-on-solid-muted">:</span>}
+              <div className="flex min-w-[34px] flex-col items-center gap-1">
+                <span className="text-title-3 font-semibold tabular-nums text-on-solid">{segment.value}</span>
+                <span className="text-caption-2 text-on-solid-muted">{segment.unit}</span>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
