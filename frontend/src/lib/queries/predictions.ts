@@ -274,18 +274,25 @@ export type MyResult = {
 
 /**
  * 평점 집계 "완료" 판정 임계값. supabase/functions/sync-fixture-ratings/index.ts의
- * MIN_RATED_PLAYERS, supabase/migrations/20260905120000_prediction_fixture_results.sql의
- * rated_players_count 컬럼 comment와 반드시 같은 값이어야 한다 — 세 곳이 서로를 가리키는
- * 주석으로 매직넘버 중복을 감수한다(SQL/TS 경계 때문에 상수 자체는 공유할 수 없음).
+ * MIN_RATED_PLAYERS, supabase/migrations/20260905120000_prediction_fixture_results.sql와
+ * 20260905130000_prediction_results_rated_players_count.sql의 rated_players_count 컬럼
+ * comment와 반드시 같은 값이어야 한다 — 네 곳이 서로를 가리키는 주석으로 매직넘버 중복을
+ * 감수한다(SQL/TS 경계 때문에 상수 자체는 공유할 수 없음).
  */
 const RATED_PLAYERS_SETTLED_THRESHOLD = 11
 
-/** fixture_id → 채점 결과. 로그인 안 했으면 빈 맵. */
-export type MyResultMap = Record<string, MyResult>
+/**
+ * fixture_id → 채점 결과 + 평점 집계 완료 여부. 로그인 안 했으면 빈 맵.
+ * `ratingsSettled`는 이 view(`prediction_results`, 20260905130000부터 rated_players_count 보유)가
+ * 주차 정산 게이트만 볼 뿐 평점 부분 적재는 못 보는 갭을 메운다 — 정산 화면(`MatchResultBlock`의
+ * `pickPointsReady`)이 이 값으로 "집계 중" 분기를 판단한다.
+ */
+export type MyResultMap = Record<string, MyResult & { ratingsSettled: boolean }>
 
 const RESULT_COLUMNS =
   'fixture_id, pred_home, pred_away, match_points, pick_points, total_points, ' +
-  'def_player_id, mid_player_id, fwd_player_id, def_rating, mid_rating, fwd_rating, def_points, mid_points, fwd_points'
+  'def_player_id, mid_player_id, fwd_player_id, def_rating, mid_rating, fwd_rating, def_points, mid_points, fwd_points, ' +
+  'rated_players_count'
 
 type ResultQueryRow = {
   fixture_id: number
@@ -303,6 +310,7 @@ type ResultQueryRow = {
   def_points: number
   mid_points: number
   fwd_points: number
+  rated_players_count: number
 }
 
 /**
@@ -311,7 +319,7 @@ type ResultQueryRow = {
  * 사용자별 데이터라 캐시하지 않는다.
  */
 export async function getMyResults(): Promise<MyResultMap> {
-  if (IS_MOCK) return MOCK_RESULTS
+  if (IS_MOCK) return MOCK_FIXTURE_RESULTS
 
   const user = await getCurrentUser()
   if (!user) return {}
@@ -340,6 +348,7 @@ export async function getMyResults(): Promise<MyResultMap> {
         MID: { playerId: row.mid_player_id, rating: num(row.mid_rating), points: row.mid_points },
         FWD: { playerId: row.fwd_player_id, rating: num(row.fwd_rating), points: row.fwd_points },
       },
+      ratingsSettled: row.rated_players_count >= RATED_PLAYERS_SETTLED_THRESHOLD,
     }
   }
   return map
@@ -350,12 +359,11 @@ function num(value: number | string | null): number | null {
   return value === null ? null : Number(value)
 }
 
-/** fixture_id → 채점 결과 + 평점 집계 완료 여부. `getMyFixtureResults()` 전용. */
-export type MyFixtureResultMap = Record<string, MyResult & { ratingsSettled: boolean }>
-
-const FIXTURE_RESULT_COLUMNS = `${RESULT_COLUMNS}, rated_players_count`
-
-type FixtureResultQueryRow = ResultQueryRow & { rated_players_count: number }
+/**
+ * `MyResultMap`과 같은 모양(4.5단계에서 `prediction_results`에도 rated_players_count가 붙어
+ * 두 맵의 값 타입이 같아졌다) — `getMyFixtureResults()` 전용 이름만 별도로 남긴다.
+ */
+export type MyFixtureResultMap = MyResultMap
 
 /**
  * 정산 게이트 없는 경기 단위 예측 결과 — `prediction_fixture_results` view
@@ -372,7 +380,7 @@ export async function getMyFixtureResults(): Promise<MyFixtureResultMap> {
 
   const { data, error } = await supabase
     .from('prediction_fixture_results')
-    .select(FIXTURE_RESULT_COLUMNS)
+    .select(RESULT_COLUMNS)
     .eq('user_id', user.id)
 
   if (error) {
@@ -381,7 +389,7 @@ export async function getMyFixtureResults(): Promise<MyFixtureResultMap> {
   }
 
   const map: MyFixtureResultMap = {}
-  for (const row of (data ?? []) as unknown as FixtureResultQueryRow[]) {
+  for (const row of (data ?? []) as unknown as ResultQueryRow[]) {
     map[String(row.fixture_id)] = {
       predicted: [row.pred_home, row.pred_away],
       matchPoints: row.match_points,
@@ -398,7 +406,11 @@ export async function getMyFixtureResults(): Promise<MyFixtureResultMap> {
   return map
 }
 
-/** mock 모드 stub — 전체 mock 시나리오(§7단계)는 이후 확장한다. */
+/**
+ * mock 모드 stub — 전체 mock 시나리오(§7단계)는 이후 확장한다. `getMyResults()`·
+ * `getMyFixtureResults()` 둘 다 이 데이터를 쓴다 — mock 모드는 아직 주차 게이트/평점 부분 적재
+ * 차이를 재현하지 않아(§7단계 전) 두 쿼리가 같은 값을 봐도 무방하다.
+ */
 const MOCK_FIXTURE_RESULTS: MyFixtureResultMap = Object.fromEntries(
   Object.entries(MOCK_RESULTS).map(([fixtureId, result]) => [
     fixtureId,

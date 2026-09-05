@@ -88,6 +88,7 @@ export function PredictionResult({
             predictions={predictions}
             candidates={candidates}
             topRatings={topRatings[match.id]}
+            pickPointsReady={results[match.id]?.ratingsSettled ?? false}
           />
         </div>
       ))}
